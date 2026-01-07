@@ -116,6 +116,32 @@ img {
   image-rendering: crisp-edges;
 }
 
+/* Optimize video rendering for maximum quality */
+video {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  /* Force hardware acceleration */
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  /* Prevent subpixel rendering issues */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Ensure crisp rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  /* Prevent blur on scale */
+  -webkit-filter: blur(0);
+  filter: blur(0);
+  /* High quality rendering */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
 /* Smooth scrolling for all elements */
 * {
   scroll-behavior: smooth;

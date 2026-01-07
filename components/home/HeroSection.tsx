@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { useScroll, useTransform } from "framer-motion";
@@ -49,46 +48,78 @@ export function HeroSection(): JSX.Element {
     <section
       ref={containerRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{
+        isolation: "isolate",
+      }}
     >
-      {/* Background Image with Parallax */}
+      {/* Hero Video with Parallax */}
       <m.div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 overflow-hidden"
         style={{ y }}
       >
-        <div className="relative w-full h-[120%]">
-          <Image
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"
-            alt="Premium kids fashion"
-            fill
-            priority
-            className="object-cover"
-            quality={85}
-            onLoad={() => setIsLoaded(true)}
-            sizes="100vw"
-            fetchPriority="high"
-          />
-          {/* Overlay for better text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-b from-charcoal-900/60 via-charcoal-900/50 to-charcoal-900/70" />
+        <div 
+          className="relative w-full h-full min-h-screen"
+          style={{
+            isolation: "isolate",
+            contain: "layout style paint",
+          }}
+        >
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full"
+            style={{
+              objectFit: "cover",
+              objectPosition: "center center",
+              minWidth: "100vw",
+              minHeight: "100vh",
+              width: "100%",
+              height: "100%",
+              transform: "scale(1.02)",
+              willChange: "transform",
+              WebkitTransform: "translateZ(0)",
+              transformOrigin: "center center",
+            }}
+            onLoadedData={() => setIsLoaded(true)}
+            onCanPlay={() => setIsLoaded(true)}
+            onLoadedMetadata={() => setIsLoaded(true)}
+          >
+            <source src="/Hero Video Extreme.MOV" type="video/quicktime" />
+            <source src="/Hero Video Extreme.MOV" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          {/* Dark overlay for text visibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-charcoal-900/70 via-charcoal-900/60 to-charcoal-900/75" />
         </div>
       </m.div>
 
-      {/* Content */}
+      {/* Hero Content */}
       <m.div
-        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-20 sm:pt-24 md:pt-28 lg:pt-32 xl:pt-36 pb-16 sm:pb-20 md:pb-24 lg:pb-28 xl:pb-32"
+        className="relative z-10 w-full flex items-center justify-center"
         variants={containerVariants}
         initial="hidden"
         animate={isLoaded ? "visible" : "hidden"}
+        style={{
+          minHeight: "100vh",
+        }}
       >
-        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-7 md:space-y-8 lg:space-y-10">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
+          <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-7 md:space-y-8 lg:space-y-10">
           {/* Headline */}
           <m.h1
             className={cn(
               "font-serif font-bold text-cream-50",
               "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl",
               "leading-[1.1] tracking-tight",
-              "drop-shadow-lg"
+              "drop-shadow-2xl"
             )}
             variants={itemVariants}
+            style={{
+              textShadow: "0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)",
+            }}
           >
             Where Style Meets Substance
           </m.h1>
@@ -98,9 +129,12 @@ export function HeroSection(): JSX.Element {
             className={cn(
               "font-sans text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl",
               "text-cream-100 leading-relaxed max-w-3xl mx-auto",
-              "drop-shadow-md"
+              "drop-shadow-xl"
             )}
             variants={itemVariants}
+            style={{
+              textShadow: "0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.5)",
+            }}
           >
             Curated collections of premium fashion designed for the modern family. Timeless pieces that celebrate both play and sophistication.
           </m.p>
@@ -120,7 +154,8 @@ export function HeroSection(): JSX.Element {
                 "transition-all duration-300",
                 "text-sm sm:text-base md:text-lg",
                 "px-6 sm:px-7 md:px-8 lg:px-10",
-                "py-5 sm:py-5.5 md:py-6 lg:py-7"
+                "py-5 sm:py-5.5 md:py-6 lg:py-7",
+                "shadow-2xl"
               )}
               asChild
             >
@@ -136,25 +171,30 @@ export function HeroSection(): JSX.Element {
                 "transition-all duration-300",
                 "text-sm sm:text-base md:text-lg",
                 "px-6 sm:px-7 md:px-8 lg:px-10",
-                "py-5 sm:py-5.5 md:py-6 lg:py-7"
+                "py-5 sm:py-5.5 md:py-6 lg:py-7",
+                "shadow-2xl backdrop-blur-sm"
               )}
               asChild
             >
               <Link href="/collections/girls">Explore Girls&apos; Collection</Link>
             </Button>
           </m.div>
+          </div>
         </div>
       </m.div>
 
       {/* Scroll Indicator */}
       <m.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 0.6 }}
+        style={{
+          filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8))",
+        }}
       >
         <m.div
-          className="w-6 h-10 border-2 border-cream-50/60 rounded-full flex items-start justify-center p-2"
+          className="w-6 h-10 border-2 border-cream-50 rounded-full flex items-start justify-center p-2 backdrop-blur-sm"
           animate={{ y: [0, 8, 0] }}
           transition={{
             duration: 1.5,
@@ -163,7 +203,7 @@ export function HeroSection(): JSX.Element {
           }}
         >
           <m.div
-            className="w-1.5 h-1.5 bg-cream-50/80 rounded-full"
+            className="w-1.5 h-1.5 bg-cream-50 rounded-full"
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{
               duration: 1.5,
