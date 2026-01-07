@@ -184,3 +184,4 @@ Physical devices:
 - No horizontal scrolling on any device
 - Text remains readable at all sizes
 
+

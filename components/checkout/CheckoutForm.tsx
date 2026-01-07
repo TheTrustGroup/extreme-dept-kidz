@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useForm, type UseFormRegister, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Check, Lock, Shield } from "lucide-react";
 import {
   shippingAddressSchema,
@@ -167,7 +168,7 @@ export function CheckoutForm({
       {/* Form Steps */}
       <AnimatePresence mode="wait">
         {currentStep === "shipping" && (
-          <motion.div
+          <m.div
             key="shipping"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -175,11 +176,11 @@ export function CheckoutForm({
             transition={{ duration: 0.3 }}
           >
             <ShippingAddressForm register={register} errors={errors} />
-          </motion.div>
+          </m.div>
         )}
 
         {currentStep === "shipping-method" && (
-          <motion.div
+          <m.div
             key="shipping-method"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -194,11 +195,11 @@ export function CheckoutForm({
               }}
               methods={SHIPPING_METHODS}
             />
-          </motion.div>
+          </m.div>
         )}
 
         {currentStep === "payment" && (
-          <motion.div
+          <m.div
             key="payment"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -211,7 +212,7 @@ export function CheckoutForm({
               billingSameAsShipping={billingSameAsShipping}
               onBillingChange={setBillingSameAsShipping}
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

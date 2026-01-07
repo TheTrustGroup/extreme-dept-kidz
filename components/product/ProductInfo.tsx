@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Check, Plus, Minus, ChevronDown } from "lucide-react";
 import type { Product, ProductSize } from "@/types";
 import { useCartStore } from "@/lib/stores/cart-store";
@@ -261,7 +262,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         {/* Success Feedback */}
         <AnimatePresence>
           {showSuccess && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -271,7 +272,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
               }}
               className="flex items-center gap-2 p-4 bg-forest-50 border border-forest-200 rounded-lg"
             >
-              <motion.div
+              <m.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{
@@ -281,11 +282,11 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
                 }}
               >
                 <Check className="w-5 h-5 text-forest-600 flex-shrink-0" />
-              </motion.div>
+              </m.div>
               <Body className="text-sm text-forest-700 font-medium">
                 Item added to your cart
               </Body>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
@@ -369,7 +370,7 @@ function DetailSection({
       </button>
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -379,7 +380,7 @@ function DetailSection({
             <Body className="text-charcoal-700 pb-4 leading-relaxed">
               {content}
             </Body>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

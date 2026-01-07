@@ -66,3 +66,4 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
   );
 }
 
+

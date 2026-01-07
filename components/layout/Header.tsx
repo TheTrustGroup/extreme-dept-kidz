@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileNav } from "./MobileNav";
@@ -48,7 +48,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
 
   return (
     <>
-      <motion.header
+      <m.header
         className={cn(
           "fixed top-0 left-0 right-0 z-50",
           isScrolled
@@ -59,18 +59,18 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
         animate={{
           height: isScrolled
             ? isMobile
-              ? "3.5rem"
-              : "4rem"
-            : isMobile
               ? "4rem"
-              : "5rem",
+              : "4.5rem"
+            : isMobile
+              ? "5rem"
+              : "6rem",
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <div className="h-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="h-full flex items-center justify-between gap-2 sm:gap-4">
             {/* Logo */}
-            <motion.div
+            <m.div
               className="flex-shrink-0 min-w-0"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
@@ -81,12 +81,12 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
                   alt="EXTREME DEPT KIDZ"
                   width={700}
                   height={120}
-                  className="h-12 xs:h-14 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto object-contain max-w-[200px] xs:max-w-[240px] sm:max-w-[280px] md:max-w-none"
+                  className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto object-contain max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[420px] xl:max-w-none"
                   priority
                   quality={100}
                 />
               </Link>
-            </motion.div>
+            </m.div>
 
             {/* Desktop Navigation */}
             <nav id="main-navigation" className="hidden xl:flex items-center space-x-6 2xl:space-x-8" aria-label="Main navigation">
@@ -114,14 +114,14 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
                 >
                   <ShoppingBag className="w-5 h-5" />
                   {cartItemCount > 0 && (
-                    <motion.span
+                    <m.span
                       className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-navy-900 text-xs font-medium text-cream-50"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500 }}
                     >
                       {cartItemCount > 9 ? "9+" : cartItemCount}
-                    </motion.span>
+                    </m.span>
                   )}
                 </IconButton>
               </div>
@@ -138,7 +138,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
             </div>
           </div>
         </div>
-      </motion.header>
+      </m.header>
 
       {/* Mobile Navigation Drawer */}
       <MobileNav
@@ -159,20 +159,20 @@ interface NavLinkProps {
 function NavLink({ href, children }: NavLinkProps) {
   return (
     <Link href={href} className="relative inline-block">
-      <motion.span
+      <m.span
         className="font-sans text-sm font-medium text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-2 py-1 block"
         whileHover={{ y: -1 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {children}
-        <motion.span
+        <m.span
           className="absolute bottom-[-4px] left-2 right-2 h-[1.5px] bg-navy-900"
           initial={{ width: 0 }}
           whileHover={{ width: "calc(100% - 1rem)" }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
           aria-hidden="true"
         />
-      </motion.span>
+      </m.span>
     </Link>
   );
 }

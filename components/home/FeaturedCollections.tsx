@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2 } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ interface CollectionCardProps {
 
 function CollectionCard({ collection, index }: CollectionCardProps) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
@@ -84,7 +84,7 @@ function CollectionCard({ collection, index }: CollectionCardProps) {
       }}
     >
       <Link href={collection.href} className="block group">
-        <motion.div
+        <m.div
           className={cn(
             "relative overflow-hidden rounded-xl",
             "bg-cream-100 shadow-sm",
@@ -117,7 +117,7 @@ function CollectionCard({ collection, index }: CollectionCardProps) {
           </div>
 
           {/* Hover Shadow Effect */}
-          <motion.div
+          <m.div
             className="absolute inset-0 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none"
             transition={{ duration: 0.3 }}
             style={{
@@ -125,9 +125,9 @@ function CollectionCard({ collection, index }: CollectionCardProps) {
                 "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)",
             }}
           />
-        </motion.div>
+        </m.div>
       </Link>
-    </motion.div>
+    </m.div>
   );
 }
 

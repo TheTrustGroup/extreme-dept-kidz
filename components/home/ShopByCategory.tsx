@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2 } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
@@ -80,7 +80,7 @@ interface CategoryCardProps {
 
 function CategoryCard({ category, index }: CategoryCardProps) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -91,7 +91,7 @@ function CategoryCard({ category, index }: CategoryCardProps) {
       }}
     >
       <Link href={category.href} className="block group">
-        <motion.div
+        <m.div
           className={cn(
             "relative overflow-hidden rounded-lg",
             "bg-cream-100 shadow-sm",
@@ -122,9 +122,9 @@ function CategoryCard({ category, index }: CategoryCardProps) {
               {category.name}
             </h3>
           </div>
-        </motion.div>
+        </m.div>
       </Link>
-    </motion.div>
+    </m.div>
   );
 }
 

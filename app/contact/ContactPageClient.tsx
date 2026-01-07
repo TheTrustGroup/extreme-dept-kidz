@@ -4,7 +4,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Mail, Phone, CheckCircle2, ChevronDown } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { H1, H2, H3, Body } from "@/components/ui/typography";
@@ -119,7 +119,7 @@ export function ContactPageClient(): JSX.Element {
               {/* Success Message */}
               <AnimatePresence>
                 {showSuccess && (
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -134,7 +134,7 @@ export function ContactPageClient(): JSX.Element {
                         Thank you for reaching out. We&apos;ll respond within 24 hours.
                       </Body>
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
 
@@ -404,7 +404,7 @@ function FAQAccordion({
       </button>
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             id={`faq-answer-${question}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -415,7 +415,7 @@ function FAQAccordion({
             <div className="px-6 pb-6">
               <Body className="text-charcoal-700 leading-relaxed">{answer}</Body>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

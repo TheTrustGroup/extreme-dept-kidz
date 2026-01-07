@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
 import type { CartItem, ProductImage } from "@/types";
@@ -55,7 +55,7 @@ export function CartItemPage({ item }: CartItemPageProps) {
   };
 
   return (
-    <motion.div
+    <m.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -151,7 +151,7 @@ export function CartItemPage({ item }: CartItemPageProps) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

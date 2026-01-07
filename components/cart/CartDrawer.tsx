@@ -3,7 +3,8 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <m.div
             className="fixed inset-0 bg-charcoal-900/40 backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -97,7 +98,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           />
 
           {/* Drawer */}
-          <motion.div
+          <m.div
             className="fixed top-0 right-0 bottom-0 w-full max-w-[100vw] xs:max-w-sm sm:max-w-md bg-cream-50 shadow-2xl z-50 flex flex-col"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -183,7 +184,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
               </div>
             )}
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>
@@ -222,7 +223,7 @@ function CartItem({
     item.product.images[0];
 
   return (
-    <motion.div
+    <m.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -317,7 +318,7 @@ function CartItem({
           </button>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

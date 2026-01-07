@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useScrollAnimation } from "@/lib/hooks/use-scroll-animation";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +44,7 @@ export function ScrollReveal({
   const initialOffset = directionVariants[direction];
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       initial={{ opacity: 0, ...initialOffset }}
       animate={
@@ -64,7 +64,7 @@ export function ScrollReveal({
       className={cn(className)}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 

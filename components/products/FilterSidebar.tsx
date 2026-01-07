@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -243,7 +244,7 @@ export function FilterSidebar({
         {isOpen && (
           <>
             {/* Backdrop */}
-            <motion.div
+            <m.div
               className="fixed inset-0 bg-charcoal-900/20 backdrop-blur-sm z-40 lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -252,7 +253,7 @@ export function FilterSidebar({
             />
 
             {/* Drawer */}
-            <motion.div
+            <m.div
               className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-cream-50 shadow-2xl z-50 lg:hidden"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -260,7 +261,7 @@ export function FilterSidebar({
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
             >
               <div className="h-full p-6">{sidebarContent}</div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>
@@ -317,7 +318,7 @@ function FilterSection({
       </button>
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -325,7 +326,7 @@ function FilterSection({
             className="overflow-hidden"
           >
             {children}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

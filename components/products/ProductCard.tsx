@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Eye } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
@@ -40,7 +40,7 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
       onMouseLeave={() => setIsHovered(false)}
       aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
     >
-      <motion.article
+      <m.article
         className="relative overflow-hidden rounded-lg bg-cream-50"
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -79,14 +79,14 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
           )}
 
           {/* Quick View Overlay */}
-          <motion.div
+          <m.div
             className="absolute inset-0 flex items-center justify-center bg-charcoal-900/20"
             initial={{ opacity: 0 }}
             animate={{ opacity: isHovered ? 1 : 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             aria-hidden="true"
           >
-            <motion.div
+            <m.div
               className="flex items-center gap-2 px-4 py-2 bg-cream-50 text-charcoal-900 rounded-full font-sans text-sm font-medium"
               initial={{ y: 8, opacity: 0 }}
               animate={{ y: isHovered ? 0 : 8, opacity: isHovered ? 1 : 0 }}
@@ -94,8 +94,8 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
             >
               <Eye className="w-4 h-4" />
               <span>Quick View</span>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Sale Badge */}
           {isOnSale && (
@@ -119,13 +119,13 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
         {/* Product Info */}
         <div className="p-4 space-y-2">
           {/* Product Name */}
-          <motion.h3
+          <m.h3
             className="font-serif text-base md:text-lg font-medium text-charcoal-900 line-clamp-2"
             whileHover={{ color: "#102a43" }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             {product.name}
-          </motion.h3>
+          </m.h3>
 
           {/* Price */}
           <div className="flex items-baseline gap-2">
@@ -144,7 +144,7 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
             {product.category.name}
           </p>
         </div>
-      </motion.article>
+      </m.article>
     </Link>
   );
 }

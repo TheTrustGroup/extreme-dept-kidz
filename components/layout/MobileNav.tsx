@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { X, User, ShoppingBag } from "lucide-react";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 
@@ -102,7 +103,7 @@ export function MobileNav({
       {isOpen && (
         <>
           {/* Backdrop with blur and dark overlay */}
-          <motion.div
+          <m.div
             className="fixed inset-0 bg-charcoal-900/40 backdrop-blur-md z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -113,7 +114,7 @@ export function MobileNav({
           />
 
           {/* Drawer */}
-          <motion.div
+          <m.div
             ref={drawerRef}
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-cream-50 shadow-2xl z-50 focus:outline-none"
             initial={{ x: "100%" }}
@@ -148,7 +149,7 @@ export function MobileNav({
               <nav className="flex-1 px-6 py-12 overflow-y-auto">
                 <ul className="space-y-8">
                   {navLinks.map((link, index) => (
-                    <motion.li
+                    <m.li
                       key={link.label}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -165,7 +166,7 @@ export function MobileNav({
                       >
                         {link.label}
                       </Link>
-                    </motion.li>
+                    </m.li>
                   ))}
                 </ul>
               </nav>
@@ -198,7 +199,7 @@ export function MobileNav({
                 </button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2, Body, Caption } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ export function EditorialSection() {
       <Container size="lg">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-0">
           {/* Image Side - 60% */}
-          <motion.div
+          <m.div
             className="relative lg:col-span-3 h-[300px] xs:h-[350px] sm:h-[400px] md:h-[500px] lg:h-[600px] xl:h-[700px]"
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -32,10 +32,10 @@ export function EditorialSection() {
                 quality={85}
               />
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Text Side - 40% */}
-          <motion.div
+          <m.div
             className="lg:col-span-2 bg-cream-50 flex items-center p-6 xs:p-7 sm:p-8 md:p-10 lg:p-14 xl:p-16 2xl:p-20"
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -64,7 +64,7 @@ export function EditorialSection() {
               </div>
 
               {/* Learn More Link */}
-              <motion.div
+              <m.div
                 className="pt-4"
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -98,9 +98,9 @@ export function EditorialSection() {
                     />
                   </svg>
                 </Link>
-              </motion.div>
+              </m.div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </Container>
     </section>

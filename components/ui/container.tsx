@@ -19,7 +19,7 @@ const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
     };
 
     const baseStyles =
-      "mx-auto w-full px-4 sm:px-6 lg:px-8 transition-all duration-300";
+      "mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 transition-all duration-300";
 
     return (
       <Component
@@ -36,3 +36,4 @@ const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
 Container.displayName = "Container";
 
 export { Container };
+

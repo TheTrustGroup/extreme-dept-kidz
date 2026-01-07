@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import type { ProductImage as ProductImageType } from "@/types";
 import { cn } from "@/lib/utils";
@@ -101,7 +102,7 @@ export function ProductGallery({
       <div className={cn("flex flex-col lg:flex-row gap-3 xs:gap-4 sm:gap-5 lg:gap-6", className)}>
         {/* Main Image */}
         <div className="relative lg:w-[60%] aspect-square lg:aspect-auto lg:h-[500px] xl:h-[600px] bg-cream-100 rounded-lg overflow-hidden group">
-          <motion.div
+          <m.div
             key={selectedIndex}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -155,7 +156,7 @@ export function ProductGallery({
                 {selectedIndex + 1} / {images.length}
               </div>
             )}
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Thumbnail Navigation */}
@@ -197,7 +198,7 @@ export function ProductGallery({
         {isLightboxOpen && (
           <>
             {/* Backdrop */}
-            <motion.div
+            <m.div
               className="fixed inset-0 bg-charcoal-900/95 z-50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -207,7 +208,7 @@ export function ProductGallery({
 
             {/* Lightbox Content */}
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div
+              <m.div
                 className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -225,7 +226,7 @@ export function ProductGallery({
 
                 {/* Main Image */}
                 <div className="relative w-full h-full">
-                  <motion.div
+                  <m.div
                     key={selectedIndex}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -241,7 +242,7 @@ export function ProductGallery({
                       sizes="90vw"
                       quality={90}
                     />
-                  </motion.div>
+                  </m.div>
 
                   {/* Navigation Arrows */}
                   {images.length > 1 && (
@@ -270,7 +271,7 @@ export function ProductGallery({
                     </div>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             </div>
           </>
         )}
