@@ -7,12 +7,24 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { productId: string } }
 ): Promise<NextResponse> {
+  // Lazy load prisma to avoid build-time initialization
+  const prismaModule = await import("@/lib/db/prisma");
+  const prisma = prismaModule.prisma;
+  
+  if (!prisma) {
+    return NextResponse.json(
+      { error: "Database not configured" },
+      { status: 503 }
+    );
+  }
+
   try {
     const variants = await prisma.productVariant.findMany({
       where: {

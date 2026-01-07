@@ -8,7 +8,6 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
 import type { Product } from "@/types";
 
 /**
@@ -59,7 +58,19 @@ function transformProduct(prismaProduct: {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  // Lazy load prisma to avoid build-time initialization
+  const { prisma } = await import("@/lib/db/prisma");
+  
+  if (!prisma) {
+    return NextResponse.json(
+      { error: "Database not configured" },
+      { status: 503 }
+    );
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
 
