@@ -59,11 +59,11 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
         animate={{
           height: isScrolled
             ? isMobile
-              ? "4rem"
-              : "4.5rem"
+              ? "4.5rem"
+              : "5rem"
             : isMobile
-              ? "5rem"
-              : "6rem",
+              ? "5.5rem"
+              : "6.5rem",
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
@@ -79,11 +79,12 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
                 <Image
                   src="/IMG_8620.PNG"
                   alt="EXTREME DEPT KIDZ"
-                  width={700}
-                  height={120}
-                  className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto object-contain max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[420px] xl:max-w-none"
+                  width={1400}
+                  height={240}
+                  className="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 w-auto object-contain max-w-[320px] sm:max-w-[360px] md:max-w-[400px] lg:max-w-[480px] xl:max-w-none"
                   priority
                   quality={100}
+                  sizes="(max-width: 640px) 320px, (max-width: 768px) 360px, (max-width: 1024px) 400px, 480px"
                 />
               </Link>
             </m.div>
