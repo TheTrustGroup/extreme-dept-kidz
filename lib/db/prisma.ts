@@ -8,7 +8,8 @@
  * This allows the app to build and deploy without a database connection.
  */
 
-import type { PrismaClient as PrismaClientType } from "@prisma/client";
+// Use a type-only import to avoid runtime evaluation
+type PrismaClientType = import("@prisma/client").PrismaClient;
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClientType | null | undefined;
@@ -27,7 +28,7 @@ function getPrismaClient(): PrismaClientType | null {
   }
 
   try {
-    // Dynamic import to prevent build-time evaluation
+    // Dynamic require to prevent build-time evaluation
     // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
     const { PrismaClient } = require("@prisma/client") as {
       PrismaClient: new (args?: { log?: string[] }) => PrismaClientType;
@@ -48,12 +49,15 @@ function getPrismaClient(): PrismaClientType | null {
 
     return client;
   } catch (error) {
-    console.warn("Prisma Client not available:", error);
+    // Silently fail during build - Prisma client will be null
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Prisma Client not available:", error);
+    }
     return null;
   }
 }
 
-// Export a getter function instead of direct initialization
+// Export a getter that only initializes on the server side
 // This prevents Prisma from initializing during build time
 export const prisma: PrismaClientType | null = 
   typeof window === "undefined" ? getPrismaClient() : null;
