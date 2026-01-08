@@ -43,6 +43,41 @@ function findExistingItem(
   );
 }
 
+// Safe localStorage wrapper with error handling
+const safeLocalStorage = {
+  getItem: (name: string): string | null => {
+    try {
+      if (typeof window === "undefined") {
+        return null;
+      }
+      return localStorage.getItem(name);
+    } catch (error) {
+      console.warn("Failed to read from localStorage:", error);
+      return null;
+    }
+  },
+  setItem: (name: string, value: string): void => {
+    try {
+      if (typeof window === "undefined") {
+        return;
+      }
+      localStorage.setItem(name, value);
+    } catch (error) {
+      console.warn("Failed to write to localStorage:", error);
+    }
+  },
+  removeItem: (name: string): void => {
+    try {
+      if (typeof window === "undefined") {
+        return;
+      }
+      localStorage.removeItem(name);
+    } catch (error) {
+      console.warn("Failed to remove from localStorage:", error);
+    }
+  },
+};
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
@@ -140,14 +175,48 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "extreme-dept-kidz-cart", // localStorage key
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => safeLocalStorage),
       // Only persist items, not hydration status
       partialize: (state) => ({ items: state.items }),
-      // Handle hydration
-      onRehydrateStorage: () => (state): void => {
-        if (state) {
-          state.setHydrated();
-        }
+      // Handle hydration with error handling
+      onRehydrateStorage: () => {
+        return (state, error): void => {
+          if (error) {
+            console.warn("Failed to rehydrate cart from localStorage:", error);
+            // Clear corrupted data
+            try {
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("extreme-dept-kidz-cart");
+              }
+            } catch (e) {
+              // Ignore cleanup errors
+            }
+            // Reset to initial state
+            if (state) {
+              state.items = [];
+              state.setHydrated();
+            }
+            return;
+          }
+          if (state) {
+            // Validate items structure
+            if (Array.isArray(state.items)) {
+              // Filter out any invalid items
+              state.items = state.items.filter(
+                (item) =>
+                  item &&
+                  typeof item === "object" &&
+                  item.product &&
+                  item.id &&
+                  typeof item.quantity === "number" &&
+                  item.quantity > 0
+              );
+            } else {
+              state.items = [];
+            }
+            state.setHydrated();
+          }
+        };
       },
     }
   )
