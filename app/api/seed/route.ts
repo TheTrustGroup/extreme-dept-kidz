@@ -32,8 +32,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     // Import PrismaClient and execute seed logic directly
-    const { PrismaClient } = await import("@prisma/client");
-    
     // Ensure DATABASE_URL is available
     if (!process.env.DATABASE_URL) {
       return NextResponse.json(
@@ -45,8 +43,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
     
+    // Use lazy import to avoid build-time evaluation
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const { PrismaClient } = require("@prisma/client") as {
+      PrismaClient: new (args?: { log?: string[] }) => import("@prisma/client").PrismaClient;
+    };
+    
     const prisma = new PrismaClient({
-      datasourceUrl: process.env.DATABASE_URL,
+      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     });
 
     console.log("🌱 Starting database seed...");
@@ -298,7 +302,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     
     // Ensure Prisma disconnects even on error
     try {
-      const { PrismaClient } = await import("@prisma/client");
+      // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+      const { PrismaClient } = require("@prisma/client") as {
+        PrismaClient: new (args?: { log?: string[] }) => import("@prisma/client").PrismaClient;
+      };
       const prisma = new PrismaClient();
       await prisma.$disconnect();
     } catch {
