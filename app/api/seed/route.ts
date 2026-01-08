@@ -43,20 +43,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
     
-    // Use the prisma client from our singleton to ensure proper initialization
-    // This handles Prisma 7 compatibility
-    const prismaModule = await import("@/lib/db/prisma");
-    const prisma = prismaModule.getPrisma();
+    // Directly create PrismaClient for seed route
+    // This ensures it works in Vercel's serverless environment
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const { PrismaClient } = require("@prisma/client");
     
-    if (!prisma) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Prisma Client not available. DATABASE_URL may not be configured.",
-        },
-        { status: 500 }
-      );
-    }
+    // Create PrismaClient instance - it will read DATABASE_URL from environment
+    const prisma = new PrismaClient({
+      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    });
 
     console.log("🌱 Starting database seed...");
 
@@ -284,6 +279,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const productCount = await prisma.product.count();
     const variantCount = await prisma.productVariant.count();
 
+    // Disconnect Prisma client
     await prisma.$disconnect();
 
     console.log("✅ Database seeded successfully!");
