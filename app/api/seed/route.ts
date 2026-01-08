@@ -44,21 +44,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
     
-    // For Prisma 7, we need to use the connection string directly
-    // Try using the connection pooler URL for Supabase (port 6543)
-    // This works better with Prisma 7's requirements
-    let connectionUrl = databaseUrl;
-    
-    // If using Supabase direct connection (port 5432), try switching to pooler
-    if (databaseUrl.includes(":5432/") && databaseUrl.includes("supabase.co")) {
-      connectionUrl = databaseUrl.replace(":5432/", ":6543/");
-      if (!connectionUrl.includes("?")) {
-        connectionUrl += "?pgbouncer=true";
-      } else if (!connectionUrl.includes("pgbouncer")) {
-        connectionUrl += "&pgbouncer=true";
-      }
-    }
-    
     // Directly create PrismaClient for seed route
     // This ensures it works in Vercel's serverless environment
     let prisma;
@@ -66,15 +51,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
       const { PrismaClient } = require("@prisma/client");
       
-      // Set DATABASE_URL temporarily for this request
-      const originalUrl = process.env.DATABASE_URL;
-      process.env.DATABASE_URL = connectionUrl;
-      
-      // Create PrismaClient - it will use the connection URL from environment
-      prisma = new PrismaClient();
-      
-      // Restore original URL
-      process.env.DATABASE_URL = originalUrl;
+      // Create PrismaClient - it reads DATABASE_URL from environment automatically
+      prisma = new PrismaClient({
+        log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+      });
     } catch (prismaError) {
       return NextResponse.json(
         {
