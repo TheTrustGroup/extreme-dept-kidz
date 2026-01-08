@@ -45,13 +45,28 @@ export async function POST(request: Request): Promise<NextResponse> {
     
     // Directly create PrismaClient for seed route
     // This ensures it works in Vercel's serverless environment
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-    const { PrismaClient } = require("@prisma/client");
-    
-    // Create PrismaClient instance - it will read DATABASE_URL from environment
-    const prisma = new PrismaClient({
-      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    });
+    let prisma;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+      const { PrismaClient } = require("@prisma/client");
+      
+      // Create PrismaClient instance - it will read DATABASE_URL from environment
+      prisma = new PrismaClient({
+        log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+      });
+    } catch (prismaError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Failed to initialize Prisma Client: ${prismaError instanceof Error ? prismaError.message : String(prismaError)}`,
+          debug: {
+            hasDatabaseUrl: !!process.env.DATABASE_URL,
+            databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+          },
+        },
+        { status: 500 }
+      );
+    }
 
     console.log("🌱 Starting database seed...");
 
