@@ -71,11 +71,11 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
           <div className="h-full flex items-center justify-between gap-2 sm:gap-4">
             {/* Logo */}
             <m.div
-              className="flex-shrink-0 min-w-0"
+              className="flex-shrink-0 min-w-0 flex items-center"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <Link href="/" className="block">
+              <Link href="/" className="block flex items-center">
                 <Image
                   src="/IMG_8640.PNG"
                   alt="EXTREME DEPT KIDZ"
@@ -100,13 +100,13 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
             </nav>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 flex-shrink-0">
+            <div className="flex items-center justify-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 flex-shrink-0">
               {/* Desktop Icons */}
               <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
                 <IconButton aria-label="Search" disabled title="Search coming soon">
                   <Search className="w-5 h-5" />
                 </IconButton>
-                <Link href="/account" className="relative p-2 text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg">
+                <Link href="/account" className="relative p-2 text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg flex items-center justify-center">
                   <User className="w-5 h-5" aria-label="Account" />
                 </Link>
                 <IconButton
@@ -130,12 +130,12 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
 
               {/* Mobile/Tablet Menu Button */}
               <button
-                className="xl:hidden p-2 text-charcoal-900 hover:text-navy-900 transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
+                className="xl:hidden flex items-center justify-center text-charcoal-900 hover:text-navy-900 transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 p-2 min-h-[44px]"
                 aria-label="Toggle menu"
                 aria-expanded={isMobileMenuOpen}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <Menu className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />
+                <Menu className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex-shrink-0" />
               </button>
             </div>
           </div>

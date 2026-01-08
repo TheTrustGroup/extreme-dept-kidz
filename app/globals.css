@@ -127,6 +127,19 @@ header img {
   will-change: transform;
 }
 
+/* Ensure header elements are properly aligned */
+header > div > div {
+  align-items: center;
+}
+
+/* Logo and menu button alignment */
+header a[href="/"],
+header button[aria-label="Toggle menu"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Optimize video rendering for maximum quality */
 video {
   image-rendering: -webkit-optimize-contrast;
