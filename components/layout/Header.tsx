@@ -134,7 +134,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
                 aria-expanded={isMobileMenuOpen}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+                <Menu className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />
               </button>
             </div>
           </div>
