@@ -45,9 +45,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     
     // Use the prisma client from our singleton to ensure proper initialization
     // This handles Prisma 7 compatibility
-    const { prisma: prismaClient } = await import("@/lib/db/prisma");
+    const prismaModule = await import("@/lib/db/prisma");
+    const prisma = prismaModule.getPrisma();
     
-    if (!prismaClient) {
+    if (!prisma) {
       return NextResponse.json(
         {
           success: false,
@@ -56,8 +57,6 @@ export async function POST(request: Request): Promise<NextResponse> {
         { status: 500 }
       );
     }
-    
-    const prisma = prismaClient;
 
     console.log("🌱 Starting database seed...");
 

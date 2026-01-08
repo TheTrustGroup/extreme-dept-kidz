@@ -59,10 +59,17 @@ function getPrismaClient(): PrismaClientType | null {
   }
 }
 
-// Export a getter that only initializes on the server side
-// This prevents Prisma from initializing during build time
-export const prisma: PrismaClientType | null = 
-  typeof window === "undefined" ? getPrismaClient() : null;
+// Export a getter function that initializes on demand
+// This ensures Prisma only initializes when actually needed and DATABASE_URL is available
+export function getPrisma(): PrismaClientType | null {
+  if (typeof window !== "undefined") {
+    return null;
+  }
+  return getPrismaClient();
+}
+
+// For backward compatibility, export as a getter property
+export const prisma: PrismaClientType | null = getPrisma();
 
 export default prisma;
 
