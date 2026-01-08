@@ -52,9 +52,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       const { PrismaClient } = require("@prisma/client");
       
       // Create PrismaClient - it reads DATABASE_URL from environment automatically
-      prisma = new PrismaClient({
-        log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-      });
+      // For Prisma 6, we can initialize without options
+      prisma = new PrismaClient();
     } catch (prismaError) {
       return NextResponse.json(
         {
