@@ -59,11 +59,11 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
         animate={{
           height: isScrolled
             ? isMobile
-              ? "4.5rem"
-              : "5rem"
+              ? "4rem"
+              : "4.5rem"
             : isMobile
-              ? "5.5rem"
-              : "6.5rem",
+              ? "4.5rem"
+              : "5.5rem",
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
@@ -81,10 +81,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
                   alt="EXTREME DEPT KIDZ"
                   width={2800}
                   height={480}
-                  className="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 w-auto object-contain max-w-[320px] sm:max-w-[360px] md:max-w-[400px] lg:max-w-[480px] xl:max-w-none"
+                  className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto object-contain max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[420px] xl:max-w-none"
                   priority
                   quality={100}
-                  sizes="(max-width: 640px) 640px, (max-width: 768px) 720px, (max-width: 1024px) 800px, 960px"
+                  sizes="(max-width: 640px) 560px, (max-width: 768px) 640px, (max-width: 1024px) 720px, 840px"
                   unoptimized={false}
                 />
               </Link>
@@ -135,7 +135,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
                 aria-expanded={isMobileMenuOpen}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <Menu className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex-shrink-0" />
+                <Menu className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex-shrink-0" />
               </button>
             </div>
           </div>
