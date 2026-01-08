@@ -33,7 +33,8 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     // Import PrismaClient and execute seed logic directly
     // Ensure DATABASE_URL is available
-    if (!process.env.DATABASE_URL) {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
       return NextResponse.json(
         {
           success: false,
@@ -43,6 +44,21 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
     
+    // For Prisma 7, we need to use the connection string directly
+    // Try using the connection pooler URL for Supabase (port 6543)
+    // This works better with Prisma 7's requirements
+    let connectionUrl = databaseUrl;
+    
+    // If using Supabase direct connection (port 5432), try switching to pooler
+    if (databaseUrl.includes(":5432/") && databaseUrl.includes("supabase.co")) {
+      connectionUrl = databaseUrl.replace(":5432/", ":6543/");
+      if (!connectionUrl.includes("?")) {
+        connectionUrl += "?pgbouncer=true";
+      } else if (!connectionUrl.includes("pgbouncer")) {
+        connectionUrl += "&pgbouncer=true";
+      }
+    }
+    
     // Directly create PrismaClient for seed route
     // This ensures it works in Vercel's serverless environment
     let prisma;
@@ -50,19 +66,25 @@ export async function POST(request: Request): Promise<NextResponse> {
       // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
       const { PrismaClient } = require("@prisma/client");
       
-      // For Prisma 7 with standard PostgreSQL, create PrismaClient
-      // It reads DATABASE_URL from environment automatically
-      // No adapter or accelerateUrl needed for standard PostgreSQL
+      // Set DATABASE_URL temporarily for this request
+      const originalUrl = process.env.DATABASE_URL;
+      process.env.DATABASE_URL = connectionUrl;
+      
+      // Create PrismaClient - it will use the connection URL from environment
       prisma = new PrismaClient();
+      
+      // Restore original URL
+      process.env.DATABASE_URL = originalUrl;
     } catch (prismaError) {
       return NextResponse.json(
         {
           success: false,
           error: `Failed to initialize Prisma Client: ${prismaError instanceof Error ? prismaError.message : String(prismaError)}`,
           debug: {
-            hasDatabaseUrl: !!process.env.DATABASE_URL,
-            databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+            hasDatabaseUrl: !!databaseUrl,
+            databaseUrlLength: databaseUrl.length,
             nodeEnv: process.env.NODE_ENV,
+            connectionUrlUsed: connectionUrl.substring(0, 50) + "...",
           },
         },
         { status: 500 }
