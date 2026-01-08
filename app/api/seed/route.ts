@@ -46,10 +46,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Use lazy import to avoid build-time evaluation
     // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
     const { PrismaClient } = require("@prisma/client") as {
-      PrismaClient: new (args?: { log?: string[] }) => import("@prisma/client").PrismaClient;
+      PrismaClient: new (args?: { 
+        log?: string[];
+        datasourceUrl?: string;
+      }) => import("@prisma/client").PrismaClient;
     };
     
     const prisma = new PrismaClient({
+      datasourceUrl: process.env.DATABASE_URL,
       log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     });
 
@@ -304,9 +308,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
       const { PrismaClient } = require("@prisma/client") as {
-        PrismaClient: new (args?: { log?: string[] }) => import("@prisma/client").PrismaClient;
+        PrismaClient: new (args?: { 
+          log?: string[];
+          datasourceUrl?: string;
+        }) => import("@prisma/client").PrismaClient;
       };
-      const prisma = new PrismaClient();
+      const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+      });
       await prisma.$disconnect();
     } catch {
       // Ignore disconnect errors
