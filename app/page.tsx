@@ -67,7 +67,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <main className="relative">
+      <div className="relative">
         {/* Hero Section - Full viewport height */}
         <HeroSection />
 
@@ -79,7 +79,7 @@ export default function Home() {
 
         {/* Editorial Lifestyle Section */}
         <EditorialSection />
-      </main>
+      </div>
     </>
   );
 }
