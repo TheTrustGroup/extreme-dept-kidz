@@ -33,7 +33,21 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     // Import PrismaClient and execute seed logic directly
     const { PrismaClient } = await import("@prisma/client");
-    const prisma = new PrismaClient();
+    
+    // Ensure DATABASE_URL is available
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "DATABASE_URL environment variable is not set",
+        },
+        { status: 500 }
+      );
+    }
+    
+    const prisma = new PrismaClient({
+      datasourceUrl: process.env.DATABASE_URL,
+    });
 
     console.log("🌱 Starting database seed...");
 
