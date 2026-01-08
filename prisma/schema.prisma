@@ -14,36 +14,36 @@ datasource db {
 // ============================================
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String     @unique
   description String?
   image       String?
   parentId    String?
-  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
-  isActive    Boolean   @default(true)
-  metadata    Json?     // Additional category metadata
+  isActive    Boolean    @default(true)
+  metadata    Json? // Additional category metadata
   products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([slug])
   @@index([parentId])
 }
 
 model Collection {
-  id          String    @id @default(cuid())
+  id          String              @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String              @unique
   description String?
   image       String?
   bannerImage String?
-  isActive    Boolean   @default(true)
+  isActive    Boolean             @default(true)
   metadata    Json?
   products    ProductCollection[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@index([slug])
 }
@@ -53,28 +53,28 @@ model Collection {
 // ============================================
 
 model Product {
-  id            String    @id @default(cuid())
+  id            String              @id @default(cuid())
   name          String
-  slug          String    @unique
-  description   String    @db.Text
-  price         Int       // Price in pesewas (e.g., 12900 = ₵129.00)
-  originalPrice Int?       // Original price for sale items
-  sku           String?   @unique
-  weight        Float?    // Weight in grams
-  length        Float?    // Length in cm
-  width         Float?    // Width in cm
-  height        Float?    // Height in cm
-  inStock       Boolean   @default(true) // Computed from variants
-  metadata      Json?     // Additional product metadata
+  slug          String              @unique
+  description   String              @db.Text
+  price         Int // Price in pesewas (e.g., 12900 = ₵129.00)
+  originalPrice Int? // Original price for sale items
+  sku           String?             @unique
+  weight        Float? // Weight in grams
+  length        Float? // Length in cm
+  width         Float? // Width in cm
+  height        Float? // Height in cm
+  inStock       Boolean             @default(true) // Computed from variants
+  metadata      Json? // Additional product metadata
   categoryId    String
-  category      Category  @relation(fields: [categoryId], references: [id])
+  category      Category            @relation(fields: [categoryId], references: [id])
   images        ProductImage[]
   variants      ProductVariant[]
   tags          ProductTag[]
   collections   ProductCollection[]
   orderItems    OrderItem[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
   @@index([slug])
   @@index([categoryId])
@@ -96,21 +96,21 @@ model ProductImage {
 }
 
 model ProductVariant {
-  id              String   @id @default(cuid())
-  productId       String
-  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size            String
-  color           String?  // Optional color variant
-  sku             String   @unique
-  price           Int?     // Override product price if different
-  stock           Int      @default(0)
-  reserved        Int      @default(0) // Reserved in carts/checkout
-  lowStockThreshold Int    @default(10)
-  isActive        Boolean  @default(true)
-  inventoryLogs   InventoryLog[]
-  orderItems      OrderItem[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String         @id @default(cuid())
+  productId         String
+  product           Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size              String
+  color             String? // Optional color variant
+  sku               String         @unique
+  price             Int? // Override product price if different
+  stock             Int            @default(0)
+  reserved          Int            @default(0) // Reserved in carts/checkout
+  lowStockThreshold Int            @default(10)
+  isActive          Boolean        @default(true)
+  inventoryLogs     InventoryLog[]
+  orderItems        OrderItem[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   @@unique([productId, size, color])
   @@index([productId])
@@ -122,7 +122,7 @@ model ProductTag {
   id        String   @id @default(cuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  name      String   // e.g., "new", "sale", "bestseller"
+  name      String // e.g., "new", "sale", "bestseller"
   createdAt DateTime @default(now())
 
   @@unique([productId, name])
@@ -136,7 +136,7 @@ model ProductCollection {
   product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   collectionId String
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  order        Int         @default(0) // For ordering products in collection
+  order        Int        @default(0) // For ordering products in collection
   createdAt    DateTime   @default(now())
 
   @@unique([productId, collectionId])
@@ -149,14 +149,14 @@ model ProductCollection {
 // ============================================
 
 model InventoryLog {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   variantId String
   variant   ProductVariant @relation(fields: [variantId], references: [id])
-  change    Int      // Positive for additions, negative for deductions
-  reason    String   // "sale", "restock", "return", "adjustment", "reservation", "release"
-  orderId   String?  // If related to an order
+  change    Int // Positive for additions, negative for deductions
+  reason    String // "sale", "restock", "return", "adjustment", "reservation", "release"
+  orderId   String? // If related to an order
   notes     String?
-  createdAt DateTime @default(now())
+  createdAt DateTime       @default(now())
 
   @@index([variantId])
   @@index([orderId])
@@ -168,29 +168,29 @@ model InventoryLog {
 // ============================================
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique // Human-readable: ORD-2024-001
-  userId          String?     // Optional: for guest checkout
-  user            User?       @relation(fields: [userId], references: [id])
-  status          OrderStatus @default(PENDING)
-  subtotal        Int         // Subtotal in cents
-  shipping        Int         // Shipping cost in cents
-  tax             Int         // Tax in cents
-  total           Int         // Total in cents
-  shippingAddress Json        // ShippingAddress type
-  billingAddress  Json?       // BillingAddress type (if different)
-  paymentMethod   String      // "card", "paypal", "apple-pay"
-  paymentIntentId String?     // Stripe payment intent ID
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique // Human-readable: ORD-2024-001
+  userId          String? // Optional: for guest checkout
+  user            User?         @relation(fields: [userId], references: [id])
+  status          OrderStatus   @default(PENDING)
+  subtotal        Int // Subtotal in cents
+  shipping        Int // Shipping cost in cents
+  tax             Int // Tax in cents
+  total           Int // Total in cents
+  shippingAddress Json // ShippingAddress type
+  billingAddress  Json? // BillingAddress type (if different)
+  paymentMethod   String // "card", "paypal", "apple-pay"
+  paymentIntentId String? // Stripe payment intent ID
   paymentStatus   PaymentStatus @default(PENDING)
   trackingNumber  String?
-  carrier         String?     // "usps", "ups", "fedex", "dhl"
+  carrier         String? // "usps", "ups", "fedex", "dhl"
   shippedAt       DateTime?
   deliveredAt     DateTime?
   cancelledAt     DateTime?
   cancelledReason String?
   items           OrderItem[]
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([orderNumber])
   @@index([userId])
@@ -217,16 +217,16 @@ enum PaymentStatus {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   orderId   String
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product        @relation(fields: [productId], references: [id])
   variantId String
   variant   ProductVariant @relation(fields: [variantId], references: [id])
   quantity  Int
-  price     Int      // Price at time of purchase (in cents)
-  createdAt DateTime @default(now())
+  price     Int // Price at time of purchase (in cents)
+  createdAt DateTime       @default(now())
 
   @@index([orderId])
   @@index([productId])
@@ -240,7 +240,7 @@ model User {
   id            String   @id @default(cuid())
   email         String   @unique
   name          String?
-  passwordHash  String?  // For email/password auth
+  passwordHash  String? // For email/password auth
   emailVerified Boolean  @default(false)
   image         String?
   role          UserRole @default(CUSTOMER)
