@@ -21,7 +21,7 @@ export function generateProductSchema(product: Product): Record<string, unknown>
     offers: {
       "@type": "Offer",
       url: `https://extremedeptkidz.com/products/${product.slug}`,
-      priceCurrency: "USD",
+      priceCurrency: "GHS",
       price: price,
       availability: product.inStock
         ? "https://schema.org/InStock"
@@ -39,7 +39,7 @@ export function generateProductSchema(product: Product): Record<string, unknown>
     ...(product.sizes && product.sizes.length > 0 && {
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
-        applicableCountry: "US",
+        applicableCountry: "GH",
         returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
         merchantReturnDays: 30,
         returnMethod: "https://schema.org/ReturnByMail",
@@ -64,7 +64,7 @@ export function generateOrganizationSchema(): Record<string, unknown> {
       telephone: "+1-800-555-1234",
       contactType: "customer service",
       email: "hello@extremedeptkidz.com",
-      areaServed: "US",
+      areaServed: "GH",
       availableLanguage: ["en"],
     },
     sameAs: [

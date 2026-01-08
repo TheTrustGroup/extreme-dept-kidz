@@ -13,9 +13,9 @@ interface CheckoutOrderSummaryProps {
 }
 
 const SHIPPING_COSTS: Record<ShippingMethod, number> = {
-  standard: 800, // $8.00
-  express: 1500, // $15.00
-  overnight: 2500, // $25.00
+  standard: 800, // ₵8.00
+  express: 1500, // ₵15.00
+  overnight: 2500, // ₵25.00
 };
 
 /**

@@ -24,17 +24,17 @@ export interface FilterState {
 const DEFAULT_FILTERS: FilterState = {
   categories: [],
   sizes: [],
-  priceRange: { min: 0, max: 18000 }, // $0 - $180 in cents
+  priceRange: { min: 0, max: 18000 }, // ₵0 - ₵180 in pesewas
   inStockOnly: false,
 };
 
 const ALL_SIZES = ["2T", "3T", "4T", "5T", "6", "8", "10", "12"];
 
 const PRICE_RANGES = [
-  { label: "Under $50", min: 0, max: 5000 },
-  { label: "$50 - $100", min: 5000, max: 10000 },
-  { label: "$100 - $150", min: 10000, max: 15000 },
-  { label: "$150+", min: 15000, max: 18000 },
+  { label: "Under ₵50", min: 0, max: 5000 },
+  { label: "₵50 - ₵100", min: 5000, max: 10000 },
+  { label: "₵100 - ₵150", min: 10000, max: 15000 },
+  { label: "₵150+", min: 15000, max: 18000 },
 ];
 
 interface FilterSidebarProps {

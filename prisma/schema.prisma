@@ -57,7 +57,7 @@ model Product {
   name          String
   slug          String    @unique
   description   String    @db.Text
-  price         Int       // Price in cents (e.g., 12900 = $129.00)
+  price         Int       // Price in pesewas (e.g., 12900 = ₵129.00)
   originalPrice Int?       // Original price for sale items
   sku           String?   @unique
   weight        Float?    // Weight in grams

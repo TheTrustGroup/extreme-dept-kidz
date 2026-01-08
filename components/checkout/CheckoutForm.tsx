@@ -35,21 +35,21 @@ const SHIPPING_METHODS: Array<{
     id: "standard",
     name: "Standard Shipping",
     description: "5-7 business days",
-    price: 800, // $8.00
+    price: 800, // ₵8.00
     estimatedDays: "5-7 business days",
   },
   {
     id: "express",
     name: "Express Shipping",
     description: "2-3 business days",
-    price: 1500, // $15.00
+    price: 1500, // ₵15.00
     estimatedDays: "2-3 business days",
   },
   {
     id: "overnight",
     name: "Overnight Shipping",
     description: "Next business day",
-    price: 2500, // $25.00
+    price: 2500, // ₵25.00
     estimatedDays: "Next business day",
   },
 ];

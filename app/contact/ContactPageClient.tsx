@@ -35,7 +35,7 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     question: "What is your return policy?",
     answer:
-      "We offer a 30-day return policy on all unworn items with tags attached. Items must be in original condition. Returns are free for orders over $100. Please contact us at returns@extremedeptkidz.com to initiate a return.",
+      "We offer a 30-day return policy on all unworn items with tags attached. Items must be in original condition. Returns are free for orders over ₵100. Please contact us at returns@extremedeptkidz.com to initiate a return.",
   },
   {
     question: "How long does shipping take?",

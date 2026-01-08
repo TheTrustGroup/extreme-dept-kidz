@@ -307,7 +307,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         />
         <DetailSection
           title="Shipping & Returns"
-          content="Free shipping on orders over $100. Easy returns within 30 days. Items must be unworn with tags attached."
+          content="Free shipping on orders over ₵100. Easy returns within 30 days. Items must be unworn with tags attached."
           isExpanded={expandedDetails === "shipping"}
           onToggle={() => toggleDetails("shipping")}
         />
@@ -318,7 +318,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         <TrustBadge
           icon="🚚"
           title="Free Shipping"
-          description="On orders over $100"
+          description="On orders over ₵100"
         />
         <TrustBadge
           icon="↩️"

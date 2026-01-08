@@ -10,10 +10,10 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /**
- * Format price in cents to dollar string
- * @param price - Price in cents (e.g., 12900 = $129.00)
- * @returns Formatted price string (e.g., "$129.00")
+ * Format price in pesewas to Ghana Cedis string
+ * @param price - Price in pesewas (e.g., 12900 = ₵129.00)
+ * @returns Formatted price string (e.g., "₵129.00")
  */
 export function formatPrice(price: number): string {
-  return `$${(price / 100).toFixed(2)}`;
+  return `₵${(price / 100).toFixed(2)}`;
 }

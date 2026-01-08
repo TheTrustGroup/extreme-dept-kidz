@@ -20,7 +20,7 @@ export function OrderSummary({ className }: OrderSummaryProps): JSX.Element {
   const getTotal = useCartStore((state) => state.getTotal);
 
   const subtotal = getTotal();
-  const shippingEstimate = subtotal >= 10000 ? 0 : 800; // Free shipping over $100
+  const shippingEstimate = subtotal >= 10000 ? 0 : 800; // Free shipping over ₵100
   const total = subtotal + shippingEstimate;
 
   return (
