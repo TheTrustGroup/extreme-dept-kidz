@@ -72,7 +72,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       },
     });
 
-    const accessoriesCategory = await prisma.category.create({
+    await prisma.category.create({
       data: {
         name: "Accessories",
         slug: "accessories",
@@ -272,9 +272,25 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({
       success: true,
       message: "Database seeded successfully",
+      data: {
+        categories: categoryCount,
+        collections: collectionCount,
+        products: productCount,
+        variants: variantCount,
+      },
     });
   } catch (error) {
     console.error("Seed error:", error);
+    
+    // Ensure Prisma disconnects even on error
+    try {
+      const { PrismaClient } = await import("@prisma/client");
+      const prisma = new PrismaClient();
+      await prisma.$disconnect();
+    } catch {
+      // Ignore disconnect errors
+    }
+
     return NextResponse.json(
       {
         success: false,
