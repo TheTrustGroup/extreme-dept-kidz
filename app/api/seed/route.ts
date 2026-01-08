@@ -64,7 +64,6 @@ export async function POST(request: Request): Promise<NextResponse> {
             hasDatabaseUrl: !!databaseUrl,
             databaseUrlLength: databaseUrl.length,
             nodeEnv: process.env.NODE_ENV,
-            connectionUrlUsed: connectionUrl.substring(0, 50) + "...",
           },
         },
         { status: 500 }
