@@ -43,19 +43,21 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
     
-    // Use lazy import to avoid build-time evaluation
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-    const { PrismaClient } = require("@prisma/client") as {
-      PrismaClient: new (args?: { 
-        log?: string[];
-        datasourceUrl?: string;
-      }) => import("@prisma/client").PrismaClient;
-    };
+    // Use the prisma client from our singleton to ensure proper initialization
+    // This handles Prisma 7 compatibility
+    const { prisma: prismaClient } = await import("@/lib/db/prisma");
     
-    const prisma = new PrismaClient({
-      datasourceUrl: process.env.DATABASE_URL,
-      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    });
+    if (!prismaClient) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Prisma Client not available. DATABASE_URL may not be configured.",
+        },
+        { status: 500 }
+      );
+    }
+    
+    const prisma = prismaClient;
 
     console.log("🌱 Starting database seed...");
 
@@ -304,22 +306,8 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch (error) {
     console.error("Seed error:", error);
     
-    // Ensure Prisma disconnects even on error
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-      const { PrismaClient } = require("@prisma/client") as {
-        PrismaClient: new (args?: { 
-          log?: string[];
-          datasourceUrl?: string;
-        }) => import("@prisma/client").PrismaClient;
-      };
-      const prisma = new PrismaClient({
-        datasourceUrl: process.env.DATABASE_URL,
-      });
-      await prisma.$disconnect();
-    } catch {
-      // Ignore disconnect errors
-    }
+    // Note: We don't disconnect here as we're using the singleton
+    // The singleton manages its own lifecycle
 
     return NextResponse.json(
       {
