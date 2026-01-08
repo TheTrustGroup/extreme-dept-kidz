@@ -50,10 +50,20 @@ export async function POST(request: Request): Promise<NextResponse> {
       // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
       const { PrismaClient } = require("@prisma/client");
       
-      // Create PrismaClient instance - it will read DATABASE_URL from environment
-      prisma = new PrismaClient({
-        log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-      });
+      // For Prisma 7, create PrismaClient without options
+      // It will read DATABASE_URL from environment automatically
+      // Only add log configuration if needed
+      const clientOptions: {
+        log?: string[];
+      } = {};
+      
+      if (process.env.NODE_ENV === "development") {
+        clientOptions.log = ["error", "warn"];
+      } else {
+        clientOptions.log = ["error"];
+      }
+      
+      prisma = new PrismaClient(clientOptions);
     } catch (prismaError) {
       return NextResponse.json(
         {
@@ -62,6 +72,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           debug: {
             hasDatabaseUrl: !!process.env.DATABASE_URL,
             databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+            nodeEnv: process.env.NODE_ENV,
           },
         },
         { status: 500 }
