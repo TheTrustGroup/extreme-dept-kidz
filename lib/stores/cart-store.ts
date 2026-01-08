@@ -50,9 +50,28 @@ const safeLocalStorage = {
       if (typeof window === "undefined") {
         return null;
       }
-      return localStorage.getItem(name);
+      const value = localStorage.getItem(name);
+      // Validate JSON if it exists
+      if (value !== null) {
+        try {
+          JSON.parse(value);
+        } catch {
+          // Invalid JSON, remove it
+          localStorage.removeItem(name);
+          return null;
+        }
+      }
+      return value;
     } catch (error) {
       console.warn("Failed to read from localStorage:", error);
+      // Try to clear corrupted data
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(name);
+        }
+      } catch {
+        // Ignore cleanup errors
+      }
       return null;
     }
   },
@@ -61,6 +80,8 @@ const safeLocalStorage = {
       if (typeof window === "undefined") {
         return;
       }
+      // Validate JSON before storing
+      JSON.parse(value);
       localStorage.setItem(name, value);
     } catch (error) {
       console.warn("Failed to write to localStorage:", error);
