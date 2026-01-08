@@ -116,6 +116,17 @@ img {
   image-rendering: crisp-edges;
 }
 
+/* High-quality logo rendering in header */
+header img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-quality;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+}
+
 /* Optimize video rendering for maximum quality */
 video {
   image-rendering: -webkit-optimize-contrast;

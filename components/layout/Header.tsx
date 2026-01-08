@@ -77,14 +77,15 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
             >
               <Link href="/" className="block">
                 <Image
-                  src="/IMG_8620.PNG"
+                  src="/IMG_8640.PNG"
                   alt="EXTREME DEPT KIDZ"
-                  width={1400}
-                  height={240}
+                  width={2800}
+                  height={480}
                   className="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 w-auto object-contain max-w-[320px] sm:max-w-[360px] md:max-w-[400px] lg:max-w-[480px] xl:max-w-none"
                   priority
                   quality={100}
-                  sizes="(max-width: 640px) 320px, (max-width: 768px) 360px, (max-width: 1024px) 400px, 480px"
+                  sizes="(max-width: 640px) 640px, (max-width: 768px) 720px, (max-width: 1024px) 800px, 960px"
+                  unoptimized={false}
                 />
               </Link>
             </m.div>
