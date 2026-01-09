@@ -7,7 +7,7 @@ interface GlobalErrorProps {
   reset: () => void;
 }
 
-export default function GlobalError({ error, reset }: GlobalErrorProps): JSX.Element {
+export default function GlobalError({ error: _error, reset }: GlobalErrorProps): JSX.Element {
   return (
     <html lang="en">
       <body>

@@ -4,8 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { m } from "framer-motion";
-import { Instagram, Twitter, Youtube } from "lucide-react";
+import { Instagram } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
 
 export function Footer(): JSX.Element {
   const [email, setEmail] = React.useState("");
@@ -56,8 +57,8 @@ export function Footer(): JSX.Element {
               {/* Social Icons */}
               <div className="flex items-center space-x-4 pt-2">
                 <SocialIcon href="#" icon={Instagram} label="Instagram" />
-                <SocialIcon href="#" icon={Twitter} label="Twitter" />
-                <SocialIcon href="#" icon={Youtube} label="YouTube" />
+                <SocialIcon href="#" icon={TikTokIcon} label="TikTok" />
+                <SocialIcon href="#" icon={SnapchatIcon} label="Snapchat" />
               </div>
             </m.div>
 
@@ -216,8 +217,8 @@ export function Footer(): JSX.Element {
               </h4>
               <ul className="space-y-3">
                 <FooterNavLink href="#" icon={Instagram}>Instagram</FooterNavLink>
-                <FooterNavLink href="#" icon={Twitter}>Twitter</FooterNavLink>
-                <FooterNavLink href="#" icon={Youtube}>YouTube</FooterNavLink>
+                <FooterNavLink href="#" icon={TikTokIcon}>TikTok</FooterNavLink>
+                <FooterNavLink href="#" icon={SnapchatIcon}>Snapchat</FooterNavLink>
               </ul>
             </m.nav>
           </div>
