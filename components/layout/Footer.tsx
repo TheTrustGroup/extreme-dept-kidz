@@ -56,9 +56,21 @@ export function Footer(): JSX.Element {
               </p>
               {/* Social Icons */}
               <div className="flex items-center space-x-4 pt-2">
-                <SocialIcon href="#" icon={Instagram} label="Instagram" />
-                <SocialIcon href="#" icon={TikTokIcon} label="TikTok" />
-                <SocialIcon href="#" icon={SnapchatIcon} label="Snapchat" />
+                <SocialIcon 
+                  href="https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl" 
+                  icon={Instagram} 
+                  label="Instagram" 
+                />
+                <SocialIcon 
+                  href="https://www.tiktok.com/@extreme_dept_kidz?_r=1&_t=ZM-92wJ2AMJUoS" 
+                  icon={TikTokIcon} 
+                  label="TikTok" 
+                />
+                <SocialIcon 
+                  href="https://snapchat.com/t/dE3hKeZX" 
+                  icon={SnapchatIcon} 
+                  label="Snapchat" 
+                />
               </div>
             </m.div>
 
@@ -216,9 +228,30 @@ export function Footer(): JSX.Element {
                 CONNECT
               </h4>
               <ul className="space-y-3">
-                <FooterNavLink href="#" icon={Instagram}>Instagram</FooterNavLink>
-                <FooterNavLink href="#" icon={TikTokIcon}>TikTok</FooterNavLink>
-                <FooterNavLink href="#" icon={SnapchatIcon}>Snapchat</FooterNavLink>
+                <FooterNavLink 
+                  href="https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl" 
+                  icon={Instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Instagram
+                </FooterNavLink>
+                <FooterNavLink 
+                  href="https://www.tiktok.com/@extreme_dept_kidz?_r=1&_t=ZM-92wJ2AMJUoS" 
+                  icon={TikTokIcon}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  TikTok
+                </FooterNavLink>
+                <FooterNavLink 
+                  href="https://snapchat.com/t/dE3hKeZX" 
+                  icon={SnapchatIcon}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Snapchat
+                </FooterNavLink>
               </ul>
             </m.nav>
           </div>
@@ -301,7 +334,9 @@ function SocialIcon({ href, icon: Icon, label }: SocialIconProps): JSX.Element {
   return (
     <m.a
       href={href}
-      className="w-10 h-10 flex items-center justify-center rounded-full bg-cream-200/10 text-cream-200/80 hover:text-cream-50 transition-colors duration-300"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 flex items-center justify-center rounded-full bg-cream-200/10 text-cream-200/80 hover:text-cream-50 hover:bg-cream-200/20 transition-colors duration-300"
       aria-label={label}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}

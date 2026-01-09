@@ -104,16 +104,18 @@ function generateSizes(availableSizes: string[]): ProductSize[] {
 function generateImages(
   primaryUrl: string,
   secondaryUrl?: string,
-  tertiaryUrl?: string
+  tertiaryUrl?: string,
+  productName?: string
 ): ProductImage[] {
+  const baseAlt = productName || "Product";
   const images: ProductImage[] = [
-    { url: primaryUrl, isPrimary: true, alt: "Product primary image" },
+    { url: primaryUrl, isPrimary: true, alt: `${baseAlt} - primary view` },
   ];
   if (secondaryUrl) {
-    images.push({ url: secondaryUrl, alt: "Product secondary image" });
+    images.push({ url: secondaryUrl, alt: `${baseAlt} - alternate view` });
   }
   if (tertiaryUrl) {
-    images.push({ url: tertiaryUrl, alt: "Product detail image" });
+    images.push({ url: tertiaryUrl, alt: `${baseAlt} - detail view` });
   }
   return images;
 }
@@ -132,7 +134,6 @@ export const mockProducts: Product[] = [
     price: 12900, // $129.00
     images: generateImages(
       "/IMG_4673.png",
-      "/IMG_4673.png",
       "/IMG_4689.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
@@ -144,17 +145,17 @@ export const mockProducts: Product[] = [
   },
   {
     id: "prod-2",
-    name: "Premium Cotton Tee",
+    name: "Premium Cotton Crew Tee",
     description:
-      "The foundation of effortless style. Crafted from ultra-soft organic cotton with a refined relaxed fit. Designed to layer beautifully or stand alone, this essential piece elevates everyday moments. Available in carefully curated colorways.",
+      "The foundation of effortless style. Crafted from ultra-soft organic cotton with a refined relaxed fit and classic crew neck. Designed to layer beautifully or stand alone, this essential piece elevates everyday moments. Available in carefully curated colorways.",
     price: 4500, // $45.00
     images: generateImages(
       "/4672.png",
-      "/4673.png"
+      "/4671.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "premium-cotton-tee",
+    slug: "premium-cotton-crew-tee",
     inStock: true,
     tags: ["bestseller"],
     sku: "PCT-001",
@@ -177,7 +178,7 @@ export const mockProducts: Product[] = [
   },
   {
     id: "prod-4",
-    name: "Urban Hoodie",
+    name: "Street Essential Hoodie",
     description:
       "Effortless comfort meets contemporary style. This premium cotton-blend fleece hoodie offers a relaxed, confident fit with thoughtful details including an adjustable drawstring hood and signature kangaroo pocket. Designed for both comfort and style.",
     price: 8500, // $85.00
@@ -187,14 +188,14 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "urban-hoodie",
+    slug: "street-essential-hoodie",
     inStock: true,
     tags: ["new"],
     sku: "UH-001",
   },
   {
     id: "prod-5",
-    name: "Athletic Joggers",
+    name: "Performance Track Joggers",
     description:
       "Performance-driven design that doesn&apos;t compromise on style. Engineered with advanced moisture-wicking fabric, these joggers feature an elastic waistband and refined tapered silhouette. Built for active moments while maintaining sophisticated appeal.",
     price: 5500, // $55.00
@@ -204,13 +205,13 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "athletic-joggers",
+    slug: "performance-track-joggers",
     inStock: true,
     sku: "AJ-001",
   },
   {
     id: "prod-6",
-    name: "Premium Polo Shirt",
+    name: "Signature Pique Polo",
     description:
       "A modern classic reimagined. Crafted from luxurious pima cotton with a refined collar and three-button placket, this polo embodies timeless elegance. The perfect intersection of casual sophistication and enduring style.",
     price: 5200, // $52.00
@@ -220,14 +221,14 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "premium-polo-shirt",
+    slug: "signature-pique-polo",
     inStock: true,
     tags: ["bestseller"],
     sku: "PPS-001",
   },
   {
     id: "prod-7",
-    name: "Canvas Sneakers",
+    name: "Classic Canvas Sneakers",
     description:
       "Iconic design elevated through premium construction. These classic canvas sneakers combine exceptional comfort with enduring durability, creating a versatile foundation for any ensemble. Timeless style that stands the test of time.",
     price: 6500, // $65.00
@@ -237,14 +238,14 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
-    slug: "canvas-sneakers",
+    slug: "classic-canvas-sneakers",
     inStock: true,
     tags: ["new"],
     sku: "CS-001",
   },
   {
     id: "prod-8",
-    name: "Wool Blend Cardigan",
+    name: "Heritage Wool Cardigan",
     description:
       "Luxurious warmth meets refined versatility. This sumptuous wool-blend cardigan is designed for effortless layering, offering exceptional softness and sophisticated style. A versatile essential that transitions seamlessly from casual to elevated occasions.",
     price: 9500, // $95.00
@@ -254,13 +255,13 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "wool-blend-cardigan",
+    slug: "heritage-wool-cardigan",
     inStock: true,
     sku: "WBC-001",
   },
   {
     id: "prod-9",
-    name: "Cargo Shorts",
+    name: "Essential Cargo Shorts",
     description:
       "Functional design elevated through premium craftsmanship. These durable cotton twill cargo shorts feature thoughtfully placed pockets and an adjustable waistband. Where utility meets sophisticated style, perfect for adventures both big and small.",
     price: 5800, // $58.00
@@ -270,13 +271,13 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "cargo-shorts",
+    slug: "essential-cargo-shorts",
     inStock: true,
     sku: "CSH-001",
   },
   {
     id: "prod-10",
-    name: "Leather Backpack",
+    name: "Premium Leather Backpack",
     description:
       "A sophisticated companion for every adventure. Crafted from premium leather with adjustable straps, this backpack features a thoughtfully designed spacious main compartment and front pocket. Where functionality meets refined style, built to last through countless journeys.",
     price: 12500, // $125.00
@@ -286,7 +287,7 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
-    slug: "leather-backpack",
+    slug: "premium-leather-backpack",
     inStock: true,
     tags: ["new"],
     sku: "LB-001",
@@ -294,9 +295,9 @@ export const mockProducts: Product[] = [
   // Girls Products
   {
     id: "prod-11",
-    name: "Floral Print Dress",
+    name: "Flutter Sleeve Cotton Dress",
     description:
-      "Romantic elegance meets modern sophistication. This premium cotton floral print dress features a flattering A-line silhouette adorned with delicate, thoughtfully placed details. Designed to capture the essence of childhood wonder while maintaining refined style.",
+      "Romantic elegance meets modern sophistication. This premium cotton dress features a flattering A-line silhouette with delicate flutter sleeves and thoughtfully placed details. Designed to capture the essence of childhood wonder while maintaining refined style.",
     price: 7800, // $78.00
     images: generateImages(
       "/4683.png",
@@ -304,31 +305,31 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
-    slug: "floral-print-dress",
+    slug: "flutter-sleeve-cotton-dress",
     inStock: true,
     tags: ["new", "bestseller"],
     sku: "FPD-001",
   },
   {
     id: "prod-12",
-    name: "Cashmere Sweater",
+    name: "Premium Cashmere Sweater",
     description:
       "Indulgent luxury in its purest form. This sumptuous cashmere-blend sweater offers a relaxed, confident fit with exceptional softness and warmth. A timeless investment piece that elevates any ensemble while providing unmatched comfort.",
     price: 14500, // $145.00
     images: generateImages(
-      "/4680.png",
-      "/4681.png"
+      "/4686.png",
+      "/4687.png"
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
-    slug: "cashmere-sweater",
+    slug: "premium-cashmere-sweater",
     inStock: true,
     tags: ["bestseller"],
     sku: "CAS-001",
   },
   {
     id: "prod-13",
-    name: "Denim Skirt",
+    name: "Classic A-Line Denim Skirt",
     description:
       "A modern classic reimagined. This A-line denim skirt is crafted from premium denim fabric, offering a comfortable fit and timeless silhouette. Versatile enough for play, sophisticated enough for special moments.",
     price: 6200, // $62.00
@@ -338,105 +339,105 @@ export const mockProducts: Product[] = [
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
-    slug: "denim-skirt",
+    slug: "classic-a-line-denim-skirt",
     inStock: true,
     sku: "DS-001",
   },
   {
     id: "prod-14",
-    name: "Ribbed Knit Top",
+    name: "Essential Ribbed Knit Top",
     description:
       "Effortless sophistication in every detail. This soft ribbed knit top features a relaxed fit that moves beautifully. Exceptionally versatile and comfortable, designed to layer seamlessly or stand alone as a statement piece.",
     price: 4800, // $48.00
     images: generateImages(
-      "/4683.png",
-      "/4684.png"
+      "/4688.png",
+      "/4689.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
-    slug: "ribbed-knit-top",
+    slug: "essential-ribbed-knit-top",
     inStock: true,
     sku: "RKT-001",
   },
   {
     id: "prod-15",
-    name: "Tulle Party Dress",
+    name: "Elegant Tulle Party Dress",
     description:
       "Where dreams meet design. This elegant tulle party dress features delicate, hand-placed details that capture the magic of special occasions. Meticulously crafted to create unforgettable moments, ensuring every celebration feels extraordinary.",
     price: 18000, // $180.00
     images: generateImages(
-      "/4684.png",
-      "/4685.png"
+      "/4690.png",
+      "/4691.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
-    slug: "tulle-party-dress",
+    slug: "elegant-tulle-party-dress",
     inStock: true,
     tags: ["new"],
     sku: "TPD-001",
   },
   {
     id: "prod-16",
-    name: "Corduroy Jumper",
+    name: "Classic Corduroy Jumper",
     description:
       "Nostalgic charm meets modern design. This classic corduroy jumper features adjustable straps and a comfortable fit that moves with ease. Perfect for everyday adventures, combining timeless appeal with contemporary comfort.",
     price: 7200, // $72.00
     images: generateImages(
-      "/4683.png",
-      "/4684.png"
+      "/4692.png",
+      "/4693.png"
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
-    slug: "corduroy-jumper",
+    slug: "classic-corduroy-jumper",
     inStock: true,
     sku: "CJ-001",
   },
   {
     id: "prod-17",
-    name: "Silk Scarf",
+    name: "Luxury Silk Scarf",
     description:
       "An elegant finishing touch for any ensemble. This luxurious silk scarf features a sophisticated print that adds refined polish to every look. Lightweight, versatile, and beautifully crafted to elevate even the simplest outfit.",
     price: 5500, // $55.00
     images: generateImages(
-      "/Extreme 4.png",
-      "/Extreme 5.png"
+      "/4694.png",
+      "/4695.png"
     ),
     sizes: generateSizes(["6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
-    slug: "silk-scarf",
+    slug: "luxury-silk-scarf",
     inStock: true,
     tags: ["new"],
     sku: "SS-001",
   },
   {
     id: "prod-18",
-    name: "Leather Mary Janes",
+    name: "Classic Leather Mary Janes",
     description:
       "Timeless elegance in every step. These classic leather Mary Janes feature premium construction and exceptional comfort. Designed to transition seamlessly from play to special occasions, combining sophisticated style with lasting quality.",
     price: 8800, // $88.00
     images: generateImages(
-      "/4678.png",
-      "/4679.png"
+      "/4696.png",
+      "/4697.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
-    slug: "leather-mary-janes",
+    slug: "classic-leather-mary-janes",
     inStock: true,
     sku: "LMJ-001",
   },
   {
     id: "prod-19",
-    name: "Velvet Blazer",
+    name: "Refined Velvet Blazer",
     description:
       "Uncompromising sophistication for life&apos;s most memorable moments. This luxurious velvet blazer features a precisely tailored fit and premium details that command attention. A statement piece that transforms any occasion into something extraordinary.",
     price: 16500, // $165.00
     images: generateImages(
-      "/4680.png",
-      "/4681.png"
+      "/4698.png",
+      "/4680.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
-    slug: "velvet-blazer",
+    slug: "refined-velvet-blazer",
     inStock: true,
     tags: ["new"],
     sku: "VB-001",
