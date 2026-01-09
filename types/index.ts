@@ -6,6 +6,7 @@
  */
 
 export * from "./checkout";
+export * from "./styling";
 
 /**
  * Product Image

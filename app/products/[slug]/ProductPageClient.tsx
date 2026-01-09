@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
+import { CompleteTheLook } from "@/components/product/CompleteTheLook";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/types";
@@ -53,6 +54,9 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
               <ProductInfo product={product} />
             </div>
           </div>
+
+          {/* Complete The Look Section */}
+          <CompleteTheLook currentProduct={product} />
         </Container>
       </div>
 

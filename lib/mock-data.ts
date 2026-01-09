@@ -13,6 +13,9 @@ import type {
   ProductSize,
 } from "@/types";
 
+// Re-export styling data
+export { styleLooks, productStylingData } from "./mock-data/styling-data";
+
 /**
  * Mock Categories
  */

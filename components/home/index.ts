@@ -9,4 +9,5 @@ export { FeaturedCollections } from "./FeaturedCollections";
 export { ShopByCategory } from "./ShopByCategory";
 export { EditorialSection } from "./EditorialSection";
 export { GirlsCollectionSection } from "./GirlsCollectionSection";
+export { StyleGuideSection } from "./StyleGuideSection";
 

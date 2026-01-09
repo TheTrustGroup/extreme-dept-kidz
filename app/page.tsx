@@ -28,6 +28,10 @@ const GirlsCollectionSection = dynamic(() => import("@/components/home").then((m
   ssr: false,
 });
 
+const StyleGuideSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.StyleGuideSection })), {
+  ssr: false,
+});
+
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
   description:
@@ -100,6 +104,9 @@ export default function Home() {
 
         {/* Girls Collection Section - Secondary, Smaller */}
         <GirlsCollectionSection />
+
+        {/* Style Guide Section - Featured Complete Looks */}
+        <StyleGuideSection />
       </div>
     </>
   );

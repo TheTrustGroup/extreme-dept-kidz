@@ -9,6 +9,7 @@ import { H1, Body } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { CartItemPage } from "@/components/cart/CartItemPage";
 import { OrderSummary } from "@/components/cart/OrderSummary";
+import { CompleteYourLook } from "@/components/cart/CompleteYourLook";
 import { AnimatePresence } from "framer-motion";
 
 /**
@@ -55,6 +56,9 @@ export function CartPageClient(): JSX.Element {
                 <CartItemPage key={item.id} item={item} />
               ))}
             </AnimatePresence>
+
+            {/* Complete Your Look Recommendations */}
+            <CompleteYourLook />
           </div>
 
           {/* Order Summary Sidebar */}
