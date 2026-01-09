@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { m } from "framer-motion";
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Copy } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, Copy } from "lucide-react";
 import { getProducts } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

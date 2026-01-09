@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getProduct, updateProduct, createProduct } from "@/lib/admin-api";
-import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
