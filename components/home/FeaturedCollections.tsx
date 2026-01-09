@@ -21,21 +21,21 @@ const collections: Collection[] = [
     name: "Boys Collection",
     href: "/collections/boys",
     image:
-      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2070&auto=format&fit=crop",
+      "/Extreme 2.png",
   },
   {
     id: "2",
     name: "New Arrivals",
     href: "/collections/new-arrivals",
     image:
-      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?q=80&w=2070&auto=format&fit=crop",
+      "/Extreme 3.png",
   },
   {
     id: "3",
     name: "Street Essentials",
     href: "/collections/boys?style=street",
     image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1926&auto=format&fit=crop",
+      "/4676.png",
   },
 ];
 

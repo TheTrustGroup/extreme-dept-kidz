@@ -25,7 +25,7 @@ export const mockCategories: Category[] = [
     name: "Boys",
     slug: "boys",
     description: "Premium fashion for boys",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2086&auto=format&fit=crop",
+    image: "/Extreme 2.png",
     isActive: true,
   },
   {
@@ -33,7 +33,7 @@ export const mockCategories: Category[] = [
     name: "Girls",
     slug: "girls",
     description: "Luxury fashion for girls",
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1926&auto=format&fit=crop",
+    image: "/Extreme 3.png",
     isActive: true,
   },
   {
@@ -41,7 +41,7 @@ export const mockCategories: Category[] = [
     name: "Accessories",
     slug: "accessories",
     description: "Premium accessories and essentials",
-    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+    image: "/Extreme 4.png",
     isActive: true,
   },
   {
@@ -49,7 +49,7 @@ export const mockCategories: Category[] = [
     name: "New Arrivals",
     slug: "new-arrivals",
     description: "Latest additions to our collection",
-    image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop",
+    image: "/Extreme 3.png",
     isActive: true,
   },
 ];
@@ -64,7 +64,7 @@ export const mockCollections: Collection[] = [
     slug: "new-arrivals",
     description: "Discover our latest premium pieces",
     image:
-      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop",
+      "/Extreme 3.png",
     isActive: true,
   },
   {
@@ -73,7 +73,7 @@ export const mockCollections: Collection[] = [
     slug: "street-essentials",
     description: "Urban-inspired streetwear for modern kids",
     image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1926&auto=format&fit=crop",
+      "/4677.png",
     isActive: true,
   },
   {
@@ -82,7 +82,7 @@ export const mockCollections: Collection[] = [
     slug: "premium-basics",
     description: "Timeless essentials crafted with premium materials",
     image:
-      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=2070&auto=format&fit=crop",
+      "/4679.png",
     isActive: true,
   },
 ];
@@ -131,9 +131,9 @@ export const mockProducts: Product[] = [
       "A timeless statement piece crafted from premium Japanese selvedge denim. Meticulously constructed with vintage-inspired hardware and a thoughtfully designed relaxed fit. Built to become a cherished wardrobe essential that ages beautifully with every adventure.",
     price: 12900, // $129.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=2070&auto=format&fit=crop"
+      "/IMG_4673.png",
+      "/IMG_4673.png",
+      "/IMG_4689.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -149,8 +149,8 @@ export const mockProducts: Product[] = [
       "The foundation of effortless style. Crafted from ultra-soft organic cotton with a refined relaxed fit. Designed to layer beautifully or stand alone, this essential piece elevates everyday moments. Available in carefully curated colorways.",
     price: 4500, // $45.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2080&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2080&auto=format&fit=crop"
+      "/4672.png",
+      "/4673.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -166,8 +166,8 @@ export const mockProducts: Product[] = [
       "Sophisticated tailoring meets everyday versatility. These premium cotton twill chinos feature a refined modern silhouette with an adjustable waistband, ensuring impeccable fit and lasting comfort. The perfect balance of polish and play.",
     price: 6800, // $68.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=2087&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=2087&auto=format&fit=crop"
+      "/4674.png",
+      "/4675.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -182,8 +182,8 @@ export const mockProducts: Product[] = [
       "Effortless comfort meets contemporary style. This premium cotton-blend fleece hoodie offers a relaxed, confident fit with thoughtful details including an adjustable drawstring hood and signature kangaroo pocket. Designed for both comfort and style.",
     price: 8500, // $85.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=2087&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=2087&auto=format&fit=crop"
+      "/4675.png",
+      "/4676.png"
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -199,8 +199,8 @@ export const mockProducts: Product[] = [
       "Performance-driven design that doesn&apos;t compromise on style. Engineered with advanced moisture-wicking fabric, these joggers feature an elastic waistband and refined tapered silhouette. Built for active moments while maintaining sophisticated appeal.",
     price: 5500, // $55.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=2070&auto=format&fit=crop"
+      "/4676.png",
+      "/4677.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -215,8 +215,8 @@ export const mockProducts: Product[] = [
       "A modern classic reimagined. Crafted from luxurious pima cotton with a refined collar and three-button placket, this polo embodies timeless elegance. The perfect intersection of casual sophistication and enduring style.",
     price: 5200, // $52.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=2087&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=2087&auto=format&fit=crop"
+      "/4677.png",
+      "/4678.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -232,8 +232,8 @@ export const mockProducts: Product[] = [
       "Iconic design elevated through premium construction. These classic canvas sneakers combine exceptional comfort with enduring durability, creating a versatile foundation for any ensemble. Timeless style that stands the test of time.",
     price: 6500, // $65.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop"
+      "/4678.png",
+      "/4679.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
@@ -249,8 +249,8 @@ export const mockProducts: Product[] = [
       "Luxurious warmth meets refined versatility. This sumptuous wool-blend cardigan is designed for effortless layering, offering exceptional softness and sophisticated style. A versatile essential that transitions seamlessly from casual to elevated occasions.",
     price: 9500, // $95.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop"
+      "/4680.png",
+      "/4681.png"
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -265,8 +265,8 @@ export const mockProducts: Product[] = [
       "Functional design elevated through premium craftsmanship. These durable cotton twill cargo shorts feature thoughtfully placed pockets and an adjustable waistband. Where utility meets sophisticated style, perfect for adventures both big and small.",
     price: 5800, // $58.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=2070&auto=format&fit=crop"
+      "/4681.png",
+      "/4682.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
@@ -281,8 +281,8 @@ export const mockProducts: Product[] = [
       "A sophisticated companion for every adventure. Crafted from premium leather with adjustable straps, this backpack features a thoughtfully designed spacious main compartment and front pocket. Where functionality meets refined style, built to last through countless journeys.",
     price: 12500, // $125.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=2070&auto=format&fit=crop"
+      "/4682.png",
+      "/4683.png"
     ),
     sizes: generateSizes(["6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
@@ -299,8 +299,8 @@ export const mockProducts: Product[] = [
       "Romantic elegance meets modern sophistication. This premium cotton floral print dress features a flattering A-line silhouette adorned with delicate, thoughtfully placed details. Designed to capture the essence of childhood wonder while maintaining refined style.",
     price: 7800, // $78.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=2070&auto=format&fit=crop"
+      "/4683.png",
+      "/4684.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
@@ -316,8 +316,8 @@ export const mockProducts: Product[] = [
       "Indulgent luxury in its purest form. This sumptuous cashmere-blend sweater offers a relaxed, confident fit with exceptional softness and warmth. A timeless investment piece that elevates any ensemble while providing unmatched comfort.",
     price: 14500, // $145.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop"
+      "/4680.png",
+      "/4681.png"
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
@@ -333,8 +333,8 @@ export const mockProducts: Product[] = [
       "A modern classic reimagined. This A-line denim skirt is crafted from premium denim fabric, offering a comfortable fit and timeless silhouette. Versatile enough for play, sophisticated enough for special moments.",
     price: 6200, // $62.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?q=80&w=2070&auto=format&fit=crop"
+      "/4684.png",
+      "/4685.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
@@ -349,8 +349,8 @@ export const mockProducts: Product[] = [
       "Effortless sophistication in every detail. This soft ribbed knit top features a relaxed fit that moves beautifully. Exceptionally versatile and comfortable, designed to layer seamlessly or stand alone as a statement piece.",
     price: 4800, // $48.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=2070&auto=format&fit=crop"
+      "/4683.png",
+      "/4684.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
@@ -365,8 +365,8 @@ export const mockProducts: Product[] = [
       "Where dreams meet design. This elegant tulle party dress features delicate, hand-placed details that capture the magic of special occasions. Meticulously crafted to create unforgettable moments, ensuring every celebration feels extraordinary.",
     price: 18000, // $180.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?q=80&w=2070&auto=format&fit=crop"
+      "/4684.png",
+      "/4685.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
@@ -382,8 +382,8 @@ export const mockProducts: Product[] = [
       "Nostalgic charm meets modern design. This classic corduroy jumper features adjustable straps and a comfortable fit that moves with ease. Perfect for everyday adventures, combining timeless appeal with contemporary comfort.",
     price: 7200, // $72.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=2070&auto=format&fit=crop"
+      "/4683.png",
+      "/4684.png"
     ),
     sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
@@ -398,8 +398,8 @@ export const mockProducts: Product[] = [
       "An elegant finishing touch for any ensemble. This luxurious silk scarf features a sophisticated print that adds refined polish to every look. Lightweight, versatile, and beautifully crafted to elevate even the simplest outfit.",
     price: 5500, // $55.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
+      "/Extreme 4.png",
+      "/Extreme 5.png"
     ),
     sizes: generateSizes(["6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
@@ -415,8 +415,8 @@ export const mockProducts: Product[] = [
       "Timeless elegance in every step. These classic leather Mary Janes feature premium construction and exceptional comfort. Designed to transition seamlessly from play to special occasions, combining sophisticated style with lasting quality.",
     price: 8800, // $88.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop"
+      "/4678.png",
+      "/4679.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
@@ -431,8 +431,8 @@ export const mockProducts: Product[] = [
       "Uncompromising sophistication for life&apos;s most memorable moments. This luxurious velvet blazer features a precisely tailored fit and premium details that command attention. A statement piece that transforms any occasion into something extraordinary.",
     price: 16500, // $165.00
     images: generateImages(
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop"
+      "/4680.png",
+      "/4681.png"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[1], // Girls
@@ -449,8 +449,8 @@ export const mockProducts: Product[] = [
     price: 3500, // $35.00
     originalPrice: 4500, // $45.00 (on sale)
     images: generateImages(
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop"
+      "/Extreme 4.png",
+      "/Extreme 5.png"
     ),
     sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories

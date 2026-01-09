@@ -15,27 +15,27 @@ const boysCategories = [
   {
     title: "New",
     href: "/collections/boys?filter=new",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=800&auto=format&fit=crop",
+    image: "/Extreme 2.png",
   },
   {
     title: "Tops",
     href: "/collections/boys?category=tops",
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop",
+    image: "/4672.png",
   },
   {
     title: "Bottoms",
     href: "/collections/boys?category=bottoms",
-    image: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=800&auto=format&fit=crop",
+    image: "/4674.png",
   },
   {
     title: "Outerwear",
     href: "/collections/boys?category=outerwear",
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=800&auto=format&fit=crop",
+    image: "/IMG_4673.png",
   },
   {
     title: "Accessories",
     href: "/collections/boys?category=accessories",
-    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop",
+    image: "/Extreme 4.png",
   },
 ];
 
