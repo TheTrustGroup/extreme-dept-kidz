@@ -205,15 +205,15 @@ export default function ProductsPage(): JSX.Element {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon" asChild>
+                          <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/products/${product.id}`}>
                               <Edit className="w-4 h-4" />
                             </Link>
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="sm">
                             <Copy className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700">
+                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
