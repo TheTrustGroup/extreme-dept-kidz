@@ -25,6 +25,7 @@ import {
   sortProducts,
   getProductsByCollection,
 } from "@/lib/utils/filter-products";
+import { modelImages } from "@/lib/data/image-manifest";
 
 interface CollectionPageClientProps {
   params: {

@@ -10,4 +10,6 @@ export { ShopByCategory } from "./ShopByCategory";
 export { EditorialSection } from "./EditorialSection";
 export { GirlsCollectionSection } from "./GirlsCollectionSection";
 export { StyleGuideSection } from "./StyleGuideSection";
+export { LifestyleSection } from "./LifestyleSection";
+export { ImageShowcase } from "./ImageShowcase";
 

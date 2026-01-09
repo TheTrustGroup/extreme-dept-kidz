@@ -59,7 +59,6 @@ export const responsiveSizes = {
   productDetail: '(max-width: 768px) 100vw, 60vw',
   lifestyle: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px',
   editorial: '(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px',
-  collection: '(max-width: 768px) 100vw, 100vw',
 };
 
 /**
