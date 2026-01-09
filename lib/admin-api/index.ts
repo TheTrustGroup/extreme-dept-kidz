@@ -131,7 +131,7 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
   return product as Product;
 }
 
-export async function deleteProduct(id: string): Promise<void> {
+export async function deleteProduct(_id: string): Promise<void> {
   await delay(300);
   // In production, this would delete from database
 }

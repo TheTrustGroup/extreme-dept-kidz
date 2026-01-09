@@ -3,7 +3,8 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
-import { Menu, Search, Bell, ChevronDown } from "lucide-react";
+import { Search, Bell, ChevronDown } from "lucide-react";
+import { Menu } from "lucide-react"; // Used in mobile menu button
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { cn } from "@/lib/utils";
 
