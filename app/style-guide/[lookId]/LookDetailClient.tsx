@@ -10,7 +10,7 @@ import { calculateBundleDiscount, getProductById } from "@/lib/utils/styling-uti
 import { useStylingStore } from "@/lib/stores/styling-store";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { Button } from "@/components/ui/button";
-import { H1, H2, Body } from "@/components/ui/typography";
+import { H1, H2 } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { formatPrice } from "@/lib/utils";
@@ -123,9 +123,9 @@ export function LookDetailClient({ look }: LookDetailClientProps): JSX.Element {
                 <H1 className="text-charcoal-900 text-3xl md:text-4xl font-serif font-bold mb-4">
                   {look.name}
                 </H1>
-                <Body className="text-charcoal-600 text-base md:text-lg mb-6">
+                <p className="text-charcoal-600 text-base md:text-lg mb-6">
                   {look.description}
-                </Body>
+                </p>
               </div>
 
               {/* Look Details */}
@@ -268,12 +268,12 @@ export function LookDetailClient({ look }: LookDetailClientProps): JSX.Element {
             <H2 className="text-charcoal-900 text-xl md:text-2xl font-serif font-bold mb-4">
               STYLING NOTES
             </H2>
-            <Body className="text-charcoal-600 text-base leading-relaxed">
+            <p className="text-charcoal-600 text-base leading-relaxed">
               This versatile look transitions seamlessly from playground to pizza night. 
               Layer the outerwear over the base layer for cooler weather, or wear pieces 
               individually when it&apos;s warm. Each piece is designed to work together 
               while maintaining its own style identity.
-            </Body>
+            </p>
           </div>
         </Container>
       </div>
