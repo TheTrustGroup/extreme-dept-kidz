@@ -7,7 +7,7 @@ import { m } from "framer-motion";
 import { styleLooks } from "@/lib/mock-data/styling-data";
 import { calculateBundleDiscount, getProductById } from "@/lib/utils/styling-utils";
 import { Button } from "@/components/ui/button";
-import { H1, H2 } from "@/components/ui/typography";
+import { H1 } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 import { formatPrice } from "@/lib/utils";
 

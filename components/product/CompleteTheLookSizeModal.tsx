@@ -7,7 +7,7 @@ import { X, Lightbulb } from "lucide-react";
 import type { StyleLook } from "@/types/styling";
 import { getProductById, recommendSizesForLook } from "@/lib/utils/styling-utils";
 import { Button } from "@/components/ui/button";
-import { H3, Body } from "@/components/ui/typography";
+import { H3 } from "@/components/ui/typography";
 import { cn, formatPrice } from "@/lib/utils";
 
 interface CompleteTheLookSizeModalProps {
