@@ -1,16 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2, Body, Caption } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
-import { modelImages } from "@/lib/data/image-manifest";
-import { getImageBlurDataURL } from "@/lib/utils/image-utils";
 
-export function EditorialSection() {
+export function EditorialSection(): JSX.Element {
   return (
     <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
       <Container size="lg">
@@ -23,19 +20,8 @@ export function EditorialSection() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
-            <div className="relative w-full h-full">
-              <Image
-                src={modelImages.lifestyle2.src}
-                alt={modelImages.lifestyle2.alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 60vw"
-                loading="lazy"
-                quality={85}
-                priority={false}
-                placeholder="blur"
-                blurDataURL={getImageBlurDataURL(800, 1000)}
-              />
+            <div className="relative w-full h-full bg-cream-200">
+              {/* Image will be added later */}
             </div>
           </m.div>
 

@@ -20,26 +20,23 @@ const collections: Collection[] = [
     id: "1",
     name: "Boys Collection",
     href: "/collections/boys",
-    image:
-      "/Extreme 2.png",
+    image: "", // Image will be added later
   },
   {
     id: "2",
     name: "New Arrivals",
     href: "/collections/new-arrivals",
-    image:
-      "/Extreme 3.png",
+    image: "", // Image will be added later
   },
   {
     id: "3",
     name: "Street Essentials",
     href: "/collections/boys?style=street",
-    image:
-      "/4676.png",
+    image: "", // Image will be added later
   },
 ];
 
-export function FeaturedCollections() {
+export function FeaturedCollections(): JSX.Element {
   return (
     <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
       <Container size="lg">
@@ -71,7 +68,7 @@ interface CollectionCardProps {
   index: number;
 }
 
-function CollectionCard({ collection, index }: CollectionCardProps) {
+function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element {
   return (
     <m.div
       initial={{ opacity: 0, y: 30 }}
@@ -96,15 +93,19 @@ function CollectionCard({ collection, index }: CollectionCardProps) {
         >
           {/* Image */}
           <div className="relative w-full h-full">
-            <Image
-              src={collection.image}
-              loading="lazy"
-              quality={85}
-              alt={collection.name}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 30vw"
-            />
+            {collection.image ? (
+              <Image
+                src={collection.image}
+                loading="lazy"
+                quality={85}
+                alt={collection.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 30vw"
+              />
+            ) : (
+              <div className="w-full h-full bg-cream-200" />
+            )}
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/20 to-transparent" />
           </div>

@@ -1,11 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { modelImages } from '@/lib/data/image-manifest';
-import { responsiveSizes, getImageBlurDataURL } from '@/lib/utils/image-utils';
 
 export function LifestyleSection(): JSX.Element {
   const [ref, inView] = useInView({
@@ -17,23 +14,14 @@ export function LifestyleSection(): JSX.Element {
     <section ref={ref} className="py-20 lg:py-32 bg-cream-50">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Image Side */}
+          {/* Image Side - Placeholder for future content */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8 }}
-            className="relative aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-lg"
+            className="relative aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-lg bg-cream-200"
           >
-            <Image
-              src={modelImages.boyStreet1.src}
-              alt={modelImages.boyStreet1.alt}
-              fill
-              sizes={responsiveSizes.lifestyle}
-              className="object-cover"
-              quality={85}
-              placeholder="blur"
-              blurDataURL={getImageBlurDataURL(800, 1000)}
-            />
+            {/* Image will be added later */}
           </motion.div>
 
           {/* Content Side */}

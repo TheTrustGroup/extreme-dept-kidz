@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { H2 } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 import { formatPrice } from "@/lib/utils";
-import { modelImages } from "@/lib/data/image-manifest";
 import { getImageBlurDataURL } from "@/lib/utils/image-utils";
 
 /**
@@ -73,11 +72,7 @@ export function StyleGuideSection(): JSX.Element {
                       {/* Look Image */}
                       <div className="relative aspect-[3/4] overflow-hidden">
                         <Image
-                          src={look.id === 'look-1' ? modelImages.urbanExplorer.src :
-                               look.id === 'look-2' ? modelImages.playgroundReady.src :
-                               look.id === 'look-3' ? modelImages.weekendCasual.src :
-                               look.id === 'look-4' ? modelImages.miniGentleman.src :
-                               modelImages.lifestyle1.src}
+                          src={look.mainImage}
                           alt={look.name}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"

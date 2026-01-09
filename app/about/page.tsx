@@ -4,8 +4,6 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { H1, H2, H3, Body } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
-import { modelImages } from "@/lib/data/image-manifest";
-import { getImageBlurDataURL } from "@/lib/utils/image-utils";
 
 export const metadata: Metadata = {
   title: "About Us | Extreme Dept Kidz",
@@ -48,19 +46,8 @@ export default function AboutPage(): JSX.Element {
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Hero Section */}
-      <section className="relative min-h-[60vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[60vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden bg-charcoal-900">
         <div className="absolute inset-0 z-0">
-          <Image
-            src={modelImages.editorial1.src}
-            alt={modelImages.editorial1.alt}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-            quality={90}
-            placeholder="blur"
-            blurDataURL={getImageBlurDataURL(1920, 1080)}
-          />
           <div className="absolute inset-0 bg-gradient-to-b from-charcoal-900/60 via-charcoal-900/50 to-charcoal-900/70" />
         </div>
 
@@ -81,18 +68,9 @@ export default function AboutPage(): JSX.Element {
       <section className="py-16 md:py-24 lg:py-32">
         <Container size="lg">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Image */}
-            <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-cream-100">
-              <Image
-                src={modelImages.editorial2.src}
-                alt={modelImages.editorial2.alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                quality={85}
-                placeholder="blur"
-                blurDataURL={getImageBlurDataURL(800, 1000)}
-              />
+            {/* Image - Placeholder for future content */}
+            <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-cream-200">
+              {/* Image will be added later */}
             </div>
 
             {/* Story Content */}

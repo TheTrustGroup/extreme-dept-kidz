@@ -25,8 +25,6 @@ import {
   sortProducts,
   getProductsByCollection,
 } from "@/lib/utils/filter-products";
-import { modelImages } from "@/lib/data/image-manifest";
-import { getImageBlurDataURL } from "@/lib/utils/image-utils";
 
 interface CollectionPageClientProps {
   params: {
@@ -197,11 +195,10 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
   };
 
   // Get collection hero image based on slug
+  // Collection hero image - placeholder for future content
   const collectionHeroImage = React.useMemo((): string => {
-    if (params.slug === "boys") return modelImages.boysCollectionHero.src;
-    if (params.slug === "girls") return modelImages.editorial1.src;
-    if (params.slug === "new-arrivals") return modelImages.newArrivalsHero.src;
-    return modelImages.heroMain3.src;
+    // Images will be added later
+    return "";
   }, [params.slug]);
 
   const activeFiltersCount = 
@@ -236,18 +233,7 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Collection Hero Header */}
-      <section className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden">
-        <Image
-          src={collectionHeroImage}
-          alt={collection.name}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-          quality={90}
-          placeholder="blur"
-          blurDataURL={getImageBlurDataURL(1920, 800)}
-        />
+      <section className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden bg-charcoal-900">
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
         <div className="relative h-full flex items-center justify-center text-center px-4">
           <m.div

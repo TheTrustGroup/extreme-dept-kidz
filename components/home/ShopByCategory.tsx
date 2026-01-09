@@ -20,33 +20,29 @@ const categories: Category[] = [
     id: "boys",
     name: "Boys",
     href: "/collections/boys",
-    image:
-      "/Extreme 2.png",
+    image: "", // Image will be added later
   },
   {
     id: "new-arrivals",
     name: "New Arrivals",
     href: "/collections/new-arrivals",
-    image:
-      "/Extreme 3.png",
+    image: "", // Image will be added later
   },
   {
     id: "outerwear",
     name: "Outerwear",
     href: "/collections/boys?category=outerwear",
-    image:
-      "/IMG_4673.png",
+    image: "", // Image will be added later
   },
   {
     id: "accessories",
     name: "Accessories",
     href: "/collections/boys?category=accessories",
-    image:
-      "/Extreme 4.png",
+    image: "", // Image will be added later
   },
 ];
 
-export function ShopByCategory() {
+export function ShopByCategory(): JSX.Element {
   return (
     <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
       <Container size="lg">
@@ -78,7 +74,7 @@ interface CategoryCardProps {
   index: number;
 }
 
-function CategoryCard({ category, index }: CategoryCardProps) {
+function CategoryCard({ category, index }: CategoryCardProps): JSX.Element {
   return (
     <m.div
       initial={{ opacity: 0, y: 20 }}
@@ -103,15 +99,19 @@ function CategoryCard({ category, index }: CategoryCardProps) {
         >
           {/* Image */}
           <div className="relative w-full h-full">
-            <Image
-              src={category.image}
-              loading="lazy"
-              quality={85}
-              alt={category.name}
-              fill
-              className="object-cover transition-all duration-500 group-hover:brightness-110 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
-            />
+            {category.image ? (
+              <Image
+                src={category.image}
+                loading="lazy"
+                quality={85}
+                alt={category.name}
+                fill
+                className="object-cover transition-all duration-500 group-hover:brightness-110 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
+              />
+            ) : (
+              <div className="w-full h-full bg-cream-200" />
+            )}
             {/* Overlay - darkens on hover */}
             <div className="absolute inset-0 bg-charcoal-900/20 group-hover:bg-charcoal-900/30 transition-colors duration-500" />
           </div>

@@ -33,7 +33,7 @@ const styleCategories: StyleCategory[] = [
     id: "outerwear",
     name: "Outerwear",
     href: "/collections/boys?category=outerwear",
-    image: "/Extreme 5.png", // Outerwear collection image
+    image: "", // Image will be added later
   },
   {
     id: "activewear",
@@ -110,15 +110,19 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
         >
           {/* Image */}
           <div className="relative w-full h-full">
-            <Image
-              src={category.image}
-              loading="lazy"
-              quality={90}
-              alt={category.name}
-              fill
-              className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+            {category.image ? (
+              <Image
+                src={category.image}
+                loading="lazy"
+                quality={90}
+                alt={category.name}
+                fill
+                className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            ) : (
+              <div className="w-full h-full bg-cream-200" />
+            )}
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/80 via-charcoal-900/40 to-transparent" />
             {/* Hover Overlay */}
