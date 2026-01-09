@@ -8,17 +8,21 @@ import { H2, Body } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
+import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/types";
 
 interface GirlsCollectionSectionProps {
   products?: Product[];
 }
 
-export function GirlsCollectionSection({ products = [] }: GirlsCollectionSectionProps): JSX.Element {
-  // Mock products for now - will be replaced with real data
-  const girlsProducts = products.length > 0
-    ? products.filter(p => p.category.name.toLowerCase().includes("girl")).slice(0, 4)
-    : [];
+export function GirlsCollectionSection({ products }: GirlsCollectionSectionProps): JSX.Element {
+  // Use provided products or fallback to mock data filtered by girls category
+  const girlsProducts = React.useMemo(() => {
+    const sourceProducts = products || mockProducts;
+    return sourceProducts
+      .filter((p) => p.category.slug === "girls")
+      .slice(0, 4);
+  }, [products]);
 
   return (
     <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 bg-cream-50">

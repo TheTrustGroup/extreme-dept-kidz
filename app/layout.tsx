@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Playfair_Display, Inter } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
 import { Providers } from "@/components/providers";
 import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { WebVitals } from "./web-vitals";
+import { PageLoader } from "@/components/ui/PageLoader";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -104,16 +106,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
       <head>
-        {/* Font preconnect for faster font loading */}
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        {/* Font preconnect for faster font loading - Next.js handles this automatically */}
         {/* Image CDN preconnect */}
         <link
           rel="preconnect"
@@ -137,11 +130,17 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <SkipLinks />
         <Providers>
-          <Header cartItemCount={0} />
+          <Suspense fallback={<PageLoader />}>
+            <Header cartItemCount={0} />
+          </Suspense>
           <main id="main-content" className="flex-1 pt-[calc(2rem+4.5rem)] md:pt-[calc(2rem+5.5rem)]" role="main">
-            {children}
+            <Suspense fallback={<PageLoader />}>
+              {children}
+            </Suspense>
           </main>
-          <Footer />
+          <Suspense fallback={null}>
+            <Footer />
+          </Suspense>
           <CartDrawerWrapper />
           <WebVitals />
         </Providers>

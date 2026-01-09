@@ -14,37 +14,52 @@ interface CollectionPageProps {
 export async function generateMetadata({
   params,
 }: CollectionPageProps): Promise<Metadata> {
+  // Check if it's a real collection or a category-based collection
   const collection = mockCollections.find((c) => c.slug === params.slug);
+  const categoryMap: Record<string, { name: string; description: string }> = {
+    "boys": {
+      name: "Boys Collection",
+      description: "Premium streetwear and luxury essentials for the modern boy.",
+    },
+    "girls": {
+      name: "Girls Collection",
+      description: "Select premium styles for girls.",
+    },
+  };
 
-  if (!collection) {
+  const categoryInfo = categoryMap[params.slug];
+  const collectionName = collection?.name || categoryInfo?.name;
+  const collectionDescription = collection?.description || categoryInfo?.description;
+
+  if (!collection && !categoryInfo) {
     return {
       title: "Collection Not Found | Extreme Dept Kidz",
     };
   }
 
   return {
-    title: `${collection.name} | Extreme Dept Kidz`,
-    description: collection.description || `Shop ${collection.name} at Extreme Dept Kidz. Premium kids fashion collections.`,
+    title: `${collectionName} | Extreme Dept Kidz`,
+    description: collectionDescription || `Shop ${collectionName} at Extreme Dept Kidz. Premium kids fashion collections.`,
     keywords: [
-      collection.name,
+      collectionName,
       "luxury kids fashion",
       "premium children's clothing",
       "kids fashion collection",
     ],
     alternates: {
-      canonical: `https://extremedeptkidz.com/collections/${collection.slug}`,
+      canonical: `https://extremedeptkidz.com/collections/${params.slug}`,
     },
     openGraph: {
-      title: `${collection.name} | Extreme Dept Kidz`,
-      description: collection.description || `Shop ${collection.name} at Extreme Dept Kidz.`,
-      url: `https://extremedeptkidz.com/collections/${collection.slug}`,
-      images: collection.image
+      title: `${collectionName} | Extreme Dept Kidz`,
+      description: collectionDescription || `Shop ${collectionName} at Extreme Dept Kidz.`,
+      url: `https://extremedeptkidz.com/collections/${params.slug}`,
+      images: collection?.image
         ? [
             {
               url: collection.image,
               width: 1200,
               height: 630,
-              alt: collection.name,
+              alt: collectionName,
             },
           ]
         : [
@@ -52,7 +67,7 @@ export async function generateMetadata({
               url: "https://extremedeptkidz.com/og-image.jpg",
               width: 1200,
               height: 630,
-              alt: collection.name,
+              alt: collectionName,
             },
           ],
     },

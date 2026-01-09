@@ -19,8 +19,9 @@ interface ProductCardProps {
  * 
  * Luxury product card with hover effects and quick view.
  * Displays product image, name, and price with smooth transitions.
+ * Optimized with React.memo for performance.
  */
-export function ProductCard({ product, className }: ProductCardProps): JSX.Element {
+export const ProductCard = React.memo(function ProductCard({ product, className }: ProductCardProps): JSX.Element {
   const [isHovered, setIsHovered] = React.useState(false);
   const [isWishlisted, setIsWishlisted] = React.useState(false);
   const addToCart = useCartStore((state) => state.addItem);
@@ -197,5 +198,11 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
       </m.article>
     </Link>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison for memoization
+  return prevProps.product.id === nextProps.product.id &&
+         prevProps.product.price === nextProps.product.price &&
+         prevProps.product.inStock === nextProps.product.inStock &&
+         prevProps.className === nextProps.className;
+});
 

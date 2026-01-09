@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { m } from "framer-motion";
 import { Grid3x3 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { H1, Body } from "@/components/ui/typography";
+import { Button } from "@/components/ui/button";
 import {
   FilterSidebar,
   type FilterState,
@@ -40,8 +42,38 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  // Get collection
-  const collection = mockCollections.find((c) => c.slug === params.slug);
+  // Get collection or create virtual collection for category-based routes
+  const collection = React.useMemo(() => {
+    // First check if it's a real collection
+    const foundCollection = mockCollections.find((c) => c.slug === params.slug);
+    if (foundCollection) return foundCollection;
+
+    // Handle category-based collections (boys, girls)
+    const categoryMap: Record<string, { name: string; description: string }> = {
+      "boys": {
+        name: "Boys Collection",
+        description: "Premium streetwear and luxury essentials for the modern boy. Elevated style for young legends.",
+      },
+      "girls": {
+        name: "Girls Collection",
+        description: "Select premium styles for girls. Thoughtfully curated pieces designed for the modern young lady.",
+      },
+    };
+
+    const categoryInfo = categoryMap[params.slug];
+    if (categoryInfo) {
+      return {
+        id: `coll-${params.slug}`,
+        name: categoryInfo.name,
+        slug: params.slug,
+        description: categoryInfo.description,
+        image: "",
+        isActive: true,
+      };
+    }
+
+    return null;
+  }, [params.slug]);
 
   // Initialize filters from URL params
   const getFiltersFromParams = (): FilterState => {
@@ -98,7 +130,7 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
   const collectionProducts = React.useMemo(() => {
     if (!collection) return [];
     return getProductsByCollection(mockProducts, collection.slug);
-  }, [collection]);
+  }, [collection, params.slug]);
 
   const filteredProducts = React.useMemo(() => {
     return filterProducts(collectionProducts, filters);
@@ -166,10 +198,18 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
       <div className="min-h-screen bg-cream-50 pt-20 md:pt-24 pb-16">
         <Container size="lg">
           <div className="text-center py-16">
-            <H1 className="text-charcoal-900 mb-4">Collection Not Available</H1>
-            <Body className="text-charcoal-600">
+            <H1 className="text-charcoal-900 mb-4">Collection Not Found</H1>
+            <Body className="text-charcoal-600 mb-8">
               This collection may have been moved or is currently unavailable. Discover our other curated selections.
             </Body>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="primary" size="lg" asChild>
+                <Link href="/collections">View All Collections</Link>
+              </Button>
+              <Button variant="ghost" size="lg" asChild>
+                <Link href="/">Go Home</Link>
+              </Button>
+            </div>
           </div>
         </Container>
       </div>

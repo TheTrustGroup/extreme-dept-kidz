@@ -2,20 +2,31 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { generateWebsiteSchema, generateOrganizationSchema } from "@/lib/seo/structured-data";
 
-// Dynamically import home sections for code splitting
+// Dynamically import home sections for code splitting and performance
 const HeroSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.HeroSection })), {
   loading: () => <div className="min-h-screen bg-cream-50" />,
+  ssr: true, // Hero is above fold, load immediately
 });
 
-const NewArrivalsSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })));
+const NewArrivalsSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })), {
+  ssr: false, // Below fold, can lazy load
+});
 
-const ShopByStyleSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })));
+const ShopByStyleSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
+  ssr: false,
+});
 
-const FeaturedCollections = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })));
+const FeaturedCollections = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })), {
+  ssr: false,
+});
 
-const EditorialSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.EditorialSection })));
+const EditorialSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.EditorialSection })), {
+  ssr: false,
+});
 
-const GirlsCollectionSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })));
+const GirlsCollectionSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })), {
+  ssr: false,
+});
 
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",

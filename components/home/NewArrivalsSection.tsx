@@ -8,17 +8,21 @@ import { H2 } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
+import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/types";
 
 interface NewArrivalsSectionProps {
   products?: Product[];
 }
 
-export function NewArrivalsSection({ products = [] }: NewArrivalsSectionProps): JSX.Element {
-  // Mock products for now - will be replaced with real data
-  const newArrivals = products.length > 0 
-    ? products.slice(0, 8)
-    : [];
+export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.Element {
+  // Use provided products or fallback to mock data with "new" tag
+  const newArrivals = React.useMemo(() => {
+    const sourceProducts = products || mockProducts;
+    return sourceProducts
+      .filter((product) => product.tags?.includes("new"))
+      .slice(0, 8);
+  }, [products]);
 
   return (
     <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
