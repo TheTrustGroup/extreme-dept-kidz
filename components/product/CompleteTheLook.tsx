@@ -113,9 +113,9 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
                   COMPLETE THE LOOK
                 </H2>
               </div>
-              <Body className="text-charcoal-600 text-sm md:text-base">
+              <p className="text-charcoal-600 text-sm md:text-base">
                 Style it effortlessly. Curated by our team.
-              </Body>
+              </p>
             </m.div>
 
             {/* Look Preview */}
