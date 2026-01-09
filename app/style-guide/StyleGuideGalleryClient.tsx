@@ -53,25 +53,25 @@ export function StyleGuideGalleryClient(): JSX.Element {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "price-low": {
-          const aPricing = calculateBundleDiscount(
-            a.products.map(p => getProductById(p.productId)).filter(Boolean) as any[],
-            a
-          );
-          const bPricing = calculateBundleDiscount(
-            b.products.map(p => getProductById(p.productId)).filter(Boolean) as any[],
-            b
-          );
+          const aProducts = a.products
+            .map(p => getProductById(p.productId))
+            .filter((p): p is NonNullable<ReturnType<typeof getProductById>> => p !== undefined);
+          const bProducts = b.products
+            .map(p => getProductById(p.productId))
+            .filter((p): p is NonNullable<ReturnType<typeof getProductById>> => p !== undefined);
+          const aPricing = calculateBundleDiscount(aProducts, a);
+          const bPricing = calculateBundleDiscount(bProducts, b);
           return aPricing.total - bPricing.total;
         }
         case "price-high": {
-          const aPricing = calculateBundleDiscount(
-            a.products.map(p => getProductById(p.productId)).filter(Boolean) as any[],
-            a
-          );
-          const bPricing = calculateBundleDiscount(
-            b.products.map(p => getProductById(p.productId)).filter(Boolean) as any[],
-            b
-          );
+          const aProducts = a.products
+            .map(p => getProductById(p.productId))
+            .filter((p): p is NonNullable<ReturnType<typeof getProductById>> => p !== undefined);
+          const bProducts = b.products
+            .map(p => getProductById(p.productId))
+            .filter((p): p is NonNullable<ReturnType<typeof getProductById>> => p !== undefined);
+          const aPricing = calculateBundleDiscount(aProducts, a);
+          const bPricing = calculateBundleDiscount(bProducts, b);
           return bPricing.total - aPricing.total;
         }
         case "newest":

@@ -19,7 +19,7 @@ interface ProductPageClientProps {
  * 
  * Client-side product page content with interactivity.
  */
-export function ProductPageClient({ product }: ProductPageClientProps) {
+export function ProductPageClient({ product }: ProductPageClientProps): JSX.Element {
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Collections", href: "/collections" },

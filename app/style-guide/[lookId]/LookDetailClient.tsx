@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
-import { ShoppingBag, Edit3, Share2, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Edit3, ArrowLeft } from "lucide-react";
 import type { StyleLook } from "@/types/styling";
 import { calculateBundleDiscount, getProductById } from "@/lib/utils/styling-utils";
 import { useStylingStore } from "@/lib/stores/styling-store";
@@ -209,7 +209,6 @@ export function LookDetailClient({ look }: LookDetailClientProps): JSX.Element {
             </H2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {lookProducts.map((product, index) => {
-                const productInLook = look.products.find(p => p.productId === product.id);
                 const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
 
                 return (
