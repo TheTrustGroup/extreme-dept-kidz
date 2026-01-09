@@ -3,6 +3,7 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Menu as MenuIcon, Search, Bell, ChevronDown } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { cn } from "@/lib/utils";

@@ -42,6 +42,16 @@ const nextConfig = {
     } : false,
   },
   
+  // ESLint configuration for Vercel
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  
+  // TypeScript configuration for Vercel
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  
   // Webpack Optimizations
   webpack: (config, { isServer }) => {
     // Optimize bundle size
