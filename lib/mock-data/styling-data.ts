@@ -260,8 +260,8 @@ export const productStylingData: Record<string, ProductStyling> = {
   "prod-10": {
     productId: "prod-10",
     completeTheLook: [
-      { lookId: "look-2", isOptional: true },
-      { lookId: "look-5", isOptional: true },
+      { lookId: "look-2" },
+      { lookId: "look-5" },
     ],
     frequentlyBoughtWith: ["prod-4", "prod-5", "prod-7"],
     styleNotes: "Stylish backpack perfect for school and adventures",
