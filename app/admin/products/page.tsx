@@ -110,7 +110,7 @@ export default function ProductsPage(): JSX.Element {
             <Button variant="secondary" size="sm">
               Export
             </Button>
-            <Button variant="danger" size="sm">
+            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
               Delete
             </Button>
           </div>
