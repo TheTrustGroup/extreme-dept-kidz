@@ -6,6 +6,7 @@ import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { useAdminKeyboards } from "@/lib/hooks/use-admin-keyboard";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -38,6 +39,9 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   if (!isAuthenticated || !user) {
     return <PageLoader />;
   }
+
+  // Enable keyboard shortcuts
+  useAdminKeyboards();
 
   return (
     <div className="flex h-screen bg-cream-50 overflow-hidden">
