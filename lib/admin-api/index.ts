@@ -5,7 +5,16 @@
  * In production, these would call real backend endpoints.
  */
 
-import type { Product, Order } from "@/types";
+import type { Product } from "@/types";
+
+// Mock Order type for admin API
+interface Order {
+  id: string;
+  customer: string;
+  total: number;
+  status: string;
+  date: string;
+}
 import { mockProducts } from "@/lib/mock-data";
 import { styleLooks } from "@/lib/mock-data/styling-data";
 
