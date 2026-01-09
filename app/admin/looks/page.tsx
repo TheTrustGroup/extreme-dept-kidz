@@ -113,7 +113,7 @@ export default function LooksPage(): JSX.Element {
                         Edit
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700">
+                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
