@@ -3,8 +3,7 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
-import { Search, Bell, ChevronDown } from "lucide-react";
-import { Menu } from "lucide-react"; // Used in mobile menu button
+import { Menu as MenuIcon, Search, Bell, ChevronDown } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +51,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
             className="p-2 text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-colors lg:hidden"
             aria-label="Toggle menu"
           >
-            <Menu className="w-5 h-5" />
+            <MenuIcon className="w-5 h-5" />
           </button>
 
           {/* Breadcrumb */}
