@@ -33,7 +33,6 @@ const nextConfig = {
       "lucide-react",
       "@prisma/client",
     ],
-    optimizeCss: true,
   },
   
   // Compiler Options
