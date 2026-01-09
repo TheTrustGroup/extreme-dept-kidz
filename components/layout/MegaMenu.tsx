@@ -15,7 +15,7 @@ const boysCategories = [
   {
     title: "New",
     href: "/collections/boys?filter=new",
-    image: "/Extreme 2.png",
+    image: "/4671.png",
   },
   {
     title: "Tops",
@@ -35,7 +35,7 @@ const boysCategories = [
   {
     title: "Accessories",
     href: "/collections/boys?category=accessories",
-    image: "/Extreme 4.png",
+    image: "/4681.png",
   },
 ];
 

@@ -13,9 +13,9 @@ export interface ModelImage {
 }
 
 export const modelImages: Record<string, ModelImage> = {
-  // Hero Images - Using Extreme series for hero
+  // Hero Images
   heroMain: {
-    src: '/Extreme 1.png',
+    src: '/4671.png',
     alt: 'Young boy in premium streetwear exploring the city',
     category: 'hero',
     tags: ['hero', 'boys', 'streetwear', 'urban'],
@@ -23,7 +23,7 @@ export const modelImages: Record<string, ModelImage> = {
     priority: true,
   },
   heroMain2: {
-    src: '/Extreme 2.png',
+    src: '/4672.png',
     alt: 'Young boy in premium streetwear lifestyle shot',
     category: 'hero',
     tags: ['hero', 'boys', 'streetwear', 'lifestyle'],
@@ -31,7 +31,7 @@ export const modelImages: Record<string, ModelImage> = {
     priority: false,
   },
   heroMain3: {
-    src: '/Extreme 3.png',
+    src: '/4675.png',
     alt: 'Young boy in premium streetwear urban setting',
     category: 'hero',
     tags: ['hero', 'boys', 'streetwear', 'urban'],
@@ -39,7 +39,7 @@ export const modelImages: Record<string, ModelImage> = {
     priority: false,
   },
   heroMain4: {
-    src: '/Extreme 4.png',
+    src: '/4677.png',
     alt: 'Young boy in premium streetwear casual style',
     category: 'hero',
     tags: ['hero', 'boys', 'streetwear', 'casual'],
@@ -47,7 +47,7 @@ export const modelImages: Record<string, ModelImage> = {
     priority: false,
   },
   heroMain5: {
-    src: '/Extreme 5.png',
+    src: '/4679.png',
     alt: 'Young boy in premium streetwear active style',
     category: 'hero',
     tags: ['hero', 'boys', 'streetwear', 'active'],
@@ -247,16 +247,16 @@ export const modelImages: Record<string, ModelImage> = {
     aspectRatio: 3 / 4,
   },
 
-  // Collection Headers - Using Extreme series
+  // Collection Headers
   boysCollectionHero: {
-    src: '/Extreme 2.png',
+    src: '/4671.png',
     alt: 'Boys collection featuring premium streetwear styles',
     category: 'collection',
     tags: ['boys', 'collection', 'header'],
     aspectRatio: 21 / 9,
   },
   newArrivalsHero: {
-    src: '/Extreme 3.png',
+    src: '/4677.png',
     alt: 'New arrivals - latest styles for boys',
     category: 'collection',
     tags: ['new-arrivals', 'boys', 'header'],
@@ -265,14 +265,14 @@ export const modelImages: Record<string, ModelImage> = {
 
   // Editorial
   editorial1: {
-    src: '/Extreme 4.png',
-    alt: 'Behind the scenes of Extreme Dept Kidz photoshoot',
+    src: '/4681.png',
+    alt: 'Behind the scenes photoshoot',
     category: 'editorial',
     tags: ['editorial', 'brand', 'story'],
     aspectRatio: 4 / 3,
   },
   editorial2: {
-    src: '/Extreme 5.png',
+    src: '/4683.png',
     alt: 'Boys modeling premium kids fashion',
     category: 'editorial',
     tags: ['editorial', 'brand', 'lifestyle'],

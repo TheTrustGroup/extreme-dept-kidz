@@ -25,7 +25,7 @@ export const mockCategories: Category[] = [
     name: "Boys",
     slug: "boys",
     description: "Premium fashion for boys",
-    image: "/Extreme 2.png",
+    image: "/4671.png",
     isActive: true,
   },
   {
@@ -33,7 +33,7 @@ export const mockCategories: Category[] = [
     name: "Girls",
     slug: "girls",
     description: "Luxury fashion for girls",
-    image: "/Extreme 3.png",
+    image: "/4675.png",
     isActive: true,
   },
   {
@@ -41,7 +41,7 @@ export const mockCategories: Category[] = [
     name: "Accessories",
     slug: "accessories",
     description: "Premium accessories and essentials",
-    image: "/Extreme 4.png",
+    image: "/4681.png",
     isActive: true,
   },
   {
@@ -49,7 +49,7 @@ export const mockCategories: Category[] = [
     name: "New Arrivals",
     slug: "new-arrivals",
     description: "Latest additions to our collection",
-    image: "/Extreme 3.png",
+    image: "/4677.png",
     isActive: true,
   },
 ];
@@ -64,7 +64,7 @@ export const mockCollections: Collection[] = [
     slug: "new-arrivals",
     description: "Discover our latest premium pieces",
     image:
-      "/Extreme 3.png",
+      "/4677.png",
     isActive: true,
   },
   {
@@ -152,8 +152,8 @@ export const mockProducts: Product[] = [
       "Bold safety orange vest with signature cross logo. Zip closure with functional pockets. Statement layering piece that demands attention.",
     price: 7800, // $78.00
     images: generateImages(
-      "/4673.png",
       "/4674.png",
+      "/4675.png",
       undefined,
       "Street Utility Vest"
     ),
@@ -382,8 +382,8 @@ export const mockProducts: Product[] = [
       "A modern classic reimagined. This A-line denim skirt is crafted from premium denim fabric, offering a comfortable fit and timeless silhouette. Versatile enough for play, sophisticated enough for special moments.",
     price: 6200, // $62.00
     images: generateImages(
-      "/Extreme 1.png",
-      "/Extreme 2.png",
+      "/4671.png",
+      "/4672.png",
       undefined,
       "Classic A-Line Denim Skirt"
     ),
@@ -401,8 +401,8 @@ export const mockProducts: Product[] = [
       "A sophisticated companion for every adventure. Crafted from premium leather with adjustable straps, this backpack features a thoughtfully designed spacious main compartment and front pocket. Where functionality meets refined style, built to last through countless journeys.",
     price: 12500, // $125.00
     images: generateImages(
-      "/Extreme 3.png",
       "/4691.png",
+      "/4692.png",
       undefined,
       "Premium Leather Backpack"
     ),
@@ -421,8 +421,8 @@ export const mockProducts: Product[] = [
     price: 3500, // $35.00
     originalPrice: 4500, // $45.00 (on sale)
     images: generateImages(
-      "/Extreme 4.png",
-      "/Extreme 5.png",
+      "/4693.png",
+      "/4694.png",
       undefined,
       "Wool Beanie"
     ),
