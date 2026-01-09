@@ -43,6 +43,7 @@ const nextConfig = {
   },
   
   // ESLint configuration for Vercel
+  // Allow builds to proceed with ESLint warnings (errors will still fail)
   eslint: {
     ignoreDuringBuilds: false,
   },
