@@ -288,22 +288,9 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
               )}
             </div>
           </m.div>
-          
-          {/* Product Count & Active Filters */}
-          <div className="flex items-center justify-between gap-4 pt-4 border-t border-cream-200">
-            <Body className="text-sm text-charcoal-600 font-medium">
-              {sortedProducts.length} {sortedProducts.length === 1 ? "Product" : "Products"}
-            </Body>
-            {activeFiltersCount > 0 && (
-              <Body className="text-xs text-charcoal-500">
-                {activeFiltersCount} {activeFiltersCount === 1 ? "filter" : "filters"} active
-              </Body>
-            )}
-          </div>
-        </m.div>
 
-        {/* Main Content: Filters + Products */}
-        <div className="flex flex-col lg:flex-row gap-6 xs:gap-7 sm:gap-8">
+          {/* Main Content: Filters + Products */}
+          <div className="flex flex-col lg:flex-row gap-6 xs:gap-7 sm:gap-8">
           {/* Filter Sidebar */}
           <FilterSidebar
             filters={filters}
@@ -349,6 +336,7 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
           </div>
         </div>
       </Container>
+      </div>
     </div>
   );
 }
