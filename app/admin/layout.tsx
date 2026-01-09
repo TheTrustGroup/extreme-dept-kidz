@@ -1,73 +1,57 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { AdminNav } from "@/components/admin/AdminNav";
+import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { AdminFooter } from "@/components/admin/AdminFooter";
+import { PageLoader } from "@/components/ui/PageLoader";
 
-export default function AdminLayout({ children }: { children: ReactNode }): JSX.Element {
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+/**
+ * Admin Layout
+ * 
+ * Main layout wrapper for admin dashboard with sidebar and header.
+ */
+export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element {
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { isAuthenticated, user } = useAdminAuth();
 
-  useEffect(() => {
-    // Check authentication
-    if (typeof window !== "undefined") {
-      const auth = sessionStorage.getItem("admin-authenticated");
-      if (auth === "true") {
-        setIsAuthenticated(true);
-      } else if (pathname !== "/admin/login") {
-        setIsAuthenticated(false);
-        router.push("/admin/login");
-      } else {
-        setIsAuthenticated(true); // Allow login page
-      }
+  // Redirect to login if not authenticated (except on login page)
+  React.useEffect(() => {
+    if (!isAuthenticated && pathname !== "/admin/login") {
+      router.push("/admin/login");
     }
-  }, [pathname, router]);
+  }, [isAuthenticated, pathname, router]);
 
-  // Don't render protected content until auth is checked
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
-        <div className="text-charcoal-600">Loading...</div>
-      </div>
-    );
-  }
-
-  // Don't show layout on login page
+  // Don't render layout on login page
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
+  // Show loader while checking auth
+  if (!isAuthenticated || !user) {
+    return <PageLoader />;
+  }
+
   return (
-    <div className="min-h-screen bg-cream-50 relative">
-      {/* Background Image with Overlay */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: 'url("/Extreme 3.png")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed',
-        }}
-      >
-        <div className="absolute inset-0 bg-cream-50/85 backdrop-blur-sm" />
-      </div>
-      
-      {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <AdminHeader />
-        <div className="flex flex-1">
-          <AdminNav />
-          <main className="flex-1 p-6 lg:p-8 flex flex-col">
-            <div className="flex-1">
-              {children}
-            </div>
-            <AdminFooter />
-          </main>
-        </div>
+    <div className="flex h-screen bg-cream-50 overflow-hidden">
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

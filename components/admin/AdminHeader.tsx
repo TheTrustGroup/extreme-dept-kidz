@@ -1,44 +1,172 @@
 "use client";
 
-import Link from "next/link";
-import { ShoppingBag, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import * as React from "react";
+import { usePathname } from "next/navigation";
+import { m } from "framer-motion";
+import { Menu, Search, Bell, ChevronDown } from "lucide-react";
+import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+import { cn } from "@/lib/utils";
 
-export function AdminHeader(): JSX.Element {
-  const handleLogout = (): void => {
-    // Simple logout - clear session
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem("admin-authenticated");
-      window.location.href = "/admin/login";
+interface AdminHeaderProps {
+  onMenuClick: () => void;
+}
+
+/**
+ * Admin Header Component
+ * 
+ * Top navigation bar for admin dashboard with search, notifications, and user menu.
+ */
+export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
+  const pathname = usePathname();
+  const { user } = useAdminAuth();
+  const [showUserMenu, setShowUserMenu] = React.useState(false);
+  const [showNotifications, setShowNotifications] = React.useState(false);
+
+  // Generate breadcrumb from pathname
+  const breadcrumbs = React.useMemo(() => {
+    const parts = pathname.split("/").filter(Boolean);
+    const crumbs = [{ label: "Dashboard", href: "/admin" }];
+
+    if (parts.length > 1) {
+      parts.slice(1).forEach((part, index) => {
+        const href = `/${parts.slice(0, index + 2).join("/")}`;
+        const label = part
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+        crumbs.push({ label, href });
+      });
     }
-  };
+
+    return crumbs;
+  }, [pathname]);
 
   return (
-    <header className="bg-navy-900/95 backdrop-blur-md text-cream-50 shadow-lg border-b border-navy-800/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
-            <Link href="/admin" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-              <ShoppingBag className="w-6 h-6" />
-              <span className="text-xl font-bold">Extreme Dept Kidz Admin</span>
-            </Link>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link href="/" target="_blank" className="text-sm hover:underline">
-              View Store
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="text-cream-50 hover:bg-navy-800"
+    <header className="sticky top-0 z-30 bg-cream-50 border-b border-cream-200 shadow-sm">
+      <div className="flex items-center justify-between px-4 lg:px-6 h-16">
+        {/* Left: Menu & Breadcrumb */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onMenuClick}
+            className="p-2 text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-colors lg:hidden"
+            aria-label="Toggle menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Breadcrumb */}
+          <nav className="hidden md:flex items-center gap-2 text-sm">
+            {breadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={crumb.href}>
+                {idx > 0 && (
+                  <span className="text-charcoal-400">/</span>
+                )}
+                <Link
+                  href={crumb.href}
+                  className={cn(
+                    "text-charcoal-600 hover:text-charcoal-900 transition-colors",
+                    idx === breadcrumbs.length - 1 && "font-semibold text-charcoal-900"
+                  )}
+                >
+                  {crumb.label}
+                </Link>
+              </React.Fragment>
+            ))}
+          </nav>
+        </div>
+
+        {/* Right: Search, Notifications, User */}
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <button
+            className="hidden md:flex items-center gap-2 px-4 py-2 bg-cream-100 rounded-lg text-charcoal-600 hover:bg-cream-200 transition-colors text-sm"
+            onClick={() => {
+              // TODO: Open search modal
+            }}
+          >
+            <Search className="w-4 h-4" />
+            <span className="text-charcoal-500">Search...</span>
+            <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-semibold text-charcoal-500 bg-cream-200 border border-cream-300 rounded">
+              ⌘K
+            </kbd>
+          </button>
+
+          {/* Notifications */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="p-2 text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-colors relative"
+              aria-label="Notifications"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+            </button>
+
+            {showNotifications && (
+              <m.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute right-0 mt-2 w-80 bg-cream-50 rounded-lg shadow-xl border border-cream-200 overflow-hidden"
+              >
+                <div className="p-4 border-b border-cream-200">
+                  <h3 className="font-semibold text-charcoal-900">Notifications</h3>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  <div className="p-4 text-sm text-charcoal-600 text-center">
+                    No new notifications
+                  </div>
+                </div>
+              </m.div>
+            )}
           </div>
+
+          {/* User Menu */}
+          {user && (
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-cream-100 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-navy-900 flex items-center justify-center">
+                  <span className="text-cream-50 text-sm font-semibold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="hidden md:block text-sm font-medium text-charcoal-900">
+                  {user.name}
+                </span>
+                <ChevronDown className="w-4 h-4 text-charcoal-600" />
+              </button>
+
+              {showUserMenu && (
+                <m.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute right-0 mt-2 w-48 bg-cream-50 rounded-lg shadow-xl border border-cream-200 overflow-hidden"
+                >
+                  <div className="p-2">
+                    <div className="px-3 py-2 text-sm">
+                      <p className="font-semibold text-charcoal-900">{user.name}</p>
+                      <p className="text-xs text-charcoal-600">{user.email}</p>
+                    </div>
+                    <div className="border-t border-cream-200 mt-2 pt-2">
+                      <Link
+                        href="/admin/settings/profile"
+                        className="block px-3 py-2 text-sm text-charcoal-700 hover:bg-cream-100 rounded transition-colors"
+                      >
+                        Profile Settings
+                      </Link>
+                    </div>
+                  </div>
+                </m.div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
   );
 }
+
+// Add missing import
+import Link from "next/link";

@@ -1,4 +1,5 @@
 export { AdminHeader } from "./AdminHeader";
+export { AdminSidebar } from "./AdminSidebar";
 export { AdminNav } from "./AdminNav";
 export { AdminFooter } from "./AdminFooter";
 export { AdminDashboard } from "./AdminDashboard";
