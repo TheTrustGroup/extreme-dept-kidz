@@ -1,32 +1,28 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { m } from "framer-motion";
-import { modelImages } from "@/lib/data/image-manifest";
-import { responsiveSizes } from "@/lib/utils/image-utils";
-import { Container } from "@/components/ui/container";
-import { H2 } from "@/components/ui/typography";
-import { Button } from "@/components/ui/button";
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import { modelImages } from '@/lib/data/image-manifest';
+import { responsiveSizes, getImageBlurDataURL } from '@/lib/utils/image-utils';
 
-/**
- * LifestyleSection Component
- * 
- * Split-screen lifestyle editorial section showcasing the brand story.
- */
 export function LifestyleSection(): JSX.Element {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+
   return (
-    <section className="py-12 md:py-16 lg:py-20 xl:py-24 bg-cream-50">
-      <Container size="lg">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
+    <section ref={ref} className="py-20 lg:py-32 bg-cream-50">
+      <div className="container mx-auto px-4">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Image Side */}
-          <m.div
+          <motion.div
             initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8 }}
-            className="relative aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-xl bg-cream-100"
+            className="relative aspect-[4/5] lg:aspect-[3/4] overflow-hidden rounded-lg"
           >
             <Image
               src={modelImages.boyStreet1.src}
@@ -35,15 +31,15 @@ export function LifestyleSection(): JSX.Element {
               sizes={responsiveSizes.lifestyle}
               className="object-cover"
               quality={85}
-              priority={false}
+              placeholder="blur"
+              blurDataURL={getImageBlurDataURL(800, 1000)}
             />
-          </m.div>
+          </motion.div>
 
           {/* Content Side */}
-          <m.div
+          <motion.div
             initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="space-y-6"
           >
@@ -51,11 +47,11 @@ export function LifestyleSection(): JSX.Element {
               The Collection
             </span>
 
-            <H2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold text-charcoal-900">
+            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-serif font-bold text-charcoal-900">
               Built for Adventure,
               <br />
               Designed for Style
-            </H2>
+            </h2>
 
             <p className="text-lg text-charcoal-600 leading-relaxed max-w-lg">
               From the playground to the city streets, every piece is crafted
@@ -63,27 +59,28 @@ export function LifestyleSection(): JSX.Element {
               thoughtful design, and styles that grow with them.
             </p>
 
-            <Button variant="secondary" size="lg" asChild>
-              <Link href="/about" className="inline-flex items-center gap-2">
-                Discover Our Story
-                <svg
-                  className="w-5 h-5 group-hover:translate-x-2 transition-transform"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </Link>
-            </Button>
-          </m.div>
+            <Link
+              href="/about"
+              className="inline-flex items-center text-lg font-semibold text-navy-900 group hover:text-navy-700 transition-colors"
+            >
+              Discover Our Story
+              <svg
+                className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </Link>
+          </motion.div>
         </div>
-      </Container>
+      </div>
     </section>
   );
 }

@@ -26,6 +26,7 @@ import {
   getProductsByCollection,
 } from "@/lib/utils/filter-products";
 import { modelImages } from "@/lib/data/image-manifest";
+import { getImageBlurDataURL } from "@/lib/utils/image-utils";
 
 interface CollectionPageClientProps {
   params: {
@@ -195,6 +196,20 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
     });
   };
 
+  // Get collection hero image based on slug
+  const collectionHeroImage = React.useMemo((): string => {
+    if (params.slug === "boys") return modelImages.boysCollectionHero.src;
+    if (params.slug === "girls") return modelImages.editorial1.src;
+    if (params.slug === "new-arrivals") return modelImages.newArrivalsHero.src;
+    return modelImages.heroMain3.src;
+  }, [params.slug]);
+
+  const activeFiltersCount = 
+    filters.categories.length +
+    filters.sizes.length +
+    (filters.priceRange.min !== 0 || filters.priceRange.max !== 18000 ? 1 : 0) +
+    (filters.inStockOnly ? 1 : 0);
+
   if (!collection) {
     return (
       <div className="min-h-screen bg-cream-50 pt-20 md:pt-24 pb-16">
@@ -218,32 +233,20 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
     );
   }
 
-  const activeFiltersCount = 
-    filters.categories.length +
-    filters.sizes.length +
-    (filters.priceRange.min !== 0 || filters.priceRange.max !== 18000 ? 1 : 0) +
-    (filters.inStockOnly ? 1 : 0);
-
-  // Get collection hero image based on slug
-  const getCollectionHeroImage = (): string => {
-    if (params.slug === "boys") return "/Extreme 3.png";
-    if (params.slug === "girls") return "/Extreme 4.png";
-    if (params.slug === "new-arrivals") return "/Extreme 4.png";
-    return "/Extreme 5.png";
-  };
-
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Collection Hero Header */}
       <section className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden">
         <Image
-          src={getCollectionHeroImage()}
+          src={collectionHeroImage}
           alt={collection.name}
           fill
           priority
           sizes="100vw"
           className="object-cover object-center"
           quality={90}
+          placeholder="blur"
+          blurDataURL={getImageBlurDataURL(1920, 800)}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
         <div className="relative h-full flex items-center justify-center text-center px-4">

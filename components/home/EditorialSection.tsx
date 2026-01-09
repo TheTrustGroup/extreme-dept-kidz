@@ -7,6 +7,8 @@ import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2, Body, Caption } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
+import { modelImages } from "@/lib/data/image-manifest";
+import { getImageBlurDataURL } from "@/lib/utils/image-utils";
 
 export function EditorialSection() {
   return (
@@ -23,14 +25,16 @@ export function EditorialSection() {
           >
             <div className="relative w-full h-full">
               <Image
-                src="/4683.png"
-                alt="Boy in premium streetwear - lifestyle photography"
+                src={modelImages.lifestyle2.src}
+                alt={modelImages.lifestyle2.alt}
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 loading="lazy"
                 quality={85}
                 priority={false}
+                placeholder="blur"
+                blurDataURL={getImageBlurDataURL(800, 1000)}
               />
             </div>
           </m.div>

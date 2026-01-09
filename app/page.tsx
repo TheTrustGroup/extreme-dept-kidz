@@ -32,14 +32,6 @@ const StyleGuideSection = dynamic(() => import("@/components/home").then((mod) =
   ssr: false,
 });
 
-const LifestyleSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.LifestyleSection })), {
-  ssr: false,
-});
-
-const ImageShowcase = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.ImageShowcase })), {
-  ssr: false,
-});
-
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
   description:
@@ -112,12 +104,6 @@ export default function Home() {
 
         {/* Girls Collection Section - Secondary, Smaller */}
         <GirlsCollectionSection />
-
-        {/* Lifestyle Section - Brand Story */}
-        <LifestyleSection />
-
-        {/* Image Showcase - Split Lifestyle Photography */}
-        <ImageShowcase />
 
         {/* Style Guide Section - Featured Complete Looks */}
         <StyleGuideSection />
