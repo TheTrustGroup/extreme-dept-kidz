@@ -84,16 +84,26 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
   const onSubmit = async (data: ProductFormData): Promise<void> => {
     setSaving(true);
     try {
+      const productData = {
+        name: data.name,
+        description: data.description,
+        sku: data.sku,
+        price: Math.round(data.price * 100), // Convert to cents
+        category: {
+          id: data.category,
+          name: data.category,
+          slug: data.category,
+        },
+        inStock: data.inStock,
+        slug: data.name.toLowerCase().replace(/\s+/g, "-"),
+        images: [],
+        sizes: [],
+      } as Partial<Product>;
+
       if (isNew) {
-        await createProduct({
-          ...data,
-          price: Math.round(data.price * 100), // Convert to cents
-        } as Partial<Product>);
+        await createProduct(productData);
       } else {
-        await updateProduct(params.id, {
-          ...data,
-          price: Math.round(data.price * 100),
-        } as Partial<Product>);
+        await updateProduct(params.id, productData);
       }
       router.push("/admin/products");
     } catch (error) {
