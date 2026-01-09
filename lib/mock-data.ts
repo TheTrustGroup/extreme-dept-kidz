@@ -122,328 +122,299 @@ function generateImages(
 
 /**
  * Mock Products
- * 20 premium kids fashion products
+ * Updated to match actual product images
  */
 export const mockProducts: Product[] = [
-  // Boys Products
+  // NEW ARRIVALS - Just Dropped Section
   {
-    id: "prod-1",
-    name: "Heritage Denim Jacket",
+    id: "boys-signature-sunset-tee-white",
+    name: "Signature Sunset Graphic Tee",
     description:
-      "A timeless statement piece crafted from premium Japanese selvedge denim. Meticulously constructed with vintage-inspired hardware and a thoughtfully designed relaxed fit. Built to become a cherished wardrobe essential that ages beautifully with every adventure.",
-    price: 12900, // $129.00
-    images: generateImages(
-      "/IMG_4673.png",
-      "/IMG_4689.png"
-    ),
-    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[0], // Boys
-    slug: "heritage-denim-jacket",
-    inStock: true,
-    tags: ["new", "bestseller"],
-    sku: "HDJ-001",
-  },
-  {
-    id: "prod-2",
-    name: "Premium Cotton Crew Tee",
-    description:
-      "The foundation of effortless style. Crafted from ultra-soft organic cotton with a refined relaxed fit and classic crew neck. Designed to layer beautifully or stand alone, this essential piece elevates everyday moments. Available in carefully curated colorways.",
-    price: 4500, // $45.00
-    images: generateImages(
-      "/4672.png",
-      "/4671.png"
-    ),
-    sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[0], // Boys
-    slug: "premium-cotton-crew-tee",
-    inStock: true,
-    tags: ["bestseller"],
-    sku: "PCT-001",
-  },
-  {
-    id: "prod-3",
-    name: "Classic Chino Pants",
-    description:
-      "Sophisticated tailoring meets everyday versatility. These premium cotton twill chinos feature a refined modern silhouette with an adjustable waistband, ensuring impeccable fit and lasting comfort. The perfect balance of polish and play.",
-    price: 6800, // $68.00
-    images: generateImages(
-      "/4674.png",
-      "/4675.png"
-    ),
-    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[0], // Boys
-    slug: "classic-chino-pants",
-    inStock: true,
-    sku: "CCP-001",
-  },
-  {
-    id: "prod-4",
-    name: "Street Essential Hoodie",
-    description:
-      "Effortless comfort meets contemporary style. This premium cotton-blend fleece hoodie offers a relaxed, confident fit with thoughtful details including an adjustable drawstring hood and signature kangaroo pocket. Designed for both comfort and style.",
-    price: 8500, // $85.00
-    images: generateImages(
-      "/4675.png",
-      "/4676.png"
-    ),
-    sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[0], // Boys
-    slug: "street-essential-hoodie",
-    inStock: true,
-    tags: ["new"],
-    sku: "UH-001",
-  },
-  {
-    id: "prod-5",
-    name: "Performance Track Joggers",
-    description:
-      "Performance-driven design that doesn&apos;t compromise on style. Engineered with advanced moisture-wicking fabric, these joggers feature an elastic waistband and refined tapered silhouette. Built for active moments while maintaining sophisticated appeal.",
-    price: 5500, // $55.00
-    images: generateImages(
-      "/4676.png",
-      "/4677.png"
-    ),
-    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[0], // Boys
-    slug: "performance-track-joggers",
-    inStock: true,
-    sku: "AJ-001",
-  },
-  {
-    id: "prod-6",
-    name: "Signature Pique Polo",
-    description:
-      "A modern classic reimagined. Crafted from luxurious pima cotton with a refined collar and three-button placket, this polo embodies timeless elegance. The perfect intersection of casual sophistication and enduring style.",
+      "Oversized streetwear tee with dual graphics - signature script logo on chest and vibrant tropical sunset scene on back. Premium cotton with dropped shoulders. Statement piece that turns heads.",
     price: 5200, // $52.00
     images: generateImages(
-      "/4677.png",
-      "/4678.png"
+      "/4671.png",
+      "/4672.png",
+      undefined,
+      "Signature Sunset Graphic Tee"
     ),
-    sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "signature-pique-polo",
+    slug: "signature-sunset-graphic-tee",
     inStock: true,
-    tags: ["bestseller"],
-    sku: "PPS-001",
+    tags: ["new", "bestseller"],
+    sku: "SSG-001",
   },
   {
-    id: "prod-7",
+    id: "boys-utility-vest-orange",
+    name: "Street Utility Vest",
+    description:
+      "Bold safety orange vest with signature cross logo. Zip closure with functional pockets. Statement layering piece that demands attention.",
+    price: 7800, // $78.00
+    images: generateImages(
+      "/4673.png",
+      "/4674.png",
+      undefined,
+      "Street Utility Vest"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[0], // Boys
+    slug: "street-utility-vest",
+    inStock: true,
+    tags: ["new"],
+    sku: "SUV-001",
+  },
+  {
+    id: "boys-classic-denim-jeans-medium",
+    name: "Classic Straight Denim Jeans",
+    description:
+      "Medium wash denim with authentic worn-in look. Comfortable straight fit with quality construction. Perfect foundation for any street style look.",
+    price: 7200, // $72.00
+    originalPrice: 8500, // $85.00 (on sale)
+    images: generateImages(
+      "/4675.png",
+      "/4676.png",
+      undefined,
+      "Classic Straight Denim Jeans"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[0], // Boys
+    slug: "classic-straight-denim-jeans",
+    inStock: true,
+    tags: ["new"],
+    sku: "CSD-001",
+  },
+  {
+    id: "boys-urban-graphic-tee-black",
+    name: "Urban Scene Graphic Tee",
+    description:
+      "Bold oversized tee featuring vibrant cityscape and lowrider graphics. Eye-catching yellow text. Premium cotton construction for all-day comfort.",
+    price: 4800, // $48.00
+    images: generateImages(
+      "/4677.png",
+      "/4678.png",
+      undefined,
+      "Urban Scene Graphic Tee"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[0], // Boys
+    slug: "urban-scene-graphic-tee",
+    inStock: true,
+    tags: ["new"],
+    sku: "USG-001",
+  },
+  {
+    id: "boys-camo-distressed-shorts",
+    name: "Camo Distressed Cargo Shorts",
+    description:
+      "Rugged camo print shorts with authentic distressed hem. Multiple cargo pockets for utility. Perfect for summer street style and active days.",
+    price: 5800, // $58.00
+    images: generateImages(
+      "/4679.png",
+      "/4680.png",
+      undefined,
+      "Camo Distressed Cargo Shorts"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[0], // Boys
+    slug: "camo-distressed-cargo-shorts",
+    inStock: true,
+    tags: ["new"],
+    sku: "CDS-001",
+  },
+  {
+    id: "boys-court-sneakers-black-white",
+    name: "Court High-Top Sneakers",
+    description:
+      "Classic high-top sneakers in iconic black and white colorway. Premium construction with blue accent details. Elevated street style essential.",
+    price: 8500, // $85.00
+    images: generateImages(
+      "/4681.png",
+      "/4682.png",
+      undefined,
+      "Court High-Top Sneakers"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[2], // Accessories
+    slug: "court-high-top-sneakers",
+    inStock: true,
+    tags: ["new"],
+    sku: "CHS-001",
+  },
+  {
+    id: "boys-layered-graphic-tee-black",
+    name: "Layered Graphic Tee",
+    description:
+      "Black graphic tee designed for layering. Bold yellow print stands out under vests and jackets. Essential streetwear foundation piece.",
+    price: 4200, // $42.00
+    images: generateImages(
+      "/4683.png",
+      "/4684.png",
+      undefined,
+      "Layered Graphic Tee"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[0], // Boys
+    slug: "layered-graphic-tee",
+    inStock: true,
+    tags: ["bestseller"],
+    sku: "LGT-001",
+  },
+  {
+    id: "boys-straight-pants-black-premium",
+    name: "Premium Straight Pants",
+    description:
+      "Elevated black pants with comfortable straight fit. Quality construction meets street style. Works with everything in their wardrobe.",
+    price: 6800, // $68.00
+    images: generateImages(
+      "/4685.png",
+      "/4686.png",
+      undefined,
+      "Premium Straight Pants"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[0], // Boys
+    slug: "premium-straight-pants",
+    inStock: true,
+    tags: ["new"],
+    sku: "PSP-001",
+  },
+  {
+    id: "boys-chunky-sneakers-tri-color",
+    name: "Chunky Sport Sneakers",
+    description:
+      "Bold chunky sneakers with yellow, black, and white colorway. Retro-inspired design with modern comfort. Statement footwear for the confident kid.",
+    price: 9200, // $92.00
+    images: generateImages(
+      "/4687.png",
+      "/4688.png",
+      undefined,
+      "Chunky Sport Sneakers"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[2], // Accessories
+    slug: "chunky-sport-sneakers",
+    inStock: true,
+    tags: ["new"],
+    sku: "CSS-001",
+  },
+  {
+    id: "boys-tactical-boots-black",
+    name: "Tactical Street Boots",
+    description:
+      "Rugged black boots with streetwear edge. Durable construction for active kids. Comfortable all-day wear with style.",
+    price: 9500, // $95.00
+    images: generateImages(
+      "/4689.png",
+      "/4690.png",
+      undefined,
+      "Tactical Street Boots"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[2], // Accessories
+    slug: "tactical-street-boots",
+    inStock: true,
+    tags: ["new"],
+    sku: "TSB-001",
+  },
+  // Additional Products (Unique Images)
+  {
+    id: "boys-classic-sneakers",
     name: "Classic Canvas Sneakers",
     description:
       "Iconic design elevated through premium construction. These classic canvas sneakers combine exceptional comfort with enduring durability, creating a versatile foundation for any ensemble. Timeless style that stands the test of time.",
     price: 6500, // $65.00
     images: generateImages(
-      "/4678.png",
-      "/4679.png"
+      "/4695.png",
+      "/4696.png",
+      undefined,
+      "Classic Canvas Sneakers"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
     slug: "classic-canvas-sneakers",
     inStock: true,
     tags: ["new"],
-    sku: "CS-001",
+    sku: "CCS-001",
   },
   {
-    id: "prod-8",
+    id: "boys-heritage-cardigan",
     name: "Heritage Wool Cardigan",
     description:
       "Luxurious warmth meets refined versatility. This sumptuous wool-blend cardigan is designed for effortless layering, offering exceptional softness and sophisticated style. A versatile essential that transitions seamlessly from casual to elevated occasions.",
     price: 9500, // $95.00
     images: generateImages(
-      "/4680.png",
-      "/4681.png"
-    ),
-    sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[0], // Boys
-    slug: "heritage-wool-cardigan",
-    inStock: true,
-    sku: "WBC-001",
-  },
-  {
-    id: "prod-9",
-    name: "Essential Cargo Shorts",
-    description:
-      "Functional design elevated through premium craftsmanship. These durable cotton twill cargo shorts feature thoughtfully placed pockets and an adjustable waistband. Where utility meets sophisticated style, perfect for adventures both big and small.",
-    price: 5800, // $58.00
-    images: generateImages(
-      "/4681.png",
-      "/4682.png"
+      "/4697.png",
+      "/4698.png",
+      undefined,
+      "Heritage Wool Cardigan"
     ),
     sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[0], // Boys
-    slug: "essential-cargo-shorts",
+    slug: "heritage-wool-cardigan",
     inStock: true,
-    sku: "CSH-001",
+    sku: "HWC-001",
+  },
+  // Girls Products
+  {
+    id: "girls-premium-sweater",
+    name: "Premium Cashmere Sweater",
+    description:
+      "Indulgent luxury in its purest form. This sumptuous cashmere-blend sweater offers a relaxed, confident fit with exceptional softness and warmth. A timeless investment piece that elevates any ensemble while providing unmatched comfort.",
+    price: 14500, // $145.00
+    images: generateImages(
+      "/IMG_4673.png",
+      "/IMG_4689.png",
+      undefined,
+      "Premium Cashmere Sweater"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[1], // Girls
+    slug: "premium-cashmere-sweater",
+    inStock: true,
+    tags: ["bestseller"],
+    sku: "PCS-001",
   },
   {
-    id: "prod-10",
+    id: "girls-denim-skirt",
+    name: "Classic A-Line Denim Skirt",
+    description:
+      "A modern classic reimagined. This A-line denim skirt is crafted from premium denim fabric, offering a comfortable fit and timeless silhouette. Versatile enough for play, sophisticated enough for special moments.",
+    price: 6200, // $62.00
+    images: generateImages(
+      "/Extreme 1.png",
+      "/Extreme 2.png",
+      undefined,
+      "Classic A-Line Denim Skirt"
+    ),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
+    category: mockCategories[1], // Girls
+    slug: "classic-a-line-denim-skirt",
+    inStock: true,
+    sku: "CDS-001",
+  },
+  // Accessories
+  {
+    id: "accessory-leather-backpack",
     name: "Premium Leather Backpack",
     description:
       "A sophisticated companion for every adventure. Crafted from premium leather with adjustable straps, this backpack features a thoughtfully designed spacious main compartment and front pocket. Where functionality meets refined style, built to last through countless journeys.",
     price: 12500, // $125.00
     images: generateImages(
-      "/4682.png",
-      "/4683.png"
+      "/Extreme 3.png",
+      "/4691.png",
+      undefined,
+      "Premium Leather Backpack"
     ),
     sizes: generateSizes(["6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
     slug: "premium-leather-backpack",
     inStock: true,
     tags: ["new"],
-    sku: "LB-001",
-  },
-  // Girls Products
-  {
-    id: "prod-11",
-    name: "Flutter Sleeve Cotton Dress",
-    description:
-      "Romantic elegance meets modern sophistication. This premium cotton dress features a flattering A-line silhouette with delicate flutter sleeves and thoughtfully placed details. Designed to capture the essence of childhood wonder while maintaining refined style.",
-    price: 7800, // $78.00
-    images: generateImages(
-      "/4683.png",
-      "/4684.png"
-    ),
-    sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[1], // Girls
-    slug: "flutter-sleeve-cotton-dress",
-    inStock: true,
-    tags: ["new", "bestseller"],
-    sku: "FPD-001",
+    sku: "PLB-001",
   },
   {
-    id: "prod-12",
-    name: "Premium Cashmere Sweater",
-    description:
-      "Indulgent luxury in its purest form. This sumptuous cashmere-blend sweater offers a relaxed, confident fit with exceptional softness and warmth. A timeless investment piece that elevates any ensemble while providing unmatched comfort.",
-    price: 14500, // $145.00
-    images: generateImages(
-      "/4686.png",
-      "/4687.png"
-    ),
-    sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[1], // Girls
-    slug: "premium-cashmere-sweater",
-    inStock: true,
-    tags: ["bestseller"],
-    sku: "CAS-001",
-  },
-  {
-    id: "prod-13",
-    name: "Classic A-Line Denim Skirt",
-    description:
-      "A modern classic reimagined. This A-line denim skirt is crafted from premium denim fabric, offering a comfortable fit and timeless silhouette. Versatile enough for play, sophisticated enough for special moments.",
-    price: 6200, // $62.00
-    images: generateImages(
-      "/4684.png",
-      "/4685.png"
-    ),
-    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[1], // Girls
-    slug: "classic-a-line-denim-skirt",
-    inStock: true,
-    sku: "DS-001",
-  },
-  {
-    id: "prod-14",
-    name: "Essential Ribbed Knit Top",
-    description:
-      "Effortless sophistication in every detail. This soft ribbed knit top features a relaxed fit that moves beautifully. Exceptionally versatile and comfortable, designed to layer seamlessly or stand alone as a statement piece.",
-    price: 4800, // $48.00
-    images: generateImages(
-      "/4688.png",
-      "/4689.png"
-    ),
-    sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[1], // Girls
-    slug: "essential-ribbed-knit-top",
-    inStock: true,
-    sku: "RKT-001",
-  },
-  {
-    id: "prod-15",
-    name: "Elegant Tulle Party Dress",
-    description:
-      "Where dreams meet design. This elegant tulle party dress features delicate, hand-placed details that capture the magic of special occasions. Meticulously crafted to create unforgettable moments, ensuring every celebration feels extraordinary.",
-    price: 18000, // $180.00
-    images: generateImages(
-      "/4690.png",
-      "/4691.png"
-    ),
-    sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[1], // Girls
-    slug: "elegant-tulle-party-dress",
-    inStock: true,
-    tags: ["new"],
-    sku: "TPD-001",
-  },
-  {
-    id: "prod-16",
-    name: "Classic Corduroy Jumper",
-    description:
-      "Nostalgic charm meets modern design. This classic corduroy jumper features adjustable straps and a comfortable fit that moves with ease. Perfect for everyday adventures, combining timeless appeal with contemporary comfort.",
-    price: 7200, // $72.00
-    images: generateImages(
-      "/4692.png",
-      "/4693.png"
-    ),
-    sizes: generateSizes(["3T", "4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[1], // Girls
-    slug: "classic-corduroy-jumper",
-    inStock: true,
-    sku: "CJ-001",
-  },
-  {
-    id: "prod-17",
-    name: "Luxury Silk Scarf",
-    description:
-      "An elegant finishing touch for any ensemble. This luxurious silk scarf features a sophisticated print that adds refined polish to every look. Lightweight, versatile, and beautifully crafted to elevate even the simplest outfit.",
-    price: 5500, // $55.00
-    images: generateImages(
-      "/4694.png",
-      "/4695.png"
-    ),
-    sizes: generateSizes(["6", "8", "10", "12"]),
-    category: mockCategories[2], // Accessories
-    slug: "luxury-silk-scarf",
-    inStock: true,
-    tags: ["new"],
-    sku: "SS-001",
-  },
-  {
-    id: "prod-18",
-    name: "Classic Leather Mary Janes",
-    description:
-      "Timeless elegance in every step. These classic leather Mary Janes feature premium construction and exceptional comfort. Designed to transition seamlessly from play to special occasions, combining sophisticated style with lasting quality.",
-    price: 8800, // $88.00
-    images: generateImages(
-      "/4696.png",
-      "/4697.png"
-    ),
-    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[2], // Accessories
-    slug: "classic-leather-mary-janes",
-    inStock: true,
-    sku: "LMJ-001",
-  },
-  {
-    id: "prod-19",
-    name: "Refined Velvet Blazer",
-    description:
-      "Uncompromising sophistication for life&apos;s most memorable moments. This luxurious velvet blazer features a precisely tailored fit and premium details that command attention. A statement piece that transforms any occasion into something extraordinary.",
-    price: 16500, // $165.00
-    images: generateImages(
-      "/4698.png",
-      "/4680.png"
-    ),
-    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
-    category: mockCategories[1], // Girls
-    slug: "refined-velvet-blazer",
-    inStock: true,
-    tags: ["new"],
-    sku: "VB-001",
-  },
-  {
-    id: "prod-20",
+    id: "accessory-wool-beanie",
     name: "Wool Beanie",
     description:
       "Thoughtful warmth meets refined style. This cozy wool beanie is crafted from premium yarn, offering exceptional comfort and insulation. Designed to keep little ones warm while maintaining sophisticated appeal during cooler seasons.",
@@ -451,9 +422,11 @@ export const mockProducts: Product[] = [
     originalPrice: 4500, // $45.00 (on sale)
     images: generateImages(
       "/Extreme 4.png",
-      "/Extreme 5.png"
+      "/Extreme 5.png",
+      undefined,
+      "Wool Beanie"
     ),
-    sizes: generateSizes(["2T", "3T", "4T", "5T", "6", "8", "10", "12"]),
+    sizes: generateSizes(["4T", "5T", "6", "8", "10", "12"]),
     category: mockCategories[2], // Accessories
     slug: "wool-beanie",
     inStock: true,
