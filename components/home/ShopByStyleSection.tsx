@@ -21,25 +21,25 @@ const styleCategories: StyleCategory[] = [
     id: "street-essentials",
     name: "Street Essentials",
     href: "/collections/boys?style=street",
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop",
+    image: "/4677.png", // Streetwear lifestyle shot
   },
   {
     id: "premium-basics",
     name: "Premium Basics",
     href: "/collections/boys?style=casual",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=800&auto=format&fit=crop",
+    image: "/4672.png", // Casual lifestyle shot
   },
   {
     id: "outerwear",
     name: "Outerwear",
     href: "/collections/boys?category=outerwear",
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=800&auto=format&fit=crop",
+    image: "/Extreme 5.png", // Outerwear collection image
   },
   {
     id: "activewear",
     name: "Activewear",
     href: "/collections/boys?style=sport",
-    image: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=800&auto=format&fit=crop",
+    image: "/4680.png", // Activewear lifestyle shot
   },
 ];
 

@@ -49,7 +49,7 @@ export default function AboutPage(): JSX.Element {
       <section className="relative min-h-[60vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"
+            src="/Extreme 1.png"
             alt="Extreme Dept Kidz - About"
             fill
             className="object-cover"
@@ -79,7 +79,7 @@ export default function AboutPage(): JSX.Element {
             {/* Image */}
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-cream-100">
               <Image
-                src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2086&auto=format&fit=crop"
+                src="/4683.png"
                 alt="Brand story"
                 fill
                 className="object-cover"
@@ -218,7 +218,7 @@ export default function AboutPage(): JSX.Element {
             {/* Founder Image */}
             <div className="lg:col-span-2 relative aspect-square rounded-lg overflow-hidden bg-cream-100">
               <Image
-                src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop"
+                src="/IMG_8620.PNG"
                 alt="Founder"
                 fill
                 className="object-cover"

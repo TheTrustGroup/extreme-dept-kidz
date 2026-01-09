@@ -23,13 +23,14 @@ export function EditorialSection() {
           >
             <div className="relative w-full h-full">
               <Image
-                src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2086&auto=format&fit=crop"
-                alt="Modern family in premium fashion"
+                src="/4683.png"
+                alt="Boy in premium streetwear - lifestyle photography"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 loading="lazy"
                 quality={85}
+                priority={false}
               />
             </div>
           </m.div>

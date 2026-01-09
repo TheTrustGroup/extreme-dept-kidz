@@ -14,7 +14,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Everyday",
     season: "all-season",
     ageRange: "6-10",
-    mainImage: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2070&auto=format&fit=crop",
+    mainImage: "/4683.png", // Urban Explorer lifestyle shot
     products: [
       { productId: "prod-1", category: "outerwear" }, // Heritage Denim Jacket
       { productId: "prod-2", category: "top" }, // Premium Cotton Tee
@@ -33,7 +33,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Active",
     season: "spring",
     ageRange: "4-8",
-    mainImage: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=2087&auto=format&fit=crop",
+    mainImage: "/4684.png", // Playground Ready lifestyle shot
     products: [
       { productId: "prod-4", category: "top" }, // Urban Hoodie
       { productId: "prod-5", category: "bottom" }, // Athletic Joggers
@@ -52,7 +52,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Everyday",
     season: "summer",
     ageRange: "7-12",
-    mainImage: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=2087&auto=format&fit=crop",
+    mainImage: "/4685.png", // Weekend Casual lifestyle shot
     products: [
       { productId: "prod-6", category: "top" }, // Premium Polo Shirt
       { productId: "prod-9", category: "bottom" }, // Cargo Shorts
@@ -70,7 +70,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Everyday",
     season: "all-season",
     ageRange: "6-10",
-    mainImage: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2080&auto=format&fit=crop",
+    mainImage: "/4686.png", // School Day Classic lifestyle shot
     products: [
       { productId: "prod-2", category: "top" }, // Premium Cotton Tee
       { productId: "prod-3", category: "bottom" }, // Classic Chino Pants
@@ -89,7 +89,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Active",
     season: "fall",
     ageRange: "5-9",
-    mainImage: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=2070&auto=format&fit=crop",
+    mainImage: "/4687.png", // Adventure Seeker lifestyle shot
     products: [
       { productId: "prod-4", category: "top" }, // Urban Hoodie
       { productId: "prod-9", category: "bottom" }, // Cargo Shorts
@@ -108,7 +108,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Everyday",
     season: "fall",
     ageRange: "6-12",
-    mainImage: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2064&auto=format&fit=crop",
+    mainImage: "/4688.png", // Layered Comfort lifestyle shot
     products: [
       { productId: "prod-2", category: "top" }, // Premium Cotton Tee
       { productId: "prod-8", category: "outerwear" }, // Wool Blend Cardigan
@@ -127,7 +127,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Active",
     season: "all-season",
     ageRange: "4-8",
-    mainImage: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=2087&auto=format&fit=crop",
+    mainImage: "/IMG_4689.png", // Sporty Style lifestyle shot
     products: [
       { productId: "prod-4", category: "top" }, // Urban Hoodie
       { productId: "prod-5", category: "bottom" }, // Athletic Joggers
@@ -145,7 +145,7 @@ export const styleLooks: StyleLook[] = [
     occasion: "Special Occasion",
     season: "all-season",
     ageRange: "7-12",
-    mainImage: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=2087&auto=format&fit=crop",
+    mainImage: "/4685.png", // Weekend Casual lifestyle shot
     products: [
       { productId: "prod-6", category: "top" }, // Premium Polo Shirt
       { productId: "prod-3", category: "bottom" }, // Classic Chino Pants

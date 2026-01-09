@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { m } from "framer-motion";
 import { Grid3x3 } from "lucide-react";
@@ -222,31 +223,67 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
     (filters.priceRange.min !== 0 || filters.priceRange.max !== 18000 ? 1 : 0) +
     (filters.inStockOnly ? 1 : 0);
 
+  // Get collection hero image based on slug
+  const getCollectionHeroImage = (): string => {
+    if (params.slug === "boys") return "/Extreme 3.png";
+    if (params.slug === "girls") return "/Extreme 4.png";
+    if (params.slug === "new-arrivals") return "/Extreme 4.png";
+    return "/Extreme 5.png";
+  };
+
   return (
-    <div className="min-h-screen bg-cream-50 pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
-      <Container size="lg">
-        {/* Page Header */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-6 xs:mb-7 sm:mb-8 md:mb-10 lg:mb-12"
-        >
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="flex-1">
-              <H1 className="text-charcoal-900 mb-3 xs:mb-4 text-3xl xs:text-4xl sm:text-5xl font-serif font-bold">
-                {collection.name.toUpperCase()}
-              </H1>
-              {collection.description && (
-                <Body className="text-base xs:text-lg text-charcoal-600 max-w-3xl leading-relaxed">
-                  {collection.description}
+    <div className="min-h-screen bg-cream-50">
+      {/* Collection Hero Header */}
+      <section className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden">
+        <Image
+          src={getCollectionHeroImage()}
+          alt={collection.name}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+          quality={90}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
+        <div className="relative h-full flex items-center justify-center text-center px-4">
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl"
+          >
+            <H1 className="text-cream-50 mb-4 text-4xl md:text-5xl lg:text-6xl font-serif font-bold drop-shadow-lg">
+              {collection.name.toUpperCase()}
+            </H1>
+            {collection.description && (
+              <Body className="text-xl md:text-2xl text-cream-100 max-w-2xl mx-auto drop-shadow-md">
+                {collection.description}
+              </Body>
+            )}
+          </m.div>
+        </div>
+      </section>
+
+      <div className="pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
+        <Container size="lg">
+          {/* Product Count & Active Filters */}
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-6 xs:mb-7 sm:mb-8 md:mb-10 lg:mb-12"
+          >
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-cream-200">
+              <Body className="text-sm text-charcoal-600 font-medium">
+                {sortedProducts.length} {sortedProducts.length === 1 ? "Product" : "Products"}
+              </Body>
+              {activeFiltersCount > 0 && (
+                <Body className="text-xs text-charcoal-500">
+                  {activeFiltersCount} {activeFiltersCount === 1 ? "filter" : "filters"} active
                 </Body>
               )}
             </div>
-            <div className="hidden lg:flex items-center gap-2">
-              <Grid3x3 className="w-5 h-5 text-charcoal-400" />
-            </div>
-          </div>
+          </m.div>
           
           {/* Product Count & Active Filters */}
           <div className="flex items-center justify-between gap-4 pt-4 border-t border-cream-200">
