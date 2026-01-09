@@ -23,6 +23,9 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   const pathname = usePathname();
   const { isAuthenticated, user } = useAdminAuth();
 
+  // Enable keyboard shortcuts (must be called unconditionally)
+  useAdminKeyboards();
+
   // Redirect to login if not authenticated (except on login page)
   React.useEffect(() => {
     if (!isAuthenticated && pathname !== "/admin/login") {
@@ -34,9 +37,6 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
-
-  // Enable keyboard shortcuts (must be called before early returns)
-  useAdminKeyboards();
 
   // Show loader while checking auth
   if (!isAuthenticated || !user) {

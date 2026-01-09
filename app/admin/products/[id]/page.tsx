@@ -45,7 +45,6 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {

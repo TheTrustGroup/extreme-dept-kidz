@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Package, MoreVertical } from "lucide-react";
+import { Package } from "lucide-react";
 import { getOrders } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -135,10 +135,8 @@ export default function OrdersPage(): JSX.Element {
                     <td className="px-4 py-4 text-sm text-charcoal-600">{order.date}</td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/admin/orders/${order.id}`}>
-                            <MoreVertical className="w-4 h-4" />
-                          </Link>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link href={`/admin/orders/${order.id}`}>View</Link>
                         </Button>
                       </div>
                     </td>
