@@ -7,6 +7,9 @@ import { m } from "framer-motion";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileNav } from "./MobileNav";
+import { MegaMenu } from "./MegaMenu";
+import { TopBar } from "./TopBar";
+import { SearchOverlay } from "./SearchOverlay";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { useCartStore } from "@/lib/stores/cart-store";
 
@@ -14,45 +17,48 @@ interface HeaderProps {
   cartItemCount?: number;
 }
 
-export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
+export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): JSX.Element {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = React.useState(false);
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const { open: openCart } = useCartDrawer();
   const cartItemCount = useCartStore((state) => state.getItemCount());
 
-  React.useEffect(() => {
-    const handleScroll = () => {
+  React.useEffect((): (() => void) => {
+    const handleScroll = (): void => {
       setIsScrolled(window.scrollY > 20);
     };
 
-    const handleResize = () => {
+    const handleResize = (): void => {
       setIsMobile(window.innerWidth < 768);
     };
 
     handleResize();
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);
-    return () => {
+    return (): void => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   const navLinks = [
-    { label: "Boys", href: "/collections/boys" },
-    { label: "Girls", href: "/collections/girls" },
-    { label: "New Arrivals", href: "/collections/new-arrivals" },
-    { label: "Collections", href: "/collections" },
+    { label: "BOYS", href: "/collections/boys", hasMegaMenu: true },
+    { label: "NEW ARRIVALS", href: "/collections/new-arrivals" },
+    { label: "GIRLS", href: "/collections/girls" },
+    { label: "COLLECTIONS", href: "/collections" },
   ];
 
   return (
     <>
+      <TopBar />
       <m.header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50",
+          "fixed top-8 left-0 right-0 z-50",
           isScrolled
-            ? "bg-cream-50/80 backdrop-blur-md border-b border-cream-200/50"
+            ? "bg-cream-50/95 backdrop-blur-md border-b border-cream-200/50 shadow-sm"
             : "bg-cream-50/95 backdrop-blur-sm"
         )}
         initial={false}
@@ -75,7 +81,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <Link href="/" className="block flex items-center">
+              <Link href="/" className="flex items-center">
                 <Image
                   src="/IMG_8640.PNG"
                   alt="EXTREME DEPT KIDZ"
@@ -91,11 +97,21 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
             </m.div>
 
             {/* Desktop Navigation */}
-            <nav id="main-navigation" className="hidden xl:flex items-center space-x-6 2xl:space-x-8" aria-label="Main navigation">
+            <nav id="main-navigation" className="hidden xl:flex items-center space-x-8 2xl:space-x-10" aria-label="Main navigation">
               {navLinks.map((link) => (
-                <NavLink key={link.label} href={link.href}>
-                  {link.label}
-                </NavLink>
+                <div
+                  key={link.label}
+                  className="relative"
+                  onMouseEnter={() => link.hasMegaMenu && setIsMegaMenuOpen(true)}
+                  onMouseLeave={() => link.hasMegaMenu && setIsMegaMenuOpen(false)}
+                >
+                  <NavLink href={link.href} isEmphasized={link.label === "BOYS"}>
+                    {link.label}
+                  </NavLink>
+                  {link.hasMegaMenu && (
+                    <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
+                  )}
+                </div>
               ))}
             </nav>
 
@@ -103,7 +119,11 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
             <div className="flex items-center justify-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 flex-shrink-0">
               {/* Desktop Icons */}
               <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-                <IconButton aria-label="Search" disabled title="Search coming soon">
+                <IconButton 
+                  aria-label="Search" 
+                  onClick={() => setIsSearchOpen(true)}
+                  title="Search products"
+                >
                   <Search className="w-5 h-5" />
                 </IconButton>
                 <Link href="/account" className="relative p-2 text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg flex items-center justify-center">
@@ -148,30 +168,44 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps) {
         onClose={() => setIsMobileMenuOpen(false)}
         cartItemCount={cartItemCount}
       />
+
+      {/* Search Overlay */}
+      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }
 
-// NavLink Component with hover underline effect
+// NavLink Component with premium hover underline effect
 interface NavLinkProps {
   href: string;
   children: React.ReactNode;
+  isEmphasized?: boolean;
 }
 
-function NavLink({ href, children }: NavLinkProps) {
+function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.Element {
   return (
     <Link href={href} className="relative inline-block">
       <m.span
-        className="font-sans text-sm font-medium text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-2 py-1 block"
+        className={cn(
+          "font-sans text-xs font-semibold uppercase tracking-wider",
+          isEmphasized
+            ? "text-navy-900 font-bold"
+            : "text-charcoal-700 hover:text-charcoal-900",
+          "transition-colors duration-300",
+          "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-2 py-1 block"
+        )}
         whileHover={{ y: -1 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {children}
         <m.span
-          className="absolute bottom-[-4px] left-2 right-2 h-[1.5px] bg-navy-900"
-          initial={{ width: 0 }}
-          whileHover={{ width: "calc(100% - 1rem)" }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className={cn(
+            "absolute bottom-[-6px] left-0 right-0 h-[2px]",
+            isEmphasized ? "bg-navy-900" : "bg-navy-900"
+          )}
+          initial={{ width: 0, x: "50%" }}
+          whileHover={{ width: "100%", x: 0 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           aria-hidden="true"
         />
       </m.span>
@@ -184,7 +218,7 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   children: React.ReactNode;
 }
 
-function IconButton({ className, children, ...props }: IconButtonProps) {
+function IconButton({ className, children, ...props }: IconButtonProps): JSX.Element {
   return (
     <button
       className={cn(

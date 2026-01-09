@@ -4,6 +4,7 @@ import * as React from "react";
 import { CartProvider } from "./CartProvider";
 import { CartDrawerProvider } from "@/lib/hooks/use-cart-drawer";
 import { LazyMotionProvider } from "./LazyMotion";
+import { ToastProvider } from "@/components/ui/Toast";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -16,9 +17,11 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps): JSX.Element {
   return (
     <LazyMotionProvider>
-      <CartProvider>
-        <CartDrawerProvider>{children}</CartDrawerProvider>
-      </CartProvider>
+      <ToastProvider>
+        <CartProvider>
+          <CartDrawerProvider>{children}</CartDrawerProvider>
+        </CartProvider>
+      </ToastProvider>
     </LazyMotionProvider>
   );
 }

@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { m } from "framer-motion";
-import { AnimatePresence } from "framer-motion";
-import { Check, Plus, Minus, ChevronDown } from "lucide-react";
+import { m, AnimatePresence } from "framer-motion";
+import { Check, Plus, Minus, ChevronDown, Star, Heart, Share2, CheckCircle } from "lucide-react";
 import type { Product, ProductSize } from "@/types";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
@@ -115,15 +114,46 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
   const canAddToCart = selectedSize && product.inStock;
 
   return (
-    <div className={cn("space-y-8", className)}>
-      {/* Product Name */}
-      <div>
-        <H1 className="text-charcoal-900 mb-2">{product.name}</H1>
-        {product.category && (
-          <Body className="text-sm text-charcoal-500 uppercase tracking-wider">
-            {product.category.name}
-          </Body>
-        )}
+    <div className={cn("space-y-6 md:space-y-8", className)}>
+      {/* Breadcrumb */}
+      <div className="text-sm text-charcoal-500">
+        <span className="hover:text-charcoal-900 transition-colors">Home</span>
+        <span className="mx-2">/</span>
+        <span className="hover:text-charcoal-900 transition-colors">Boys</span>
+        <span className="mx-2">/</span>
+        <span className="hover:text-charcoal-900 transition-colors">{product.category?.name || "Product"}</span>
+        <span className="mx-2">/</span>
+        <span className="text-charcoal-900 font-medium">{product.name}</span>
+      </div>
+
+      {/* Product Name with Actions */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <H1 className="text-charcoal-900 mb-2 text-2xl md:text-3xl lg:text-4xl">{product.name}</H1>
+          {product.category && (
+            <Body className="text-sm text-charcoal-500 uppercase tracking-wider">
+              {product.category.name}
+            </Body>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <m.button
+            className="p-2 rounded-lg border border-cream-200 hover:bg-cream-100 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Add to wishlist"
+          >
+            <Heart className="w-5 h-5 text-charcoal-700" />
+          </m.button>
+          <m.button
+            className="p-2 rounded-lg border border-cream-200 hover:bg-cream-100 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Share product"
+          >
+            <Share2 className="w-5 h-5 text-charcoal-700" />
+          </m.button>
+        </div>
       </div>
 
       {/* Price */}
@@ -141,6 +171,26 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
             Sale
           </span>
         )}
+      </div>
+
+      {/* Reviews & Rating */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={cn(
+                "w-5 h-5",
+                star <= 4 ? "fill-yellow-400 text-yellow-400" : "text-cream-300"
+              )}
+            />
+          ))}
+        </div>
+        <span className="text-sm text-charcoal-600 font-medium">4.8</span>
+        <span className="text-sm text-charcoal-500">(127 reviews)</span>
+        <span className="px-2 py-1 bg-forest-50 text-forest-700 text-xs font-semibold rounded">
+          Bestseller
+        </span>
       </div>
 
       {/* Description */}
@@ -237,26 +287,55 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         </div>
       </div>
 
-      {/* Add to Cart Button */}
+      {/* Add to Cart & Buy Now Buttons */}
       <div className="space-y-3">
+        <m.div
+          initial={false}
+          animate={{
+            scale: showSuccess ? 0.95 : 1,
+          }}
+          transition={{ duration: 0.2 }}
+        >
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleAddToCart}
+            disabled={!canAddToCart || isAddingToCart}
+            loading={isAddingToCart}
+            loadingText="Adding..."
+            className={cn(
+              "w-full py-6 text-lg font-semibold uppercase tracking-wide",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "transition-all duration-200",
+              showSuccess && "bg-forest-600 hover:bg-forest-700"
+            )}
+          >
+            {showSuccess ? (
+              <span className="flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                Added!
+              </span>
+            ) : !product.inStock
+              ? "Currently Unavailable"
+              : !selectedSize
+                ? "Please Select a Size"
+                : "Add to Cart"}
+          </Button>
+        </m.div>
+        
         <Button
-          variant="primary"
+          variant="secondary"
           size="lg"
-          onClick={handleAddToCart}
-          disabled={!canAddToCart || isAddingToCart}
-          loading={isAddingToCart}
-          loadingText="Adding to Cart..."
+          disabled={!canAddToCart}
           className={cn(
-            "w-full py-6 text-lg font-semibold",
+            "w-full py-6 text-lg font-semibold uppercase tracking-wide",
+            "border-2 border-charcoal-900 text-charcoal-900",
+            "hover:bg-charcoal-900 hover:text-cream-50",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "transition-all duration-200"
           )}
         >
-          {!product.inStock
-            ? "Currently Unavailable"
-            : !selectedSize
-              ? "Please Select a Size"
-              : "Add to Cart"}
+          Buy Now
         </Button>
 
         {/* Success Feedback */}
@@ -291,23 +370,45 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         </AnimatePresence>
       </div>
 
+      {/* Trust Indicators */}
+      <div className="space-y-2 border-t border-cream-200 pt-6">
+        <div className="flex items-center gap-2 text-sm text-charcoal-600">
+          <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
+          <span>Free shipping on orders over ₵75</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-charcoal-600">
+          <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
+          <span>Free returns within 30 days</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-charcoal-600">
+          <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
+          <span>Secure checkout guaranteed</span>
+        </div>
+      </div>
+
       {/* Product Details Accordion */}
-      <div className="space-y-2 border-t border-cream-200 pt-8">
+      <div className="space-y-2 border-t border-cream-200 pt-6">
         <DetailSection
-          title="Materials"
-          content="Premium organic cotton, sustainably sourced. Crafted with attention to detail and built to last."
+          title="Product Details"
+          content="Premium cotton blend bomber with embroidered details. A modern classic for the style-conscious boy. Built for adventure, designed for style."
+          isExpanded={expandedDetails === "details"}
+          onToggle={() => toggleDetails("details")}
+        />
+        <DetailSection
+          title="Materials & Care"
+          content="Premium organic cotton, sustainably sourced. Machine wash cold with like colors. Tumble dry low. Do not bleach. Iron on low heat if needed."
           isExpanded={expandedDetails === "materials"}
           onToggle={() => toggleDetails("materials")}
         />
         <DetailSection
-          title="Care Instructions"
-          content="Machine wash cold with like colors. Tumble dry low. Do not bleach. Iron on low heat if needed."
-          isExpanded={expandedDetails === "care"}
-          onToggle={() => toggleDetails("care")}
+          title="Size & Fit"
+          content="True to size. Model is wearing size 8. For a relaxed fit, size up. For a fitted look, size down."
+          isExpanded={expandedDetails === "size"}
+          onToggle={() => toggleDetails("size")}
         />
         <DetailSection
           title="Shipping & Returns"
-          content="Free shipping on orders over ₵100. Easy returns within 30 days. Items must be unworn with tags attached."
+          content="Free shipping on orders over ₵75. Easy returns within 30 days. Items must be unworn with tags attached. Processing time: 1-2 business days."
           isExpanded={expandedDetails === "shipping"}
           onToggle={() => toggleDetails("shipping")}
         />
@@ -351,33 +452,34 @@ function DetailSection({
   content,
   isExpanded,
   onToggle,
-}: DetailSectionProps) {
+}: DetailSectionProps): JSX.Element {
   return (
-    <div className="border-b border-cream-200">
-      <button
+    <div className="border-b border-cream-200 last:border-b-0">
+      <m.button
         onClick={onToggle}
-        className="flex items-center justify-between w-full py-4 group"
+        className="w-full flex items-center justify-between py-4 text-left focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg px-2 -mx-2 hover:bg-cream-50 transition-colors duration-200"
+        aria-expanded={isExpanded}
+        whileHover={{ x: 2 }}
+        transition={{ duration: 0.2 }}
       >
-        <H3 className="font-serif text-base font-semibold text-charcoal-900 uppercase tracking-wider">
-          {title}
-        </H3>
-        <ChevronDown
-          className={cn(
-            "w-5 h-5 text-charcoal-600 transition-transform duration-200",
-            isExpanded && "transform rotate-180"
-          )}
-        />
-      </button>
+        <H3 className="text-base font-semibold text-charcoal-900">{title}</H3>
+        <m.div
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <ChevronDown className="w-5 h-5 text-charcoal-500" />
+        </m.div>
+      </m.button>
       <AnimatePresence>
         {isExpanded && (
           <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <Body className="text-charcoal-700 pb-4 leading-relaxed">
+            <Body className="text-sm text-charcoal-600 pb-4 leading-relaxed pl-2">
               {content}
             </Body>
           </m.div>

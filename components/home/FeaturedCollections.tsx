@@ -18,24 +18,24 @@ interface Collection {
 const collections: Collection[] = [
   {
     id: "1",
+    name: "Boys Collection",
+    href: "/collections/boys",
+    image:
+      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: "2",
     name: "New Arrivals",
     href: "/collections/new-arrivals",
     image:
       "https://images.unsplash.com/photo-1503341504253-dff4815485f1?q=80&w=2070&auto=format&fit=crop",
   },
   {
-    id: "2",
+    id: "3",
     name: "Street Essentials",
-    href: "/collections/street-essentials",
+    href: "/collections/boys?style=street",
     image:
       "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1926&auto=format&fit=crop",
-  },
-  {
-    id: "3",
-    name: "Premium Basics",
-    href: "/collections/premium-basics",
-    image:
-      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=2070&auto=format&fit=crop",
   },
 ];
 

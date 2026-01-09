@@ -121,7 +121,7 @@ export function HeroSection(): JSX.Element {
               textShadow: "0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)",
             }}
           >
-            Where Style Meets Substance
+            ELEVATED STYLE FOR YOUNG LEGENDS
           </m.h1>
 
           {/* Subheadline */}
@@ -136,7 +136,7 @@ export function HeroSection(): JSX.Element {
               textShadow: "0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.5)",
             }}
           >
-            Curated collections of premium fashion designed for the modern family. Timeless pieces that celebrate both play and sophistication.
+            Premium streetwear and luxury essentials for the modern boy. Built for adventure, designed for style.
           </m.p>
 
           {/* CTA Buttons */}
@@ -159,7 +159,7 @@ export function HeroSection(): JSX.Element {
               )}
               asChild
             >
-              <Link href="/collections/boys">Discover Boys&apos; Collection</Link>
+              <Link href="/collections/boys">SHOP BOYS</Link>
             </Button>
             <Button
               variant="secondary"
@@ -176,7 +176,7 @@ export function HeroSection(): JSX.Element {
               )}
               asChild
             >
-              <Link href="/collections/girls">Explore Girls&apos; Collection</Link>
+              <Link href="/collections/new-arrivals">NEW ARRIVALS</Link>
             </Button>
           </m.div>
           </div>

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { X, ChevronDown, ChevronUp } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/typography";
@@ -277,7 +277,7 @@ export function FilterSidebar({
         "hidden lg:block"
       )}
     >
-      <div className="bg-cream-50 rounded-lg border border-cream-200 p-6">
+      <div className="bg-white/90 backdrop-blur-md rounded-lg border border-cream-200/50 shadow-sm p-6">
         {sidebarContent}
       </div>
     </aside>
@@ -300,29 +300,32 @@ function FilterSection({
   isExpanded,
   onToggle,
   children,
-}: FilterSectionProps) {
+}: FilterSectionProps): JSX.Element {
   return (
     <div>
-      <button
+      <m.button
         onClick={onToggle}
         className="flex items-center justify-between w-full mb-4 group"
+        whileHover={{ x: 2 }}
+        transition={{ duration: 0.2 }}
       >
         <h4 className="font-serif text-sm font-semibold text-charcoal-900 uppercase tracking-wider">
           {title}
         </h4>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-charcoal-600 group-hover:text-charcoal-900 transition-colors duration-200" />
-        ) : (
+        <m.div
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
           <ChevronDown className="w-4 h-4 text-charcoal-600 group-hover:text-charcoal-900 transition-colors duration-200" />
-        )}
-      </button>
+        </m.div>
+      </m.button>
       <AnimatePresence>
         {isExpanded && (
           <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             className="overflow-hidden"
           >
             {children}
@@ -343,19 +346,23 @@ interface CheckboxProps {
   onChange: () => void;
 }
 
-function Checkbox({ label, checked, onChange }: CheckboxProps) {
+function Checkbox({ label, checked, onChange }: CheckboxProps): JSX.Element {
   return (
-    <label className="flex items-center gap-3 cursor-pointer group">
+    <m.label
+      className="flex items-center gap-3 cursor-pointer group"
+      whileHover={{ x: 2 }}
+      transition={{ duration: 0.2 }}
+    >
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="w-4 h-4 rounded border-cream-300 text-navy-900 focus:ring-navy-500 focus:ring-offset-2 cursor-pointer"
+        className="w-4 h-4 rounded border-cream-300 text-navy-900 focus:ring-navy-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
       />
       <span className="font-sans text-sm text-charcoal-700 group-hover:text-charcoal-900 transition-colors duration-200">
         {label}
       </span>
-    </label>
+    </m.label>
   );
 }
 

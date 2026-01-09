@@ -24,25 +24,25 @@ const categories: Category[] = [
       "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2086&auto=format&fit=crop",
   },
   {
-    id: "girls",
-    name: "Girls",
-    href: "/collections/girls",
+    id: "new-arrivals",
+    name: "New Arrivals",
+    href: "/collections/new-arrivals",
     image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1926&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?q=80&w=2070&auto=format&fit=crop",
+  },
+  {
+    id: "outerwear",
+    name: "Outerwear",
+    href: "/collections/boys?category=outerwear",
+    image:
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=2070&auto=format&fit=crop",
   },
   {
     id: "accessories",
     name: "Accessories",
-    href: "/collections/premium-basics?categories=Accessories",
+    href: "/collections/boys?category=accessories",
     image:
       "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-  },
-  {
-    id: "sale",
-    name: "Sale",
-    href: "/collections?sort=price-low",
-    image:
-      "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=2071&auto=format&fit=crop",
   },
 ];
 

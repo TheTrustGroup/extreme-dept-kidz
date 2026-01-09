@@ -123,12 +123,22 @@ export default function RootLayout({
           rel="dns-prefetch"
           href="https://images.unsplash.com"
         />
+        {/* Performance: Preload critical resources */}
+        <link
+          rel="preload"
+          href="/IMG_8640.PNG"
+          as="image"
+          type="image/png"
+        />
+        {/* Performance: Resource hints */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
       </head>
       <body className="min-h-screen flex flex-col">
         <SkipLinks />
         <Providers>
           <Header cartItemCount={0} />
-          <main id="main-content" className="flex-1" role="main">
+          <main id="main-content" className="flex-1 pt-[calc(2rem+4.5rem)] md:pt-[calc(2rem+5.5rem)]" role="main">
             {children}
           </main>
           <Footer />

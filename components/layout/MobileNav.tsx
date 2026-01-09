@@ -5,6 +5,7 @@ import Link from "next/link";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { X, User, ShoppingBag } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 
 interface MobileNavProps {
@@ -14,10 +15,10 @@ interface MobileNavProps {
 }
 
 const navLinks = [
-  { label: "Boys", href: "/collections/boys" },
-  { label: "Girls", href: "/collections/girls" },
-  { label: "New Arrivals", href: "/collections/new-arrivals" },
-  { label: "Collections", href: "/collections" },
+  { label: "BOYS", href: "/collections/boys", isEmphasized: true },
+  { label: "NEW ARRIVALS", href: "/collections/new-arrivals" },
+  { label: "GIRLS", href: "/collections/girls" },
+  { label: "COLLECTIONS", href: "/collections" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
@@ -161,7 +162,12 @@ export function MobileNav({
                     >
                       <Link
                         href={link.href}
-                        className="block font-serif text-2xl font-semibold text-charcoal-900 hover:text-navy-900 transition-colors duration-300 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg px-2 -mx-2"
+                        className={cn(
+                          "block font-serif text-2xl font-semibold transition-colors duration-300 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg px-2 -mx-2",
+                          link.isEmphasized
+                            ? "text-navy-900 font-bold"
+                            : "text-charcoal-900 hover:text-navy-900"
+                        )}
                         onClick={onClose}
                       >
                         {link.label}

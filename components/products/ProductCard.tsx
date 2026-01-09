@@ -4,9 +4,10 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
-import { Eye } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
+import { useCartStore } from "@/lib/stores/cart-store";
 
 interface ProductCardProps {
   product: Product;
@@ -21,6 +22,8 @@ interface ProductCardProps {
  */
 export function ProductCard({ product, className }: ProductCardProps): JSX.Element {
   const [isHovered, setIsHovered] = React.useState(false);
+  const [isWishlisted, setIsWishlisted] = React.useState(false);
+  const addToCart = useCartStore((state) => state.addItem);
 
   // Get primary image
   const primaryImage = product.images.find((img) => (img as ProductImage).isPrimary) || product.images[0];
@@ -28,6 +31,30 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
 
   // Check if product is on sale
   const isOnSale = product.originalPrice && product.originalPrice > product.price;
+  
+  // Check if product is new (created within last 30 days)
+  const isNew = product.createdAt 
+    ? new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
+    : false;
+
+  const handleQuickAdd = (e: React.MouseEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.inStock) {
+      // Use default size or first available size
+      const defaultSize = product.sizes && product.sizes.length > 0 
+        ? product.sizes[0].size 
+        : "One Size";
+      addToCart(product, defaultSize);
+    }
+  };
+
+  const handleWishlist = (e: React.MouseEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsWishlisted(!isWishlisted);
+    // TODO: Implement wishlist functionality
+  };
 
   return (
     <Link
@@ -41,8 +68,8 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
       aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
     >
       <m.article
-        className="relative overflow-hidden rounded-lg bg-cream-50"
-        whileHover={{ scale: 1.02, y: -4 }}
+        className="relative overflow-hidden rounded-lg bg-cream-50 shadow-sm group-hover:shadow-xl transition-shadow duration-300"
+        whileHover={{ scale: 1.02, y: -8 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         aria-label={product.name}
       >
@@ -78,33 +105,56 @@ export function ProductCard({ product, className }: ProductCardProps): JSX.Eleme
             />
           )}
 
-          {/* Quick View Overlay */}
-          <m.div
-            className="absolute inset-0 flex items-center justify-center bg-charcoal-900/20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            aria-hidden="true"
-          >
+          {/* Quick Add to Cart Button (Bottom) */}
+          {product.inStock && (
             <m.div
-              className="flex items-center gap-2 px-4 py-2 bg-cream-50 text-charcoal-900 rounded-full font-sans text-sm font-medium"
-              initial={{ y: 8, opacity: 0 }}
-              animate={{ y: isHovered ? 0 : 8, opacity: isHovered ? 1 : 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+              className="absolute bottom-0 left-0 right-0 z-10 p-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <Eye className="w-4 h-4" />
-              <span>Quick View</span>
+              <m.button
+                onClick={handleQuickAdd}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-navy-900 text-cream-50 rounded-lg font-sans text-sm font-semibold uppercase tracking-wide hover:bg-navy-800 transition-colors duration-200 shadow-lg"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                aria-label={`Quick add ${product.name} to cart`}
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Add to Cart</span>
+              </m.button>
             </m.div>
-          </m.div>
+          )}
 
-          {/* Sale Badge */}
-          {isOnSale && (
-            <div className="absolute top-3 left-3 z-10">
+          {/* Badges */}
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+            {isNew && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-charcoal-900 text-cream-50 text-xs font-semibold uppercase tracking-wide">
+                NEW
+              </span>
+            )}
+            {isOnSale && (
               <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-navy-900 text-cream-50 text-xs font-semibold uppercase tracking-wide">
                 Sale
               </span>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Wishlist Icon */}
+          <m.button
+            className="absolute top-3 right-3 z-10 p-2 rounded-full bg-cream-50/90 backdrop-blur-sm text-charcoal-700 hover:text-navy-900 transition-colors duration-200 shadow-sm"
+            onClick={handleWishlist}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Heart
+              className={cn(
+                "w-5 h-5 transition-colors duration-200",
+                isWishlisted ? "fill-navy-900 text-navy-900" : "fill-none"
+              )}
+            />
+          </m.button>
 
           {/* Out of Stock Overlay */}
           {!product.inStock && (

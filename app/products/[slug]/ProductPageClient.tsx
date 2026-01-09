@@ -39,17 +39,17 @@ export function ProductPageClient({ product }: ProductPageClientProps) {
           </div>
 
           {/* Main Product Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16 lg:mb-24">
-            {/* Product Gallery */}
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8 lg:gap-12 mb-16 lg:mb-24">
+            {/* Product Gallery - Sticky on Desktop */}
+            <div className="lg:sticky lg:top-24 lg:self-start">
               <ProductGallery
                 images={product.images}
                 productName={product.name}
               />
             </div>
 
-            {/* Product Info */}
-            <div>
+            {/* Product Info - Sticky on Desktop */}
+            <div className="lg:sticky lg:top-24 lg:self-start">
               <ProductInfo product={product} />
             </div>
           </div>

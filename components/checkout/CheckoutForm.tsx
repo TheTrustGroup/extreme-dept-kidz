@@ -216,6 +216,21 @@ export function CheckoutForm({
         )}
       </AnimatePresence>
 
+      {/* Trust Message */}
+      {currentStep === "payment" && (
+        <div className="bg-forest-50 border border-forest-200 rounded-lg p-4 flex items-start gap-3">
+          <Shield className="w-5 h-5 text-forest-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-forest-900 mb-1">
+              Your information is secure
+            </p>
+            <p className="text-xs text-forest-700">
+              We use industry-standard encryption to protect your personal and payment information.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Navigation Buttons */}
       <div className="flex flex-col-reverse xs:flex-row items-stretch xs:items-center justify-between gap-3 xs:gap-4 pt-5 xs:pt-6 border-t border-cream-200">
         {currentStep !== "shipping" && (
@@ -230,8 +245,13 @@ export function CheckoutForm({
         )}
         <div className="flex-1 hidden xs:block" />
         {currentStep !== "payment" ? (
-          <Button type="button" variant="primary" onClick={handleNext} className="w-full xs:w-auto">
-            Continue to Next Step
+          <Button 
+            type="button" 
+            variant="primary" 
+            onClick={handleNext} 
+            className="w-full xs:w-auto uppercase tracking-wide font-semibold"
+          >
+            Continue
           </Button>
         ) : (
           <Button
@@ -240,7 +260,7 @@ export function CheckoutForm({
             size="lg"
             loading={isSubmitting}
             loadingText="Processing..."
-            className="w-full xs:w-auto"
+            className="w-full xs:w-auto uppercase tracking-wide font-semibold"
           >
             Complete Order
           </Button>

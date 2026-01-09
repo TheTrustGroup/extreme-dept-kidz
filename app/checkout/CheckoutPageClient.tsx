@@ -39,7 +39,12 @@ export function CheckoutPageClient(): JSX.Element | null {
     <div className="min-h-screen bg-cream-50 pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
       <Container size="lg">
         <div className="mb-6 xs:mb-7 sm:mb-8">
-          <H1 className="text-charcoal-900 text-2xl xs:text-3xl sm:text-4xl">Checkout</H1>
+          <H1 className="text-charcoal-900 text-2xl xs:text-3xl sm:text-4xl font-serif font-bold">
+            Checkout
+          </H1>
+          <p className="mt-2 text-sm text-charcoal-600">
+            Secure checkout guaranteed. Your information is protected.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 xs:gap-7 sm:gap-8 lg:gap-10 xl:gap-12">

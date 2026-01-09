@@ -7,11 +7,15 @@ const HeroSection = dynamic(() => import("@/components/home").then((mod) => ({ d
   loading: () => <div className="min-h-screen bg-cream-50" />,
 });
 
+const NewArrivalsSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })));
+
+const ShopByStyleSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })));
+
 const FeaturedCollections = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })));
 
-const ShopByCategory = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByCategory })));
-
 const EditorialSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.EditorialSection })));
+
+const GirlsCollectionSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })));
 
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
@@ -71,14 +75,20 @@ export default function Home() {
         {/* Hero Section - Full viewport height */}
         <HeroSection />
 
+        {/* New Arrivals Section - Boys Focused */}
+        <NewArrivalsSection />
+
+        {/* Shop by Style Section - Boys Categories */}
+        <ShopByStyleSection />
+
         {/* Featured Collections Section */}
         <FeaturedCollections />
 
-        {/* Shop by Category Section */}
-        <ShopByCategory />
-
-        {/* Editorial Lifestyle Section */}
+        {/* Editorial Lifestyle Section - "The EXTREME DEPT Boy" */}
         <EditorialSection />
+
+        {/* Girls Collection Section - Secondary, Smaller */}
+        <GirlsCollectionSection />
       </div>
     </>
   );

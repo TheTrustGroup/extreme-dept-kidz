@@ -114,6 +114,16 @@ img {
   content-visibility: auto;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+  /* Lazy loading optimization */
+  loading: lazy;
+  /* Prevent layout shift */
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* Next.js Image optimization */
+img[data-nimg] {
+  content-visibility: auto;
+  contain: layout style paint;
 }
 
 /* High-quality logo rendering in header */
@@ -238,6 +248,20 @@ textarea:focus-visible {
   color: var(--color-navy-900);
 }
 
+/* Performance: GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Performance: Optimize repaints */
+.optimize-repaint {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -292,4 +316,59 @@ textarea:focus-visible {
   width: 1px;
   height: 1px;
   overflow: hidden;
+}
+
+/* Responsive Design Utilities */
+
+/* Ensure no horizontal scroll on any device */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Touch target optimization for mobile */
+@media (max-width: 768px) {
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Text size optimization for mobile */
+@media (max-width: 640px) {
+  body {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  input, select, textarea {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Landscape orientation optimization */
+@media (orientation: landscape) and (max-height: 500px) {
+  header {
+    height: auto !important;
+    min-height: 3.5rem;
+  }
+}
+
+/* High DPI display optimization */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  img, video {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Print styles */
+@media print {
+  header, footer, nav, aside {
+    display: none;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
 }

@@ -45,25 +45,25 @@ export function EditorialSection() {
             <div className="max-w-lg space-y-6 md:space-y-8">
               {/* Eyebrow Text */}
               <Caption className="text-charcoal-600 uppercase tracking-wider">
-                Our Philosophy
+                THE COLLECTION
               </Caption>
 
               {/* Headline */}
-              <H2 className="text-charcoal-900 leading-tight">
-                Crafted for Life&apos;s Most Precious Moments
+              <H2 className="text-charcoal-900 leading-tight text-3xl md:text-4xl lg:text-5xl">
+                Built for Adventure, Designed for Style
               </H2>
 
               {/* Body Paragraph */}
               <div className="space-y-4">
                 <Body className="text-lg md:text-xl text-charcoal-700 leading-relaxed">
-                  We believe exceptional style transcends age. Our thoughtfully curated collections unite timeless sophistication with contemporary sensibility, speaking directly to families who value both quality and design.
+                  From the playground to the city streets, every piece is crafted for the modern boy who moves with confidence.
                 </Body>
                 <Body className="text-lg md:text-xl text-charcoal-700 leading-relaxed">
-                  Every piece is meticulously crafted with uncompromising attention to detail, using only the finest materials. We create for the moments that define childhood—from playground adventures to family celebrations, ensuring elegance meets everyday life.
+                  Premium streetwear meets luxury essentials. Our collections celebrate both play and sophistication, designed for young legends who demand quality and style.
                 </Body>
               </div>
 
-              {/* Learn More Link */}
+              {/* CTA Link */}
               <m.div
                 className="pt-4"
                 initial={{ opacity: 0, y: 10 }}
@@ -72,7 +72,7 @@ export function EditorialSection() {
                 transition={{ duration: 0.3, ease: "easeInOut", delay: 0.2 }}
               >
                 <Link
-                  href="/about"
+                  href="/collections/boys"
                   className={cn(
                     "inline-flex items-center font-sans text-base md:text-lg font-medium",
                     "text-charcoal-900 hover:text-navy-900",
@@ -81,7 +81,7 @@ export function EditorialSection() {
                   )}
                 >
                   <span className="relative">
-                    Discover Our Story
+                    Explore the Collection
                     <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-navy-900 transition-all duration-300 group-hover:w-full" />
                   </span>
                   <svg

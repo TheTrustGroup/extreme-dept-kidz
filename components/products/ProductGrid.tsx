@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { m } from "framer-motion";
 import type { Product } from "@/types";
 import { ProductCard } from "./ProductCard";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
@@ -72,9 +73,16 @@ export function ProductGrid({
           <SkeletonCard key={`skeleton-${index}`} />
         ))
       ) : (
-        // Product cards
-        products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        // Product cards with stagger animation
+        products.map((product, index) => (
+          <m.div
+            key={product.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.03 }}
+          >
+            <ProductCard product={product} />
+          </m.div>
         ))
       )}
     </div>

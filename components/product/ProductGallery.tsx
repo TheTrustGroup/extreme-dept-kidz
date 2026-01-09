@@ -4,9 +4,10 @@ import * as React from "react";
 import Image from "next/image";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ProductImage as ProductImageType } from "@/types";
 import { cn } from "@/lib/utils";
+import { ZoomableImage } from "./ZoomableImage";
 
 interface ProductGalleryProps {
   images: ProductImageType[];
@@ -101,34 +102,28 @@ export function ProductGallery({
     <>
       <div className={cn("flex flex-col lg:flex-row gap-3 xs:gap-4 sm:gap-5 lg:gap-6", className)}>
         {/* Main Image */}
-        <div className="relative lg:w-[60%] aspect-square lg:aspect-auto lg:h-[500px] xl:h-[600px] bg-cream-100 rounded-lg overflow-hidden group">
+        <div className="relative lg:w-full aspect-square lg:aspect-auto lg:h-[600px] xl:h-[700px] bg-cream-100 rounded-lg overflow-hidden group">
           <m.div
             key={selectedIndex}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             className="relative w-full h-full"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            <Image
+            <ZoomableImage
               src={selectedImage.url}
               alt={selectedImage.alt || `${productName} - Image ${selectedIndex + 1}`}
-              fill
-              className="object-cover cursor-zoom-in"
               sizes="(max-width: 1024px) 100vw, 60vw"
               priority={selectedIndex === 0}
               loading={selectedIndex === 0 ? "eager" : "lazy"}
-              quality={85}
-              onClick={() => setIsLightboxOpen(true)}
+              quality={90}
+              onLightboxOpen={() => setIsLightboxOpen(true)}
             />
 
-            {/* Zoom Icon Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center bg-charcoal-900/0 group-hover:bg-charcoal-900/10 transition-all duration-300 opacity-0 group-hover:opacity-100 pointer-events-none">
-              <ZoomIn className="w-8 h-8 text-cream-50" />
-            </div>
 
             {/* Navigation Arrows (Desktop) */}
             {images.length > 1 && (
@@ -161,20 +156,22 @@ export function ProductGallery({
 
         {/* Thumbnail Navigation */}
         {images.length > 1 && (
-          <div className="lg:w-[40%]">
-            <div className="grid grid-cols-4 xs:grid-cols-4 sm:grid-cols-4 lg:grid-cols-1 gap-2 xs:gap-2.5 sm:gap-3 lg:gap-4 max-h-[200px] xs:max-h-[220px] sm:max-h-[240px] lg:max-h-none overflow-y-auto">
+          <div className="lg:w-auto lg:flex-shrink-0">
+            <div className="flex lg:flex-col gap-2 xs:gap-2.5 sm:gap-3 lg:gap-4 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto lg:max-h-[600px] scrollbar-hide pb-2 lg:pb-0">
               {images.map((image, index) => (
-                <button
+                <m.button
                   key={index}
                   onClick={() => setSelectedIndex(index)}
                   className={cn(
-                    "relative aspect-square rounded-lg overflow-hidden",
+                    "relative flex-shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-lg overflow-hidden",
                     "border-2 transition-all duration-200",
                     "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
                     selectedIndex === index
-                      ? "border-charcoal-900"
+                      ? "border-charcoal-900 ring-2 ring-charcoal-900/20"
                       : "border-cream-200 hover:border-charcoal-400"
                   )}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   aria-label={`View image ${index + 1}`}
                 >
                   <Image
@@ -182,11 +179,11 @@ export function ProductGallery({
                     alt={image.alt || `${productName} - Thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 1024px) 25vw, 10vw"
+                    sizes="(max-width: 1024px) 80px, 96px"
                     loading="lazy"
-                    quality={75}
+                    quality={80}
                   />
-                </button>
+                </m.button>
               ))}
             </div>
           </div>

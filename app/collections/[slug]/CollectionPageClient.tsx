@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { m } from "framer-motion";
+import { Grid3x3 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { H1, Body } from "@/components/ui/typography";
 import {
@@ -13,6 +15,7 @@ import {
   type SortOption,
 } from "@/components/products/ProductToolbar";
 import { ProductGrid } from "@/components/products/ProductGrid";
+import { ActiveFilters } from "@/components/products/ActiveFilters";
 import { mockProducts, mockCollections } from "@/lib/mock-data";
 import {
   filterProducts,
@@ -120,6 +123,44 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
     setSortBy(newSort);
   };
 
+  // Handle active filter removal
+  const handleRemoveCategory = (category: string): void => {
+    setFilters({
+      ...filters,
+      categories: filters.categories.filter((c) => c !== category),
+    });
+  };
+
+  const handleRemoveSize = (size: string): void => {
+    setFilters({
+      ...filters,
+      sizes: filters.sizes.filter((s) => s !== size),
+    });
+  };
+
+  const handleClearPrice = (): void => {
+    setFilters({
+      ...filters,
+      priceRange: { min: 0, max: 18000 },
+    });
+  };
+
+  const handleClearStock = (): void => {
+    setFilters({
+      ...filters,
+      inStockOnly: false,
+    });
+  };
+
+  const handleClearAllFilters = (): void => {
+    setFilters({
+      categories: [],
+      sizes: [],
+      priceRange: { min: 0, max: 18000 },
+      inStockOnly: false,
+    });
+  };
+
   if (!collection) {
     return (
       <div className="min-h-screen bg-cream-50 pt-20 md:pt-24 pb-16">
@@ -135,18 +176,50 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
     );
   }
 
+  const activeFiltersCount = 
+    filters.categories.length +
+    filters.sizes.length +
+    (filters.priceRange.min !== 0 || filters.priceRange.max !== 18000 ? 1 : 0) +
+    (filters.inStockOnly ? 1 : 0);
+
   return (
     <div className="min-h-screen bg-cream-50 pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
       <Container size="lg">
         {/* Page Header */}
-        <div className="mb-6 xs:mb-7 sm:mb-8 md:mb-10 lg:mb-12">
-          <H1 className="text-charcoal-900 mb-3 xs:mb-4 text-2xl xs:text-3xl sm:text-4xl">{collection.name}</H1>
-          {collection.description && (
-            <Body className="text-base xs:text-lg text-charcoal-600 max-w-3xl">
-              {collection.description}
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mb-6 xs:mb-7 sm:mb-8 md:mb-10 lg:mb-12"
+        >
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <H1 className="text-charcoal-900 mb-3 xs:mb-4 text-3xl xs:text-4xl sm:text-5xl font-serif font-bold">
+                {collection.name.toUpperCase()}
+              </H1>
+              {collection.description && (
+                <Body className="text-base xs:text-lg text-charcoal-600 max-w-3xl leading-relaxed">
+                  {collection.description}
+                </Body>
+              )}
+            </div>
+            <div className="hidden lg:flex items-center gap-2">
+              <Grid3x3 className="w-5 h-5 text-charcoal-400" />
+            </div>
+          </div>
+          
+          {/* Product Count & Active Filters */}
+          <div className="flex items-center justify-between gap-4 pt-4 border-t border-cream-200">
+            <Body className="text-sm text-charcoal-600 font-medium">
+              {sortedProducts.length} {sortedProducts.length === 1 ? "Product" : "Products"}
             </Body>
-          )}
-        </div>
+            {activeFiltersCount > 0 && (
+              <Body className="text-xs text-charcoal-500">
+                {activeFiltersCount} {activeFiltersCount === 1 ? "filter" : "filters"} active
+              </Body>
+            )}
+          </div>
+        </m.div>
 
         {/* Main Content: Filters + Products */}
         <div className="flex flex-col lg:flex-row gap-6 xs:gap-7 sm:gap-8">
@@ -168,14 +241,30 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
               onFilterClick={() => setIsFilterOpen(true)}
             />
 
-            {/* Product Grid */}
-            <div className="mt-6 xs:mt-7 sm:mt-8">
+            {/* Active Filters */}
+            <ActiveFilters
+              filters={filters}
+              onRemoveCategory={handleRemoveCategory}
+              onRemoveSize={handleRemoveSize}
+              onClearPrice={handleClearPrice}
+              onClearStock={handleClearStock}
+              onClearAll={handleClearAllFilters}
+            />
+
+            {/* Product Grid with Animation */}
+            <m.div
+              key={`${sortedProducts.length}-${sortBy}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="mt-6 xs:mt-7 sm:mt-8"
+            >
               <ProductGrid
                 products={sortedProducts}
                 isLoading={isLoading}
                 columns={4}
               />
-            </div>
+            </m.div>
           </div>
         </div>
       </Container>
