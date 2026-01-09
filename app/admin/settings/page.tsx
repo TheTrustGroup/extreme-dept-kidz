@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Settings, Store, Mail, Globe, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 

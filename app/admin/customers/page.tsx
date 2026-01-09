@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Users, Mail, Phone } from "lucide-react";
+import { Users } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
@@ -14,7 +14,17 @@ import { Skeleton } from "@/components/ui/skeleton";
  * View and manage all customers.
  */
 export default function CustomersPage(): JSX.Element {
-  const [customers, setCustomers] = React.useState<any[]>([]);
+  interface Customer {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    orders: number;
+    spent: number;
+    memberSince: string;
+  }
+
+  const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { m } from "framer-motion";
 import { Package, MoreVertical } from "lucide-react";
 import { getOrders } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
@@ -16,7 +15,16 @@ import { Skeleton } from "@/components/ui/skeleton";
  * View and manage all orders.
  */
 export default function OrdersPage(): JSX.Element {
-  const [orders, setOrders] = React.useState<any[]>([]);
+  interface Order {
+    id: string;
+    customer: string;
+    items: number;
+    total: number;
+    status: string;
+    date: string;
+  }
+
+  const [orders, setOrders] = React.useState<Order[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
 

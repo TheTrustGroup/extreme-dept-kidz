@@ -35,13 +35,13 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
     return <>{children}</>;
   }
 
+  // Enable keyboard shortcuts (must be called before early returns)
+  useAdminKeyboards();
+
   // Show loader while checking auth
   if (!isAuthenticated || !user) {
     return <PageLoader />;
   }
-
-  // Enable keyboard shortcuts
-  useAdminKeyboards();
 
   return (
     <div className="flex h-screen bg-cream-50 overflow-hidden">
