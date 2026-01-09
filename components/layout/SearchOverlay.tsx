@@ -4,7 +4,6 @@ import * as React from "react";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface SearchOverlayProps {
   isOpen: boolean;

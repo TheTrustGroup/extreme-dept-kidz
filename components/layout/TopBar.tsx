@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { m } from "framer-motion";
 import { Truck, HeadphonesIcon, Package } from "lucide-react";
 
 export function TopBar(): JSX.Element {

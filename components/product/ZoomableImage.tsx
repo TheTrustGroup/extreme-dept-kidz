@@ -4,7 +4,6 @@ import * as React from "react";
 import Image from "next/image";
 import { m } from "framer-motion";
 import { ZoomIn } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ZoomableImageProps {
   src: string;

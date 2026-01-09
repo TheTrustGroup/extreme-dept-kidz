@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 import type { Product } from "@/types";
-import { cn } from "@/lib/utils";
 
 interface NewArrivalsSectionProps {
   products?: Product[];
