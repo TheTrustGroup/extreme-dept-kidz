@@ -61,10 +61,11 @@ export function LookDetailClient({ look }: LookDetailClientProps): JSX.Element {
     setIsSizeModalOpen(false);
     
     if (result.success) {
-      showToast(
-        `${look.name} added! ${result.count} items added to your cart`,
-        "success"
-      );
+      showToast({
+        type: "success",
+        title: "Added to cart",
+        message: `${look.name} added! ${result.count} items added to your cart`,
+      });
       
       setTimeout(() => {
         openCart();

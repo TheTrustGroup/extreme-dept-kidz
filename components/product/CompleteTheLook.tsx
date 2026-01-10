@@ -82,10 +82,11 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
     setIsSizeModalOpen(false);
     
     if (result.success) {
-      showToast(
-        `${selectedLook.name} added! ${result.count} items added to your cart`,
-        "success"
-      );
+      showToast({
+        type: "success",
+        title: "Added to cart",
+        message: `${selectedLook.name} added! ${result.count} items added to your cart`,
+      });
       
       // Open cart drawer after a short delay
       setTimeout(() => {

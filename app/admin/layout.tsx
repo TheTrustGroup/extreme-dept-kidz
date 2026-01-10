@@ -7,7 +7,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useAdminKeyboards } from "@/lib/hooks/use-admin-keyboard";
-import { ToastProvider } from "@/components/ui/toast";
+import { ToastProvider } from "@/components/ui/Toast";
 import "@/app/admin/admin-globals.css";
 
 interface AdminLayoutProps {

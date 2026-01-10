@@ -18,6 +18,7 @@ export interface Toast {
 interface ToastContextType {
   toasts: Toast[];
   addToast: (toast: Omit<Toast, "id">) => void;
+  showToast: (toast: Omit<Toast, "id">) => void; // Alias for addToast (backward compatibility)
   removeToast: (id: string) => void;
 }
 
@@ -43,7 +44,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }): JSX.
   }, []);
 
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
+    <ToastContext.Provider value={{ toasts, addToast, showToast: addToast, removeToast }}>
       {children}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </ToastContext.Provider>

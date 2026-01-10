@@ -45,6 +45,16 @@ export async function authenticateRequest(
 
   // Verify user still exists and is active
   try {
+    if (!prisma) {
+      return {
+        user: null,
+        error: NextResponse.json(
+          { error: 'Database connection unavailable' },
+          { status: 500 }
+        ),
+      };
+    }
+
     const user = await prisma.adminUser.findUnique({
       where: { id: payload.userId },
       select: {

@@ -11,7 +11,7 @@ import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { FloatingInput, FloatingTextarea } from "@/components/ui/floating-input";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -224,7 +224,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
                 {...register("compareAtPrice", { valueAsNumber: true })}
                 label="Compare at Price (₵)"
                 error={errors.compareAtPrice?.message}
-                success={!errors.compareAtPrice && watch("compareAtPrice") > 0}
+                success={!errors.compareAtPrice && (watch("compareAtPrice") ?? 0) > 0}
                 helperText="Original price for showing discounts (optional)"
               />
 

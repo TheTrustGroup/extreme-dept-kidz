@@ -16,6 +16,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: 'Database connection unavailable' },
+        { status: 500 }
+      );
+    }
+
     // Find user
     const user = await prisma.adminUser.findUnique({
       where: { email: email.toLowerCase() },
@@ -46,10 +53,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update last login
-    await prisma.adminUser.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
+    if (prisma) {
+      await prisma.adminUser.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
+      });
+    }
 
     // Generate token
     const token = generateToken({

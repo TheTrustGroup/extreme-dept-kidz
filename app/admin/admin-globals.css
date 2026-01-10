@@ -121,10 +121,6 @@
   @apply transition-all duration-200;
 }
 
-.admin-input-floating {
-  @apply peer;
-}
-
 /* Premium Card Styles */
 .admin-card {
   @apply bg-white rounded-xl border border-gray-200 shadow-sm;
