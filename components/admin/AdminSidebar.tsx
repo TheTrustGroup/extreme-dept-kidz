@@ -44,6 +44,12 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
   const pathname = usePathname();
   const { user, logout } = useAdminAuth();
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
+  const [collapsed, setCollapsed] = React.useState(false);
+  
+  // On desktop, use collapsed state; on mobile, use isOpen
+  const sidebarExpanded = typeof window !== 'undefined' && window.innerWidth >= 1024 
+    ? !collapsed 
+    : isOpen;
 
   const navItems: NavItem[] = [
     {
@@ -132,26 +138,34 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
             <button
               onClick={() => toggleExpanded(item.label)}
               className={cn(
-                "w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-left",
+                "w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 text-left group",
                 active
-                  ? "bg-navy-900 text-cream-50"
-                  : "text-charcoal-700 hover:bg-cream-100"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+                  : "text-white/70 hover:bg-white/10 hover:text-white"
               )}
               style={{ paddingLeft: `${level * 1 + 1}rem` }}
             >
-              <div className="flex items-center gap-3">
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-                {item.badge && (
-                  <span className="ml-auto bg-red-500 text-cream-50 text-xs font-bold px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-3 min-w-0">
+                <Icon className={cn(
+                  "w-5 h-5 flex-shrink-0 transition-transform duration-200",
+                  active && "scale-110"
+                )} />
+                <span className={cn(
+                  "font-medium transition-opacity duration-300 truncate",
+                  sidebarExpanded ? "opacity-100" : "opacity-0 w-0"
+                )}>{item.label}</span>
+                {item.badge && sidebarExpanded && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                     {item.badge}
                   </span>
                 )}
               </div>
-              {isExpanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
+              {isOpen && (
+                isExpanded ? (
+                  <ChevronDown className="w-4 h-4 flex-shrink-0 transition-transform duration-200" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 flex-shrink-0 transition-transform duration-200" />
+                )
               )}
             </button>
             <AnimatePresence>
@@ -174,17 +188,26 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
           <Link
             href={item.href}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
               active
-                ? "bg-navy-900 text-cream-50"
-                : "text-charcoal-700 hover:bg-cream-100"
+                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+                : "text-white/70 hover:bg-white/10 hover:text-white"
             )}
             style={{ paddingLeft: `${level * 1 + 1}rem` }}
           >
-            <Icon className="w-5 h-5" />
-            <span className="font-medium">{item.label}</span>
-            {item.badge && (
-              <span className="ml-auto bg-red-500 text-cream-50 text-xs font-bold px-2 py-0.5 rounded-full">
+            {active && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-400 rounded-r-full" />
+            )}
+            <Icon className={cn(
+              "w-5 h-5 flex-shrink-0 transition-transform duration-200",
+              active && "scale-110"
+            )} />
+            <span className={cn(
+              "font-medium transition-opacity duration-300 truncate",
+              sidebarExpanded ? "opacity-100" : "opacity-0 w-0"
+            )}>{item.label}</span>
+            {item.badge && sidebarExpanded && (
+              <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                 {item.badge}
               </span>
             )}
@@ -211,67 +234,99 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       <m.aside
         initial={false}
         animate={{
+          width: sidebarExpanded ? 250 : 80,
           x: isOpen ? 0 : "-100%",
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-navy-900 text-cream-50 flex flex-col shadow-xl lg:shadow-none",
-          "lg:translate-x-0"
+          "fixed lg:static inset-y-0 left-0 z-50 bg-[#0f0f0f] text-white flex flex-col",
+          "border-r border-[rgba(255,255,255,0.1)] shadow-2xl",
+          "lg:translate-x-0 overflow-hidden"
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-navy-800">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between p-4 lg:p-6 border-b border-[rgba(255,255,255,0.1)]">
+          <div className={cn(
+            "flex items-center gap-3 transition-opacity duration-300",
+            sidebarExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
+          )}>
             <Image
-              src="/IMG_8640.PNG"
+              src="/Extreme Logo.png"
               alt="EXTREME DEPT KIDZ"
-              width={120}
-              height={24}
-              className="h-6 w-auto object-contain"
+              width={160}
+              height={40}
+              className="h-8 w-auto object-contain brightness-0 invert"
+              priority
             />
           </div>
+          {!sidebarExpanded && (
+            <div className="flex items-center justify-center w-full">
+              <Image
+                src="/Extreme Logo.png"
+                alt="EXTREME DEPT KIDZ"
+                width={48}
+                height={48}
+                className="h-10 w-10 object-contain brightness-0 invert rounded-lg"
+                priority
+              />
+            </div>
+          )}
           <button
             onClick={onToggle}
-            className="lg:hidden text-cream-50 hover:text-cream-100 transition-colors"
+            className={cn(
+              "p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200",
+              "lg:hidden"
+            )}
             aria-label="Close sidebar"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="px-2 py-2 text-xs font-semibold text-cream-100/60 uppercase tracking-wider">
-          Admin Panel
+        <div className={cn(
+          "px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wider transition-opacity duration-300",
+          sidebarExpanded ? "opacity-100" : "opacity-0 overflow-hidden h-0"
+        )}>
+          Menu
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
           {navItems.map((item) => renderNavItem(item))}
         </nav>
 
         {/* User Section */}
         {user && (
-          <div className="border-t border-navy-800 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-navy-800 flex items-center justify-center">
-                <span className="text-cream-50 font-semibold">
+          <div className="border-t border-[rgba(255,255,255,0.1)] p-4">
+            <div className={cn(
+              "flex items-center gap-3 mb-3 transition-opacity duration-300",
+              sidebarExpanded ? "opacity-100" : "opacity-0"
+            )}>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <span className="text-white font-semibold text-sm">
                   {user.name.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-cream-50 truncate">
-                  {user.name}
-                </p>
-                <p className="text-xs text-cream-100/60 truncate">
-                  {user.role.replace("_", " ")}
-                </p>
-              </div>
+              {isOpen && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-white/60 truncate capitalize">
+                    {user.role.replace("_", " ")}
+                  </p>
+                </div>
+              )}
             </div>
             <button
               onClick={logout}
-              className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-cream-50 hover:bg-navy-800 transition-colors text-sm font-medium"
+              className={cn(
+                "w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 text-sm font-medium",
+                "group"
+              )}
             >
-              <LogOut className="w-4 h-4" />
-              Logout
+              <LogOut className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              {sidebarExpanded && <span>Logout</span>}
             </button>
           </div>
         )}
