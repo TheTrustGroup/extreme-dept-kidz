@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Menu as MenuIcon, Search, Bell, ChevronDown } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { cn } from "@/lib/utils";
@@ -179,7 +179,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                       </Link>
                       <button
                         onClick={() => {
-                          // Handle logout
+                          logout();
                           setShowUserMenu(false);
                         }}
                         className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
@@ -198,5 +198,3 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   );
 }
 
-// Add missing import
-import Link from "next/link";

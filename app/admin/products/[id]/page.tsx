@@ -34,9 +34,7 @@ const productSchema = z.object({
 type ProductFormData = z.infer<typeof productSchema>;
 
 interface ProductEditPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -47,7 +45,12 @@ interface ProductEditPageProps {
 export default function ProductEditPage({ params }: ProductEditPageProps): JSX.Element {
   const router = useRouter();
   const { addToast } = useToast();
-  const isNew = params.id === "new";
+  const [productId, setProductId] = React.useState<string>("");
+  const isNew = productId === "new";
+  
+  React.useEffect(() => {
+    params.then(({ id }) => setProductId(id));
+  }, [params]);
   const [loading, setLoading] = React.useState(!isNew);
   const [saving, setSaving] = React.useState(false);
 
@@ -81,10 +84,10 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
   });
 
   React.useEffect(() => {
-    if (!isNew) {
+    if (!isNew && productId) {
       async function loadProduct(): Promise<void> {
         try {
-          const product = await getProduct(params.id);
+          const product = await getProduct(productId);
           if (product) {
             setValue("name", product.name);
             setValue("description", product.description);
@@ -110,7 +113,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
     } else {
       setLoading(false);
     }
-  }, [params.id, isNew, setValue]);
+  }, [productId, isNew, setValue]);
 
   const onSubmit = async (data: ProductFormData): Promise<void> => {
     setSaving(true);
@@ -143,7 +146,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
       if (isNew) {
         await createProduct(productData);
       } else {
-        await updateProduct(params.id, productData);
+        await updateProduct(productId, productData);
       }
       router.push("/admin/products");
     } catch (error) {

@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -15,6 +14,7 @@ import {
   Sparkles,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   LogOut,
   Menu,
   X,
@@ -160,7 +160,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
                   </span>
                 )}
               </div>
-              {isOpen && (
+              {sidebarExpanded && (
                 isExpanded ? (
                   <ChevronDown className="w-4 h-4 flex-shrink-0 transition-transform duration-200" />
                 ) : (
@@ -246,29 +246,21 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 lg:p-6 border-b border-[rgba(255,255,255,0.1)]">
-          <div className={cn(
-            "flex items-center gap-3 transition-opacity duration-300",
-            sidebarExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
-          )}>
-            <Image
-              src="/Extreme Logo.png"
-              alt="EXTREME DEPT KIDZ"
-              width={160}
-              height={40}
-              className="h-8 w-auto object-contain brightness-0 invert"
-              priority
-            />
-          </div>
-          {!sidebarExpanded && (
+          {sidebarExpanded ? (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-white leading-tight">EXTREME</h2>
+                <p className="text-xs text-white/60 leading-tight">DEPT KIDZ</p>
+              </div>
+            </div>
+          ) : (
             <div className="flex items-center justify-center w-full">
-              <Image
-                src="/Extreme Logo.png"
-                alt="EXTREME DEPT KIDZ"
-                width={48}
-                height={48}
-                className="h-10 w-10 object-contain brightness-0 invert rounded-lg"
-                priority
-              />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
             </div>
           )}
           <button
@@ -281,14 +273,35 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
           >
             <X className="w-5 h-5" />
           </button>
+          {sidebarExpanded && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={cn(
+                "hidden lg:flex p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200",
+              )}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          {!sidebarExpanded && (
+            <button
+              onClick={() => setCollapsed(false)}
+              className={cn(
+                "hidden lg:flex p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200",
+              )}
+              aria-label="Expand sidebar"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
-        <div className={cn(
-          "px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wider transition-opacity duration-300",
-          sidebarExpanded ? "opacity-100" : "opacity-0 overflow-hidden h-0"
-        )}>
-          Menu
-        </div>
+        {sidebarExpanded && (
+          <div className="px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wider">
+            Menu
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
@@ -307,7 +320,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
                   {user.name.charAt(0).toUpperCase()}
                 </span>
               </div>
-              {isOpen && (
+              {sidebarExpanded && (
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">
                     {user.name}
