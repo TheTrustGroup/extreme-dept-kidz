@@ -51,7 +51,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       <div 
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
-          backgroundImage: "url('/images/admin-bg.jpg')",
+          backgroundImage: "url('/admin-bg.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
