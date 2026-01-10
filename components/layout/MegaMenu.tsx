@@ -71,7 +71,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps): JSX.Element {
       {isOpen && (
         <>
           <m.div
-            className="fixed inset-0 bg-charcoal-900/20 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-charcoal-900/30 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -81,7 +81,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps): JSX.Element {
           />
           <m.div
             ref={menuRef}
-            className="absolute top-full left-0 right-0 bg-cream-50 border-t border-cream-200 shadow-2xl z-50"
+            className="absolute top-full left-0 right-0 bg-white border-t-2 border-charcoal-200 shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-50"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -119,7 +119,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps): JSX.Element {
                   </m.div>
                 ))}
               </div>
-              <div className="mt-8 pt-8 border-t border-cream-200">
+              <div className="mt-8 pt-8 border-t border-charcoal-200">
                 <Link
                   href="/collections/boys"
                   className="inline-flex items-center space-x-2 font-sans text-sm font-medium text-charcoal-700 hover:text-navy-900 transition-colors"

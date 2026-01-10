@@ -374,7 +374,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
       <div className="space-y-2 border-t border-cream-200 pt-6">
         <div className="flex items-center gap-2 text-sm text-charcoal-600">
           <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
-          <span>Free shipping on orders over ₵75</span>
+          <span>Free shipping on orders over ₵800</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-charcoal-600">
           <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
@@ -408,7 +408,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         />
         <DetailSection
           title="Shipping & Returns"
-          content="Free shipping on orders over ₵75. Easy returns within 30 days. Items must be unworn with tags attached. Processing time: 1-2 business days."
+          content="Free shipping on orders over ₵800. Easy returns within 30 days. Items must be unworn with tags attached. Processing time: 1-2 business days."
           isExpanded={expandedDetails === "shipping"}
           onToggle={() => toggleDetails("shipping")}
         />
@@ -419,7 +419,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         <TrustBadge
           icon="🚚"
           title="Free Shipping"
-          description="On orders over ₵100"
+          description="On orders over ₵800"
         />
         <TrustBadge
           icon="↩️"

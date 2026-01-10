@@ -14,7 +14,7 @@ export function TopBar(): JSX.Element {
               className="flex items-center space-x-1.5 hover:text-cream-200 transition-colors duration-200"
             >
               <Truck className="w-3 h-3" aria-hidden="true" />
-              <span>Free Shipping Over ₵75</span>
+              <span>Free Shipping Over ₵800</span>
             </Link>
             <Link
               href="/contact"

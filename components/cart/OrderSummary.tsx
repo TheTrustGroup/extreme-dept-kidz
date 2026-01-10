@@ -20,7 +20,7 @@ export function OrderSummary({ className }: OrderSummaryProps): JSX.Element {
   const getTotal = useCartStore((state) => state.getTotal);
 
   const subtotal = getTotal();
-  const shippingEstimate = subtotal >= 10000 ? 0 : 800; // Free shipping over ₵100
+  const shippingEstimate = subtotal >= 80000 ? 0 : 800; // Free shipping over ₵800
   const total = subtotal + shippingEstimate;
 
   return (
@@ -73,9 +73,9 @@ export function OrderSummary({ className }: OrderSummaryProps): JSX.Element {
           </Body>
         </div>
 
-        {subtotal < 10000 && (
+        {subtotal < 80000 && (
           <Body className="text-xs text-charcoal-500">
-            Add {formatPrice(10000 - subtotal)} more for free shipping
+            Add {formatPrice(80000 - subtotal)} more for free shipping
           </Body>
         )}
 
