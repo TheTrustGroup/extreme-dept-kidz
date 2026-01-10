@@ -15,6 +15,7 @@ INSERT INTO "AdminUser" (
     "id",
     "email",
     "name",
+    "displayName",
     "passwordHash",
     "role",
     "isActive",
@@ -23,6 +24,7 @@ INSERT INTO "AdminUser" (
 ) VALUES (
     gen_random_uuid()::text,
     'admin@extremedeptkidz.com',
+    'Super Admin',
     'Super Admin',
     '$2b$12$zOmZw53eqhvMD.sHcr8mGeZINTvgmPEc7KavQHPwYSd7g/3Y/gB1C',
     'super_admin',
