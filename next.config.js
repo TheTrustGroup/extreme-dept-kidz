@@ -35,7 +35,7 @@ const nextConfig = {
     optimizePackageImports: [
       "framer-motion",
       "lucide-react",
-      "@prisma/client",
+      // Note: @prisma/client removed to ensure proper binary bundling
     ],
   },
   
