@@ -59,7 +59,7 @@ export default function AdminLoginPage(): JSX.Element {
           <div className="bg-navy-900 px-8 py-12 text-center">
             <div className="flex justify-center mb-4">
               <Image
-                src="/IMG_8640.PNG"
+                src="/Extreme Logo.png"
                 alt="EXTREME DEPT KIDZ"
                 width={200}
                 height={40}
