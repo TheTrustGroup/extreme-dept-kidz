@@ -52,6 +52,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -85,12 +86,12 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
             setValue("description", product.description);
             setValue("sku", product.sku || "");
             setValue("price", product.price / 100); // Convert from cents
-            setValue("compareAtPrice", product.compareAtPrice ? product.compareAtPrice / 100 : undefined);
+            setValue("compareAtPrice", product.originalPrice ? product.originalPrice / 100 : undefined);
             setValue("category", product.category.id);
             setValue("inStock", product.inStock);
             setValue("images", product.images.map(img => img.url));
             setValue("sizes", product.sizes.map(size => ({
-              size: size.name,
+              size: size.size,
               quantity: size.inStock ? 1 : 0,
             })));
             setValue("tags", product.tags || []);
@@ -115,7 +116,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         description: data.description,
         sku: data.sku,
         price: Math.round(data.price * 100), // Convert to cents
-        compareAtPrice: data.compareAtPrice ? Math.round(data.compareAtPrice * 100) : undefined,
+        originalPrice: data.compareAtPrice ? Math.round(data.compareAtPrice * 100) : undefined,
         category: {
           id: data.category,
           name: data.category,
@@ -129,7 +130,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
           isPrimary: index === 0,
         })),
         sizes: data.sizes?.map(size => ({
-          name: size.size,
+          size: size.size,
           inStock: size.quantity > 0,
         })) || [],
         tags: data.tags || [],
@@ -259,8 +260,8 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
           <div>
             <h2 className="text-xl font-bold text-charcoal-900 mb-4">Product Images</h2>
             <ImageUpload
-              images={form.watch("images")}
-              onChange={(urls) => form.setValue("images", urls)}
+              images={watch("images")}
+              onChange={(urls) => setValue("images", urls)}
               maxImages={10}
               disabled={saving}
             />
@@ -273,12 +274,12 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
           <div>
             <h2 className="text-xl font-bold text-charcoal-900 mb-4">Inventory by Size</h2>
             <div className="space-y-3">
-              {form.watch("sizes")?.map((size, index) => (
+              {watch("sizes")?.map((size, index) => (
                 <div key={size.size} className="flex items-center gap-4">
                   <span className="w-20 font-medium text-charcoal-900">Size {size.size}</span>
                   <input
                     type="number"
-                    {...form.register(`sizes.${index}.quantity`, { valueAsNumber: true })}
+                    {...register(`sizes.${index}.quantity`, { valueAsNumber: true })}
                     className="flex-1 px-4 py-2 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
                     placeholder="Quantity"
                     min="0"
