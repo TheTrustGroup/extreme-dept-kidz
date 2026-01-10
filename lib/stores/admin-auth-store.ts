@@ -148,6 +148,31 @@ export const useAdminAuth = create<AdminAuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Ensure storage is synced properly
+      storage: typeof window !== 'undefined' ? {
+        getItem: (name) => {
+          try {
+            const value = localStorage.getItem(name);
+            return value ? JSON.parse(value) : null;
+          } catch {
+            return null;
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, JSON.stringify(value));
+          } catch (error) {
+            console.error('Failed to save auth state:', error);
+          }
+        },
+        removeItem: (name) => {
+          try {
+            localStorage.removeItem(name);
+          } catch (error) {
+            console.error('Failed to remove auth state:', error);
+          }
+        },
+      } : undefined,
     }
   )
 );

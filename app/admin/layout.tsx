@@ -22,27 +22,48 @@ interface AdminLayoutProps {
  */
 export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [checkingAuth, setCheckingAuth] = React.useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAdminAuth();
+  const { isAuthenticated, user, checkAuth } = useAdminAuth();
 
   // Enable keyboard shortcuts (must be called unconditionally)
   useAdminKeyboards();
 
-  // Redirect to login if not authenticated (except on login page)
+  // Check authentication on mount and when pathname changes
   React.useEffect(() => {
-    if (!isAuthenticated && pathname !== "/admin/login") {
-      router.push("/admin/login");
+    // Don't check auth on login page
+    if (pathname === "/admin/login") {
+      setCheckingAuth(false);
+      return;
     }
-  }, [isAuthenticated, pathname, router]);
+
+    // Check authentication
+    const verifyAuth = async (): Promise<void> => {
+      setCheckingAuth(true);
+      try {
+        const authenticated = await checkAuth();
+        if (!authenticated) {
+          router.push("/admin/login");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        router.push("/admin/login");
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    verifyAuth();
+  }, [pathname, router, checkAuth]);
 
   // Don't render layout on login page
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
-  // Show loader while checking auth
-  if (!isAuthenticated || !user) {
+  // Show loader while checking auth or if not authenticated
+  if (checkingAuth || !isAuthenticated || !user) {
     return <PageLoader />;
   }
 
