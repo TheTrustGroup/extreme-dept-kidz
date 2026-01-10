@@ -91,8 +91,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     console.error('Login error:', error);
+    // Provide more detailed error in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? `Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      : 'Login failed';
+    
     return NextResponse.json(
-      { error: 'Login failed' },
+      { 
+        error: errorMessage,
+        // Include diagnostic info in development
+        ...(process.env.NODE_ENV === 'development' && {
+          diagnostic: {
+            hasDatabaseUrl: !!process.env.DATABASE_URL,
+            hasJwtSecret: !!process.env.JWT_SECRET,
+            jwtSecretLength: process.env.JWT_SECRET?.length || 0,
+            prismaAvailable: !!prisma,
+          }
+        })
+      },
       { status: 500 }
     );
   }
