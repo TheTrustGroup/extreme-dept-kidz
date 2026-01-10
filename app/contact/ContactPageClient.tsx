@@ -304,10 +304,10 @@ export function ContactPageClient(): JSX.Element {
                       Email
                     </Body>
                     <a
-                      href="mailto:hello@extremedeptkidz.com"
+                      href="mailto:info@extremedeptkidz.com"
                       className="text-charcoal-600 hover:text-navy-900 transition-colors"
                     >
-                      hello@extremedeptkidz.com
+                      info@extremedeptkidz.com
                     </a>
                   </div>
                 </div>

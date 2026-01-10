@@ -63,7 +63,7 @@ export function generateOrganizationSchema(): Record<string, unknown> {
       "@type": "ContactPoint",
       telephone: "+1-800-555-1234",
       contactType: "customer service",
-      email: "hello@extremedeptkidz.com",
+      email: "info@extremedeptkidz.com",
       areaServed: "GH",
       availableLanguage: ["en"],
     },

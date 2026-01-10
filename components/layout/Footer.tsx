@@ -191,6 +191,7 @@ export function Footer(): JSX.Element {
                 <FooterNavLink href="#">Size Guide</FooterNavLink>
                 <FooterNavLink href="#">Order Tracking</FooterNavLink>
                 <FooterNavLink href="/contact">Contact Us</FooterNavLink>
+                <FooterNavLink href="mailto:info@extremedeptkidz.com">info@extremedeptkidz.com</FooterNavLink>
                 <FooterNavLink href="#">FAQs</FooterNavLink>
               </ul>
             </m.nav>
