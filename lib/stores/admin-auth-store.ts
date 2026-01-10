@@ -10,50 +10,21 @@ import { persist } from "zustand/middleware";
 export type AdminRole = "super_admin" | "manager" | "editor";
 
 export interface AdminUser {
+  id: string;
   email: string;
   name: string;
   role: AdminRole;
-  id: string;
 }
 
 interface AdminAuthState {
   user: AdminUser | null;
+  token: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  checkAuth: () => Promise<boolean>;
   hasPermission: (permission: string) => boolean;
 }
-
-// Mock admin users (in production, this would be in a database)
-const ADMIN_USERS: Array<{
-  email: string;
-  password: string;
-  name: string;
-  role: AdminRole;
-  id: string;
-}> = [
-  {
-    email: "admin@extremedeptkidz.com",
-    password: "Admin123!",
-    name: "Super Admin",
-    role: "super_admin",
-    id: "admin-1",
-  },
-  {
-    email: "manager@extremedeptkidz.com",
-    password: "Manager123!",
-    name: "Store Manager",
-    role: "manager",
-    id: "admin-2",
-  },
-  {
-    email: "editor@extremedeptkidz.com",
-    password: "Editor123!",
-    name: "Content Editor",
-    role: "editor",
-    id: "admin-3",
-  },
-];
 
 // Permission matrix
 const PERMISSIONS: Record<AdminRole, string[]> = {
@@ -90,40 +61,76 @@ export const useAdminAuth = create<AdminAuthState>()(
   persist(
     (set, get) => ({
       user: null,
+      token: null,
       isAuthenticated: false,
 
       login: async (email: string, password: string): Promise<boolean> => {
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        try {
+          const response = await fetch("/api/admin/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
 
-        const adminUser = ADMIN_USERS.find(
-          (u) => u.email === email && u.password === password
-        );
+          if (!response.ok) {
+            const error = await response.json();
+            console.error("Login error:", error);
+            return false;
+          }
 
-        if (adminUser) {
-          const user: AdminUser = {
-            email: adminUser.email,
-            name: adminUser.name,
-            role: adminUser.role,
-            id: adminUser.id,
-          };
-
+          const data = await response.json();
+          
           set({
-            user,
+            user: data.user,
+            token: data.token,
             isAuthenticated: true,
           });
 
           return true;
+        } catch (error) {
+          console.error("Login error:", error);
+          return false;
         }
-
-        return false;
       },
 
       logout: (): void => {
         set({
           user: null,
+          token: null,
           isAuthenticated: false,
         });
+      },
+
+      checkAuth: async (): Promise<boolean> => {
+        const { token } = get();
+        if (!token) {
+          set({ isAuthenticated: false, user: null });
+          return false;
+        }
+
+        try {
+          const response = await fetch("/api/admin/auth/me", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            set({ isAuthenticated: false, user: null, token: null });
+            return false;
+          }
+
+          const data = await response.json();
+          set({
+            user: data.user,
+            isAuthenticated: true,
+          });
+
+          return true;
+        } catch (error) {
+          set({ isAuthenticated: false, user: null, token: null });
+          return false;
+        }
       },
 
       hasPermission: (permission: string): boolean => {
@@ -138,6 +145,7 @@ export const useAdminAuth = create<AdminAuthState>()(
       name: "admin-auth-storage",
       partialize: (state) => ({
         user: state.user,
+        token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
     }

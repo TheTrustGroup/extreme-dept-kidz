@@ -5,8 +5,12 @@ import { resolve } from "path";
 import { defineConfig } from "prisma/config";
 
 // Load .env.local first, then .env
-config({ path: resolve(process.cwd(), ".env.local") });
-config({ path: resolve(process.cwd(), ".env") });
+// This ensures environment variables are loaded before Prisma uses them
+const envLocal = config({ path: resolve(process.cwd(), ".env.local") });
+const env = config({ path: resolve(process.cwd(), ".env") });
+
+// Get DATABASE_URL from environment
+const databaseUrl = process.env.DATABASE_URL || "";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -14,6 +18,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"] || "",
+    url: databaseUrl,
   },
 });
