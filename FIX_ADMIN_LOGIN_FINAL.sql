@@ -24,7 +24,7 @@ INSERT INTO "AdminUser" (
     gen_random_uuid()::text,
     'admin@extremedeptkidz.com',
     'Super Admin',
-    '$2b$12$rJlT2lieZdPz9tFSIfxbdOirU3FwEuzwvmuC3XO.MkbErd9yb1neO',
+    '$2b$12$zOmZw53eqhvMD.sHcr8mGeZINTvgmPEc7KavQHPwYSd7g/3Y/gB1C',
     'super_admin',
     true,
     NOW(),
@@ -40,7 +40,7 @@ SELECT
     "isActive",
     "createdAt",
     CASE 
-        WHEN "passwordHash" = '$2b$12$rJlT2lieZdPz9tFSIfxbdOirU3FwEuzwvmuC3XO.MkbErd9yb1neO' 
+        WHEN "passwordHash" = '$2b$12$zOmZw53eqhvMD.sHcr8mGeZINTvgmPEc7KavQHPwYSd7g/3Y/gB1C' 
         THEN '✅ Password hash is correct' 
         ELSE '❌ Password hash mismatch!' 
     END as password_status
