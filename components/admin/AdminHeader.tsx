@@ -19,7 +19,7 @@ interface AdminHeaderProps {
  */
 export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   const pathname = usePathname();
-  const { user } = useAdminAuth();
+  const { user, logout } = useAdminAuth();
   const [showUserMenu, setShowUserMenu] = React.useState(false);
   const [showNotifications, setShowNotifications] = React.useState(false);
 
