@@ -15,15 +15,18 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "create-admin": "tsx scripts/create-admin.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "framer-motion": "^11.5.4",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.427.0",
     "next": "^14.2.5",
     "prisma": "^6.0.0",
@@ -39,6 +42,8 @@
   "devDependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@next/bundle-analyzer": "^14.2.35",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.14.12",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

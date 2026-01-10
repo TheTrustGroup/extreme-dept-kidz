@@ -256,3 +256,28 @@ enum UserRole {
   CUSTOMER
   ADMIN
 }
+
+// ============================================
+// ADMIN USERS (for admin dashboard)
+// ============================================
+
+model AdminUser {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String
+  passwordHash  String      // Hashed password (never store plain text!)
+  role          AdminRole   @default(editor)
+  isActive      Boolean     @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+enum AdminRole {
+  super_admin
+  manager
+  editor
+}
