@@ -17,18 +17,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     if (!prisma) {
+      console.error('Prisma client is null - DATABASE_URL may not be set');
       return NextResponse.json(
-        { error: 'Database connection unavailable' },
+        { error: 'Database connection unavailable. Please check environment variables.' },
         { status: 500 }
       );
     }
 
     // Find user
-    const user = await prisma.adminUser.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+    let user;
+    try {
+      user = await prisma.adminUser.findUnique({
+        where: { email: email.toLowerCase() },
+      });
+    } catch (dbError) {
+      console.error('Database query error:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection error. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     if (!user) {
+      console.log(`Login attempt failed: User not found for email ${email.toLowerCase()}`);
       // Don't reveal if user exists (security best practice)
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -46,6 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Verify password
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
+      console.log(`Login attempt failed: Invalid password for user ${user.email}`);
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
