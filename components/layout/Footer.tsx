@@ -362,8 +362,50 @@ function PaymentIcon({ name }: PaymentIconProps): JSX.Element {
     "google-pay": "GP",
   };
 
+  // Brand-specific colors for each payment method
+  const paymentStyles: Record<string, { bg: string; text: string; border?: string }> = {
+    visa: {
+      bg: "bg-gradient-to-br from-[#1A1F71] to-[#1434A4]",
+      text: "text-white",
+    },
+    mastercard: {
+      bg: "bg-gradient-to-br from-[#EB001B] to-[#F79E1B]",
+      text: "text-white",
+    },
+    amex: {
+      bg: "bg-gradient-to-br from-[#006FCF] to-[#0052A5]",
+      text: "text-white",
+    },
+    paypal: {
+      bg: "bg-gradient-to-br from-[#0070BA] to-[#003087]",
+      text: "text-white",
+    },
+    "apple-pay": {
+      bg: "bg-black",
+      text: "text-white",
+    },
+    "google-pay": {
+      bg: "bg-gradient-to-br from-[#4285F4] via-[#34A853] via-[#FBBC05] to-[#EA4335]",
+      text: "text-white",
+    },
+  };
+
+  const style = paymentStyles[name] || {
+    bg: "bg-cream-200/10",
+    text: "text-cream-200/60",
+  };
+
   return (
-    <div className="w-10 h-6 flex items-center justify-center rounded bg-cream-200/10 text-cream-200/60 text-[10px] font-semibold">
+    <div
+      className={cn(
+        "w-10 h-6 flex items-center justify-center rounded text-[10px] font-semibold",
+        "transition-all duration-300 hover:scale-110 hover:shadow-lg",
+        style.bg,
+        style.text,
+        style.border
+      )}
+      title={name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, " ")}
+    >
       {icons[name] || name}
     </div>
   );
