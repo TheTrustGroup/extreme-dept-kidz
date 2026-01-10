@@ -17,7 +17,7 @@ DELETE FROM "AdminUser";
 
 -- Step 2: Create fresh admin user with verified password hash
 -- Password: Admin@2024!
--- Hash: $2b$12$zOmZw53eqhvMD.sHcr8mGeZINTvgmPEc7KavQHPwYSd7g/3Y/gB1C
+-- Hash: $2b$12$psol9eO04Mc5wY045yoEr.iMBY.Dmljx.BHPvsyyIX7QgFsYPu45S
 INSERT INTO "AdminUser" (
     "id",
     "email",
@@ -33,7 +33,7 @@ INSERT INTO "AdminUser" (
     'admin@extremedeptkidz.com',
     'Super Admin',
     'Super Admin',
-    '$2b$12$zOmZw53eqhvMD.sHcr8mGeZINTvgmPEc7KavQHPwYSd7g/3Y/gB1C',
+    '$2b$12$psol9eO04Mc5wY045yoEr.iMBY.Dmljx.BHPvsyyIX7QgFsYPu45S',
     'super_admin',
     true,
     NOW(),
@@ -50,7 +50,7 @@ SELECT
     "isActive",
     "createdAt",
     CASE 
-        WHEN "passwordHash" = '$2b$12$zOmZw53eqhvMD.sHcr8mGeZINTvgmPEc7KavQHPwYSd7g/3Y/gB1C' 
+        WHEN "passwordHash" = '$2b$12$psol9eO04Mc5wY045yoEr.iMBY.Dmljx.BHPvsyyIX7QgFsYPu45S' 
         THEN '✅ Password hash is correct' 
         ELSE '❌ Password hash mismatch!' 
     END as password_status,
