@@ -9,6 +9,7 @@ import { getProduct, updateProduct, createProduct } from "@/lib/admin-api";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import type { Product } from "@/types";
 
 const productSchema = z.object({
@@ -16,8 +17,15 @@ const productSchema = z.object({
   description: z.string().min(10, "Description too short"),
   sku: z.string().min(1, "SKU is required"),
   price: z.number().positive("Price must be positive"),
+  compareAtPrice: z.number().optional(),
   category: z.string().min(1, "Category is required"),
   inStock: z.boolean(),
+  images: z.array(z.string()).min(1, "At least one image is required"),
+  sizes: z.array(z.object({
+    size: z.string(),
+    quantity: z.number().int().min(0),
+  })).optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -51,8 +59,19 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
       description: "",
       sku: "",
       price: 0,
+      compareAtPrice: undefined,
       category: "",
       inStock: true,
+      images: [],
+      sizes: [
+        { size: "4T", quantity: 0 },
+        { size: "5T", quantity: 0 },
+        { size: "6", quantity: 0 },
+        { size: "8", quantity: 0 },
+        { size: "10", quantity: 0 },
+        { size: "12", quantity: 0 },
+      ],
+      tags: [],
     },
   });
 
@@ -66,8 +85,15 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
             setValue("description", product.description);
             setValue("sku", product.sku || "");
             setValue("price", product.price / 100); // Convert from cents
+            setValue("compareAtPrice", product.compareAtPrice ? product.compareAtPrice / 100 : undefined);
             setValue("category", product.category.id);
             setValue("inStock", product.inStock);
+            setValue("images", product.images.map(img => img.url));
+            setValue("sizes", product.sizes.map(size => ({
+              size: size.name,
+              quantity: size.inStock ? 1 : 0,
+            })));
+            setValue("tags", product.tags || []);
           }
         } catch (error) {
           console.error("Failed to load product:", error);
@@ -89,6 +115,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         description: data.description,
         sku: data.sku,
         price: Math.round(data.price * 100), // Convert to cents
+        compareAtPrice: data.compareAtPrice ? Math.round(data.compareAtPrice * 100) : undefined,
         category: {
           id: data.category,
           name: data.category,
@@ -96,8 +123,16 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         },
         inStock: data.inStock,
         slug: data.name.toLowerCase().replace(/\s+/g, "-"),
-        images: [],
-        sizes: [],
+        images: data.images.map((url, index) => ({
+          url,
+          alt: `${data.name} - Image ${index + 1}`,
+          isPrimary: index === 0,
+        })),
+        sizes: data.sizes?.map(size => ({
+          name: size.size,
+          inStock: size.quantity > 0,
+        })) || [],
+        tags: data.tags || [],
       } as Partial<Product>;
 
       if (isNew) {
@@ -170,7 +205,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-charcoal-900 mb-2">Price *</label>
+                  <label className="block text-sm font-semibold text-charcoal-900 mb-2">Price (₵) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -179,6 +214,18 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
                   />
                   {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-charcoal-900 mb-2">Compare at Price (₵)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register("compareAtPrice", { valueAsNumber: true })}
+                  className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                  placeholder="Original price (optional)"
+                />
+                {errors.compareAtPrice && <p className="text-red-600 text-sm mt-1">{errors.compareAtPrice.message}</p>}
               </div>
 
               <div>
@@ -205,6 +252,39 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
                 />
                 <label className="text-sm font-medium text-charcoal-900">In Stock</label>
               </div>
+            </div>
+          </div>
+
+          {/* Product Images */}
+          <div>
+            <h2 className="text-xl font-bold text-charcoal-900 mb-4">Product Images</h2>
+            <ImageUpload
+              images={form.watch("images")}
+              onChange={(urls) => form.setValue("images", urls)}
+              maxImages={10}
+              disabled={saving}
+            />
+            {errors.images && (
+              <p className="text-red-600 text-sm mt-2">{errors.images.message}</p>
+            )}
+          </div>
+
+          {/* Inventory / Sizes */}
+          <div>
+            <h2 className="text-xl font-bold text-charcoal-900 mb-4">Inventory by Size</h2>
+            <div className="space-y-3">
+              {form.watch("sizes")?.map((size, index) => (
+                <div key={size.size} className="flex items-center gap-4">
+                  <span className="w-20 font-medium text-charcoal-900">Size {size.size}</span>
+                  <input
+                    type="number"
+                    {...form.register(`sizes.${index}.quantity`, { valueAsNumber: true })}
+                    className="flex-1 px-4 py-2 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
+                    placeholder="Quantity"
+                    min="0"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>

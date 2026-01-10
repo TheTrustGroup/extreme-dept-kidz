@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 
 export const dynamic = "force-dynamic";
@@ -117,6 +118,17 @@ export async function PUT(
       },
     });
 
+    // Revalidate cache to show updated product immediately
+    try {
+      revalidatePath(`/products/${id}`);
+      revalidatePath('/products');
+      revalidatePath('/collections');
+      revalidatePath('/');
+    } catch (revalidateError) {
+      console.error('Failed to revalidate cache:', revalidateError);
+      // Don't fail the request if revalidation fails
+    }
+
     return NextResponse.json(product);
   } catch (error) {
     console.error("Failed to update product:", error);
@@ -143,6 +155,16 @@ export async function DELETE(
     await prisma.product.delete({
       where: { id },
     });
+
+    // Revalidate cache after deletion
+    try {
+      revalidatePath('/products');
+      revalidatePath('/collections');
+      revalidatePath('/');
+    } catch (revalidateError) {
+      console.error('Failed to revalidate cache:', revalidateError);
+      // Don't fail the request if revalidation fails
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
