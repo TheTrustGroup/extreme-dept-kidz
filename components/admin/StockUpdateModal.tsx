@@ -4,11 +4,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface ProductSize {
-  size: string;
-  quantity: number;
-  inStock: boolean;
-}
+import type { ProductSize } from "@/types";
 
 interface StockUpdateModalProps {
   productId: string;
@@ -33,9 +29,10 @@ export function StockUpdateModal({
 
   const handleUpdate = () => {
     // Update inStock based on quantity
-    const updatedSizes = sizes.map(size => ({
+    const updatedSizes: ProductSize[] = sizes.map(size => ({
       ...size,
-      inStock: size.quantity > 0,
+      inStock: (size.quantity || 0) > 0,
+      quantity: size.quantity || 0,
     }));
     onUpdate(productId, updatedSizes);
     onClose();
@@ -66,10 +63,14 @@ export function StockUpdateModal({
               <input
                 type="number"
                 min="0"
-                value={size.quantity}
+                value={size.quantity || 0}
                 onChange={(e) => {
-                  const newSizes = [...sizes];
-                  newSizes[index].quantity = Math.max(0, parseInt(e.target.value) || 0);
+                  const newSizes: ProductSize[] = [...sizes];
+                  newSizes[index] = {
+                    ...newSizes[index],
+                    quantity: Math.max(0, parseInt(e.target.value) || 0),
+                    inStock: Math.max(0, parseInt(e.target.value) || 0) > 0,
+                  };
                   setSizes(newSizes);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -77,8 +78,12 @@ export function StockUpdateModal({
               <div className="flex gap-2">
                 <button
                   onClick={() => {
-                    const newSizes = [...sizes];
-                    newSizes[index].quantity += 5;
+                    const newSizes: ProductSize[] = [...sizes];
+                    newSizes[index] = {
+                      ...newSizes[index],
+                      quantity: (newSizes[index].quantity || 0) + 5,
+                      inStock: true,
+                    };
                     setSizes(newSizes);
                   }}
                   className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors text-sm font-medium"
@@ -87,8 +92,12 @@ export function StockUpdateModal({
                 </button>
                 <button
                   onClick={() => {
-                    const newSizes = [...sizes];
-                    newSizes[index].quantity += 10;
+                    const newSizes: ProductSize[] = [...sizes];
+                    newSizes[index] = {
+                      ...newSizes[index],
+                      quantity: (newSizes[index].quantity || 0) + 10,
+                      inStock: true,
+                    };
                     setSizes(newSizes);
                   }}
                   className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors text-sm font-medium"
@@ -97,26 +106,26 @@ export function StockUpdateModal({
                 </button>
               </div>
               <div className={`w-3 h-3 rounded-full ${
-                size.quantity === 0 
+                (size.quantity || 0) === 0 
                   ? 'bg-red-500' 
-                  : size.quantity < 5 
+                  : (size.quantity || 0) < 5 
                   ? 'bg-yellow-500' 
                   : 'bg-green-500'
-              }`} title={size.quantity === 0 ? 'Out of Stock' : size.quantity < 5 ? 'Low Stock' : 'In Stock'} />
+              }`} title={(size.quantity || 0) === 0 ? 'Out of Stock' : (size.quantity || 0) < 5 ? 'Low Stock' : 'In Stock'} />
             </div>
           ))}
         </div>
 
         <div className="flex gap-4 pt-4 border-t">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handleReset}
             className="flex-1"
           >
             Reset
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={onClose}
             className="flex-1"
           >

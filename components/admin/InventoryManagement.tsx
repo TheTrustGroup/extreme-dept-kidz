@@ -31,9 +31,11 @@ export function InventoryManagement(): JSX.Element {
     // Transform mock products to include stock data
     const productsWithStock: ProductWithStock[] = mockProducts.map(product => {
       // Add quantities if not present (for demo purposes)
-      const sizesWithQuantity: ProductSize[] = product.sizes.map(size => ({
+      // Use consistent quantities based on product ID for better UX
+      const productHash = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const sizesWithQuantity: ProductSize[] = product.sizes.map((size, index) => ({
         ...size,
-        quantity: size.quantity ?? (size.inStock ? Math.floor(Math.random() * 20) + 1 : 0),
+        quantity: size.quantity ?? (size.inStock ? (productHash % 20) + index * 3 + 1 : 0),
       }));
 
       const totalStock = sizesWithQuantity.reduce((sum, s) => sum + (s.quantity || 0), 0);
@@ -166,21 +168,21 @@ export function InventoryManagement(): JSX.Element {
       <div className="flex gap-4 mb-6">
         <Button
           onClick={() => setFilter('all')}
-          variant={filter === 'all' ? 'default' : 'outline'}
+          variant={filter === 'all' ? 'primary' : 'ghost'}
           className={filter === 'all' ? 'bg-black text-white hover:bg-gray-800' : ''}
         >
           All Items
         </Button>
         <Button
           onClick={() => setFilter('low')}
-          variant={filter === 'low' ? 'default' : 'outline'}
+          variant={filter === 'low' ? 'primary' : 'ghost'}
           className={filter === 'low' ? 'bg-yellow-600 text-white hover:bg-yellow-700' : ''}
         >
           Low Stock
         </Button>
         <Button
           onClick={() => setFilter('out')}
-          variant={filter === 'out' ? 'default' : 'outline'}
+          variant={filter === 'out' ? 'primary' : 'ghost'}
           className={filter === 'out' ? 'bg-red-600 text-white hover:bg-red-700' : ''}
         >
           Out of Stock
@@ -289,7 +291,7 @@ export function InventoryManagement(): JSX.Element {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => setSelectedProduct({
                           id: product.id,

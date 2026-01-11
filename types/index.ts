@@ -30,6 +30,8 @@ export interface ProductSize {
   size: string;
   /** Whether this size is currently in stock */
   inStock: boolean;
+  /** Optional quantity in stock for inventory management */
+  quantity?: number;
   /** Optional size description or fit notes */
   description?: string;
 }

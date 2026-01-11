@@ -19,10 +19,14 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
   
   const addToCart = useCartStore((state) => state.addItem);
 
-  const items = [
+  type SlideItem = 
+    | { type: 'complete'; image: string; title: string; price: number; originalPrice: number; savings: number }
+    | { type: 'individual'; id: string; image: string; title: string; price: number; product: any };
+
+  const items: SlideItem[] = [
     // First slide: Complete look
     {
-      type: 'complete' as const,
+      type: 'complete',
       image: look.mainImage,
       title: look.name,
       price: look.bundlePrice,
@@ -151,16 +155,24 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
                       >
                         Add to Cart
                       </button>
-                      <button
-                        onClick={() => toggleItemSelection(items[currentSlide].id)}
-                        className={`px-8 py-3 font-semibold rounded-lg transition-colors ${
-                          selectedItems.has(items[currentSlide].id)
-                            ? 'bg-green-500 text-white'
-                            : 'bg-white/20 text-white border border-white'
-                        }`}
-                      >
-                        {selectedItems.has(items[currentSlide].id) ? '✓ Selected' : 'Select'}
-                      </button>
+                      {items[currentSlide].type === 'individual' && (() => {
+                        const item = items[currentSlide];
+                        if (item.type === 'individual') {
+                          return (
+                            <button
+                              onClick={() => toggleItemSelection(item.id)}
+                              className={`px-8 py-3 font-semibold rounded-lg transition-colors ${
+                                selectedItems.has(item.id)
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-white/20 text-white border border-white'
+                              }`}
+                            >
+                              {selectedItems.has(item.id) ? '✓ Selected' : 'Select'}
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </>
                 )}

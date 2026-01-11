@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { styleLooks } from "@/lib/mock-data/styling-data";
+import { completeLooks } from "@/lib/mock-data";
 import { calculateBundleDiscount, getProductById } from "@/lib/utils/styling-utils";
+import type { CompleteLook } from "@/types";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
@@ -24,20 +26,47 @@ export function StyleGuideGalleryClient(): JSX.Element {
   }>({});
   const [sortBy, setSortBy] = React.useState<"newest" | "price-low" | "price-high">("newest");
 
-  // Get unique filter options
-  const occasions = React.useMemo(() => {
-    const unique = Array.from(new Set(styleLooks.map(l => l.occasion).filter(Boolean)));
-    return unique;
+  // Combine styleLooks and completeLooks for display
+  const allLooks = React.useMemo(() => {
+    // Convert completeLooks to a format compatible with the gallery
+    const convertedCompleteLooks = completeLooks.map((look: CompleteLook) => {
+      const totalPrice = look.items.reduce((sum, item) => sum + item.product.price, 0);
+      return {
+        id: look.id,
+        name: look.name,
+        description: look.description,
+        mainImage: look.mainImage,
+        products: look.items.map(item => ({
+          productId: item.product.id,
+          isOptional: !item.required,
+        })),
+        totalPrice: look.bundlePrice, // Use bundle price as total
+        bundleDiscount: look.savings > 0 ? Math.round((look.savings / look.totalPrice) * 100) : undefined,
+        occasion: look.tags.find(t => ['casual', 'formal', 'smart-casual'].includes(t.toLowerCase())),
+        ageRange: 'boys', // Default from tags
+        season: 'all',
+        featured: look.featured,
+        createdAt: look.createdAt || new Date().toISOString(),
+      };
+    });
+    
+    return [...styleLooks, ...convertedCompleteLooks as typeof styleLooks];
   }, []);
 
-  const ageRanges = React.useMemo(() => {
-    const unique = Array.from(new Set(styleLooks.map(l => l.ageRange).filter(Boolean)));
+  // Get unique filter options
+  const occasions = React.useMemo(() => {
+    const unique = Array.from(new Set(allLooks.map(l => l.occasion).filter(Boolean)));
     return unique;
-  }, []);
+  }, [allLooks]);
+
+  const ageRanges = React.useMemo(() => {
+    const unique = Array.from(new Set(allLooks.map(l => l.ageRange).filter(Boolean)));
+    return unique;
+  }, [allLooks]);
 
   // Filter and sort looks
   const filteredLooks = React.useMemo(() => {
-    let filtered = [...styleLooks];
+    let filtered = [...allLooks];
 
     if (filter.occasion) {
       filtered = filtered.filter(l => l.occasion === filter.occasion);
@@ -81,7 +110,7 @@ export function StyleGuideGalleryClient(): JSX.Element {
     });
 
     return filtered;
-  }, [filter, sortBy]);
+  }, [filter, sortBy, allLooks]);
 
   const clearFilters = (): void => {
     setFilter({});
@@ -178,6 +207,10 @@ export function StyleGuideGalleryClient(): JSX.Element {
               
               const pricing = calculateBundleDiscount(lookProducts, look);
               const requiredProducts = look.products.filter(p => !p.isOptional);
+              
+              // Check if this is a new complete look (from completeLooks)
+              const isNewCompleteLook = completeLooks.some(cl => cl.id === look.id);
+              const lookHref = isNewCompleteLook ? `/looks/${look.id}` : `/style-guide/${look.id}`;
 
               return (
                 <m.div
@@ -187,7 +220,7 @@ export function StyleGuideGalleryClient(): JSX.Element {
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                   className="group"
                 >
-                  <Link href={`/style-guide/${look.id}`} className="block">
+                  <Link href={lookHref} className="block">
                     <div className="bg-cream-100 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
                       {/* Look Image */}
                       <div className="relative aspect-[3/4] overflow-hidden">
