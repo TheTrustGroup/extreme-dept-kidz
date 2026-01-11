@@ -8,6 +8,7 @@ import { Heart, ShoppingBag } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/lib/stores/cart-store";
+import { WishlistButton } from "@/components/WishlistButton";
 
 interface ProductCardProps {
   product: Product;
@@ -23,7 +24,6 @@ interface ProductCardProps {
  */
 export const ProductCard = React.memo(function ProductCard({ product, className }: ProductCardProps): JSX.Element {
   const [isHovered, setIsHovered] = React.useState(false);
-  const [isWishlisted, setIsWishlisted] = React.useState(false);
   const addToCart = useCartStore((state) => state.addItem);
 
   // Get primary image
@@ -50,12 +50,6 @@ export const ProductCard = React.memo(function ProductCard({ product, className 
     }
   };
 
-  const handleWishlist = (e: React.MouseEvent): void => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    // TODO: Implement wishlist functionality
-  };
 
   return (
     <Link
@@ -142,20 +136,9 @@ export const ProductCard = React.memo(function ProductCard({ product, className 
           </div>
 
           {/* Wishlist Icon */}
-          <m.button
-            className="absolute top-3 right-3 z-10 p-2 rounded-full bg-cream-50/90 backdrop-blur-sm text-charcoal-700 hover:text-navy-900 transition-colors duration-200 shadow-sm"
-            onClick={handleWishlist}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            <Heart
-              className={cn(
-                "w-5 h-5 transition-colors duration-200",
-                isWishlisted ? "fill-navy-900 text-navy-900" : "fill-none"
-              )}
-            />
-          </m.button>
+          <div className="absolute top-3 right-3 z-10">
+            <WishlistButton product={product} size="md" />
+          </div>
 
           {/* Out of Stock Overlay */}
           {!product.inStock && (

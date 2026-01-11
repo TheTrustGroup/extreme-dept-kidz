@@ -3,16 +3,33 @@
 import * as React from "react";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { formatPrice } from "@/lib/utils";
 
 interface SearchOverlayProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+interface SearchResult {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  image: string;
+  category: string;
+}
+
 export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps): JSX.Element {
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [results, setResults] = React.useState<SearchResult[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [hasSearched, setHasSearched] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   React.useEffect(() => {
     if (isOpen) {
@@ -40,6 +57,39 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps): JSX.Elem
       document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
+
+  // Debounced search
+  React.useEffect(() => {
+    if (!searchQuery || searchQuery.length < 2) {
+      setResults([]);
+      setHasSearched(false);
+      return;
+    }
+
+    setLoading(true);
+    setHasSearched(true);
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+        const data = await response.json();
+        setResults(data.results || []);
+      } catch (error) {
+        console.error("Search error:", error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const handleResultClick = (slug: string) => {
+    router.push(`/products/${slug}`);
+    onClose();
+    setSearchQuery("");
+  };
 
   return (
     <AnimatePresence>
@@ -83,9 +133,69 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps): JSX.Elem
                     <X className="w-6 h-6" />
                   </button>
                 </div>
-                <div className="text-sm text-charcoal-500">
-                  Search functionality coming soon
-                </div>
+                {/* Search Results */}
+                {searchQuery.length >= 2 && (
+                  <div className="max-h-[60vh] overflow-y-auto">
+                    {loading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-6 h-6 animate-spin text-charcoal-400" />
+                        <span className="ml-2 text-charcoal-600">Searching...</span>
+                      </div>
+                    ) : results.length > 0 ? (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium text-charcoal-500 px-2 py-1">
+                          {results.length} result{results.length !== 1 ? 's' : ''} found
+                        </div>
+                        {results.map((result) => (
+                          <button
+                            key={result.id}
+                            onClick={() => handleResultClick(result.slug)}
+                            className="w-full flex items-center gap-4 p-4 hover:bg-cream-100 rounded-lg transition-colors text-left group"
+                          >
+                            <div className="relative w-16 h-16 flex-shrink-0 bg-cream-200 rounded-lg overflow-hidden">
+                              <Image
+                                src={result.image}
+                                alt={result.name}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform"
+                                sizes="64px"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-charcoal-900 group-hover:text-navy-900 transition-colors">
+                                {result.name}
+                              </div>
+                              <div className="text-sm text-charcoal-500">{result.category}</div>
+                              <div className="text-sm font-semibold text-navy-900 mt-1">
+                                {formatPrice(result.price)}
+                              </div>
+                            </div>
+                            <Search className="w-5 h-5 text-charcoal-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : hasSearched ? (
+                      <div className="text-center py-12">
+                        <p className="text-charcoal-600 mb-2">No products found</p>
+                        <p className="text-sm text-charcoal-500">
+                          Try a different search term
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+
+                {searchQuery.length < 2 && searchQuery.length > 0 && (
+                  <div className="text-sm text-charcoal-500 text-center py-4">
+                    Type at least 2 characters to search
+                  </div>
+                )}
+
+                {!searchQuery && (
+                  <div className="text-sm text-charcoal-500 text-center py-4">
+                    Start typing to search for products...
+                  </div>
+                )}
               </div>
             </div>
           </m.div>
