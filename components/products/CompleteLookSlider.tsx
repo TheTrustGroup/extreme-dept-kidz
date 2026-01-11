@@ -264,12 +264,13 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
       <div className="mt-8 grid md:grid-cols-3 gap-6">
         {look.items.map((item) => (
           <div key={item.productId} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
-            <div className="relative aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
+            <div className="relative aspect-[3/4] mb-4 bg-gray-100 rounded-lg overflow-hidden">
               <Image
                 src={item.product.images[0]?.url || '/placeholder.jpg'}
                 alt={item.product.name}
                 fill
-                className="object-contain"
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
             <h4 className="font-semibold mb-2">{item.product.name}</h4>
