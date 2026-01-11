@@ -102,19 +102,16 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.3 }}
-            className="relative w-full"
+            className="relative w-full aspect-[3/4]"
           >
-            <div className="relative w-full flex items-center justify-center py-4" style={{ minHeight: '400px', maxHeight: '70vh' }}>
-              <Image
-                src={items[currentSlide].image}
-                alt={items[currentSlide].title}
-                width={1200}
-                height={1500}
-                className="object-contain w-auto h-auto max-w-full max-h-[70vh]"
-                priority={currentSlide === 0}
-                style={{ maxWidth: '100%', maxHeight: '70vh', height: 'auto', width: 'auto' }}
-              />
-            </div>
+            <Image
+              src={items[currentSlide].image}
+              alt={items[currentSlide].title}
+              fill
+              className="object-cover"
+              priority={currentSlide === 0}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+            />
 
             {/* Overlay Info */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white z-10 pointer-events-none">
@@ -189,7 +186,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
         {currentSlide > 0 && (
           <button
             onClick={() => setCurrentSlide(currentSlide - 1)}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors z-10"
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors z-20"
             aria-label="Previous slide"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -199,7 +196,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
         {currentSlide < items.length - 1 && (
           <button
             onClick={() => setCurrentSlide(currentSlide + 1)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors z-10"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors z-20"
             aria-label="Next slide"
           >
             <ChevronRight className="w-6 h-6" />
@@ -207,7 +204,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
         )}
 
         {/* Slide Indicator */}
-        <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm z-10">
+        <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm z-20">
           {currentSlide + 1} / {items.length}
         </div>
       </div>
