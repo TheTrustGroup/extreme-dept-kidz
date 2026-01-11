@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { verifyPassword } from '@/lib/auth/password';
 import { generateToken } from '@/lib/auth/jwt';
+import { checkRateLimit, getClientIP } from '@/lib/auth/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,18 +126,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       success: true,
       token,
-    }, {
-      headers: {
-        'X-RateLimit-Limit': '5',
-        'X-RateLimit-Remaining': rateLimit.remaining.toString(),
-        'X-RateLimit-Reset': rateLimit.resetTime.toString(),
-      },
-    });
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
+      },
+    }, {
+      headers: {
+        'X-RateLimit-Limit': '5',
+        'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+        'X-RateLimit-Reset': rateLimit.resetTime.toString(),
       },
     });
   } catch (error) {
