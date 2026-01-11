@@ -15,6 +15,8 @@ import type {
 
 // Re-export styling data
 export { styleLooks, productStylingData } from "./mock-data/styling-data";
+// Re-export complete looks
+export { completeLooks } from "./mock-data/complete-looks";
 
 /**
  * Mock Categories
