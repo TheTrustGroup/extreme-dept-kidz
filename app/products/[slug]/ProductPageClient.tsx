@@ -7,6 +7,7 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
 import { CompleteTheLook } from "@/components/product/CompleteTheLook";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { Reviews } from "@/components/product/Reviews";
 import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/types";
 
@@ -57,6 +58,9 @@ export function ProductPageClient({ product }: ProductPageClientProps): JSX.Elem
 
           {/* Complete The Look Section */}
           <CompleteTheLook currentProduct={product} />
+
+          {/* Reviews Section */}
+          <Reviews productId={product.id} />
         </Container>
       </div>
 

@@ -17,6 +17,9 @@ import type {
 export { styleLooks, productStylingData } from "./mock-data/styling-data";
 // Re-export complete looks
 export { completeLooks } from "./mock-data/complete-looks";
+// Re-export reviews
+export { reviews } from "./mock-data/reviews";
+export type { Review } from "./mock-data/reviews";
 
 /**
  * Mock Categories
