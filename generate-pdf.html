@@ -106,9 +106,24 @@
             body {
                 padding: 0;
             }
-            .no-print {
-                display: none;
-            }
+        .no-print {
+            display: none;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        .logo-container img {
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        .developer-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -116,9 +131,28 @@
     <h1>EXTREME DEPT KIDZ</h1>
     <h2>Client Information & Credentials</h2>
     
+    <div class="logo-container">
+        <!-- 
+        TO ADD YOUR LOGO:
+        1. Place your logo image file (PNG, JPG, or SVG) in the same folder as this HTML file
+        2. Name it: trust-group-logo.png (or .jpg, .svg)
+        3. OR update the src path below to point to your logo file location
+        -->
+        <img src="trust-group-logo.png" alt="THE TRUST GROUP AI & SOFTWARE ENGINEERING" style="max-width: 300px; height: auto; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+        <div id="logo-fallback" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 400px;">
+            <p style="margin: 5px 0; font-size: 1.2em; font-weight: bold; color: #4f46e5;">THE TRUST GROUP</p>
+            <p style="margin: 5px 0; font-size: 0.9em; color: #666;">AI & SOFTWARE ENGINEERING</p>
+        </div>
+        <div class="developer-info">
+            <p style="margin: 5px 0; font-size: 0.9em; color: #666;"><strong>Project Developed By:</strong></p>
+            <p style="margin: 5px 0; font-weight: bold; color: #4f46e5; font-size: 1.1em;">THE TRUST GROUP</p>
+            <p style="margin: 5px 0; font-size: 0.85em; color: #666;">AI & SOFTWARE ENGINEERING</p>
+        </div>
+    </div>
+    
     <div class="info-box">
         <strong>Document Version:</strong> 1.0<br>
-        <strong>Date:</strong> January 2025<br>
+        <strong>Date:</strong> 10th January 2026<br>
         <strong>Prepared for:</strong> Client Access
     </div>
 
@@ -154,6 +188,15 @@
     </ul>
 
     <h2>📧 Contact Information</h2>
+    
+    <div class="credentials-box" style="background: #e7f3ff; border-color: #4f46e5;">
+        <h3>Business Email & Password Setup</h3>
+        <p><strong>Business Email:</strong> <a href="mailto:info@extremedeptkidz.com" class="url-link" style="font-size: 1.1em; font-weight: bold;">info@extremedeptkidz.com</a></p>
+        <p style="margin-top: 15px; padding: 10px; background: #fff; border-left: 4px solid #4f46e5; border-radius: 4px;">
+            <strong>📧 Password Setup:</strong> A password setup link will be sent to this email address (info@extremedeptkidz.com) for initial account configuration.
+        </p>
+    </div>
+    
     <p><strong>Support Email:</strong> <a href="mailto:info@extremedeptkidz.com" class="url-link">info@extremedeptkidz.com</a></p>
     
     <h3>Social Media Links</h3>
@@ -395,14 +438,25 @@
     </table>
 
     <div class="footer">
-        <p><strong>Last Updated:</strong> January 2025</p>
+        <p><strong>Last Updated:</strong> 10th January 2026</p>
         <p><strong>Next Review:</strong> Quarterly</p>
         <p><strong>Confidentiality:</strong> This document contains sensitive credentials. Keep secure and do not share publicly.</p>
         <p><strong>For questions or support, contact:</strong> <a href="mailto:info@extremedeptkidz.com" class="url-link">info@extremedeptkidz.com</a></p>
+        <p style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd;">
+            <strong>Project Development:</strong> THE TRUST GROUP - AI & SOFTWARE ENGINEERING
+        </p>
         <p><em>This document is provided for authorized personnel only. Keep credentials secure and confidential.</em></p>
     </div>
 
     <div class="no-print" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <h3>📄 How to Add Your Logo</h3>
+        <ol>
+            <li>Place your THE TRUST GROUP logo image file in the same folder as this HTML file</li>
+            <li>Name it: <strong>trust-group-logo.png</strong> (or update the src path in the HTML)</li>
+            <li>Supported formats: PNG, JPG, SVG</li>
+            <li>Refresh this page to see the logo</li>
+        </ol>
+        
         <h3>📄 How to Create PDF</h3>
         <ol>
             <li>Open this HTML file in your web browser</li>

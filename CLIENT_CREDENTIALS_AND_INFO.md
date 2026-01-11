@@ -1,7 +1,9 @@
 # EXTREME DEPT KIDZ - Client Information & Credentials
 
+**Project Developed By:** THE TRUST GROUP - AI & SOFTWARE ENGINEERING
+
 **Document Version:** 1.0  
-**Date:** January 2025  
+**Date:** 10th January 2026  
 **Prepared for:** Client Access
 
 ---
@@ -40,6 +42,11 @@
 ---
 
 ## 📧 Contact Information
+
+### Business Email & Password Setup
+**Business Email:** info@extremedeptkidz.com
+
+**📧 Password Setup:** A password setup link will be sent to this email address (info@extremedeptkidz.com) for initial account configuration.
 
 ### Support Email
 **Email:** info@extremedeptkidz.com
@@ -208,9 +215,11 @@ If you need to reset the admin password:
 
 ## 📄 Document Information
 
-**Last Updated:** January 2025  
+**Last Updated:** 10th January 2026  
 **Next Review:** Quarterly  
 **Confidentiality:** This document contains sensitive credentials. Keep secure and do not share publicly.
+
+**Project Development:** THE TRUST GROUP - AI & SOFTWARE ENGINEERING
 
 ---
 

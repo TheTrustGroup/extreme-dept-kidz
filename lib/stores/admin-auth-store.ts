@@ -57,6 +57,10 @@ const PERMISSIONS: Record<AdminRole, string[]> = {
   ],
 };
 
+// Track last auth check time to prevent too frequent API calls
+let lastAuthCheck = 0;
+const AUTH_CHECK_INTERVAL = 30000; // 30 seconds minimum between checks
+
 export const useAdminAuth = create<AdminAuthState>()(
   persist(
     (set, get) => ({
@@ -86,6 +90,8 @@ export const useAdminAuth = create<AdminAuthState>()(
             isAuthenticated: true,
           });
 
+          // Reset auth check timer on successful login
+          lastAuthCheck = Date.now();
           return true;
         } catch (error) {
           console.error("Login error:", error);
@@ -99,37 +105,64 @@ export const useAdminAuth = create<AdminAuthState>()(
           token: null,
           isAuthenticated: false,
         });
+        lastAuthCheck = 0;
       },
 
       checkAuth: async (): Promise<boolean> => {
-        const { token } = get();
+        const { token, isAuthenticated, user } = get();
+        
+        // If we have a token and are already authenticated, check if we need to verify
+        // Only verify if enough time has passed since last check
+        const now = Date.now();
+        if (token && isAuthenticated && user) {
+          // If we recently checked (within interval), just return true
+          if (now - lastAuthCheck < AUTH_CHECK_INTERVAL) {
+            return true;
+          }
+          // Otherwise, continue to verify (but update timestamp)
+        }
+
         if (!token) {
           set({ isAuthenticated: false, user: null });
           return false;
         }
 
         try {
+          lastAuthCheck = now;
           const response = await fetch("/api/admin/auth/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
+            // Add cache control to prevent aggressive revalidation
+            cache: 'no-store',
           });
 
           if (!response.ok) {
-            set({ isAuthenticated: false, user: null, token: null });
-            return false;
+            // Only clear auth if it's a 401 (unauthorized), not other errors
+            if (response.status === 401) {
+              set({ isAuthenticated: false, user: null, token: null });
+              lastAuthCheck = 0; // Reset on auth failure
+              return false;
+            }
+            // For other errors (500, etc.), keep current state
+            // This prevents logout on transient server errors
+            return isAuthenticated;
           }
 
           const data = await response.json();
           set({
             user: data.user,
             isAuthenticated: true,
+            // Preserve token
+            token: token,
           });
 
           return true;
         } catch (error) {
-          set({ isAuthenticated: false, user: null, token: null });
-          return false;
+          console.error("Auth check error:", error);
+          // On network errors, don't clear auth state - just return current state
+          // This prevents logout on network issues
+          return isAuthenticated;
         }
       },
 

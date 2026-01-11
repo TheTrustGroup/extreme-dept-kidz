@@ -23,24 +23,50 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [checkingAuth, setCheckingAuth] = React.useState(true);
+  const [hasCheckedAuth, setHasCheckedAuth] = React.useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user, checkAuth } = useAdminAuth();
+  const { isAuthenticated, user, checkAuth, token } = useAdminAuth();
 
   // Enable keyboard shortcuts (must be called unconditionally)
   useAdminKeyboards();
 
-  // Check authentication on mount and when pathname changes
+  // Check authentication on mount only (not on every route change)
   React.useEffect(() => {
     // Don't check auth on login page
     if (pathname === "/admin/login") {
       setCheckingAuth(false);
+      setHasCheckedAuth(false);
       return;
     }
 
-    // Check authentication
+    // Only check auth once, not on every route change
+    if (hasCheckedAuth) {
+      setCheckingAuth(false);
+      return;
+    }
+
+    // If we have a token and user from persisted state, trust it initially
+    if (token && isAuthenticated && user && !hasCheckedAuth) {
+      // Do a background check without blocking UI
+      setCheckingAuth(false);
+      setHasCheckedAuth(true);
+      
+      // Verify in background (non-blocking)
+      checkAuth().then((authenticated) => {
+        if (!authenticated) {
+          router.push("/admin/login");
+        }
+      }).catch((error) => {
+        console.error("Background auth check error:", error);
+      });
+      return;
+    }
+
+    // Only check auth once on mount if we don't have persisted state
     const verifyAuth = async (): Promise<void> => {
       setCheckingAuth(true);
+      setHasCheckedAuth(true);
       try {
         const authenticated = await checkAuth();
         if (!authenticated) {
@@ -48,14 +74,18 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
         }
       } catch (error) {
         console.error("Auth check error:", error);
-        router.push("/admin/login");
+        // Only redirect if we're definitely not authenticated
+        if (!isAuthenticated || !user) {
+          router.push("/admin/login");
+        }
       } finally {
         setCheckingAuth(false);
       }
     };
 
     verifyAuth();
-  }, [pathname, router, checkAuth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount, not on pathname changes
 
   // Don't render layout on login page
   if (pathname === "/admin/login") {
