@@ -94,7 +94,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
   return (
     <div className="w-full max-w-6xl mx-auto">
       {/* Main Slider */}
-      <div className="relative aspect-[4/5] md:aspect-[16/10] mb-6 overflow-hidden bg-gray-100 rounded-lg">
+      <div className="relative w-full mb-6 overflow-hidden bg-gray-100 rounded-lg">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -102,18 +102,22 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0"
+            className="relative w-full"
           >
-            <Image
-              src={items[currentSlide].image}
-              alt={items[currentSlide].title}
-              fill
-              className="object-contain"
-              priority={currentSlide === 0}
-            />
+            <div className="relative w-full flex items-center justify-center py-4" style={{ minHeight: '400px', maxHeight: '70vh' }}>
+              <Image
+                src={items[currentSlide].image}
+                alt={items[currentSlide].title}
+                width={1200}
+                height={1500}
+                className="object-contain w-auto h-auto max-w-full max-h-[70vh]"
+                priority={currentSlide === 0}
+                style={{ maxWidth: '100%', maxHeight: '70vh', height: 'auto', width: 'auto' }}
+              />
+            </div>
 
             {/* Overlay Info */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white z-10 pointer-events-none">
               <div className="max-w-4xl mx-auto">
                 {items[currentSlide].type === 'complete' ? (
                   <>
@@ -133,7 +137,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
                     </div>
                     <button
                       onClick={handleAddCompleteLook}
-                      className="px-8 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                      className="px-8 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors pointer-events-auto"
                     >
                       Add Complete Look to Cart
                     </button>
@@ -151,7 +155,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
                     <div className="flex gap-4 flex-wrap">
                       <button
                         onClick={() => handleAddIndividualItem(items[currentSlide])}
-                        className="px-8 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                        className="px-8 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors pointer-events-auto"
                       >
                         Add to Cart
                       </button>
@@ -161,7 +165,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
                           return (
                             <button
                               onClick={() => toggleItemSelection(item.id)}
-                              className={`px-8 py-3 font-semibold rounded-lg transition-colors ${
+                              className={`px-8 py-3 font-semibold rounded-lg transition-colors pointer-events-auto ${
                                 selectedItems.has(item.id)
                                   ? 'bg-green-500 text-white'
                                   : 'bg-white/20 text-white border border-white'
