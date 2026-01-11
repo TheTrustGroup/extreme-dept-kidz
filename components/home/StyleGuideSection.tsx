@@ -6,6 +6,8 @@ import Link from "next/link";
 import { m } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { styleLooks } from "@/lib/mock-data/styling-data";
+import { completeLooks } from "@/lib/mock-data";
+import type { CompleteLook } from "@/types";
 import { calculateBundleDiscount, getProductById } from "@/lib/utils/styling-utils";
 import { Button } from "@/components/ui/button";
 import { H2 } from "@/components/ui/typography";
@@ -19,9 +21,33 @@ import { getImageBlurDataURL } from "@/lib/utils/image-utils";
  * Homepage section showcasing featured complete looks.
  */
 export function StyleGuideSection(): JSX.Element {
-  // Get featured looks
+  // Get featured looks (combine styleLooks and completeLooks)
   const featuredLooks = React.useMemo(() => {
-    return styleLooks.filter(look => look.featured).slice(0, 3);
+    // Convert completeLooks to StyleLook format for homepage
+    const convertedCompleteLooks = completeLooks
+      .filter((look: CompleteLook) => look.featured)
+      .map((look: CompleteLook) => ({
+        id: look.id,
+        name: look.name,
+        description: look.description,
+        mainImage: look.mainImage,
+        products: look.items.map(item => ({
+          productId: item.product.id,
+          category: item.product.category.slug as any,
+          isOptional: !item.required,
+        })),
+        totalPrice: look.bundlePrice,
+        bundleDiscount: look.savings > 0 ? Math.round((look.savings / look.totalPrice) * 100) : undefined,
+        occasion: look.tags.find(t => ['casual', 'formal', 'smart-casual'].includes(t.toLowerCase())),
+        ageRange: 'boys',
+        season: 'all' as const,
+        featured: look.featured,
+        createdAt: new Date(look.createdAt || Date.now()),
+      }));
+    
+    // Combine and get featured looks
+    const allFeatured = [...styleLooks.filter(look => look.featured), ...convertedCompleteLooks];
+    return allFeatured.slice(0, 3);
   }, []);
 
   if (featuredLooks.length === 0) {
@@ -67,7 +93,10 @@ export function StyleGuideSection(): JSX.Element {
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   className="group"
                 >
-                  <Link href={`/style-guide/${look.id}`} className="block">
+                  <Link 
+                    href={completeLooks.some(cl => cl.id === look.id) ? `/looks/${look.id}` : `/style-guide/${look.id}`} 
+                    className="block"
+                  >
                     <div className="bg-cream-100 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300">
                       {/* Look Image */}
                       <div className="relative aspect-[3/4] overflow-hidden">
