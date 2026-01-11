@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { authenticateRequest } from '@/lib/auth/middleware';
 
 /**
  * Image Upload API Route
@@ -13,11 +14,15 @@ import { existsSync } from 'fs';
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // In production, add authentication here
-    // const authHeader = request.headers.get('authorization');
-    // if (!isAuthenticated(authHeader)) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    // Authenticate request
+    const authResult = await authenticateRequest(request);
+    if (authResult.error) {
+      return authResult.error;
+    }
+
+    if (!authResult.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
