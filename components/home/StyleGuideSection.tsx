@@ -26,24 +26,36 @@ export function StyleGuideSection(): JSX.Element {
     // Convert completeLooks to StyleLook format for homepage
     const convertedCompleteLooks = completeLooks
       .filter((look: CompleteLook) => look.featured)
-      .map((look: CompleteLook) => ({
-        id: look.id,
-        name: look.name,
-        description: look.description,
-        mainImage: look.mainImage,
-        products: look.items.map(item => ({
-          productId: item.product.id,
-          category: item.product.category.slug as any,
-          isOptional: !item.required,
-        })),
-        totalPrice: look.bundlePrice,
-        bundleDiscount: look.savings > 0 ? Math.round((look.savings / look.totalPrice) * 100) : undefined,
-        occasion: look.tags.find(t => ['casual', 'formal', 'smart-casual'].includes(t.toLowerCase())),
-        ageRange: 'boys',
-        season: 'all' as const,
-        featured: look.featured,
-        createdAt: new Date(look.createdAt || Date.now()),
-      }));
+      .map((look: CompleteLook) => {
+        // Determine category based on product types
+        const getCategory = (product: any): "top" | "bottom" | "outerwear" | "shoes" | "accessories" => {
+          const catSlug = product.category?.slug || '';
+          if (catSlug.includes('shirt') || catSlug.includes('top')) return 'top';
+          if (catSlug.includes('trouser') || catSlug.includes('pant') || catSlug.includes('bottom')) return 'bottom';
+          if (catSlug.includes('shoe') || catSlug.includes('loafer')) return 'shoes';
+          if (catSlug.includes('accessor')) return 'accessories';
+          return 'top'; // default
+        };
+
+        return {
+          id: look.id,
+          name: look.name,
+          description: look.description,
+          mainImage: look.mainImage,
+          products: look.items.map(item => ({
+            productId: item.product.id,
+            category: getCategory(item.product),
+            isOptional: !item.required,
+          })),
+          totalPrice: look.bundlePrice,
+          bundleDiscount: look.savings > 0 ? Math.round((look.savings / look.totalPrice) * 100) : undefined,
+          occasion: look.tags.find(t => ['casual', 'formal', 'smart-casual'].includes(t.toLowerCase())),
+          ageRange: 'boys',
+          season: 'all-season' as const,
+          featured: look.featured,
+          createdAt: new Date(look.createdAt || Date.now()),
+        } as typeof styleLooks[0];
+      });
     
     // Combine and get featured looks
     const allFeatured = [...styleLooks.filter(look => look.featured), ...convertedCompleteLooks];
