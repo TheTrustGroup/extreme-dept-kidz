@@ -30,9 +30,6 @@ const nextConfig = {
   // Performance Optimizations
   swcMinify: true,
   
-  // Output Configuration
-  output: 'standalone',
-  
   // Optimize Fonts
   optimizeFonts: true,
   
