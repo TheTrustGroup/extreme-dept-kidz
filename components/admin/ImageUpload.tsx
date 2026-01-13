@@ -5,6 +5,7 @@ import Image from "next/image";
 import { X, Upload, MoveLeft, MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 
 interface ImageUploadProps {
   images: string[];
@@ -28,6 +29,7 @@ export function ImageUpload({
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { token } = useAdminAuth();
 
   const handleFileSelect = async (files: FileList | null): Promise<void> => {
     if (!files || files.length === 0) return;
@@ -54,9 +56,17 @@ export function ImageUpload({
         const formData = new FormData();
         formData.append("file", file);
 
+        // Prepare headers with authentication
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch("/api/admin/upload", {
           method: "POST",
+          headers,
           body: formData,
+          credentials: 'include', // Include cookies as fallback
         });
 
         if (!response.ok) {

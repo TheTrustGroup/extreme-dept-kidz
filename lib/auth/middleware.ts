@@ -19,8 +19,18 @@ export interface AuthResult {
 export async function authenticateRequest(
   request: NextRequest
 ): Promise<AuthResult> {
+  // Try Authorization header first
+  let token: string | null = null;
   const authHeader = request.headers.get('authorization');
-  const token = extractTokenFromHeader(authHeader);
+  token = extractTokenFromHeader(authHeader);
+
+  // Fallback to cookie if no Authorization header
+  if (!token) {
+    const cookieToken = request.cookies.get('admin-token')?.value;
+    if (cookieToken) {
+      token = cookieToken;
+    }
+  }
 
   if (!token) {
     return {
