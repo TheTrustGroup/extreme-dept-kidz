@@ -54,5 +54,5 @@ export function AuthSync(): JSX.Element {
     };
   }, [token, isAuthenticated, syncCookie, refreshAuth]);
 
-  return null; // This is a utility component with no UI
+  return <></>; // This is a utility component with no UI
 }

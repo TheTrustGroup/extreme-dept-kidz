@@ -228,7 +228,6 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
           e.preventDefault();
           e.stopPropagation();
           // Prevent any browser validation
-          e.stopImmediatePropagation();
           handleSubmit(onSubmit)(e);
         }} 
         className="space-y-6" 
