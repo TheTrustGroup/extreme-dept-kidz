@@ -40,15 +40,23 @@ export function ImageUpload({
     }
 
     // Verify authentication before uploading
+    console.log('[ImageUpload] Checking authentication...');
     const authValid = await checkAuth();
+    console.log('[ImageUpload] Auth check result:', authValid);
+    
     if (!authValid) {
+      console.error('[ImageUpload] Authentication failed');
       alert("Your session has expired. Please refresh the page and log in again.");
       return;
     }
 
     // Get fresh token after auth check
     const currentToken = useAdminAuth.getState().token;
+    console.log('[ImageUpload] Token exists:', !!currentToken);
+    console.log('[ImageUpload] Token length:', currentToken?.length || 0);
+    
     if (!currentToken) {
+      console.error('[ImageUpload] Token not found in store');
       alert("Authentication token not found. Please refresh the page and log in again.");
       return;
     }
@@ -58,6 +66,7 @@ export function ImageUpload({
     try {
       // Get token once for all uploads
       const uploadToken = useAdminAuth.getState().token;
+      console.log('[ImageUpload] Using token for upload:', uploadToken ? 'Yes' : 'No');
       
       const uploadPromises = Array.from(files).map(async (file) => {
         // Validate file type
@@ -79,8 +88,12 @@ export function ImageUpload({
         const headers: HeadersInit = {};
         if (uploadToken) {
           headers['Authorization'] = `Bearer ${uploadToken}`;
+          console.log('[ImageUpload] Added Authorization header');
+        } else {
+          console.warn('[ImageUpload] No token available for Authorization header');
         }
 
+        console.log('[ImageUpload] Uploading file:', file.name);
         const response = await fetch("/api/admin/upload", {
           method: "POST",
           headers,
@@ -88,9 +101,17 @@ export function ImageUpload({
           credentials: 'include', // Include cookies as fallback
         });
 
+        console.log('[ImageUpload] Upload response status:', response.status);
+        
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
           const errorMessage = errorData.error || `Upload failed with status ${response.status}`;
+          
+          console.error('[ImageUpload] Upload failed:', {
+            status: response.status,
+            error: errorMessage,
+            errorData,
+          });
           
           // If it's an auth error, provide helpful message
           if (response.status === 401) {
@@ -99,6 +120,8 @@ export function ImageUpload({
           
           throw new Error(errorMessage);
         }
+        
+        console.log('[ImageUpload] Upload successful');
 
         const data = await response.json();
         // Ensure we get a valid URL string
