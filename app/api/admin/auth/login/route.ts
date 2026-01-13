@@ -208,11 +208,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Set cookie for middleware authentication
+    const isProduction = process.env.NODE_ENV === 'production';
     response.cookies.set('admin-token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 24 hours
+      secure: isProduction,
+      sameSite: 'lax', // Works for same-site requests
+      maxAge: 60 * 60 * 24 * 7, // 7 days (extended from 24 hours)
       path: '/',
     });
 
