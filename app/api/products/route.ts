@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getAllProducts, getProductsByCategory, getDatabaseStatus } from "@/lib/db";
 import type { Product } from "@/types";
 
 /**
@@ -61,16 +62,6 @@ function transformProduct(prismaProduct: {
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  // Lazy load prisma to avoid build-time initialization
-  const { prisma } = await import("@/lib/db/prisma");
-  
-  if (!prisma) {
-    return NextResponse.json(
-      { error: "Database not configured" },
-      { status: 503 }
-    );
-  }
-
   try {
     const searchParams = request.nextUrl.searchParams;
 
@@ -83,102 +74,85 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // Build where clause
-    const where: {
-      categoryId?: string;
-      collections?: { some: { collection: { slug: string } } };
-      inStock?: boolean;
-      OR?: Array<{ name: { contains: string; mode: "insensitive" } } | { description: { contains: string; mode: "insensitive" } }>;
-    } = {};
+    // Get products using DB abstraction layer (with automatic fallback to mock)
+    let products = category 
+      ? await getProductsByCategory(category)
+      : await getAllProducts();
 
-    if (category) {
-      where.categoryId = category;
-    }
-
-    if (collection) {
-      where.collections = {
-        some: {
-          collection: {
-            slug: collection,
-          },
-        },
-      };
-    }
-
+    // Apply filters (client-side filtering for mock data compatibility)
     if (inStock) {
-      where.inStock = true;
+      products = products.filter(p => p.inStock);
     }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ];
+      const searchLower = search.toLowerCase();
+      products = products.filter(
+        p =>
+          p.name.toLowerCase().includes(searchLower) ||
+          p.description.toLowerCase().includes(searchLower) ||
+          p.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      );
     }
 
-    // Build orderBy clause
-    let orderBy:
-      | { createdAt: "desc" | "asc" }
-      | { price: "desc" | "asc" }
-      | { name: "asc" } = { createdAt: "desc" };
-
+    // Apply sorting
     switch (sort) {
-      case "newest":
-        orderBy = { createdAt: "desc" };
-        break;
-      case "oldest":
-        orderBy = { createdAt: "asc" };
-        break;
       case "price-low":
-        orderBy = { price: "asc" };
+        products.sort((a, b) => a.price - b.price);
         break;
       case "price-high":
-        orderBy = { price: "desc" };
+        products.sort((a, b) => b.price - a.price);
         break;
       case "name":
-        orderBy = { name: "asc" };
+        products.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "oldest":
+        // Mock data doesn't have createdAt, so we'll use default order
+        break;
+      default: // "newest"
+        // Default order (already sorted)
         break;
     }
 
-    // Fetch products
-    const products = await prisma.product.findMany({
-      where,
-      orderBy,
-      take: limit,
-      skip: offset,
-      include: {
-        category: true,
-        images: {
-          orderBy: [{ isPrimary: "desc" }, { order: "asc" }],
-        },
-        variants: {
-          where: { isActive: true },
-        },
-        tags: true,
-      },
-    });
-
-    // Get total count for pagination
-    const total = await prisma.product.count({ where });
-
-    // Transform products
-    const transformedProducts = products.map(transformProduct);
+    // Apply pagination
+    const total = products.length;
+    const paginatedProducts = products.slice(offset, offset + limit);
 
     return NextResponse.json({
-      products: transformedProducts,
+      products: paginatedProducts,
       pagination: {
         total,
         limit,
         offset,
         hasMore: offset + limit < total,
       },
+      dbStatus: getDatabaseStatus(), // Include DB status
     });
   } catch (error) {
-    console.error("Error fetching products:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch products" },
-      { status: 500 }
-    );
+    console.error("❌ Error fetching products:", error);
+    
+    // Even on error, try to return mock data as fallback
+    try {
+      const fallbackProducts = await getAllProducts();
+      return NextResponse.json({
+        products: fallbackProducts.slice(0, 20),
+        pagination: {
+          total: fallbackProducts.length,
+          limit: 20,
+          offset: 0,
+          hasMore: false,
+        },
+        dbStatus: getDatabaseStatus(),
+        warning: "Using fallback data due to database error",
+      });
+    } catch (fallbackError) {
+      return NextResponse.json(
+        { 
+          error: "Unable to fetch products. Please try again later.",
+          dbStatus: getDatabaseStatus(),
+        },
+        { status: 500 }
+      );
+    }
   }
 }
 

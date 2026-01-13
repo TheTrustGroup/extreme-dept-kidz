@@ -93,22 +93,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         errorMessage.includes('Can\'t reach database server') ||
         errorMessage.includes('Authentication failed') ||
         errorMessage.includes('Connection') ||
-        errorMessage.includes('timeout');
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('P1001') || // Prisma connection error code
+        errorMessage.includes('P1000');   // Prisma authentication error code
       
+      // For admin login, we need a real database - can't use mock data
+      // But provide helpful error message
       return NextResponse.json(
         { 
           error: isConnectionError 
-            ? 'Database connection failed. Please check your database configuration.'
+            ? 'Unable to connect to database. Please check your database configuration in Vercel environment variables.'
             : 'Database query failed. Please try again.',
           diagnostic: process.env.NODE_ENV === 'development' ? {
             error: errorMessage,
             errorType: dbError instanceof Error ? dbError.constructor.name : typeof dbError,
             searchedEmail: normalizedEmail,
             hasDatabaseUrl: !!process.env.DATABASE_URL,
-          } : undefined,
-          help: isConnectionError 
-            ? 'Visit /api/admin/auth/test-db to diagnose the connection issue'
-            : undefined,
+            databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+            help: 'Check DATABASE_URL in Vercel environment variables. Visit /api/admin/auth/test-db for diagnostics.',
+          } : {
+            help: 'Please contact support or check your database configuration.',
+          },
         },
         { status: 500 }
       );

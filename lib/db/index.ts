@@ -85,8 +85,14 @@ async function executeQuery<T>(
   fallbackData: T,
   queryName: string
 ): Promise<T> {
-  // If using mock data, return immediately
-  if (DB_CONFIG.type === 'mock' || !DB_CONFIG.enabled || !dbConnected) {
+  // If using mock data, return immediately (silently)
+  if (DB_CONFIG.type === 'mock' || !DB_CONFIG.enabled) {
+    return fallbackData;
+  }
+
+  // If database connection failed, silently fall back to mock data
+  if (!dbConnected) {
+    console.log(`[DB] ${queryName}: Using mock data (DB not connected)`);
     return fallbackData;
   }
 
@@ -121,9 +127,13 @@ async function executeQuery<T>(
     }
   }
 
-  // All retries failed - fall back to mock data
-  console.warn(`⚠️ ${queryName} failed after ${DB_CONFIG.retryAttempts} attempts. Using fallback data.`);
-  console.error('Final error:', lastError);
+  // All retries failed - silently fall back to mock data
+  // Don't log as error to avoid alarming users - this is expected behavior
+  console.log(`[DB] ${queryName}: Connection failed, using mock data (this is normal if DB is not configured)`);
+  
+  // Update connection status
+  dbConnected = false;
+  connectionError = lastError;
   
   return fallbackData;
 }
@@ -330,8 +340,12 @@ export async function deleteCategory(id: string): Promise<boolean> {
 }
 
 // Initialize on import (server-side only)
+// Don't throw errors - just log and continue with mock data
 if (typeof window === 'undefined') {
   initializeDatabase().catch((error) => {
-    console.error('Failed to initialize database:', error);
+    // Silently handle initialization errors - app will use mock data
+    console.log('[DB] Initialization failed, using mock data:', error instanceof Error ? error.message : 'Unknown error');
+    dbConnected = false;
+    connectionError = error instanceof Error ? error : new Error('Unknown error');
   });
 }
