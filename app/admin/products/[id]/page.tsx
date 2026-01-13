@@ -118,6 +118,30 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
   const onSubmit = async (data: ProductFormData): Promise<void> => {
     setSaving(true);
     try {
+      // Validate images array
+      if (!data.images || data.images.length === 0) {
+        addToast({
+          type: "error",
+          title: "Validation Error",
+          message: "Please upload at least one product image",
+        });
+        setSaving(false);
+        return;
+      }
+
+      // Filter out any empty or invalid image URLs
+      const validImages = data.images.filter(url => url && typeof url === 'string' && url.trim() !== '');
+
+      if (validImages.length === 0) {
+        addToast({
+          type: "error",
+          title: "Validation Error",
+          message: "Please upload at least one valid product image",
+        });
+        setSaving(false);
+        return;
+      }
+
       const productData = {
         name: data.name,
         description: data.description,
@@ -131,8 +155,8 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         },
         inStock: data.inStock,
         slug: data.name.toLowerCase().replace(/\s+/g, "-"),
-        images: data.images.map((url, index) => ({
-          url,
+        images: validImages.map((url, index) => ({
+          url: String(url).trim(),
           alt: `${data.name} - Image ${index + 1}`,
           isPrimary: index === 0,
         })),
@@ -145,12 +169,27 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
 
       if (isNew) {
         await createProduct(productData);
+        addToast({
+          type: "success",
+          title: "Success",
+          message: "Product created successfully!",
+        });
       } else {
         await updateProduct(productId, productData);
+        addToast({
+          type: "success",
+          title: "Success",
+          message: "Product updated successfully!",
+        });
       }
       router.push("/admin/products");
     } catch (error) {
       console.error("Failed to save product:", error);
+      addToast({
+        type: "error",
+        title: "Error",
+        message: error instanceof Error ? error.message : "Failed to save product. Please try again.",
+      });
     } finally {
       setSaving(false);
     }
@@ -311,8 +350,12 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
             <h2 className="text-xl font-bold text-gray-900 mb-2">Product Images</h2>
             <p className="text-sm text-gray-600 mb-4">Upload product images. The first image will be used as the primary image.</p>
             <ImageUpload
-              images={watch("images")}
-              onChange={(urls) => setValue("images", urls)}
+              images={watch("images") || []}
+              onChange={(urls) => {
+                // Ensure all URLs are valid strings and filter out any invalid entries
+                const validUrls = urls.filter(url => url && typeof url === 'string' && url.trim() !== '');
+                setValue("images", validUrls, { shouldValidate: true });
+              }}
               maxImages={10}
               disabled={saving}
             />
