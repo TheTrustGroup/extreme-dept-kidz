@@ -23,6 +23,9 @@ interface AdminAuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   checkAuth: () => Promise<boolean>;
+  refreshAuth: () => Promise<void>;
+  syncCookie: () => void;
+  getAuthHeaders: () => HeadersInit;
   hasPermission: (permission: string) => boolean;
 }
 
@@ -102,6 +105,14 @@ export const useAdminAuth = create<AdminAuthState>()(
             isAuthenticated: true,
           });
 
+          // CRITICAL: Sync cookie immediately after login
+          if (typeof window !== 'undefined' && data.token) {
+            const isProduction = process.env.NODE_ENV === 'production';
+            const maxAge = 60 * 60 * 24 * 7; // 7 days
+            document.cookie = `admin-token=${data.token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+            console.log('[Auth] Cookie synced after login');
+          }
+
           // Reset auth check timer on successful login
           lastAuthCheck = Date.now();
           return true;
@@ -117,6 +128,7 @@ export const useAdminAuth = create<AdminAuthState>()(
         try {
           await fetch("/api/admin/auth/logout", {
             method: "POST",
+            credentials: 'include',
           });
         } catch (error) {
           console.error("Logout API error:", error);
@@ -130,10 +142,70 @@ export const useAdminAuth = create<AdminAuthState>()(
         });
         lastAuthCheck = 0;
         
-        // Redirect to login page
+        // CRITICAL: Clear cookie from client side too
         if (typeof window !== 'undefined') {
+          document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
           window.location.href = '/admin/login';
         }
+      },
+
+      refreshAuth: async (): Promise<void> => {
+        const { token } = get();
+        
+        if (!token) {
+          set({ user: null, token: null, isAuthenticated: false });
+          return;
+        }
+
+        // Ensure cookie is synced
+        if (typeof window !== 'undefined') {
+          const isProduction = process.env.NODE_ENV === 'production';
+          const maxAge = 60 * 60 * 24 * 7; // 7 days
+          document.cookie = `admin-token=${token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+        }
+
+        try {
+          const response = await fetch("/api/admin/auth/me", {
+            credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            cache: 'no-store',
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            set({
+              user: data.user,
+              isAuthenticated: true,
+              token: token,
+            });
+          } else {
+            // Auth failed, clear state
+            get().logout();
+          }
+        } catch (error) {
+          console.error("Auth refresh error:", error);
+          // Don't clear on network errors, just log
+        }
+      },
+
+      syncCookie: (): void => {
+        const { token } = get();
+        if (token && typeof window !== 'undefined') {
+          const isProduction = process.env.NODE_ENV === 'production';
+          const maxAge = 60 * 60 * 24 * 7; // 7 days
+          document.cookie = `admin-token=${token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+        }
+      },
+
+      getAuthHeaders: (): HeadersInit => {
+        const { token } = get();
+        return token
+          ? {
+              'Authorization': `Bearer ${token}`,
+            }
+          : {};
       },
 
       checkAuth: async (): Promise<boolean> => {
@@ -209,6 +281,15 @@ export const useAdminAuth = create<AdminAuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        // CRITICAL: Sync cookie on page load/hydration
+        if (state?.token && typeof window !== 'undefined') {
+          const isProduction = process.env.NODE_ENV === 'production';
+          const maxAge = 60 * 60 * 24 * 7; // 7 days
+          document.cookie = `admin-token=${state.token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+          console.log('[Auth] Cookie synced on hydration');
+        }
+      },
     }
   )
 );

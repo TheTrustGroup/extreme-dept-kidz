@@ -8,6 +8,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useAdminKeyboards } from "@/lib/hooks/use-admin-keyboard";
 import { ToastProvider } from "@/components/ui/Toast";
+import { AuthSync } from "@/components/admin/AuthSync";
 import "@/app/admin/admin-globals.css";
 
 interface AdminLayoutProps {
@@ -99,6 +100,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
 
   return (
     <ToastProvider>
+      <AuthSync />
       <div className="flex h-screen bg-[#f8f9fa] overflow-hidden admin-background">
         {/* Background Image Layer */}
         <div 

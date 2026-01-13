@@ -29,7 +29,7 @@ export function ImageUpload({
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const { token, isAuthenticated, checkAuth } = useAdminAuth();
+  const { token, isAuthenticated, checkAuth, syncCookie, refreshAuth } = useAdminAuth();
 
   const handleFileSelect = async (files: FileList | null): Promise<void> => {
     if (!files || files.length === 0) return;
@@ -39,18 +39,33 @@ export function ImageUpload({
       return;
     }
 
-    // Verify authentication before uploading
-    console.log('[ImageUpload] Checking authentication...');
+    // CRITICAL: Verify and sync authentication before uploading
+    console.log('[ImageUpload] Verifying authentication...');
+    
+    // Ensure cookie is synced
+    syncCookie();
+    
+    // Verify auth is valid
     const authValid = await checkAuth();
     console.log('[ImageUpload] Auth check result:', authValid);
     
     if (!authValid) {
-      console.error('[ImageUpload] Authentication failed');
-      alert("Your session has expired. Please refresh the page and log in again.");
-      return;
+      console.error('[ImageUpload] Authentication failed - attempting refresh...');
+      try {
+        await refreshAuth();
+        const retryAuth = await checkAuth();
+        if (!retryAuth) {
+          alert("Your session has expired. Please refresh the page and log in again.");
+          return;
+        }
+      } catch (error) {
+        console.error('[ImageUpload] Auth refresh failed:', error);
+        alert("Authentication failed. Please refresh the page and log in again.");
+        return;
+      }
     }
 
-    // Get fresh token after auth check
+    // Get fresh token after auth verification
     const currentToken = useAdminAuth.getState().token;
     console.log('[ImageUpload] Token exists:', !!currentToken);
     console.log('[ImageUpload] Token length:', currentToken?.length || 0);
@@ -61,26 +76,9 @@ export function ImageUpload({
       return;
     }
 
-    // Refresh cookie to ensure it's set (httpOnly cookies can't be checked from JS)
-    // This ensures the cookie is available for middleware even if it was cleared
-    try {
-      console.log('[ImageUpload] Ensuring cookie is set...');
-      const refreshResponse = await fetch('/api/admin/auth/refresh-cookie', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${currentToken}`,
-        },
-        credentials: 'include',
-      });
-      
-      if (refreshResponse.ok) {
-        console.log('[ImageUpload] Cookie refreshed successfully');
-      } else {
-        console.warn('[ImageUpload] Cookie refresh failed (will rely on Authorization header)');
-      }
-    } catch (error) {
-      console.warn('[ImageUpload] Failed to refresh cookie (non-critical, will use Authorization header):', error);
-    }
+    // CRITICAL: Ensure cookie is synced one more time before upload
+    syncCookie();
+    console.log('[ImageUpload] Cookie synced before upload');
 
     setUploading(true);
 
@@ -103,7 +101,7 @@ export function ImageUpload({
         const formData = new FormData();
         formData.append("file", file);
         
-        // Add token to FormData as fallback (some browsers don't send custom headers with FormData)
+        // CRITICAL: Add token to FormData as fallback (some browsers don't send custom headers with FormData)
         if (uploadToken) {
           formData.append("token", uploadToken);
           console.log('[ImageUpload] Added token to FormData');
