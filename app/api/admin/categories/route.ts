@@ -7,21 +7,30 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const categories = await getAllCategories();
+    const dbStatus = await getDatabaseStatus();
     
     return NextResponse.json({
       success: true,
       categories,
       count: categories.length,
-      dbStatus: getDatabaseStatus(),
+      dbStatus,
     });
   } catch (error) {
     console.error("❌ GET /api/admin/categories error:", error);
+    
+    const dbStatus = await getDatabaseStatus().catch(() => ({
+      connected: false,
+      type: 'unknown',
+      error: 'Status check failed',
+      mockMode: true,
+      enabled: false,
+    }));
     
     return NextResponse.json({
       success: false,
       error: "Failed to fetch categories",
       details: error instanceof Error ? error.message : "Unknown error",
-      dbStatus: getDatabaseStatus(),
+      dbStatus,
     }, { status: 500 });
   }
 }
@@ -57,20 +66,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       console.error('Failed to revalidate cache:', revalidateError);
     }
 
+    const dbStatus = await getDatabaseStatus();
+    
     return NextResponse.json({
       success: true,
       category,
       message: "Category created successfully",
-      dbStatus: getDatabaseStatus(),
+      dbStatus,
     }, { status: 201 });
   } catch (error) {
     console.error("❌ POST /api/admin/categories error:", error);
+    
+    const dbStatus = await getDatabaseStatus().catch(() => ({
+      connected: false,
+      type: 'unknown',
+      error: 'Status check failed',
+      mockMode: true,
+      enabled: false,
+    }));
     
     return NextResponse.json({
       success: false,
       error: "Failed to create category",
       details: error instanceof Error ? error.message : "Unknown error",
-      dbStatus: getDatabaseStatus(),
+      dbStatus,
     }, { status: 500 });
   }
 }

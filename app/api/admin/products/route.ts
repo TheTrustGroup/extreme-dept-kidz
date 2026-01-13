@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const products = await getAllProducts();
-    const dbStatus = getDatabaseStatus();
+    const dbStatus = await getDatabaseStatus();
 
     return NextResponse.json({
       success: true,
@@ -18,11 +18,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error("❌ GET /api/admin/products error:", error);
     
+    // Get status even on error
+    const dbStatus = await getDatabaseStatus().catch(() => ({
+      connected: false,
+      type: 'unknown',
+      error: 'Status check failed',
+      mockMode: true,
+      enabled: false,
+    }));
+    
     return NextResponse.json({
       success: false,
       error: "Failed to fetch products",
       details: error instanceof Error ? error.message : "Unknown error",
-      dbStatus: getDatabaseStatus(),
+      dbStatus,
     }, { status: 500 });
   }
 }
@@ -72,20 +81,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Don't fail the request if revalidation fails
     }
 
+    const dbStatus = await getDatabaseStatus();
+    
     return NextResponse.json({
       success: true,
       product,
       message: 'Product created successfully',
-      dbStatus: getDatabaseStatus(),
+      dbStatus,
     }, { status: 201 });
   } catch (error) {
     console.error("❌ POST /api/admin/products error:", error);
+    
+    const dbStatus = await getDatabaseStatus().catch(() => ({
+      connected: false,
+      type: 'unknown',
+      error: 'Status check failed',
+      mockMode: true,
+      enabled: false,
+    }));
     
     return NextResponse.json({
       success: false,
       error: "Failed to create product",
       details: error instanceof Error ? error.message : "Unknown error",
-      dbStatus: getDatabaseStatus(),
+      dbStatus,
     }, { status: 500 });
   }
 }

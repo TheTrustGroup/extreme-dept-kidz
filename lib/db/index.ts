@@ -67,14 +67,55 @@ export function isDatabaseConnected(): boolean {
 
 /**
  * Get database status for admin
+ * This function checks the actual connection state
  */
-export function getDatabaseStatus() {
+export async function getDatabaseStatus() {
+  // If we have DATABASE_URL, try to verify connection
+  if (DB_CONFIG.enabled && DB_CONFIG.type !== 'mock') {
+    try {
+      const { prisma } = await import('./prisma');
+      if (prisma) {
+        // Quick connection test
+        try {
+          await prisma.$connect();
+          // If connect succeeds, we're connected
+          return {
+            connected: true,
+            type: DB_CONFIG.type,
+            error: null,
+            mockMode: false,
+            enabled: true,
+          };
+        } catch (connectError) {
+          // Connection failed
+          return {
+            connected: false,
+            type: DB_CONFIG.type,
+            error: connectError instanceof Error ? connectError.message : 'Connection failed',
+            mockMode: false,
+            enabled: true,
+          };
+        }
+      }
+    } catch (importError) {
+      // Prisma not available
+      return {
+        connected: false,
+        type: 'unknown',
+        error: 'Prisma client not available',
+        mockMode: true,
+        enabled: false,
+      };
+    }
+  }
+
+  // No database configured - using mock
   return {
-    connected: dbConnected,
-    type: DB_CONFIG.type,
-    error: connectionError?.message || null,
-    mockMode: DB_CONFIG.type === 'mock' || !DB_CONFIG.enabled,
-    enabled: DB_CONFIG.enabled,
+    connected: false,
+    type: 'mock',
+    error: 'No database configured',
+    mockMode: true,
+    enabled: false,
   };
 }
 

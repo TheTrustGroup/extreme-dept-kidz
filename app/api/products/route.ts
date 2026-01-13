@@ -125,7 +125,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         offset,
         hasMore: offset + limit < total,
       },
-      dbStatus: getDatabaseStatus(), // Include DB status
+      dbStatus: await getDatabaseStatus(), // Include DB status
     });
   } catch (error) {
     console.error("❌ Error fetching products:", error);
@@ -141,14 +141,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           offset: 0,
           hasMore: false,
         },
-        dbStatus: getDatabaseStatus(),
+        dbStatus: await getDatabaseStatus(),
         warning: "Using fallback data due to database error",
       });
     } catch (fallbackError) {
       return NextResponse.json(
         { 
           error: "Unable to fetch products. Please try again later.",
-          dbStatus: getDatabaseStatus(),
+          dbStatus: await getDatabaseStatus(),
         },
         { status: 500 }
       );

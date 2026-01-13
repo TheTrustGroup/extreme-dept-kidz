@@ -30,7 +30,7 @@ export async function GET(
 
     return NextResponse.json({
       ...product,
-      dbStatus: getDatabaseStatus(), // Include DB status
+      dbStatus: await getDatabaseStatus(), // Include DB status
     });
   } catch (error) {
     console.error("❌ Error fetching product:", error);
@@ -42,7 +42,7 @@ export async function GET(
       if (fallbackProduct) {
         return NextResponse.json({
           ...fallbackProduct,
-          dbStatus: getDatabaseStatus(),
+          dbStatus: await getDatabaseStatus(),
           warning: "Using fallback data due to database error",
         });
       }
@@ -53,7 +53,7 @@ export async function GET(
     return NextResponse.json(
       { 
         error: "Unable to fetch product. Please try again later.",
-        dbStatus: getDatabaseStatus(),
+        dbStatus: await getDatabaseStatus(),
       },
       { status: 500 }
     );
