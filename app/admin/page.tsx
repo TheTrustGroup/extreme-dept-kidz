@@ -99,12 +99,12 @@ export default function AdminDashboardPage(): JSX.Element {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <H1 className="text-gray-900 text-3xl font-bold mb-2">Dashboard</H1>
-          <p className="text-gray-600 text-sm">Welcome back! Here's what's happening with your store.</p>
+          <H1 className="text-gray-900 text-2xl sm:text-3xl font-bold mb-2">Dashboard</H1>
+          <p className="text-gray-600 text-xs sm:text-sm">Welcome back! Here's what's happening with your store.</p>
         </div>
-        <select className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md">
+        <select className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-xs sm:text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md w-full sm:w-auto">
           <option>Last 30 days</option>
           <option>Last 7 days</option>
           <option>Last 90 days</option>

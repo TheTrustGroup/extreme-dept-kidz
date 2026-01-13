@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Package, TrendingDown, DollarSign, Download } from "lucide-react";
+import { AlertTriangle, Package, TrendingDown, DollarSign, Download, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StockUpdateModal } from "./StockUpdateModal";
 import { mockProducts } from "@/lib/mock-data";
 import type { Product, ProductSize } from "@/types";
+import { DEFAULT_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
+import { offlineSyncService } from "@/lib/services/offline-sync";
 
 interface ProductWithStock extends Product {
   totalStock: number;
@@ -22,29 +24,74 @@ export function InventoryManagement(): JSX.Element {
     name: string;
     sizes: ProductSize[];
   } | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     loadInventory();
+
+    // Subscribe to online/offline status
+    const unsubscribeStatus = offlineSyncService.onStatusChange((online) => {
+      setIsOnline(online);
+    });
+
+    // Subscribe to pending sync count
+    const unsubscribeSync = offlineSyncService.onPendingCountChange((count) => {
+      setPendingSyncCount(count);
+    });
+
+    return () => {
+      unsubscribeStatus();
+      unsubscribeSync();
+    };
   }, []);
 
   function loadInventory(): void {
     // Transform mock products to include stock data
     const productsWithStock: ProductWithStock[] = mockProducts.map(product => {
-      // Add quantities if not present (for demo purposes)
-      // Use consistent quantities based on product ID for better UX
-      const productHash = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const sizesWithQuantity: ProductSize[] = product.sizes.map((size, index) => ({
-        ...size,
-        quantity: size.quantity ?? (size.inStock ? (productHash % 20) + index * 3 + 1 : 0),
-      }));
+      // Ensure all default sizes are present, even if product doesn't have them
+      const existingSizesMap = new Map<string, ProductSize>();
+      product.sizes.forEach(size => {
+        existingSizesMap.set(size.size, size);
+      });
 
-      const totalStock = sizesWithQuantity.reduce((sum, s) => sum + (s.quantity || 0), 0);
-      const lowStockSizes = sizesWithQuantity.filter(s => (s.quantity || 0) > 0 && (s.quantity || 0) < 5);
-      const outOfStockSizes = sizesWithQuantity.filter(s => (s.quantity || 0) === 0);
+      // Create sizes array with all default sizes, using existing data or defaults
+      const sizesWithQuantity: ProductSize[] = DEFAULT_PRODUCT_SIZES.map(size => {
+        const existingSize = existingSizesMap.get(size);
+        if (existingSize) {
+          return {
+            ...existingSize,
+            quantity: existingSize.quantity ?? (existingSize.inStock ? 1 : 0),
+          };
+        }
+        // If size doesn't exist in product, create it with 0 quantity
+        return {
+          size,
+          inStock: false,
+          quantity: 0,
+        };
+      });
+
+      // Use consistent quantities based on product ID for demo purposes
+      const productHash = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const finalSizes = sizesWithQuantity.map((size, index) => {
+        const currentQuantity = size.quantity ?? 0;
+        const demoQuantity = (productHash % 20) + index * 3 + 1;
+        return {
+          ...size,
+          quantity: currentQuantity > 0 ? currentQuantity : demoQuantity,
+          inStock: currentQuantity > 0 || demoQuantity > 0,
+        };
+      });
+
+      const totalStock = finalSizes.reduce((sum, s) => sum + (s.quantity || 0), 0);
+      const lowStockSizes = finalSizes.filter(s => (s.quantity || 0) > 0 && (s.quantity || 0) < 5);
+      const outOfStockSizes = finalSizes.filter(s => (s.quantity || 0) === 0);
 
       return {
         ...product,
-        sizes: sizesWithQuantity,
+        sizes: finalSizes,
         totalStock,
         lowStockSizes,
         outOfStockSizes,
@@ -55,7 +102,8 @@ export function InventoryManagement(): JSX.Element {
     setLoading(false);
   }
 
-  function handleUpdateStock(productId: string, updatedSizes: ProductSize[]): void {
+  async function handleUpdateStock(productId: string, updatedSizes: ProductSize[]): Promise<void> {
+    // Update local state immediately for instant UI feedback
     setProducts(prev => prev.map(p => {
       if (p.id === productId) {
         const totalStock = updatedSizes.reduce((sum, s) => sum + (s.quantity || 0), 0);
@@ -72,6 +120,41 @@ export function InventoryManagement(): JSX.Element {
       }
       return p;
     }));
+
+    // Get product name for queue
+    const product = products.find(p => p.id === productId);
+    const productName = product?.name || 'Unknown Product';
+
+    // Queue the update (works offline or online)
+    offlineSyncService.queueUpdate(
+      productId,
+      productName,
+      updatedSizes.map(s => ({
+        size: s.size,
+        quantity: s.quantity || 0,
+        inStock: s.inStock,
+      }))
+    );
+
+    // If online, try to sync immediately
+    if (isOnline) {
+      offlineSyncService.attemptSync();
+    }
+  }
+
+  async function handleManualSync(): Promise<void> {
+    setIsSyncing(true);
+    try {
+      const result = await offlineSyncService.manualSync();
+      if (result.success > 0) {
+        // Reload inventory to reflect synced changes
+        loadInventory();
+      }
+    } catch (error) {
+      console.error('Manual sync failed:', error);
+    } finally {
+      setIsSyncing(false);
+    }
   }
 
   function handleExportReport(): void {
@@ -119,14 +202,50 @@ export function InventoryManagement(): JSX.Element {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Inventory Management</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold">Inventory Management</h1>
+          {/* Offline/Online Status Indicator */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+            {isOnline ? (
+              <div className="flex items-center gap-1 text-green-600 text-sm">
+                <Wifi className="w-4 h-4 flex-shrink-0" />
+                <span>Online</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-orange-600 text-sm">
+                <WifiOff className="w-4 h-4 flex-shrink-0" />
+                <span className="break-words">Offline - Changes will sync when connection is restored</span>
+              </div>
+            )}
+            {pendingSyncCount > 0 && (
+              <div className="flex flex-wrap items-center gap-2 sm:ml-4">
+                <span className="text-sm text-gray-600 whitespace-nowrap">
+                  {pendingSyncCount} pending {pendingSyncCount === 1 ? 'update' : 'updates'}
+                </span>
+                {isOnline && (
+                  <Button
+                    onClick={handleManualSync}
+                    disabled={isSyncing}
+                    size="sm"
+                    variant="ghost"
+                    className="flex items-center gap-1 text-sm whitespace-nowrap"
+                  >
+                    <RefreshCw className={`w-4 h-4 flex-shrink-0 ${isSyncing ? 'animate-spin' : ''}`} />
+                    {isSyncing ? 'Syncing...' : 'Sync Now'}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
         <Button
           onClick={handleExportReport}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto justify-center"
         >
           <Download className="w-4 h-4" />
-          Export Report
+          <span className="hidden sm:inline">Export Report</span>
+          <span className="sm:hidden">Export</span>
         </Button>
       </div>
 
@@ -165,10 +284,11 @@ export function InventoryManagement(): JSX.Element {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap gap-2 sm:gap-4 mb-4 sm:mb-6">
         <Button
           onClick={() => setFilter('all')}
           variant={filter === 'all' ? 'primary' : 'ghost'}
+          size="sm"
           className={filter === 'all' ? 'bg-black text-white hover:bg-gray-800' : ''}
         >
           All Items
@@ -176,6 +296,7 @@ export function InventoryManagement(): JSX.Element {
         <Button
           onClick={() => setFilter('low')}
           variant={filter === 'low' ? 'primary' : 'ghost'}
+          size="sm"
           className={filter === 'low' ? 'bg-yellow-600 text-white hover:bg-yellow-700' : ''}
         >
           Low Stock
@@ -183,6 +304,7 @@ export function InventoryManagement(): JSX.Element {
         <Button
           onClick={() => setFilter('out')}
           variant={filter === 'out' ? 'primary' : 'ghost'}
+          size="sm"
           className={filter === 'out' ? 'bg-red-600 text-white hover:bg-red-700' : ''}
         >
           Out of Stock
@@ -191,33 +313,34 @@ export function InventoryManagement(): JSX.Element {
 
       {/* Inventory Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Product
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  SKU
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stock by Size
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="inline-block min-w-full align-middle">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                    SKU
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Price
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stock by Size
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                    Total
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Status
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredProducts.map((product) => {
                 const hasLowStock = product.lowStockSizes.length > 0;
@@ -230,9 +353,9 @@ export function InventoryManagement(): JSX.Element {
                       isOutOfStock ? 'bg-red-50' : hasLowStock ? 'bg-yellow-50' : ''
                     }`}
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <td className="px-3 sm:px-6 py-4">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           {product.images[0] ? (
                             <img 
                               src={product.images[0].url} 
@@ -240,27 +363,29 @@ export function InventoryManagement(): JSX.Element {
                               className="w-full h-full object-cover rounded-lg"
                             />
                           ) : (
-                            <Package className="w-6 h-6 text-gray-400" />
+                            <Package className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
                           )}
                         </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-500">{product.category.name}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{product.name}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 truncate">{product.category.name}</div>
+                          <div className="text-xs text-gray-600 sm:hidden mt-1">SKU: {product.sku || product.id}</div>
+                          <div className="text-xs text-gray-600 md:hidden mt-1">{(product.price / 100).toFixed(0)} GHS</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-3 sm:px-6 py-4 text-sm text-gray-600 hidden sm:table-cell">
                       {product.sku || product.id}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    <td className="px-3 sm:px-6 py-4 text-sm font-medium text-gray-900 hidden md:table-cell">
                       {(product.price / 100).toFixed(0)} GHS
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2 flex-wrap">
+                    <td className="px-3 sm:px-6 py-4">
+                      <div className="flex gap-1 sm:gap-2 flex-wrap">
                         {product.sizes.map((size) => (
                           <span
                             key={size.size}
-                            className={`px-2 py-1 text-xs rounded font-medium ${
+                            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs rounded font-medium whitespace-nowrap ${
                               (size.quantity || 0) === 0
                                 ? 'bg-red-100 text-red-700'
                                 : (size.quantity || 0) < 5
@@ -273,12 +398,12 @@ export function InventoryManagement(): JSX.Element {
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                    <td className="px-3 sm:px-6 py-4 text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       {product.totalStock}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
                       <span
-                        className={`px-2 py-1 text-xs rounded-full font-medium ${
+                        className={`px-2 py-1 text-xs rounded-full font-medium whitespace-nowrap ${
                           isOutOfStock
                             ? 'bg-red-100 text-red-700'
                             : hasLowStock
@@ -289,7 +414,7 @@ export function InventoryManagement(): JSX.Element {
                         {isOutOfStock ? 'Out of Stock' : hasLowStock ? 'Low Stock' : 'In Stock'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-3 sm:px-6 py-4 text-right">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -298,15 +423,18 @@ export function InventoryManagement(): JSX.Element {
                           name: product.name,
                           sizes: product.sizes,
                         })}
+                        className="text-xs sm:text-sm"
                       >
-                        Update Stock
+                        <span className="hidden sm:inline">Update Stock</span>
+                        <span className="sm:hidden">Update</span>
                       </Button>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import { FloatingInput, FloatingTextarea } from "@/components/ui/floating-input"
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
+import { DEFAULT_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -71,14 +72,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
       category: "",
       inStock: true,
       images: [],
-      sizes: [
-        { size: "4T", quantity: 0 },
-        { size: "5T", quantity: 0 },
-        { size: "6", quantity: 0 },
-        { size: "8", quantity: 0 },
-        { size: "10", quantity: 0 },
-        { size: "12", quantity: 0 },
-      ],
+      sizes: DEFAULT_PRODUCT_SIZES.map(size => ({ size, quantity: 0 })),
       tags: [],
     },
   });
@@ -405,9 +399,9 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
 
           {/* Inventory / Sizes */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Inventory by Size</h2>
-            <p className="text-sm text-gray-600 mb-4">Set stock quantity for each size</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Inventory by Size</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mb-4">Set stock quantity for each size</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4">
               {watch("sizes")?.map((size, index) => (
                 <div key={size.size} className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
@@ -439,12 +433,12 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-4 border-t border-gray-200">
           <Button
             type="button"
             variant="secondary"
             onClick={() => router.back()}
-            className="shadow-sm hover:shadow-md transition-all"
+            className="shadow-sm hover:shadow-md transition-all w-full sm:w-auto"
           >
             Cancel
           </Button>
@@ -452,7 +446,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
             type="submit" 
             variant="primary" 
             disabled={saving}
-            className="shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+            className="shadow-md hover:shadow-lg transition-all disabled:opacity-50 w-full sm:w-auto"
           >
             {saving ? (
               <>

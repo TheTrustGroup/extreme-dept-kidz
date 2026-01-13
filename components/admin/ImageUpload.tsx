@@ -42,31 +42,50 @@ export function ImageUpload({
     // CRITICAL: Verify and sync authentication before uploading
     console.log('[ImageUpload] Verifying authentication...');
     
-    // Ensure cookie is synced
+    // Get token first to avoid race conditions
+    let currentToken = useAdminAuth.getState().token;
+    
+    // Ensure cookie is synced (non-blocking)
     syncCookie();
     
-    // Verify auth is valid
-    const authValid = await checkAuth();
+    // Verify auth is valid (with timeout to prevent hanging)
+    let authValid = false;
+    try {
+      authValid = await Promise.race([
+        checkAuth(),
+        new Promise<boolean>((resolve) => {
+          setTimeout(() => resolve(false), 5000); // 5 second timeout
+        })
+      ]);
+    } catch (error) {
+      console.error('[ImageUpload] Auth check error:', error);
+      // Continue with upload if we have a token, even if check fails
+      authValid = !!currentToken;
+    }
+    
     console.log('[ImageUpload] Auth check result:', authValid);
     
-    if (!authValid) {
-      console.error('[ImageUpload] Authentication failed - attempting refresh...');
+    // If auth check failed but we have a token, try refresh
+    if (!authValid && currentToken) {
+      console.warn('[ImageUpload] Auth check failed but token exists - attempting refresh...');
       try {
-        await refreshAuth();
-        const retryAuth = await checkAuth();
-        if (!retryAuth) {
-          alert("Your session has expired. Please refresh the page and log in again.");
-          return;
-        }
+        await Promise.race([
+          refreshAuth(),
+          new Promise<void>((resolve) => {
+            setTimeout(() => resolve(), 3000); // 3 second timeout
+          })
+        ]);
+        currentToken = useAdminAuth.getState().token;
+        authValid = !!currentToken;
       } catch (error) {
         console.error('[ImageUpload] Auth refresh failed:', error);
-        alert("Authentication failed. Please refresh the page and log in again.");
-        return;
+        // Continue if we still have a token
+        authValid = !!currentToken;
       }
     }
-
+    
     // Get fresh token after auth verification
-    const currentToken = useAdminAuth.getState().token;
+    currentToken = useAdminAuth.getState().token || currentToken;
     console.log('[ImageUpload] Token exists:', !!currentToken);
     console.log('[ImageUpload] Token length:', currentToken?.length || 0);
     
@@ -120,35 +139,110 @@ export function ImageUpload({
 
         console.log('[ImageUpload] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)}KB)`);
         
-        let response: Response;
-        try {
-          response = await fetch("/api/admin/upload", {
-            method: "POST",
-            headers,
-            body: formData,
-            credentials: 'include', // Include cookies as fallback
-          });
-        } catch (networkError) {
-          console.error('[ImageUpload] Network error during upload:', networkError);
-          throw new Error(`Network error: ${networkError instanceof Error ? networkError.message : 'Failed to connect to server'}`);
+        let response: Response | null = null;
+        let retryCount = 0;
+        const maxRetries = 2;
+        
+        while (retryCount <= maxRetries) {
+          let timeoutId: NodeJS.Timeout | null = null;
+          try {
+            // Add timeout to prevent hanging requests
+            const controller = new AbortController();
+            timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            
+            response = await fetch("/api/admin/upload", {
+              method: "POST",
+              headers,
+              body: formData,
+              credentials: 'include', // Include cookies as fallback
+              signal: controller.signal,
+            });
+            
+            if (timeoutId) clearTimeout(timeoutId);
+            break; // Success, exit retry loop
+          } catch (networkError) {
+            if (timeoutId) clearTimeout(timeoutId);
+            
+            // If it's an abort (timeout), don't retry
+            if (networkError instanceof Error && networkError.name === 'AbortError') {
+              throw new Error("Upload timeout. Please try again with a smaller file.");
+            }
+            
+            // If we've exhausted retries, throw the error
+            if (retryCount >= maxRetries) {
+              console.error('[ImageUpload] Network error during upload after retries:', networkError);
+              throw new Error(`Network error: ${networkError instanceof Error ? networkError.message : 'Failed to connect to server'}`);
+            }
+            
+            // Retry with exponential backoff
+            retryCount++;
+            console.warn(`[ImageUpload] Upload attempt ${retryCount} failed, retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // 1s, 2s delays
+            
+            // Refresh token before retry
+            syncCookie();
+            const retryToken = useAdminAuth.getState().token;
+            if (retryToken) {
+              formData.set('token', retryToken);
+              headers['Authorization'] = `Bearer ${retryToken}`;
+            }
+          }
+        }
+
+        if (!response) {
+          throw new Error("Failed to upload: No response received after retries");
         }
 
         console.log('[ImageUpload] Upload response status:', response.status, response.statusText);
         
-        // Parse response body
+        // Parse response body - clone first to avoid reading body twice
+        const responseClone = response.clone();
         let responseData: any;
         try {
-          const responseText = await response.text();
-          console.log('[ImageUpload] Response body:', responseText.substring(0, 200));
-          responseData = responseText ? JSON.parse(responseText) : {};
+          const contentType = response.headers.get('content-type') || '';
+          
+          if (contentType.includes('application/json')) {
+            responseData = await response.json();
+          } else {
+            // Try to parse as JSON even if content-type is not set
+            const responseText = await response.text();
+            console.log('[ImageUpload] Response body (text):', responseText.substring(0, 200));
+            
+            if (!responseText || responseText.trim().length === 0) {
+              throw new Error("Server returned empty response");
+            }
+            
+            try {
+              responseData = JSON.parse(responseText);
+            } catch (parseError) {
+              console.error('[ImageUpload] Failed to parse JSON:', parseError);
+              // If parsing fails, check if it's an error response
+              if (!response.ok) {
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+              }
+              throw new Error("Server returned invalid JSON response");
+            }
+          }
         } catch (parseError) {
           console.error('[ImageUpload] Failed to parse response:', parseError);
-          throw new Error(`Server returned invalid response (status ${response.status})`);
+          
+          // If response is not OK, try to get error text from clone
+          if (!response.ok) {
+            try {
+              const errorText = await responseClone.text();
+              const errorData = errorText ? JSON.parse(errorText) : {};
+              throw new Error(errorData.message || errorData.error || `Upload failed (${response.status}): ${response.statusText}`);
+            } catch (cloneError) {
+              throw new Error(`Upload failed (${response.status}): ${response.statusText}`);
+            }
+          }
+          
+          throw new Error(`Server returned invalid response (status ${response.status}): ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
         }
         
         if (!response.ok) {
-          const errorMessage = responseData.message || responseData.error || `Upload failed with status ${response.status}`;
-          const errorDetails = responseData.details || responseData.diagnostic;
+          const errorMessage = responseData?.message || responseData?.error || `Upload failed with status ${response.status}`;
+          const errorDetails = responseData?.details || responseData?.diagnostic;
           
           console.error('[ImageUpload] Upload failed:', {
             status: response.status,
@@ -163,7 +257,7 @@ export function ImageUpload({
             throw new Error("Authentication failed. Please refresh the page and log in again.");
           } else if (response.status === 400) {
             throw new Error(errorMessage || "Invalid file. Please check the file type and size.");
-          } else if (response.status === 413 || response.status === 400) {
+          } else if (response.status === 413) {
             throw new Error("File is too large. Maximum size is 5MB.");
           } else if (response.status === 500) {
             throw new Error(errorMessage || "Server error occurred. Please try again.");
@@ -174,20 +268,35 @@ export function ImageUpload({
         
         console.log('[ImageUpload] ✅ Upload successful, response:', responseData);
 
-        // Ensure we get a valid URL string
+        // Ensure we get a valid URL string - accept relative paths, absolute URLs, and data URLs
         const url = responseData?.url || responseData?.urls?.[0];
-        if (!url || typeof url !== 'string') {
-          console.error('[ImageUpload] Invalid response format:', responseData);
+        if (!url) {
+          console.error('[ImageUpload] Invalid response format - no URL field:', responseData);
           throw new Error("Server returned invalid response format. Expected 'url' field.");
         }
         
-        const trimmedUrl = url.trim();
-        if (trimmedUrl.length === 0) {
+        // Convert to string and validate
+        const urlString = String(url).trim();
+        if (urlString.length === 0) {
           throw new Error("Server returned empty URL");
         }
         
-        console.log('[ImageUpload] ✅ Valid URL received:', trimmedUrl);
-        return trimmedUrl;
+        // Validate URL format - accept relative paths, absolute URLs, and data URLs
+        const isValidUrl = 
+          urlString.startsWith('/') || // Relative path
+          urlString.startsWith('http://') || // HTTP URL
+          urlString.startsWith('https://') || // HTTPS URL
+          urlString.startsWith('data:') || // Data URL (base64)
+          urlString.startsWith('./') || // Relative path with ./
+          urlString.startsWith('../'); // Relative path with ../
+        
+        if (!isValidUrl) {
+          console.warn('[ImageUpload] URL format may be invalid:', urlString);
+          // Don't throw, just warn - some servers might return non-standard URLs
+        }
+        
+        console.log('[ImageUpload] ✅ Valid URL received:', urlString);
+        return urlString;
       });
 
       const urls = await Promise.all(uploadPromises);
@@ -327,14 +436,14 @@ export function ImageUpload({
 
         {uploading ? (
           <div className="space-y-2">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-navy-900"></div>
-            <p className="text-sm text-charcoal-600">Uploading images...</p>
+            <div className="inline-block animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-navy-900"></div>
+            <p className="text-xs sm:text-sm text-charcoal-600">Uploading images...</p>
           </div>
         ) : (
           <div className="space-y-2">
-            <Upload className="w-8 h-8 mx-auto text-charcoal-400" />
-            <div>
-              <p className="text-sm font-medium text-charcoal-900">
+            <Upload className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-charcoal-400" />
+            <div className="px-2">
+              <p className="text-xs sm:text-sm font-medium text-charcoal-900">
                 Drag & drop images here, or click to browse
               </p>
               <p className="text-xs text-charcoal-500 mt-1">
@@ -347,7 +456,7 @@ export function ImageUpload({
 
       {/* Image Grid */}
       {images.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {images.map((url, index) => (
             <div
               key={url}
