@@ -368,16 +368,29 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
             <ImageUpload
               images={watch("images") || []}
               onChange={(urls) => {
-                // Ensure all URLs are valid strings and filter out any invalid entries
-                const validUrls = urls
-                  .filter(url => url && typeof url === 'string' && url.trim() !== '')
-                  .map(url => String(url).trim());
-                
-                console.log('ImageUpload onChange - validUrls:', validUrls);
-                setValue("images", validUrls, { 
-                  shouldValidate: false, // Don't trigger validation on change
-                  shouldDirty: true 
-                });
+                try {
+                  // Ensure all URLs are valid strings and filter out any invalid entries
+                  const validUrls = urls
+                    .filter(url => url != null && url !== '')
+                    .map(url => String(url).trim())
+                    .filter(url => url.length > 0);
+                  
+                  console.log('ImageUpload onChange - validUrls:', validUrls);
+                  
+                  // Set value without triggering validation
+                  setValue("images", validUrls, { 
+                    shouldValidate: false, // Don't trigger validation on change
+                    shouldDirty: true,
+                    shouldTouch: false
+                  });
+                } catch (error) {
+                  console.error('Error setting image URLs:', error);
+                  addToast({
+                    type: "error",
+                    title: "Upload Error",
+                    message: "Failed to add images. Please try again.",
+                  });
+                }
               }}
               maxImages={10}
               disabled={saving}

@@ -69,10 +69,24 @@ export function ImageUpload({
       });
 
       const urls = await Promise.all(uploadPromises);
-      onChange([...images, ...urls]);
+      
+      // Filter out any null/undefined URLs and ensure they're strings
+      const validUrls = urls
+        .filter(url => url != null && url !== '')
+        .map(url => String(url).trim())
+        .filter(url => url.length > 0);
+      
+      if (validUrls.length === 0) {
+        throw new Error("No valid image URLs were returned from the upload");
+      }
+      
+      // Combine existing images with new ones
+      const allUrls = [...images, ...validUrls];
+      onChange(allUrls);
     } catch (error) {
       console.error("Upload error:", error);
-      alert(error instanceof Error ? error.message : "Failed to upload images");
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload images";
+      alert(errorMessage);
     } finally {
       setUploading(false);
     }
@@ -144,9 +158,19 @@ export function ImageUpload({
           type="file"
           multiple
           accept="image/*"
-          onChange={(e) => handleFileSelect(e.target.files)}
+          onChange={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFileSelect(e.target.files);
+            // Reset the input value to allow selecting the same file again
+            if (e.target) {
+              e.target.value = '';
+            }
+          }}
           className="hidden"
           disabled={disabled || uploading}
+          // Prevent browser validation
+          formNoValidate
         />
 
         {uploading ? (
