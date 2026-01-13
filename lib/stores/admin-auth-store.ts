@@ -74,15 +74,27 @@ export const useAdminAuth = create<AdminAuthState>()(
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
+            credentials: 'include', // Include cookies
           });
 
+          const data = await response.json();
+
           if (!response.ok) {
-            const error = await response.json();
-            console.error("Login error:", error);
-            return false;
+            console.error("Login error:", {
+              status: response.status,
+              statusText: response.statusText,
+              error: data.error,
+              diagnostic: data.diagnostic,
+            });
+            // Throw error with message for better error handling
+            throw new Error(data.error || `Login failed: ${response.statusText}`);
           }
 
-          const data = await response.json();
+          // Verify we have the required data
+          if (!data.success || !data.token || !data.user) {
+            console.error("Login response missing required data:", data);
+            throw new Error("Invalid login response from server");
+          }
           
           set({
             user: data.user,
@@ -95,7 +107,8 @@ export const useAdminAuth = create<AdminAuthState>()(
           return true;
         } catch (error) {
           console.error("Login error:", error);
-          return false;
+          // Re-throw to allow caller to handle the error message
+          throw error;
         }
       },
 

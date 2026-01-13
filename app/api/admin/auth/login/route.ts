@@ -68,22 +68,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Find user
+    // Find user - normalize email
+    const normalizedEmail = email.toLowerCase().trim();
     let user;
     try {
       user = await prisma.adminUser.findUnique({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
       });
     } catch (dbError) {
       console.error('Database query error:', dbError);
       return NextResponse.json(
-        { error: 'Database connection error. Please try again.' },
+        { 
+          error: 'Database connection error. Please try again.',
+          diagnostic: process.env.NODE_ENV === 'development' ? {
+            error: dbError instanceof Error ? dbError.message : 'Unknown error',
+            searchedEmail: normalizedEmail,
+          } : undefined,
+        },
         { status: 500 }
       );
     }
 
     if (!user) {
-      console.log(`Login attempt failed: User not found for email ${email.toLowerCase()}`);
+      console.log(`Login attempt failed: User not found for email ${normalizedEmail}`);
+      // In development, provide more info for debugging
+      if (process.env.NODE_ENV === 'development') {
+        const totalUsers = await prisma.adminUser.count();
+        console.log(`Total admin users in database: ${totalUsers}`);
+      }
       // Don't reveal if user exists (security best practice)
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -98,10 +110,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Verify password
-    const isValid = await verifyPassword(password, user.passwordHash);
+    // Verify password - trim to avoid whitespace issues
+    const trimmedPassword = password.trim();
+    const isValid = await verifyPassword(trimmedPassword, user.passwordHash);
     if (!isValid) {
       console.log(`Login attempt failed: Invalid password for user ${user.email}`);
+      // In development, log more details
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Password verification failed:', {
+          email: user.email,
+          hasPasswordHash: !!user.passwordHash,
+          passwordHashLength: user.passwordHash?.length || 0,
+          providedPasswordLength: trimmedPassword.length,
+        });
+      }
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }

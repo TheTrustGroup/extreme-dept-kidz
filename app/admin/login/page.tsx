@@ -32,18 +32,35 @@ export default function AdminLoginPage(): JSX.Element {
     setLoading(true);
 
     try {
-      const success = await login(email, password);
+      // Trim email and password to avoid whitespace issues
+      const trimmedEmail = email.trim();
+      const trimmedPassword = password.trim();
+
+      if (!trimmedEmail || !trimmedPassword) {
+        setError("Please enter both email and password.");
+        setLoading(false);
+        return;
+      }
+
+      const success = await login(trimmedEmail, trimmedPassword);
       if (success) {
         // Small delay to ensure cookie is set before navigation
         setTimeout(() => {
           router.push("/admin");
-        }, 100);
+          router.refresh(); // Force refresh to update auth state
+        }, 200);
       } else {
         setError("Invalid email or password. Please try again.");
         setLoading(false);
       }
     } catch (err) {
-      setError("Login failed. Please try again.");
+      // Get the actual error message
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : "Login failed. Please check your credentials and try again.";
+      
+      console.error("Login error details:", err);
+      setError(errorMessage);
       setLoading(false);
     }
   };
