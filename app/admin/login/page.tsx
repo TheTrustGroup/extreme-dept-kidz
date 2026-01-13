@@ -50,7 +50,7 @@ export default function AdminLoginPage(): JSX.Element {
         console.log('[Login] ✅ Login successful, redirecting...');
         // Small delay to ensure cookie is set before navigation
         setTimeout(() => {
-          router.push("/admin/dashboard");
+          router.push("/admin");
           router.refresh(); // Force refresh to update auth state
         }, 300);
       } else {

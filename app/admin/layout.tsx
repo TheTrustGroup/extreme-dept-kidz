@@ -9,6 +9,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 import { useAdminKeyboards } from "@/lib/hooks/use-admin-keyboard";
 import { ToastProvider } from "@/components/ui/Toast";
 import { AuthSync } from "@/components/admin/AuthSync";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "@/app/admin/admin-globals.css";
 
 interface AdminLayoutProps {
@@ -101,34 +102,38 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   return (
     <ToastProvider>
       <AuthSync />
-      <div className="flex h-screen bg-[#f8f9fa] overflow-hidden admin-background">
-        {/* Background Image Layer */}
-        <div 
-          className="fixed inset-0 z-0 pointer-events-none"
-          style={{
-            backgroundImage: "url('/admin-bg.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundAttachment: "fixed",
-            opacity: 0.03,
-          }}
-        />
-        
-        <AdminSidebar
-          isOpen={sidebarOpen}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
-        />
+      <ErrorBoundary>
+        <div className="flex h-screen bg-[#f8f9fa] overflow-hidden admin-background">
+          {/* Background Image Layer */}
+          <div 
+            className="fixed inset-0 z-0 pointer-events-none"
+            style={{
+              backgroundImage: "url('/admin-bg.png')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundAttachment: "fixed",
+              opacity: 0.03,
+            }}
+          />
+          
+          <AdminSidebar
+            isOpen={sidebarOpen}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+          />
 
-        <div className="flex-1 flex flex-col overflow-hidden relative z-10">
-          <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+          <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+            <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-          <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
-          </main>
+            <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+              <div className="max-w-7xl mx-auto">
+                <ErrorBoundary>
+                  {children}
+                </ErrorBoundary>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </ToastProvider>
   );
 }

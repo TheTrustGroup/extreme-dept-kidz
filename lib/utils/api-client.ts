@@ -86,6 +86,8 @@ export async function apiFetch<T = any>(
       }
 
       // Return data (handle both { data: T } and direct T responses)
+      // If response has 'data' property, return it; otherwise return the whole response
+      // This handles both { data: {...} } and { success: true, ... } response formats
       return data.data !== undefined ? data.data : (data as T);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Unknown error');

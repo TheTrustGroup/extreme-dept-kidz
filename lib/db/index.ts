@@ -70,53 +70,75 @@ export function isDatabaseConnected(): boolean {
  * This function checks the actual connection state
  */
 export async function getDatabaseStatus() {
-  // If we have DATABASE_URL, try to verify connection
-  if (DB_CONFIG.enabled && DB_CONFIG.type !== 'mock') {
-    try {
-      const { prisma } = await import('./prisma');
-      if (prisma) {
-        // Quick connection test
-        try {
-          await prisma.$connect();
-          // If connect succeeds, we're connected
-          return {
-            connected: true,
-            type: DB_CONFIG.type,
-            error: null,
-            mockMode: false,
-            enabled: true,
-          };
-        } catch (connectError) {
-          // Connection failed
-          return {
-            connected: false,
-            type: DB_CONFIG.type,
-            error: connectError instanceof Error ? connectError.message : 'Connection failed',
-            mockMode: false,
-            enabled: true,
-          };
+  try {
+    // If we have DATABASE_URL, try to verify connection
+    if (DB_CONFIG.enabled && DB_CONFIG.type !== 'mock') {
+      try {
+        const { prisma } = await import('./prisma');
+        if (prisma) {
+          // Quick connection test (with timeout to avoid hanging)
+          try {
+            const connectPromise = prisma.$connect();
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Connection timeout')), 3000)
+            );
+            
+            await Promise.race([connectPromise, timeoutPromise]);
+            
+            // If connect succeeds, we're connected
+            return {
+              connected: true,
+              type: DB_CONFIG.type,
+              error: null,
+              mockMode: false,
+              enabled: true,
+            };
+          } catch (connectError) {
+            // Connection failed
+            const errorMessage = connectError instanceof Error ? connectError.message : 'Connection failed';
+            console.log('[DB Status] Connection test failed:', errorMessage);
+            
+            return {
+              connected: false,
+              type: DB_CONFIG.type,
+              error: errorMessage,
+              mockMode: false,
+              enabled: true,
+            };
+          }
         }
+      } catch (importError) {
+        // Prisma not available
+        console.log('[DB Status] Prisma not available');
+        return {
+          connected: false,
+          type: 'unknown',
+          error: 'Prisma client not available',
+          mockMode: true,
+          enabled: false,
+        };
       }
-    } catch (importError) {
-      // Prisma not available
-      return {
-        connected: false,
-        type: 'unknown',
-        error: 'Prisma client not available',
-        mockMode: true,
-        enabled: false,
-      };
     }
-  }
 
-  // No database configured - using mock
-  return {
-    connected: false,
-    type: 'mock',
-    error: 'No database configured',
-    mockMode: true,
-    enabled: false,
-  };
+    // No database configured - using mock
+    return {
+      connected: false,
+      type: 'mock',
+      error: 'No database configured',
+      mockMode: true,
+      enabled: false,
+    };
+  } catch (error) {
+    // Catch any unexpected errors
+    console.error('[DB Status] Error getting status:', error);
+    return {
+      connected: false,
+      type: 'unknown',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      mockMode: true,
+      enabled: false,
+    };
+  }
 }
 
 /**

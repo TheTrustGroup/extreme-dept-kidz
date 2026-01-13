@@ -7,7 +7,19 @@ import { m } from "framer-motion";
 import { Menu as MenuIcon, Search, Bell, ChevronDown } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { DatabaseStatus } from "@/components/admin/DatabaseStatus";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
+
+// Wrapper component to catch errors in DatabaseStatus
+function DatabaseStatusWrapper(): JSX.Element {
+  return (
+    <ErrorBoundary
+      fallback={null} // Fail silently - don't break the header
+    >
+      <DatabaseStatus />
+    </ErrorBoundary>
+  );
+}
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
@@ -45,9 +57,11 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
-      {/* Database Status Banner */}
+      {/* Database Status Banner - Wrapped in error boundary */}
       <div className="px-4 lg:px-8 py-2 border-b border-gray-100">
-        <DatabaseStatus />
+        <React.Suspense fallback={null}>
+          <DatabaseStatusWrapper />
+        </React.Suspense>
       </div>
       <div className="flex items-center justify-between px-4 lg:px-8 h-16">
         {/* Left: Menu & Breadcrumb */}
