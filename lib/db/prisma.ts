@@ -35,8 +35,7 @@ function getPrismaClient(): PrismaClientType | null {
     };
     
     // Create new instance
-    // Prisma 7 reads DATABASE_URL from environment automatically
-    // Only pass log configuration
+    // Prisma reads DATABASE_URL from environment automatically
     const client = new PrismaClient({
       log:
         process.env.NODE_ENV === "development"

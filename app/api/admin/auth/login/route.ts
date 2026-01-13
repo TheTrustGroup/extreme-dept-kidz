@@ -63,7 +63,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!prisma) {
       console.error('Prisma client is null - DATABASE_URL may not be set');
       return NextResponse.json(
-        { error: 'Database connection unavailable. Please check environment variables.' },
+        { 
+          error: 'Database connection unavailable. Please check environment variables.',
+          diagnostic: {
+            hasDatabaseUrl: !!process.env.DATABASE_URL,
+            databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+            nodeEnv: process.env.NODE_ENV,
+            vercel: !!process.env.VERCEL,
+          },
+          help: 'Visit /api/admin/auth/test-db for detailed diagnostics',
+        },
         { status: 500 }
       );
     }
@@ -77,13 +86,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
     } catch (dbError) {
       console.error('Database query error:', dbError);
+      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
+      
+      // Check for specific Prisma connection errors
+      const isConnectionError = 
+        errorMessage.includes('Can\'t reach database server') ||
+        errorMessage.includes('Authentication failed') ||
+        errorMessage.includes('Connection') ||
+        errorMessage.includes('timeout');
+      
       return NextResponse.json(
         { 
-          error: 'Database connection error. Please try again.',
+          error: isConnectionError 
+            ? 'Database connection failed. Please check your database configuration.'
+            : 'Database query failed. Please try again.',
           diagnostic: process.env.NODE_ENV === 'development' ? {
-            error: dbError instanceof Error ? dbError.message : 'Unknown error',
+            error: errorMessage,
+            errorType: dbError instanceof Error ? dbError.constructor.name : typeof dbError,
             searchedEmail: normalizedEmail,
+            hasDatabaseUrl: !!process.env.DATABASE_URL,
           } : undefined,
+          help: isConnectionError 
+            ? 'Visit /api/admin/auth/test-db to diagnose the connection issue'
+            : undefined,
         },
         { status: 500 }
       );
