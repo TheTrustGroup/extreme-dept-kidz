@@ -118,6 +118,9 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
   const onSubmit = async (data: ProductFormData): Promise<void> => {
     setSaving(true);
     try {
+      console.log('Form submission - data:', data);
+      console.log('Form submission - images:', data.images);
+      
       // Validate images array
       if (!data.images || data.images.length === 0) {
         addToast({
@@ -129,8 +132,13 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         return;
       }
 
-      // Filter out any empty or invalid image URLs
-      const validImages = data.images.filter(url => url && typeof url === 'string' && url.trim() !== '');
+      // Filter out any empty or invalid image URLs and ensure they're strings
+      const validImages = data.images
+        .filter(url => url != null && url !== '')
+        .map(url => String(url).trim())
+        .filter(url => url.length > 0);
+
+      console.log('Form submission - validImages:', validImages);
 
       if (validImages.length === 0) {
         addToast({
@@ -215,7 +223,15 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      <form 
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit(onSubmit)(e);
+        }} 
+        className="space-y-6" 
+        noValidate
+      >
         <div className="bg-white rounded-xl border border-gray-200 p-6 lg:p-8 space-y-8 shadow-sm">
           {/* Basic Information */}
           <div>
@@ -353,8 +369,15 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
               images={watch("images") || []}
               onChange={(urls) => {
                 // Ensure all URLs are valid strings and filter out any invalid entries
-                const validUrls = urls.filter(url => url && typeof url === 'string' && url.trim() !== '');
-                setValue("images", validUrls, { shouldValidate: true });
+                const validUrls = urls
+                  .filter(url => url && typeof url === 'string' && url.trim() !== '')
+                  .map(url => String(url).trim());
+                
+                console.log('ImageUpload onChange - validUrls:', validUrls);
+                setValue("images", validUrls, { 
+                  shouldValidate: false, // Don't trigger validation on change
+                  shouldDirty: true 
+                });
               }}
               maxImages={10}
               disabled={saving}
