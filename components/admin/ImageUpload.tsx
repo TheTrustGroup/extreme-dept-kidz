@@ -29,7 +29,7 @@ export function ImageUpload({
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const { token } = useAdminAuth();
+  const { token, isAuthenticated, checkAuth } = useAdminAuth();
 
   const handleFileSelect = async (files: FileList | null): Promise<void> => {
     if (!files || files.length === 0) return;
@@ -39,9 +39,26 @@ export function ImageUpload({
       return;
     }
 
+    // Verify authentication before uploading
+    const authValid = await checkAuth();
+    if (!authValid) {
+      alert("Your session has expired. Please refresh the page and log in again.");
+      return;
+    }
+
+    // Get fresh token after auth check
+    const currentToken = useAdminAuth.getState().token;
+    if (!currentToken) {
+      alert("Authentication token not found. Please refresh the page and log in again.");
+      return;
+    }
+
     setUploading(true);
 
     try {
+      // Get token once for all uploads
+      const uploadToken = useAdminAuth.getState().token;
+      
       const uploadPromises = Array.from(files).map(async (file) => {
         // Validate file type
         if (!file.type.startsWith("image/")) {
@@ -57,9 +74,11 @@ export function ImageUpload({
         formData.append("file", file);
 
         // Prepare headers with authentication
+        // Note: With FormData, we can set Authorization header
+        // Cookies will also be sent automatically with credentials: 'include'
         const headers: HeadersInit = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+        if (uploadToken) {
+          headers['Authorization'] = `Bearer ${uploadToken}`;
         }
 
         const response = await fetch("/api/admin/upload", {
@@ -70,8 +89,15 @@ export function ImageUpload({
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Upload failed");
+          const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+          const errorMessage = errorData.error || `Upload failed with status ${response.status}`;
+          
+          // If it's an auth error, provide helpful message
+          if (response.status === 401) {
+            throw new Error("Authentication failed. Please refresh the page and log in again.");
+          }
+          
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();

@@ -16,12 +16,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Authenticate request
     const authResult = await authenticateRequest(request);
+    
+    // Log authentication details in development
+    if (process.env.NODE_ENV === 'development') {
+      const authHeader = request.headers.get('authorization');
+      const cookieToken = request.cookies.get('admin-token')?.value;
+      console.log('Upload auth check:', {
+        hasAuthHeader: !!authHeader,
+        hasCookie: !!cookieToken,
+        authResult: authResult.user ? 'success' : 'failed',
+        error: authResult.error ? 'yes' : 'no',
+      });
+    }
+    
     if (authResult.error) {
       return authResult.error;
     }
 
     if (!authResult.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { 
+          error: 'Unauthorized',
+          message: 'Please log in to upload images',
+        }, 
+        { status: 401 }
+      );
     }
 
     const formData = await request.formData();
