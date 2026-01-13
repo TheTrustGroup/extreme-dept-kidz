@@ -3,6 +3,8 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { authenticateRequest } from '@/lib/auth/middleware';
+import { verifyToken } from '@/lib/auth/jwt';
+import { prisma } from '@/lib/db/prisma';
 
 /**
  * Image Upload API Route
@@ -14,22 +16,58 @@ import { authenticateRequest } from '@/lib/auth/middleware';
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // Authenticate request
-    const authResult = await authenticateRequest(request);
+    // Get formData first to check for token in FormData (fallback for browsers that don't send headers with FormData)
+    const formData = await request.formData();
+    const tokenInFormData = formData.get('token') as string | null;
     
-    // Log authentication details in development
-    if (process.env.NODE_ENV === 'development') {
-      const authHeader = request.headers.get('authorization');
-      const cookieToken = request.cookies.get('admin-token')?.value;
-      console.log('Upload auth check:', {
-        hasAuthHeader: !!authHeader,
-        hasCookie: !!cookieToken,
-        authResult: authResult.user ? 'success' : 'failed',
-        error: authResult.error ? 'yes' : 'no',
-      });
+    // Try authentication with standard method first
+    let authResult = await authenticateRequest(request);
+    
+    // If that failed and we have token in FormData, try authenticating with that
+    if (!authResult.user && tokenInFormData) {
+      console.log('Upload: Standard auth failed, trying token from FormData...');
+      const payload = verifyToken(tokenInFormData);
+      if (payload && prisma) {
+        try {
+          const user = await prisma.adminUser.findUnique({
+            where: { id: payload.userId },
+            select: {
+              id: true,
+              email: true,
+              role: true,
+              isActive: true,
+            },
+          });
+          
+          if (user && user.isActive) {
+            authResult = {
+              user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+              },
+              error: null,
+            };
+            console.log('Upload: Authentication successful via FormData token');
+          }
+        } catch (error) {
+          console.error('Upload: Error verifying FormData token:', error);
+        }
+      }
     }
     
-    if (authResult.error) {
+    // Log authentication details
+    const authHeader = request.headers.get('authorization');
+    const cookieToken = request.cookies.get('admin-token')?.value;
+    console.log('Upload auth check:', {
+      hasAuthHeader: !!authHeader,
+      hasTokenInFormData: !!tokenInFormData,
+      hasCookie: !!cookieToken,
+      authResult: authResult.user ? 'success' : 'failed',
+      error: authResult.error ? 'yes' : 'no',
+    });
+    
+    if (authResult.error && !authResult.user) {
       return authResult.error;
     }
 
@@ -42,8 +80,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 401 }
       );
     }
-
-    const formData = await request.formData();
     const file = formData.get('file') as File;
 
     if (!file) {

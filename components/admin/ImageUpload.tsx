@@ -102,10 +102,16 @@ export function ImageUpload({
 
         const formData = new FormData();
         formData.append("file", file);
+        
+        // Add token to FormData as fallback (some browsers don't send custom headers with FormData)
+        if (uploadToken) {
+          formData.append("token", uploadToken);
+          console.log('[ImageUpload] Added token to FormData');
+        }
 
         // Prepare headers with authentication
-        // Note: With FormData, we can set Authorization header
-        // Cookies will also be sent automatically with credentials: 'include'
+        // Note: With FormData, custom headers might not be sent by all browsers
+        // So we also include token in FormData above
         const headers: HeadersInit = {};
         if (uploadToken) {
           headers['Authorization'] = `Bearer ${uploadToken}`;
