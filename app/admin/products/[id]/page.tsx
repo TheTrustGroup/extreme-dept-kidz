@@ -176,7 +176,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         <div className="bg-white rounded-xl border border-gray-200 p-6 lg:p-8 space-y-8 shadow-sm">
           {/* Basic Information */}
           <div>
@@ -211,9 +211,27 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
                 />
 
                 <FloatingInput
-                  type="number"
-                  step="0.01"
-                  {...register("price", { valueAsNumber: true })}
+                  type="text"
+                  inputMode="decimal"
+                  {...register("price", { 
+                    valueAsNumber: true,
+                    setValueAs: (value) => {
+                      if (!value || value === '') return 0;
+                      const num = parseFloat(String(value));
+                      return isNaN(num) ? 0 : num;
+                    }
+                  })}
+                  onInput={(e) => {
+                    // Filter input to allow only numbers and one decimal point
+                    const input = e.currentTarget;
+                    let value = input.value.replace(/[^0-9.]/g, '');
+                    // Ensure only one decimal point
+                    const parts = value.split('.');
+                    if (parts.length > 2) {
+                      value = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    input.value = value;
+                  }}
                   label="Price (₵)"
                   error={errors.price?.message}
                   success={!errors.price && watch("price") > 0}
@@ -222,9 +240,27 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
               </div>
 
               <FloatingInput
-                type="number"
-                step="0.01"
-                {...register("compareAtPrice", { valueAsNumber: true })}
+                type="text"
+                inputMode="decimal"
+                {...register("compareAtPrice", { 
+                  valueAsNumber: true,
+                  setValueAs: (value) => {
+                    if (!value || value === '') return undefined;
+                    const num = parseFloat(String(value));
+                    return isNaN(num) ? undefined : num;
+                  }
+                })}
+                onInput={(e) => {
+                  // Filter input to allow only numbers and one decimal point
+                  const input = e.currentTarget;
+                  let value = input.value.replace(/[^0-9.]/g, '');
+                  // Ensure only one decimal point
+                  const parts = value.split('.');
+                  if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                  }
+                  input.value = value;
+                }}
                 label="Compare at Price (₵)"
                 error={errors.compareAtPrice?.message}
                 success={!errors.compareAtPrice && (watch("compareAtPrice") ?? 0) > 0}
@@ -296,11 +332,23 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
                     Size {size.size}
                   </label>
                   <input
-                    type="number"
-                    {...register(`sizes.${index}.quantity`, { valueAsNumber: true })}
+                    type="text"
+                    inputMode="numeric"
+                    {...register(`sizes.${index}.quantity`, { 
+                      valueAsNumber: true,
+                      setValueAs: (value) => {
+                        if (!value || value === '') return 0;
+                        const num = parseInt(String(value), 10);
+                        return isNaN(num) ? 0 : Math.max(0, num);
+                      }
+                    })}
+                    onInput={(e) => {
+                      // Filter input to allow only integers
+                      const input = e.currentTarget;
+                      input.value = input.value.replace(/[^0-9]/g, '');
+                    }}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
                     placeholder="0"
-                    min="0"
                   />
                 </div>
               ))}

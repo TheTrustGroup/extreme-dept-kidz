@@ -281,7 +281,7 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8" noValidate>
       {/* Basic Information */}
       <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6">
         <h2 className="text-xl font-semibold text-charcoal-900 mb-4">
@@ -333,12 +333,19 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
               Price (₵) *
             </label>
             <input
-              type="number"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               value={formData.price}
-              onChange={(e) =>
-                setFormData({ ...formData, price: e.target.value })
-              }
+              onChange={(e) => {
+                // Allow only numbers and one decimal point
+                const value = e.target.value.replace(/[^0-9.]/g, '');
+                // Ensure only one decimal point
+                const parts = value.split('.');
+                const formatted = parts.length > 2 
+                  ? parts[0] + '.' + parts.slice(1).join('')
+                  : value;
+                setFormData({ ...formData, price: formatted });
+              }}
               className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
               required
             />
@@ -348,12 +355,19 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
               Original Price (₵) - Optional
             </label>
             <input
-              type="number"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               value={formData.originalPrice}
-              onChange={(e) =>
-                setFormData({ ...formData, originalPrice: e.target.value })
-              }
+              onChange={(e) => {
+                // Allow only numbers and one decimal point
+                const value = e.target.value.replace(/[^0-9.]/g, '');
+                // Ensure only one decimal point
+                const parts = value.split('.');
+                const formatted = parts.length > 2 
+                  ? parts[0] + '.' + parts.slice(1).join('')
+                  : value;
+                setFormData({ ...formData, originalPrice: formatted });
+              }}
               className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
               placeholder="For sale items"
             />
