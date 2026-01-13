@@ -6,10 +6,8 @@ export const dynamic = "force-dynamic";
 export async function GET(): Promise<NextResponse> {
   try {
     if (!prisma) {
-      return NextResponse.json(
-        { error: "Database not available" },
-        { status: 500 }
-      );
+      // Return empty array instead of error - collections are optional
+      return NextResponse.json([]);
     }
 
     const collections = await prisma.collection.findMany({
@@ -28,10 +26,8 @@ export async function GET(): Promise<NextResponse> {
     return NextResponse.json(collections);
   } catch (error) {
     console.error("Failed to fetch collections:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch collections" },
-      { status: 500 }
-    );
+    // Return empty array instead of error - collections are optional
+    return NextResponse.json([]);
   }
 }
 

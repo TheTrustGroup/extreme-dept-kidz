@@ -56,19 +56,89 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 });
     }
 
+    // Normalize category - handle both object and ID formats
+    let category;
+    if (body.category && typeof body.category === 'object') {
+      category = body.category;
+    } else if (body.categoryId) {
+      // Map category ID to category object
+      const categoryMap: Record<string, { id: string; name: string; slug: string }> = {
+        'cat-boys': { id: 'cat-boys', name: 'Boys', slug: 'boys' },
+        'cat-girls': { id: 'cat-girls', name: 'Girls', slug: 'girls' },
+        'cat-accessories': { id: 'cat-accessories', name: 'Accessories', slug: 'accessories' },
+      };
+      category = categoryMap[body.categoryId] || { id: body.categoryId, name: body.categoryId, slug: body.categoryId };
+    } else {
+      category = { id: 'cat-boys', name: 'Boys', slug: 'boys' };
+    }
+
+    // Normalize images - handle both array of strings and array of objects
+    let images;
+    if (Array.isArray(body.images)) {
+      images = body.images.map((img: string | { url: string; alt?: string; isPrimary?: boolean }, index: number) => {
+        if (typeof img === 'string') {
+          return { url: img, alt: `${body.name} - Image ${index + 1}`, isPrimary: index === 0 };
+        }
+        return {
+          url: img.url,
+          alt: img.alt || `${body.name} - Image ${index + 1}`,
+          isPrimary: img.isPrimary ?? (index === 0),
+        };
+      }).filter((img: { url: string }) => img.url && img.url.trim() !== '');
+    } else {
+      images = [];
+    }
+
+    // Normalize sizes - handle both variants and sizes formats
+    let sizes;
+    if (Array.isArray(body.sizes)) {
+      sizes = body.sizes.map((size: { size: string; inStock?: boolean; quantity?: number }) => ({
+        size: size.size,
+        inStock: size.inStock ?? (size.quantity ? size.quantity > 0 : true),
+        quantity: size.quantity || (size.inStock ? 1 : 0),
+      }));
+    } else if (Array.isArray(body.variants)) {
+      sizes = body.variants.map((variant: { size: string; stock?: number; sku?: string }) => ({
+        size: variant.size,
+        inStock: (variant.stock ?? 0) > 0,
+        quantity: variant.stock || 0,
+      }));
+    } else {
+      sizes = [];
+    }
+
+    // Normalize price - handle both cents and decimal formats
+    let price;
+    if (typeof body.price === 'number') {
+      // If price is less than 1000, assume it's in cents already
+      price = body.price < 1000 ? body.price : Math.round(body.price * 100);
+    } else {
+      price = Math.round(parseFloat(String(body.price || 0)) * 100);
+    }
+
+    // Normalize originalPrice
+    let originalPrice: number | undefined;
+    if (body.originalPrice) {
+      if (typeof body.originalPrice === 'number') {
+        originalPrice = body.originalPrice < 1000 ? body.originalPrice : Math.round(body.originalPrice * 100);
+      } else {
+        originalPrice = Math.round(parseFloat(String(body.originalPrice)) * 100);
+      }
+    }
+
     // Create product using DB layer (will fallback to mock if DB unavailable)
     const product = await createProduct({
-      name: body.name,
-      description: body.description || '',
-      price: typeof body.price === 'number' ? body.price : Math.round(parseFloat(body.price) * 100),
-      originalPrice: body.originalPrice ? (typeof body.originalPrice === 'number' ? body.originalPrice : Math.round(parseFloat(body.originalPrice) * 100)) : undefined,
-      sku: body.sku || `SKU-${Date.now()}`,
-      category: body.category || { id: body.categoryId || 'cat-boys', name: 'Boys', slug: 'boys' },
-      images: body.images || [],
-      sizes: body.sizes || body.variants || [],
-      slug: body.slug || body.name.toLowerCase().replace(/\s+/g, '-'),
-      inStock: body.inStock !== undefined ? body.inStock : true,
-      tags: body.tags || [],
+      name: String(body.name || '').trim(),
+      description: String(body.description || '').trim(),
+      price,
+      originalPrice,
+      sku: String(body.sku || `SKU-${Date.now()}`).trim(),
+      category,
+      images,
+      sizes,
+      slug: body.slug || String(body.name || 'product').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      inStock: body.inStock !== undefined ? Boolean(body.inStock) : sizes.some((s: { quantity: number }) => s.quantity > 0),
+      tags: Array.isArray(body.tags) ? body.tags.map((t: unknown) => String(t).trim()).filter((t: string) => t) : [],
     });
 
     // Revalidate cache

@@ -78,21 +78,58 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
   async function fetchCategoriesAndCollections(): Promise<void> {
     try {
       const [categoriesRes, collectionsRes] = await Promise.all([
-        fetch("/api/admin/categories"),
-        fetch("/api/admin/collections"),
+        fetch("/api/admin/categories").catch(() => null),
+        fetch("/api/admin/collections").catch(() => null),
       ]);
 
-      if (categoriesRes.ok) {
-        const cats = await categoriesRes.json();
-        setCategories(cats);
+      if (categoriesRes && categoriesRes.ok) {
+        try {
+          const data = await categoriesRes.json();
+          // Handle both { categories: [...] } and direct array responses
+          const cats = Array.isArray(data) ? data : (data.categories || []);
+          setCategories(cats);
+        } catch (parseError) {
+          console.error("Failed to parse categories:", parseError);
+          // Set default categories as fallback
+          setCategories([
+            { id: "cat-boys", name: "Boys", slug: "boys" },
+            { id: "cat-girls", name: "Girls", slug: "girls" },
+            { id: "cat-accessories", name: "Accessories", slug: "accessories" },
+          ]);
+        }
+      } else {
+        // Set default categories as fallback
+        setCategories([
+          { id: "cat-boys", name: "Boys", slug: "boys" },
+          { id: "cat-girls", name: "Girls", slug: "girls" },
+          { id: "cat-accessories", name: "Accessories", slug: "accessories" },
+        ]);
       }
 
-      if (collectionsRes.ok) {
-        const cols = await collectionsRes.json();
-        setCollections(cols);
+      if (collectionsRes && collectionsRes.ok) {
+        try {
+          const data = await collectionsRes.json();
+          // Handle both { collections: [...] } and direct array responses
+          const cols = Array.isArray(data) ? data : (data.collections || []);
+          setCollections(cols);
+        } catch (parseError) {
+          console.error("Failed to parse collections:", parseError);
+          // Collections are optional, so empty array is fine
+          setCollections([]);
+        }
+      } else {
+        // Collections are optional, so empty array is fine
+        setCollections([]);
       }
     } catch (error) {
       console.error("Failed to fetch categories/collections:", error);
+      // Set default categories as fallback
+      setCategories([
+        { id: "cat-boys", name: "Boys", slug: "boys" },
+        { id: "cat-girls", name: "Girls", slug: "girls" },
+        { id: "cat-accessories", name: "Accessories", slug: "accessories" },
+      ]);
+      setCollections([]);
     }
   }
 
@@ -234,25 +271,73 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
 
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // Validate required fields
+    if (!formData.name || formData.name.trim() === "") {
+      alert("Product name is required");
+      return;
+    }
+    
+    if (!formData.description || formData.description.trim() === "") {
+      alert("Product description is required");
+      return;
+    }
+    
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      alert("Product price must be greater than 0");
+      return;
+    }
+    
+    if (!formData.categoryId || formData.categoryId === "") {
+      alert("Please select a category");
+      return;
+    }
+    
+    // Validate images
+    const validImages = formData.images.filter((img) => img.url.trim() !== "");
+    if (validImages.length === 0) {
+      alert("Please upload at least one product image");
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Convert variants to sizes format expected by API
+      const sizes = formData.variants
+        .filter((v) => v.size.trim() !== "")
+        .map((v) => ({
+          size: v.size,
+          inStock: v.stock > 0,
+          quantity: v.stock,
+        }));
+
+      // Convert images to expected format
+      const images = validImages.map((img, index) => ({
+        url: img.url.trim(),
+        alt: img.alt || `${formData.name} - Image ${index + 1}`,
+        isPrimary: index === 0,
+      }));
+
       const payload = {
-        name: formData.name,
-        slug: formData.slug,
-        description: formData.description,
-        price: parseFloat(formData.price) || 0,
+        name: formData.name.trim(),
+        slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
+        description: formData.description.trim(),
+        price: Math.round(parseFloat(formData.price) * 100), // Convert to cents
         originalPrice: formData.originalPrice
-          ? parseFloat(formData.originalPrice)
-          : null,
-        sku: formData.sku,
-        categoryId: formData.categoryId,
-        images: formData.images.filter((img) => img.url.trim() !== ""),
-        variants: formData.variants.filter(
-          (v) => v.size.trim() !== "" && v.sku.trim() !== ""
-        ),
+          ? Math.round(parseFloat(formData.originalPrice) * 100)
+          : undefined,
+        sku: formData.sku.trim() || `SKU-${Date.now()}`,
+        category: {
+          id: formData.categoryId,
+          name: categories.find(c => c.id === formData.categoryId)?.name || formData.categoryId,
+          slug: categories.find(c => c.id === formData.categoryId)?.slug || formData.categoryId,
+        },
+        images,
+        sizes,
         tags: formData.tags,
-        collections: formData.collections,
+        inStock: sizes.some(s => s.quantity > 0),
       };
 
       const url = productId
@@ -262,19 +347,27 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
 
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
-      if (response.ok) {
+      const responseData = await response.json().catch(() => ({}));
+
+      if (response.ok && responseData.success !== false) {
         router.push("/admin/products");
+        router.refresh();
       } else {
-        const error = await response.json();
-        alert(`Failed to save product: ${error.error || "Unknown error"}`);
+        const errorMessage = responseData.error || responseData.message || `HTTP ${response.status}: ${response.statusText}`;
+        console.error("Failed to save product:", errorMessage, responseData);
+        alert(`Failed to save product: ${errorMessage}`);
       }
     } catch (error) {
       console.error("Failed to save product:", error);
-      alert("Failed to save product. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      alert(`Failed to save product: ${errorMessage}. Please try again.`);
     } finally {
       setLoading(false);
     }
