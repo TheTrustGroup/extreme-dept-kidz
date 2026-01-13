@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { Menu as MenuIcon, Search, Bell, ChevronDown } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+import { DatabaseStatus } from "@/components/admin/DatabaseStatus";
 import { cn } from "@/lib/utils";
 
 interface AdminHeaderProps {
@@ -44,6 +45,10 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+      {/* Database Status Banner */}
+      <div className="px-4 lg:px-8 py-2 border-b border-gray-100">
+        <DatabaseStatus />
+      </div>
       <div className="flex items-center justify-between px-4 lg:px-8 h-16">
         {/* Left: Menu & Breadcrumb */}
         <div className="flex items-center gap-4">

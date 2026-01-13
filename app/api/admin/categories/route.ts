@@ -1,68 +1,76 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
+import { NextRequest, NextResponse } from "next/server";
+import { getAllCategories, createCategory, getDatabaseStatus } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    if (!prisma) {
-      return NextResponse.json(
-        { error: "Database not available" },
-        { status: 500 }
-      );
-    }
-
-    const categories = await prisma.category.findMany({
-      include: {
-        products: {
-          select: {
-            id: true,
-          },
-        },
-      },
-      orderBy: {
-        name: "asc",
-      },
+    const categories = await getAllCategories();
+    
+    return NextResponse.json({
+      success: true,
+      categories,
+      count: categories.length,
+      dbStatus: getDatabaseStatus(),
     });
-
-    return NextResponse.json(categories);
   } catch (error) {
-    console.error("Failed to fetch categories:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch categories" },
-      { status: 500 }
-    );
+    console.error("❌ GET /api/admin/categories error:", error);
+    
+    return NextResponse.json({
+      success: false,
+      error: "Failed to fetch categories",
+      details: error instanceof Error ? error.message : "Unknown error",
+      dbStatus: getDatabaseStatus(),
+    }, { status: 500 });
   }
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    if (!prisma) {
-      return NextResponse.json(
-        { error: "Database not available" },
-        { status: 500 }
-      );
+    const body = await request.json();
+    const { name, description } = body;
+
+    if (!name) {
+      return NextResponse.json({
+        success: false,
+        error: "Category name is required",
+      }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { name, slug, description, image, isActive } = body;
+    // Generate slug
+    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
-    const category = await prisma.category.create({
-      data: {
-        name,
-        slug,
-        description,
-        image,
-        isActive: isActive !== undefined ? isActive : true,
-      },
+    const category = await createCategory({
+      name,
+      slug,
+      description: description || '',
+      image: body.image || '',
+      isActive: body.isActive !== undefined ? body.isActive : true,
     });
 
-    return NextResponse.json(category, { status: 201 });
+    // Revalidate cache
+    try {
+      revalidatePath('/admin/categories');
+      revalidatePath('/collections');
+    } catch (revalidateError) {
+      console.error('Failed to revalidate cache:', revalidateError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      category,
+      message: "Category created successfully",
+      dbStatus: getDatabaseStatus(),
+    }, { status: 201 });
   } catch (error) {
-    console.error("Failed to create category:", error);
-    return NextResponse.json(
-      { error: "Failed to create category" },
-      { status: 500 }
-    );
+    console.error("❌ POST /api/admin/categories error:", error);
+    
+    return NextResponse.json({
+      success: false,
+      error: "Failed to create category",
+      details: error instanceof Error ? error.message : "Unknown error",
+      dbStatus: getDatabaseStatus(),
+    }, { status: 500 });
   }
 }

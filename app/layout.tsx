@@ -7,6 +7,7 @@ import { Providers } from "@/components/providers";
 import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { WebVitals } from "./web-vitals";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -128,22 +129,24 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
       </head>
       <body className="min-h-screen flex flex-col">
-        <SkipLinks />
-        <Providers>
-          <Suspense fallback={<PageLoader />}>
-            <Header cartItemCount={0} />
-          </Suspense>
-          <main id="main-content" className="flex-1 pt-[calc(2rem+4.5rem)] md:pt-[calc(2rem+5.5rem)]" role="main">
+        <ErrorBoundary>
+          <SkipLinks />
+          <Providers>
             <Suspense fallback={<PageLoader />}>
-              {children}
+              <Header cartItemCount={0} />
             </Suspense>
-          </main>
-          <Suspense fallback={null}>
-            <Footer />
-          </Suspense>
-          <CartDrawerWrapper />
-          <WebVitals />
-        </Providers>
+            <main id="main-content" className="flex-1 pt-[calc(2rem+4.5rem)] md:pt-[calc(2rem+5.5rem)]" role="main">
+              <Suspense fallback={<PageLoader />}>
+                {children}
+              </Suspense>
+            </main>
+            <Suspense fallback={null}>
+              <Footer />
+            </Suspense>
+            <CartDrawerWrapper />
+            <WebVitals />
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

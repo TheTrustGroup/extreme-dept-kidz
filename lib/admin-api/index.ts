@@ -15,7 +15,7 @@ interface Order {
   status: string;
   date: string;
 }
-import { mockProducts } from "@/lib/mock-data";
+import { getAllProducts, getProductById, createProduct as dbCreateProduct, updateProduct as dbUpdateProduct, deleteProduct as dbDeleteProduct } from "@/lib/db";
 import { styleLooks } from "@/lib/mock-data/styling-data";
 
 // Simulate API delay
@@ -90,59 +90,83 @@ export async function getProducts(params?: {
   page?: number;
   limit?: number;
 }): Promise<ProductsResponse> {
-  await delay(300);
+  try {
+    // Use database abstraction layer (with automatic fallback to mock)
+    let products = await getAllProducts();
 
-  let products = [...mockProducts];
+    // Apply search
+    if (params?.search) {
+      const searchLower = params.search.toLowerCase();
+      products = products.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchLower) ||
+          p.description.toLowerCase().includes(searchLower) ||
+          p.sku?.toLowerCase().includes(searchLower)
+      );
+    }
 
-  // Apply search
-  if (params?.search) {
-    const searchLower = params.search.toLowerCase();
-    products = products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower) ||
-        p.sku?.toLowerCase().includes(searchLower)
-    );
+    // Apply filters (simplified)
+    if (params?.filters) {
+      // Filter logic here
+    }
+
+    const page = params?.page || 1;
+    const limit = params?.limit || 50;
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    return {
+      products: products.slice(start, end),
+      total: products.length,
+      page,
+      totalPages: Math.ceil(products.length / limit),
+    };
+  } catch (error) {
+    console.error('Failed to get products:', error);
+    // Return empty result on error
+    return {
+      products: [],
+      total: 0,
+      page: params?.page || 1,
+      totalPages: 0,
+    };
   }
-
-  // Apply filters (simplified)
-  if (params?.filters) {
-    // Filter logic here
-  }
-
-  const page = params?.page || 1;
-  const limit = params?.limit || 50;
-  const start = (page - 1) * limit;
-  const end = start + limit;
-
-  return {
-    products: products.slice(start, end),
-    total: products.length,
-    page,
-    totalPages: Math.ceil(products.length / limit),
-  };
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-  await delay(200);
-  return mockProducts.find((p) => p.id === id) || null;
+  try {
+    return await getProductById(id);
+  } catch (error) {
+    console.error('Failed to get product:', error);
+    return null;
+  }
 }
 
 export async function createProduct(product: Partial<Product>): Promise<Product> {
-  await delay(500);
-  // In production, this would create in database
-  return product as Product;
+  try {
+    return await dbCreateProduct(product);
+  } catch (error) {
+    console.error('Failed to create product:', error);
+    throw error;
+  }
 }
 
 export async function updateProduct(id: string, product: Partial<Product>): Promise<Product> {
-  await delay(500);
-  // In production, this would update in database
-  return product as Product;
+  try {
+    return await dbUpdateProduct(id, product);
+  } catch (error) {
+    console.error('Failed to update product:', error);
+    throw error;
+  }
 }
 
-export async function deleteProduct(_id: string): Promise<void> {
-  await delay(300);
-  // In production, this would delete from database
+export async function deleteProduct(id: string): Promise<void> {
+  try {
+    await dbDeleteProduct(id);
+  } catch (error) {
+    console.error('Failed to delete product:', error);
+    throw error;
+  }
 }
 
 // Orders
