@@ -36,6 +36,8 @@ function getPrismaClient(): PrismaClientType | null {
     
     // Create new instance
     // Prisma reads DATABASE_URL from environment automatically
+    // Note: For connection poolers (Supabase, PgBouncer), ensure DATABASE_URL includes ?pgbouncer=true
+    // This prevents "prepared statement already exists" errors (42P05)
     const client = new PrismaClient({
       log:
         process.env.NODE_ENV === "development"

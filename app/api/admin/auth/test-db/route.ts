@@ -43,10 +43,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // Test database connection
   try {
-    // Simple query to test connection
-    const result = await prisma.$queryRaw`SELECT 1 as test`;
+    // Use $connect() instead of $queryRaw to avoid prepared statement issues with poolers
+    await prisma.$connect();
     
-    // Try to count admin users
+    // Try to count admin users (this will also test the connection)
     const adminCount = await prisma.adminUser.count();
     
     diagnostics.connectionTest = 'success';
@@ -60,8 +60,40 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorCode = (error as any)?.code;
     
     console.error('Database connection test failed:', error);
+    
+    // Check for specific error codes
+    const isPreparedStatementError = errorCode === '42P05' || errorMessage.includes('prepared statement');
+    const isConnectionError = errorMessage.includes('Can\'t reach') || errorMessage.includes('Connection');
+    const isAuthError = errorMessage.includes('Authentication failed') || errorCode === 'P1000';
+    
+    let recommendations = [
+      'Verify DATABASE_URL is correct in Vercel environment variables',
+      'Check if Supabase project is active (not paused)',
+      'Verify database password is correct and URL-encoded',
+    ];
+    
+    if (isPreparedStatementError) {
+      recommendations.unshift(
+        '⚠️ Prepared statement error detected - this is a connection pooler issue',
+        'Solution: Ensure DATABASE_URL uses Connection Pooler (port 6543) with ?pgbouncer=true parameter',
+        'Example: postgresql://user:pass@host:6543/db?pgbouncer=true&sslmode=require'
+      );
+    } else if (isConnectionError) {
+      recommendations.unshift(
+        'Ensure connection string uses Connection Pooler: port 6543',
+        'Check Supabase network restrictions/allowlist',
+      );
+    } else if (isAuthError) {
+      recommendations.unshift(
+        'Authentication failed - verify password is correct',
+        'Make sure password is URL-encoded (e.g., ! becomes %21)',
+      );
+    }
+    
+    recommendations.push('Try the connection string from Supabase Dashboard → Settings → Database');
     
     return NextResponse.json({
       success: false,
@@ -70,17 +102,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         ...diagnostics,
         connectionTest: 'failed',
         error: errorMessage,
+        errorCode: errorCode || undefined,
         errorType: error instanceof Error ? error.constructor.name : typeof error,
+        isPreparedStatementError,
+        isConnectionError,
+        isAuthError,
         ...(process.env.NODE_ENV === 'development' && { stack: errorStack }),
       },
-      recommendations: [
-        'Verify DATABASE_URL is correct in Vercel environment variables',
-        'Check if Supabase project is active (not paused)',
-        'Ensure connection string uses Connection Pooler: port 6543',
-        'Verify database password is correct and URL-encoded',
-        'Check Supabase network restrictions/allowlist',
-        'Try the connection string from Supabase Dashboard → Settings → Database',
-      ],
+      recommendations,
     }, { status: 500 });
   }
 }

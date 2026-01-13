@@ -35,8 +35,9 @@ export async function initializeDatabase(): Promise<boolean> {
     // Try to import and connect to Prisma if available
     const { prisma } = await import('./prisma');
     if (prisma) {
-      // Test connection with a simple query
-      await prisma.$queryRaw`SELECT 1`;
+      // Test connection using $connect() instead of $queryRaw
+      // $connect() doesn't use prepared statements, avoiding pooler issues
+      await prisma.$connect();
       console.log('✅ Database connected successfully');
       dbConnected = true;
       connectionError = null;
