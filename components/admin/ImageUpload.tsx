@@ -118,43 +118,76 @@ export function ImageUpload({
           console.warn('[ImageUpload] No token available for Authorization header');
         }
 
-        console.log('[ImageUpload] Uploading file:', file.name);
-        const response = await fetch("/api/admin/upload", {
-          method: "POST",
-          headers,
-          body: formData,
-          credentials: 'include', // Include cookies as fallback
-        });
+        console.log('[ImageUpload] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)}KB)`);
+        
+        let response: Response;
+        try {
+          response = await fetch("/api/admin/upload", {
+            method: "POST",
+            headers,
+            body: formData,
+            credentials: 'include', // Include cookies as fallback
+          });
+        } catch (networkError) {
+          console.error('[ImageUpload] Network error during upload:', networkError);
+          throw new Error(`Network error: ${networkError instanceof Error ? networkError.message : 'Failed to connect to server'}`);
+        }
 
-        console.log('[ImageUpload] Upload response status:', response.status);
+        console.log('[ImageUpload] Upload response status:', response.status, response.statusText);
+        
+        // Parse response body
+        let responseData: any;
+        try {
+          const responseText = await response.text();
+          console.log('[ImageUpload] Response body:', responseText.substring(0, 200));
+          responseData = responseText ? JSON.parse(responseText) : {};
+        } catch (parseError) {
+          console.error('[ImageUpload] Failed to parse response:', parseError);
+          throw new Error(`Server returned invalid response (status ${response.status})`);
+        }
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
-          const errorMessage = errorData.error || `Upload failed with status ${response.status}`;
+          const errorMessage = responseData.message || responseData.error || `Upload failed with status ${response.status}`;
+          const errorDetails = responseData.details || responseData.diagnostic;
           
           console.error('[ImageUpload] Upload failed:', {
             status: response.status,
+            statusText: response.statusText,
             error: errorMessage,
-            errorData,
+            details: errorDetails,
+            fullResponse: responseData,
           });
           
-          // If it's an auth error, provide helpful message
+          // Provide specific error messages based on status code
           if (response.status === 401) {
             throw new Error("Authentication failed. Please refresh the page and log in again.");
+          } else if (response.status === 400) {
+            throw new Error(errorMessage || "Invalid file. Please check the file type and size.");
+          } else if (response.status === 413 || response.status === 400) {
+            throw new Error("File is too large. Maximum size is 5MB.");
+          } else if (response.status === 500) {
+            throw new Error(errorMessage || "Server error occurred. Please try again.");
+          } else {
+            throw new Error(errorMessage || `Upload failed: ${response.statusText}`);
           }
-          
-          throw new Error(errorMessage);
         }
         
-        console.log('[ImageUpload] Upload successful');
+        console.log('[ImageUpload] ✅ Upload successful, response:', responseData);
 
-        const data = await response.json();
         // Ensure we get a valid URL string
-        const url = data?.url || data?.urls?.[0];
+        const url = responseData?.url || responseData?.urls?.[0];
         if (!url || typeof url !== 'string') {
-          throw new Error("Invalid response from server");
+          console.error('[ImageUpload] Invalid response format:', responseData);
+          throw new Error("Server returned invalid response format. Expected 'url' field.");
         }
-        return url.trim();
+        
+        const trimmedUrl = url.trim();
+        if (trimmedUrl.length === 0) {
+          throw new Error("Server returned empty URL");
+        }
+        
+        console.log('[ImageUpload] ✅ Valid URL received:', trimmedUrl);
+        return trimmedUrl;
       });
 
       const urls = await Promise.all(uploadPromises);

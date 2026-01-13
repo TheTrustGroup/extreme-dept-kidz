@@ -91,16 +91,37 @@ async function verifyAdminAuth(
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    console.log('[Upload] Starting upload request...');
+    
     // Get formData first to extract token if needed
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+      console.log('[Upload] FormData parsed successfully');
+    } catch (formDataError) {
+      console.error('[Upload] Failed to parse FormData:', formDataError);
+      return NextResponse.json(
+        { 
+          error: 'Invalid request format',
+          message: 'Failed to parse form data. Please try again.',
+          details: formDataError instanceof Error ? formDataError.message : 'Unknown error'
+        },
+        { status: 400 }
+      );
+    }
+
     const tokenInFormData = formData.get('token') as string | null;
+    console.log('[Upload] Token in FormData:', !!tokenInFormData);
 
     // CRITICAL: Verify authentication (checks cookie, header, and FormData token)
     const authResult = await verifyAdminAuth(request, tokenInFormData || undefined);
 
     if (!authResult.authenticated || !authResult.user) {
-      console.error('[Upload] Authentication failed:', {
-        hasCookie: !!cookies().get('admin-token')?.value,
+      const cookieStore = cookies();
+      console.error('[Upload] ❌ Authentication failed:', {
+        authenticated: authResult.authenticated,
+        method: authResult.method,
+        hasCookie: !!cookieStore.get('admin-token')?.value,
         hasHeader: !!request.headers.get('authorization'),
         hasFormDataToken: !!tokenInFormData,
       });
@@ -108,31 +129,59 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         {
           error: 'Unauthorized',
           message: 'Admin authentication required. Please log in to upload images.',
+          diagnostic: {
+            hasCookie: !!cookieStore.get('admin-token')?.value,
+            hasHeader: !!request.headers.get('authorization'),
+            hasFormDataToken: !!tokenInFormData,
+            authMethod: authResult.method,
+          }
         },
         { status: 401 }
       );
     }
-    const file = formData.get('file') as File;
+
+    console.log('[Upload] ✅ Authentication successful via', authResult.method);
+
+    const file = formData.get('file') as File | null;
 
     if (!file) {
+      console.error('[Upload] ❌ No file provided in FormData');
       return NextResponse.json(
-        { error: 'No file provided' },
+        { 
+          error: 'No file provided',
+          message: 'Please select an image file to upload.'
+        },
         { status: 400 }
       );
     }
 
+    console.log('[Upload] File received:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
+      console.error('[Upload] ❌ Invalid file type:', file.type);
       return NextResponse.json(
-        { error: 'File must be an image' },
+        { 
+          error: 'Invalid file type',
+          message: 'File must be an image (JPEG, PNG, WebP, etc.)'
+        },
         { status: 400 }
       );
     }
 
     // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      console.error('[Upload] ❌ File too large:', file.size, 'bytes');
       return NextResponse.json(
-        { error: 'File size must be less than 5MB' },
+        { 
+          error: 'File too large',
+          message: `File size must be less than 5MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.`
+        },
         { status: 400 }
       );
     }
@@ -140,29 +189,90 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Generate unique filename
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 15);
-    const extension = file.name.split('.').pop();
-    const filename = `${timestamp}-${randomStr}.${extension}`;
+    const originalExtension = file.name.split('.').pop() || 'jpg';
+    const filename = `${timestamp}-${randomStr}.${originalExtension}`;
+    console.log('[Upload] Generated filename:', filename);
 
     // Create uploads directory if it doesn't exist
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
+    console.log('[Upload] Uploads directory:', uploadsDir);
+    
+    try {
+      if (!existsSync(uploadsDir)) {
+        console.log('[Upload] Creating uploads directory...');
+        await mkdir(uploadsDir, { recursive: true });
+        console.log('[Upload] ✅ Uploads directory created');
+      } else {
+        console.log('[Upload] ✅ Uploads directory exists');
+      }
+    } catch (dirError) {
+      console.error('[Upload] ❌ Failed to create uploads directory:', dirError);
+      return NextResponse.json(
+        { 
+          error: 'Server configuration error',
+          message: 'Failed to create upload directory. Please contact support.',
+          details: dirError instanceof Error ? dirError.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
     }
 
     // Save file
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const filepath = join(uploadsDir, filename);
-    await writeFile(filepath, buffer);
+    try {
+      console.log('[Upload] Reading file bytes...');
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const filepath = join(uploadsDir, filename);
+      
+      console.log('[Upload] Writing file to:', filepath);
+      await writeFile(filepath, buffer);
+      console.log('[Upload] ✅ File written successfully');
 
-    // Return public URL
-    const url = `/uploads/${filename}`;
+      // Verify file was written
+      if (!existsSync(filepath)) {
+        console.error('[Upload] ❌ File was not written (verification failed)');
+        return NextResponse.json(
+          { 
+            error: 'File write failed',
+            message: 'File was not saved correctly. Please try again.'
+          },
+          { status: 500 }
+        );
+      }
 
-    return NextResponse.json({ url });
+      // Return public URL
+      const url = `/uploads/${filename}`;
+      console.log('[Upload] ✅ Upload successful, returning URL:', url);
+
+      return NextResponse.json({ 
+        url,
+        filename,
+        size: file.size,
+        type: file.type,
+      });
+    } catch (writeError) {
+      console.error('[Upload] ❌ Failed to write file:', writeError);
+      return NextResponse.json(
+        { 
+          error: 'File write failed',
+          message: 'Failed to save the uploaded file. Please try again.',
+          details: writeError instanceof Error ? writeError.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('[Upload] ❌ Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { 
+        error: 'Upload failed',
+        message: 'An unexpected error occurred while uploading the file. Please try again.',
+        details: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { stack: errorStack })
+      },
       { status: 500 }
     );
   }
