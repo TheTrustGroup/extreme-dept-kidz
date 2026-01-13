@@ -193,7 +193,53 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const filename = `${timestamp}-${randomStr}.${originalExtension}`;
     console.log('[Upload] Generated filename:', filename);
 
-    // Create uploads directory if it doesn't exist
+    // Check if we're in a serverless environment (Vercel, etc.)
+    const isServerless = !!process.env.VERCEL || process.env.NODE_ENV === 'production';
+    console.log('[Upload] Environment:', {
+      isServerless,
+      vercel: !!process.env.VERCEL,
+      nodeEnv: process.env.NODE_ENV,
+      cwd: process.cwd(),
+    });
+
+    // Read file bytes
+    console.log('[Upload] Reading file bytes...');
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // In serverless environments, we can't write to the filesystem permanently
+    // So we'll convert to base64 and return as data URL
+    if (isServerless) {
+      console.log('[Upload] Serverless environment detected - using base64 encoding');
+      
+      try {
+        // Convert to base64
+        const base64 = buffer.toString('base64');
+        const dataUrl = `data:${file.type};base64,${base64}`;
+        
+        console.log('[Upload] ✅ File converted to base64, size:', base64.length, 'chars');
+        
+        return NextResponse.json({ 
+          url: dataUrl,
+          filename: file.name,
+          size: file.size,
+          type: file.type,
+          encoding: 'base64',
+        });
+      } catch (base64Error) {
+        console.error('[Upload] ❌ Failed to convert to base64:', base64Error);
+        return NextResponse.json(
+          { 
+            error: 'File encoding failed',
+            message: 'Failed to process the uploaded file. Please try again.',
+            details: base64Error instanceof Error ? base64Error.message : 'Unknown error'
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    // For non-serverless environments, try to write to filesystem
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
     console.log('[Upload] Uploads directory:', uploadsDir);
     
@@ -207,21 +253,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     } catch (dirError) {
       console.error('[Upload] ❌ Failed to create uploads directory:', dirError);
-      return NextResponse.json(
-        { 
-          error: 'Server configuration error',
-          message: 'Failed to create upload directory. Please contact support.',
-          details: dirError instanceof Error ? dirError.message : 'Unknown error'
-        },
-        { status: 500 }
-      );
+      // Fallback to base64 if directory creation fails
+      console.log('[Upload] Falling back to base64 encoding...');
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${file.type};base64,${base64}`;
+      
+      return NextResponse.json({ 
+        url: dataUrl,
+        filename: file.name,
+        size: file.size,
+        type: file.type,
+        encoding: 'base64',
+        fallback: true,
+      });
     }
 
-    // Save file
+    // Save file to filesystem
     try {
-      console.log('[Upload] Reading file bytes...');
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
       const filepath = join(uploadsDir, filename);
       
       console.log('[Upload] Writing file to:', filepath);
@@ -231,13 +279,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Verify file was written
       if (!existsSync(filepath)) {
         console.error('[Upload] ❌ File was not written (verification failed)');
-        return NextResponse.json(
-          { 
-            error: 'File write failed',
-            message: 'File was not saved correctly. Please try again.'
-          },
-          { status: 500 }
-        );
+        // Fallback to base64
+        console.log('[Upload] Falling back to base64 encoding...');
+        const base64 = buffer.toString('base64');
+        const dataUrl = `data:${file.type};base64,${base64}`;
+        
+        return NextResponse.json({ 
+          url: dataUrl,
+          filename: file.name,
+          size: file.size,
+          type: file.type,
+          encoding: 'base64',
+          fallback: true,
+        });
       }
 
       // Return public URL
@@ -249,17 +303,37 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         filename,
         size: file.size,
         type: file.type,
+        encoding: 'filesystem',
       });
     } catch (writeError) {
       console.error('[Upload] ❌ Failed to write file:', writeError);
-      return NextResponse.json(
-        { 
-          error: 'File write failed',
-          message: 'Failed to save the uploaded file. Please try again.',
-          details: writeError instanceof Error ? writeError.message : 'Unknown error'
-        },
-        { status: 500 }
-      );
+      
+      // Fallback to base64 encoding
+      console.log('[Upload] Falling back to base64 encoding due to write error...');
+      try {
+        const base64 = buffer.toString('base64');
+        const dataUrl = `data:${file.type};base64,${base64}`;
+        
+        return NextResponse.json({ 
+          url: dataUrl,
+          filename: file.name,
+          size: file.size,
+          type: file.type,
+          encoding: 'base64',
+          fallback: true,
+          fallbackReason: writeError instanceof Error ? writeError.message : 'File write failed',
+        });
+      } catch (base64Error) {
+        console.error('[Upload] ❌ Base64 fallback also failed:', base64Error);
+        return NextResponse.json(
+          { 
+            error: 'File processing failed',
+            message: 'Failed to save the uploaded file. Please try again.',
+            details: writeError instanceof Error ? writeError.message : 'Unknown error'
+          },
+          { status: 500 }
+        );
+      }
     }
   } catch (error) {
     console.error('[Upload] ❌ Unexpected error:', error);
