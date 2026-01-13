@@ -61,6 +61,27 @@ export function ImageUpload({
       return;
     }
 
+    // Refresh cookie to ensure it's set (httpOnly cookies can't be checked from JS)
+    // This ensures the cookie is available for middleware even if it was cleared
+    try {
+      console.log('[ImageUpload] Ensuring cookie is set...');
+      const refreshResponse = await fetch('/api/admin/auth/refresh-cookie', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${currentToken}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (refreshResponse.ok) {
+        console.log('[ImageUpload] Cookie refreshed successfully');
+      } else {
+        console.warn('[ImageUpload] Cookie refresh failed (will rely on Authorization header)');
+      }
+    } catch (error) {
+      console.warn('[ImageUpload] Failed to refresh cookie (non-critical, will use Authorization header):', error);
+    }
+
     setUploading(true);
 
     try {
