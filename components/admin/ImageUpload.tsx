@@ -353,13 +353,22 @@ export function ImageUpload({
               key={url}
               className="relative aspect-square group bg-cream-100 rounded-lg overflow-hidden"
             >
-              <Image
-                src={url}
-                alt={`Product image ${index + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, 25vw"
-              />
+              {/* Use regular img tag for base64 data URLs, Next Image for regular URLs */}
+              {url.startsWith('data:') ? (
+                <img
+                  src={url}
+                  alt={`Product image ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={url}
+                  alt={`Product image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+              )}
 
               {/* Primary Badge */}
               {index === 0 && (
