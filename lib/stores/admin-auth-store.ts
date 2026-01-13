@@ -73,6 +73,8 @@ export const useAdminAuth = create<AdminAuthState>()(
 
       login: async (email: string, password: string): Promise<boolean> => {
         try {
+          console.log('[Auth] Starting login for:', email);
+          
           const response = await fetch("/api/admin/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -80,10 +82,18 @@ export const useAdminAuth = create<AdminAuthState>()(
             credentials: 'include', // Include cookies
           });
 
+          console.log('[Auth] Login response status:', response.status, response.statusText);
+
           const data = await response.json();
+          console.log('[Auth] Login response data:', {
+            success: data.success,
+            hasToken: !!data.token,
+            hasUser: !!data.user,
+            userEmail: data.user?.email,
+          });
 
           if (!response.ok) {
-            console.error("Login error:", {
+            console.error("[Auth] ❌ Login failed:", {
               status: response.status,
               statusText: response.statusText,
               error: data.error,
@@ -95,10 +105,16 @@ export const useAdminAuth = create<AdminAuthState>()(
 
           // Verify we have the required data
           if (!data.success || !data.token || !data.user) {
-            console.error("Login response missing required data:", data);
+            console.error("[Auth] ❌ Login response missing required data:", {
+              success: data.success,
+              hasToken: !!data.token,
+              hasUser: !!data.user,
+              fullResponse: data,
+            });
             throw new Error("Invalid login response from server");
           }
           
+          console.log('[Auth] ✅ Setting auth state...');
           set({
             user: data.user,
             token: data.token,
@@ -110,14 +126,23 @@ export const useAdminAuth = create<AdminAuthState>()(
             const isProduction = process.env.NODE_ENV === 'production';
             const maxAge = 60 * 60 * 24 * 7; // 7 days
             document.cookie = `admin-token=${data.token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
-            console.log('[Auth] Cookie synced after login');
+            console.log('[Auth] ✅ Cookie synced after login');
+            
+            // Verify cookie was set
+            const cookieSet = document.cookie.includes('admin-token');
+            console.log('[Auth] Cookie verification:', cookieSet ? '✅ Set' : '❌ Not set');
           }
 
           // Reset auth check timer on successful login
           lastAuthCheck = Date.now();
+          console.log('[Auth] ✅ Login successful!');
           return true;
         } catch (error) {
-          console.error("Login error:", error);
+          console.error("[Auth] ❌ Login error:", error);
+          console.error("[Auth] Error details:", {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+          });
           // Re-throw to allow caller to handle the error message
           throw error;
         }
