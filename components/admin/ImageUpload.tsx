@@ -64,8 +64,13 @@ export function ImageUpload({
           throw new Error(error.error || "Upload failed");
         }
 
-        const { url } = await response.json();
-        return url;
+        const data = await response.json();
+        // Ensure we get a valid URL string
+        const url = data?.url || data?.urls?.[0];
+        if (!url || typeof url !== 'string') {
+          throw new Error("Invalid response from server");
+        }
+        return url.trim();
       });
 
       const urls = await Promise.all(uploadPromises);
@@ -117,7 +122,9 @@ export function ImageUpload({
     setDragActive(false);
   };
 
-  const handleClick = (): void => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!disabled && !uploading) {
       fileInputRef.current?.click();
     }
@@ -144,6 +151,14 @@ export function ImageUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick(e as any);
+          }
+        }}
         className={cn(
           "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer",
           "transition-all duration-200",
@@ -157,20 +172,40 @@ export function ImageUpload({
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/*"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
           onChange={(e) => {
+            // Prevent all default behavior and validation
             e.preventDefault();
             e.stopPropagation();
-            handleFileSelect(e.target.files);
-            // Reset the input value to allow selecting the same file again
-            if (e.target) {
-              e.target.value = '';
+            
+            const files = e.target.files;
+            if (files && files.length > 0) {
+              // Use setTimeout to ensure validation doesn't interfere
+              setTimeout(() => {
+                handleFileSelect(files);
+              }, 0);
             }
+            
+            // Reset the input value to allow selecting the same file again
+            // This must happen after a delay to prevent validation errors
+            setTimeout(() => {
+              if (e.target) {
+                e.target.value = '';
+              }
+            }, 100);
+          }}
+          onClick={(e) => {
+            // Prevent validation on click
+            e.stopPropagation();
           }}
           className="hidden"
           disabled={disabled || uploading}
-          // Prevent browser validation
+          // Prevent browser validation completely
           formNoValidate
+          // Explicitly disable HTML5 validation
+          required={false}
+          // Remove any pattern validation
+          pattern=""
         />
 
         {uploading ? (

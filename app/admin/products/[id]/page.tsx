@@ -227,10 +227,14 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
+          // Prevent any browser validation
+          e.stopImmediatePropagation();
           handleSubmit(onSubmit)(e);
         }} 
         className="space-y-6" 
         noValidate
+        // Explicitly disable HTML5 validation
+        autoComplete="off"
       >
         <div className="bg-white rounded-xl border border-gray-200 p-6 lg:p-8 space-y-8 shadow-sm">
           {/* Basic Information */}
