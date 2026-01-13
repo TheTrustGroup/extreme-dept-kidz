@@ -143,41 +143,72 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Verify password - trim to avoid whitespace issues
     const trimmedPassword = password.trim();
     
-    // Debug logging for password verification
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Password verification attempt:', {
-        email: user.email,
-        providedPasswordLength: trimmedPassword.length,
-        passwordHashLength: user.passwordHash?.length || 0,
-        passwordHashPrefix: user.passwordHash?.substring(0, 20) || 'none',
-      });
-    }
+    // Enhanced logging for password verification (always log in production for debugging)
+    console.log('[Login] Password verification attempt:', {
+      email: user.email,
+      providedPasswordLength: trimmedPassword.length,
+      passwordHashLength: user.passwordHash?.length || 0,
+      passwordHashPrefix: user.passwordHash?.substring(0, 30) || 'none',
+      passwordHashFormat: user.passwordHash?.startsWith('$2') ? 'bcrypt' : 'unknown',
+    });
     
-    const isValid = await verifyPassword(trimmedPassword, user.passwordHash);
-    
-    if (!isValid) {
-      console.log(`Login attempt failed: Invalid password for user ${user.email}`);
-      // In development, log more details
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Password verification failed:', {
-          email: user.email,
-          hasPasswordHash: !!user.passwordHash,
-          passwordHashLength: user.passwordHash?.length || 0,
-          providedPasswordLength: trimmedPassword.length,
-          passwordHashPrefix: user.passwordHash?.substring(0, 30) || 'none',
-        });
-      }
+    // Check if password hash exists
+    if (!user.passwordHash) {
+      console.error('[Login] ❌ No password hash found for user:', user.email);
       return NextResponse.json(
         { 
           error: 'Invalid email or password',
-          diagnostic: process.env.NODE_ENV === 'development' ? {
-            message: 'Password hash does not match provided password',
-            help: 'Use /api/admin/auth/verify-password to test password verification',
-          } : undefined,
+          diagnostic: {
+            message: 'User account has no password hash',
+            help: 'Password needs to be reset. Use /api/admin/auth/debug-login for detailed diagnostics.',
+          },
         },
         { status: 401 }
       );
     }
+    
+    let isValid = false;
+    try {
+      isValid = await verifyPassword(trimmedPassword, user.passwordHash);
+    } catch (verifyError) {
+      console.error('[Login] ❌ Password verification error:', verifyError);
+      return NextResponse.json(
+        { 
+          error: 'Password verification failed',
+          diagnostic: {
+            message: verifyError instanceof Error ? verifyError.message : 'Unknown error',
+            help: 'Use /api/admin/auth/debug-login to diagnose the issue.',
+          },
+        },
+        { status: 500 }
+      );
+    }
+    
+    if (!isValid) {
+      console.log(`[Login] ❌ Invalid password for user ${user.email}`);
+      console.log('[Login] Password verification details:', {
+        email: user.email,
+        hasPasswordHash: !!user.passwordHash,
+        passwordHashLength: user.passwordHash?.length || 0,
+        providedPasswordLength: trimmedPassword.length,
+        passwordHashPrefix: user.passwordHash?.substring(0, 30) || 'none',
+        passwordHashFormat: user.passwordHash?.startsWith('$2') ? 'bcrypt' : 'unknown',
+      });
+      
+      return NextResponse.json(
+        { 
+          error: 'Invalid email or password',
+          diagnostic: {
+            message: 'Password hash does not match provided password',
+            help: 'Use /api/admin/auth/debug-login to get detailed diagnostics. The password may need to be reset.',
+            debugEndpoint: '/api/admin/auth/debug-login',
+          },
+        },
+        { status: 401 }
+      );
+    }
+    
+    console.log(`[Login] ✅ Password verified successfully for user ${user.email}`);
 
     // Update last login
     if (prisma) {
