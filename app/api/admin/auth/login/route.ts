@@ -123,7 +123,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       role: user.role,
     });
 
-    return NextResponse.json({
+    // Create response with token in both JSON and cookie
+    const response = NextResponse.json({
       success: true,
       token,
       user: {
@@ -139,6 +140,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'X-RateLimit-Reset': rateLimit.resetTime.toString(),
       },
     });
+
+    // Set cookie for middleware authentication
+    response.cookies.set('admin-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     // Provide more detailed error in development

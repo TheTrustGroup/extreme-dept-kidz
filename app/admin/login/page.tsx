@@ -34,14 +34,16 @@ export default function AdminLoginPage(): JSX.Element {
     try {
       const success = await login(email, password);
       if (success) {
-        router.push("/admin");
-        router.refresh();
+        // Small delay to ensure cookie is set before navigation
+        setTimeout(() => {
+          router.push("/admin");
+        }, 100);
       } else {
         setError("Invalid email or password. Please try again.");
+        setLoading(false);
       }
     } catch (err) {
       setError("Login failed. Please try again.");
-    } finally {
       setLoading(false);
     }
   };

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 interface Category {
   id: string;
@@ -395,76 +396,47 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
 
       {/* Images */}
       <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-charcoal-900">Images</h2>
-          <Button type="button" variant="secondary" onClick={addImage}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Image
-          </Button>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-charcoal-900 mb-2">Product Images</h2>
+          <p className="text-sm text-charcoal-600">Upload images from your device or drag and drop. The first image will be used as the primary image.</p>
         </div>
-        <div className="space-y-4">
-          {formData.images.map((image, index) => (
-            <div
-              key={index}
-              className="flex items-start space-x-4 p-4 border border-cream-200 rounded-lg"
-            >
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-2">
-                    Image URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={image.url}
-                    onChange={(e) =>
-                      updateImage(index, "url", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-700 mb-2">
-                    Alt Text
-                  </label>
+        <ImageUpload
+          images={formData.images.map(img => img.url).filter(url => url !== "")}
+          onChange={(urls) => {
+            // Convert URLs to ProductImage format
+            const newImages = urls.map((url, index) => ({
+              url,
+              alt: formData.images.find(img => img.url === url)?.alt || `${formData.name || 'Product'} - Image ${index + 1}`,
+              isPrimary: index === 0,
+              order: index,
+            }));
+            setFormData({ ...formData, images: newImages });
+          }}
+          maxImages={10}
+          disabled={loading}
+        />
+        {/* Alt text inputs for uploaded images */}
+        {formData.images.length > 0 && formData.images.some(img => img.url) && (
+          <div className="mt-4 space-y-2">
+            <p className="text-sm font-medium text-charcoal-700 mb-2">Image Alt Text (for SEO)</p>
+            {formData.images.filter(img => img.url).map((image, filteredIndex) => {
+              // Find the actual index in the full images array
+              const actualIndex = formData.images.findIndex(img => img.url === image.url);
+              return (
+                <div key={image.url || filteredIndex} className="flex items-center gap-2">
+                  <span className="text-xs text-charcoal-500 w-20">Image {filteredIndex + 1}:</span>
                   <input
                     type="text"
                     value={image.alt}
-                    onChange={(e) =>
-                      updateImage(index, "alt", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
-                    placeholder="Product image description"
+                    onChange={(e) => updateImage(actualIndex, "alt", e.target.value)}
+                    className="flex-1 px-3 py-2 text-sm border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                    placeholder="Describe this image for accessibility"
                   />
                 </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={image.isPrimary}
-                    onChange={(e) =>
-                      updateImage(index, "isPrimary", e.target.checked)
-                    }
-                    className="rounded border-cream-300"
-                  />
-                  <span className="text-sm text-charcoal-600">Primary</span>
-                </label>
-                {formData.images.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeImage(index)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Variants */}

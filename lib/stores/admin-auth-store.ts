@@ -99,13 +99,28 @@ export const useAdminAuth = create<AdminAuthState>()(
         }
       },
 
-      logout: (): void => {
+      logout: async (): Promise<void> => {
+        // Clear cookie via API
+        try {
+          await fetch("/api/admin/auth/logout", {
+            method: "POST",
+          });
+        } catch (error) {
+          console.error("Logout API error:", error);
+        }
+        
+        // Clear local state
         set({
           user: null,
           token: null,
           isAuthenticated: false,
         });
         lastAuthCheck = 0;
+        
+        // Redirect to login page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/admin/login';
+        }
       },
 
       checkAuth: async (): Promise<boolean> => {
