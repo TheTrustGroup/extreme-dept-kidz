@@ -137,7 +137,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Verify password - trim to avoid whitespace issues
     const trimmedPassword = password.trim();
+    
+    // Debug logging for password verification
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Password verification attempt:', {
+        email: user.email,
+        providedPasswordLength: trimmedPassword.length,
+        passwordHashLength: user.passwordHash?.length || 0,
+        passwordHashPrefix: user.passwordHash?.substring(0, 20) || 'none',
+      });
+    }
+    
     const isValid = await verifyPassword(trimmedPassword, user.passwordHash);
+    
     if (!isValid) {
       console.log(`Login attempt failed: Invalid password for user ${user.email}`);
       // In development, log more details
@@ -147,10 +159,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           hasPasswordHash: !!user.passwordHash,
           passwordHashLength: user.passwordHash?.length || 0,
           providedPasswordLength: trimmedPassword.length,
+          passwordHashPrefix: user.passwordHash?.substring(0, 30) || 'none',
         });
       }
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { 
+          error: 'Invalid email or password',
+          diagnostic: process.env.NODE_ENV === 'development' ? {
+            message: 'Password hash does not match provided password',
+            help: 'Use /api/admin/auth/verify-password to test password verification',
+          } : undefined,
+        },
         { status: 401 }
       );
     }
