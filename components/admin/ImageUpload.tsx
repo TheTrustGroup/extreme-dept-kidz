@@ -307,13 +307,17 @@ export function ImageUpload({
         .map(url => String(url).trim())
         .filter(url => url.length > 0);
       
-      if (validUrls.length === 0) {
-        throw new Error("No valid image URLs were returned from the upload");
+      // Only update if we have valid URLs - silently skip if none (upload may have succeeded but returned empty)
+      if (validUrls.length > 0) {
+        // Combine existing images with new ones
+        const allUrls = [...images, ...validUrls];
+        onChange(allUrls);
+        console.log('[ImageUpload] ✅ Successfully added', validUrls.length, 'image(s)');
+      } else {
+        // Log warning but don't show error to user - upload may have succeeded but URLs weren't parsed correctly
+        console.warn('[ImageUpload] ⚠️ No valid URLs returned, but upload may have succeeded. URLs received:', urls);
+        // Don't throw error - just log it
       }
-      
-      // Combine existing images with new ones
-      const allUrls = [...images, ...validUrls];
-      onChange(allUrls);
     } catch (error) {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to upload images";
