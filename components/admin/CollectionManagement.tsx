@@ -25,13 +25,21 @@ export function CollectionManagement(): JSX.Element {
 
   async function fetchCollections(): Promise<void> {
     try {
-      const response = await fetch("/api/admin/collections");
+      const response = await fetch("/api/admin/collections", {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
-        setCollections(data);
+        // Handle both apiSuccess format (data.collections) and direct array format
+        const collections = data.data?.collections || data.collections || (Array.isArray(data) ? data : []);
+        setCollections(collections);
+      } else {
+        console.error("Failed to fetch collections:", response.status, response.statusText);
+        setCollections([]);
       }
     } catch (error) {
       console.error("Failed to fetch collections:", error);
+      setCollections([]);
     } finally {
       setLoading(false);
     }

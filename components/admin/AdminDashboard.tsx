@@ -23,10 +23,23 @@ export function AdminDashboard(): JSX.Element {
   useEffect(() => {
     async function fetchStats(): Promise<void> {
       try {
-        const response = await fetch("/api/admin/stats");
+        const response = await fetch("/api/admin/stats", {
+          credentials: 'include',
+        });
         if (response.ok) {
           const data = await response.json();
-          setStats(data);
+          // Handle both apiSuccess format (data contains stats) and direct format
+          const statsData = data.data || data;
+          if (statsData) {
+            setStats({
+              totalProducts: statsData.totalProducts || 0,
+              totalOrders: statsData.totalOrders || 0,
+              totalRevenue: statsData.totalRevenue || 0,
+              lowStockItems: statsData.lowStockItems || 0,
+            });
+          }
+        } else {
+          console.error("Failed to fetch stats:", response.status, response.statusText);
         }
       } catch (error) {
         console.error("Failed to fetch stats:", error);

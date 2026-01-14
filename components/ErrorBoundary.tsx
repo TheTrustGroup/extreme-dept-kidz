@@ -29,6 +29,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     console.error("❌ Error Boundary caught error:", error, errorInfo);
+    console.error("Error stack:", error.stack);
+    console.error("Component stack:", errorInfo.componentStack);
     
     // Log to error reporting service (e.g., Sentry)
     // if (typeof window !== 'undefined' && window.Sentry) {
@@ -65,10 +67,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               <p className="text-gray-600 mb-4">
                 We encountered an unexpected error. Please try refreshing the page.
               </p>
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {this.state.error && (
                 <details className="mt-4 text-left">
                   <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 mb-2">
-                    Error Details (Development Only)
+                    Error Details {process.env.NODE_ENV === 'development' ? '(Development Only)' : '(Click to view)'}
                   </summary>
                   <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto max-h-64">
                     {this.state.error.toString()}

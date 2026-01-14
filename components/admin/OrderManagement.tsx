@@ -35,13 +35,21 @@ export function OrderManagement(): JSX.Element {
 
   async function fetchOrders(): Promise<void> {
     try {
-      const response = await fetch("/api/admin/orders");
+      const response = await fetch("/api/admin/orders", {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
-        setOrders(data);
+        // Handle both apiSuccess format (data.orders) and direct array format
+        const orders = data.data?.orders || data.orders || (Array.isArray(data) ? data : []);
+        setOrders(orders);
+      } else {
+        console.error("Failed to fetch orders:", response.status, response.statusText);
+        setOrders([]);
       }
     } catch (error) {
       console.error("Failed to fetch orders:", error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }

@@ -25,13 +25,23 @@ export function CategoryManagement(): JSX.Element {
 
   async function fetchCategories(): Promise<void> {
     try {
-      const response = await fetch("/api/admin/categories");
+      const response = await fetch("/api/admin/categories", {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
-        setCategories(data);
+        // Handle both apiSuccess format (data.categories) and direct array format
+        const categories = data.data?.categories || data.categories || (Array.isArray(data) ? data : []);
+        setCategories(categories);
+      } else {
+        console.error("Failed to fetch categories:", response.status, response.statusText);
+        // Set empty array on error to prevent crashes
+        setCategories([]);
       }
     } catch (error) {
       console.error("Failed to fetch categories:", error);
+      // Set empty array on error to prevent crashes
+      setCategories([]);
     } finally {
       setLoading(false);
     }

@@ -37,4 +37,4 @@ Last check showed: ~2 hours until reset
 
 ---
 
-**Note:** If Vercel is connected to your GitHub repository, it may automatically deploy when the limit resets.
+**Note:** Automatic deployments are DISABLED. All deployments must be done manually using the commands above.

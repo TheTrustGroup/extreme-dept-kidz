@@ -24,13 +24,21 @@ export function PricingManagement(): JSX.Element {
 
   async function fetchProducts(): Promise<void> {
     try {
-      const response = await fetch("/api/admin/products");
+      const response = await fetch("/api/admin/products", {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json();
-        setProducts(data);
+        // Handle both apiSuccess format (data.products) and direct array format
+        const products = data.data?.products || data.products || (Array.isArray(data) ? data : []);
+        setProducts(products);
+      } else {
+        console.error("Failed to fetch products:", response.status, response.statusText);
+        setProducts([]);
       }
     } catch (error) {
       console.error("Failed to fetch products:", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
