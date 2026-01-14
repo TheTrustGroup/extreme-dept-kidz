@@ -5,9 +5,16 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Test endpoint to verify database connection and admin user exists
- * Remove this in production or protect it
+ * ⚠️ SECURITY: Only available in development mode
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
+  // Block in production unless explicitly enabled via environment variable
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_DEBUG_ENDPOINTS !== 'true') {
+    return NextResponse.json(
+      { error: 'Debug endpoints are disabled in production' },
+      { status: 403 }
+    );
+  }
   try {
     // Check Prisma connection
     if (!prisma) {

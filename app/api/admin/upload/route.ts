@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { authenticateRequest } from '@/lib/auth/middleware';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import { prisma } from '@/lib/db/prisma';
+import { logger } from '@/lib/utils/logger';
 
 /**
  * Image Upload API Route
@@ -72,7 +73,7 @@ async function verifyAdminAuth(
     }
 
     const method = tokenFromCookie ? 'cookie' : tokenFromHeader ? 'header' : 'formdata';
-    console.log(`[Upload] ✅ Authentication successful via ${method}`);
+    logger.log(`[Upload] ✅ Authentication successful via ${method}`);
     
     return {
       authenticated: true,

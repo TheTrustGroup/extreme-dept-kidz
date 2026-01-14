@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { authenticateRequest } from "@/lib/auth/middleware";
+import { apiSuccess, apiError, apiNotFound, apiUnauthorized } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -15,26 +17,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Authenticate admin user
     const authResult = await authenticateRequest(request);
     if (authResult.error || !authResult.user) {
-      return authResult.error || NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return authResult.error || apiUnauthorized("Admin authentication required");
     }
 
     if (!prisma) {
-      return NextResponse.json(
-        { error: "Database not available" },
-        { status: 500 }
-      );
+      return apiError("Database not available", 500);
     }
 
     const body = await request.json();
     const { productId, sizes } = body;
 
     if (!productId || !Array.isArray(sizes)) {
-      return NextResponse.json(
-        { error: "Invalid request. Expected productId and sizes array." },
-        { status: 400 }
+      return apiError(
+        "Invalid request. Expected productId and sizes array.",
+        400
       );
     }
 
@@ -47,10 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      );
+      return apiNotFound("Product");
     }
 
     // Update or create variants for each size
@@ -85,7 +78,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
           });
         } catch (logError) {
-          console.warn("Failed to log inventory change:", logError);
+          logger.warn("Failed to log inventory change:", logError);
         }
 
         updateResults.push({ size, variantId: variant.id, updated: true });
@@ -116,7 +109,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
           });
         } catch (logError) {
-          console.warn("Failed to log inventory change:", logError);
+          logger.warn("Failed to log inventory change:", logError);
         }
 
         updateResults.push({ size, variantId: variant.id, created: true });
@@ -134,20 +127,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       data: { inStock: hasStock },
     });
 
-    return NextResponse.json({
-      success: true,
-      productId,
-      updated: updateResults.length,
-      results: updateResults,
-    });
-  } catch (error) {
-    console.error("Failed to sync inventory:", error);
-    return NextResponse.json(
-      { 
-        error: "Failed to sync inventory",
-        details: error instanceof Error ? error.message : "Unknown error"
+    return apiSuccess(
+      {
+        productId,
+        updated: updateResults.length,
+        results: updateResults,
       },
-      { status: 500 }
+      "Inventory synced successfully"
+    );
+  } catch (error) {
+    logger.error("Failed to sync inventory:", error);
+    return apiError(
+      "Failed to sync inventory",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
+import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
+import { updateProductSchema, validate } from "@/lib/validation/schemas";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     if (!prisma) {
-      return NextResponse.json(
-        { error: "Database not available" },
-        { status: 500 }
-      );
+      return apiError("Database not available", 500);
     }
 
     const { id } = await params;
@@ -33,82 +33,99 @@ export async function GET(
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      );
+      return apiNotFound("Product");
     }
 
-    return NextResponse.json(product);
+    return apiSuccess(product, "Product fetched successfully");
   } catch (error) {
-    console.error("Failed to fetch product:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch product" },
-      { status: 500 }
+    logger.error("Failed to fetch product:", error);
+    return apiError(
+      "Failed to fetch product",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     if (!prisma) {
-      return NextResponse.json(
-        { error: "Database not available" },
-        { status: 500 }
-      );
+      return apiError("Database not available", 500);
     }
 
     const { id } = await params;
     const body = await request.json();
+
+    // Validate input (partial validation for updates)
+    const validation = validate(updateProductSchema, body);
+    if (!validation.success) {
+      return apiValidationError(validation.errors);
+    }
+
+    // Check if product exists
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) {
+      return apiNotFound("Product");
+    }
+
     const {
       name,
       slug,
       description,
       price,
-      originalPrice,
+      compareAtPrice,
       sku,
       categoryId,
       images,
-      variants,
+      sizes,
       tags,
-      collections,
-    } = body;
+    } = validation.data;
 
     // Update product
     const product = await prisma.product.update({
       where: { id },
       data: {
-        name,
-        slug,
-        description,
-        price: Math.round(price * 100),
-        originalPrice: originalPrice ? Math.round(originalPrice * 100) : null,
-        sku,
-        categoryId,
+        ...(name && { name }),
+        ...(slug && { slug }),
+        ...(description && { description }),
+        ...(price !== undefined && { price: Math.round(price * 100) }),
+        ...(compareAtPrice !== undefined && { 
+          originalPrice: compareAtPrice ? Math.round(compareAtPrice * 100) : null 
+        }),
+        ...(sku && { sku }),
+        ...(categoryId && { categoryId }),
         // Note: For simplicity, we're replacing all related data
         // In production, you'd want to handle updates more carefully
-        images: {
-          deleteMany: {},
-          create: images || [],
-        },
-        variants: {
-          deleteMany: {},
-          create: variants || [],
-        },
-        tags: {
-          deleteMany: {},
-          create: tags?.map((tag: string) => ({ name: tag })) || [],
-        },
-        collections: {
-          deleteMany: {},
-          create: collections?.map((collectionId: string, index: number) => ({
-            collectionId,
-            order: index,
-          })) || [],
-        },
+        ...(images && {
+          images: {
+            deleteMany: {},
+            create: images.map((url: string, index: number) => ({
+              url,
+              alt: `${name || existing.name} - Image ${index + 1}`,
+              isPrimary: index === 0,
+              order: index,
+            })),
+          },
+        }),
+        ...(sizes && {
+          variants: {
+            deleteMany: {},
+            create: sizes.map((size: { size: string; quantity: number; sku?: string }) => ({
+              size: size.size,
+              stock: size.quantity,
+              sku: size.sku || `${existing.sku || 'SKU'}-${size.size}`,
+            })),
+          },
+        }),
+        ...(tags && {
+          tags: {
+            deleteMany: {},
+            create: tags.map((tag: string) => ({ name: tag })),
+          },
+        }),
       },
       include: {
         category: true,
@@ -125,33 +142,38 @@ export async function PUT(
       revalidatePath('/collections');
       revalidatePath('/');
     } catch (revalidateError) {
-      console.error('Failed to revalidate cache:', revalidateError);
+      logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails
     }
 
-    return NextResponse.json(product);
+    return apiSuccess(product, "Product updated successfully");
   } catch (error) {
-    console.error("Failed to update product:", error);
-    return NextResponse.json(
-      { error: "Failed to update product" },
-      { status: 500 }
+    logger.error("Failed to update product:", error);
+    return apiError(
+      "Failed to update product",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     if (!prisma) {
-      return NextResponse.json(
-        { error: "Database not available" },
-        { status: 500 }
-      );
+      return apiError("Database not available", 500);
     }
 
     const { id } = await params;
+
+    // Check if product exists
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) {
+      return apiNotFound("Product");
+    }
+
     await prisma.product.delete({
       where: { id },
     });
@@ -162,16 +184,27 @@ export async function DELETE(
       revalidatePath('/collections');
       revalidatePath('/');
     } catch (revalidateError) {
-      console.error('Failed to revalidate cache:', revalidateError);
+      logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails
     }
 
-    return NextResponse.json({ success: true });
+    return apiSuccess({ id }, "Product deleted successfully");
   } catch (error) {
-    console.error("Failed to delete product:", error);
-    return NextResponse.json(
-      { error: "Failed to delete product" },
-      { status: 500 }
+    logger.error("Failed to delete product:", error);
+    
+    // Handle foreign key constraint errors
+    if (error instanceof Error && error.message.includes('Foreign key constraint')) {
+      return apiError(
+        "Cannot delete product: it is associated with orders",
+        409,
+        "Archive the product instead of deleting it"
+      );
+    }
+    
+    return apiError(
+      "Failed to delete product",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

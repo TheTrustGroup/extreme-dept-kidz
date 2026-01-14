@@ -8,6 +8,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getProductBySlug, getDatabaseStatus } from "@/lib/db";
+import { apiSuccess, apiError, apiNotFound } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -22,40 +24,32 @@ export async function GET(
     const product = await getProductBySlug(slug);
 
     if (!product) {
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      );
+      return apiNotFound("Product");
     }
 
-    return NextResponse.json({
-      ...product,
-      dbStatus: await getDatabaseStatus(), // Include DB status
-    });
+    return apiSuccess(product, "Product fetched successfully");
   } catch (error) {
-    console.error("❌ Error fetching product:", error);
+    logger.error("❌ Error fetching product:", error);
     
     // Try fallback to mock data
     try {
       const { slug } = await params;
       const fallbackProduct = await getProductBySlug(slug);
       if (fallbackProduct) {
-        return NextResponse.json({
-          ...fallbackProduct,
-          dbStatus: await getDatabaseStatus(),
-          warning: "Using fallback data due to database error",
-        });
+        return apiSuccess(
+          fallbackProduct,
+          "Product fetched successfully (using fallback data)",
+          { warning: "Using fallback data due to database error" }
+        );
       }
     } catch (fallbackError) {
       // Fallback also failed
     }
     
-    return NextResponse.json(
-      { 
-        error: "Unable to fetch product. Please try again later.",
-        dbStatus: await getDatabaseStatus(),
-      },
-      { status: 500 }
+    return apiError(
+      "Unable to fetch product. Please try again later.",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

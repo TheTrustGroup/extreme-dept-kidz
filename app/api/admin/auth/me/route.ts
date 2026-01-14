@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/auth/middleware';
 import { prisma } from '@/lib/db/prisma';
+import { apiSuccess, apiError, apiUnauthorized } from '@/lib/utils/api-response';
+import { logger } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,10 +15,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // Fetch full user details including name
   if (!prisma || !authResult.user) {
-    return NextResponse.json(
-      { error: 'Database connection unavailable' },
-      { status: 500 }
-    );
+    return apiError('Database connection unavailable', 500);
   }
 
   try {
@@ -32,12 +31,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     if (!fullUser || !fullUser.isActive) {
-      return NextResponse.json(
-        { error: 'User not found or inactive' },
-        { status: 401 }
-      );
+      return apiUnauthorized('User not found or inactive');
     }
 
+    // Return format expected by admin-auth-store.ts
+    // Note: Must match the format expected by checkAuth() and refreshAuth()
     return NextResponse.json({
       user: {
         id: fullUser.id,
@@ -47,10 +45,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error) {
-    console.error('Error fetching user:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch user' },
-      { status: 500 }
+    logger.error('Error fetching user:', error);
+    return apiError(
+      'Failed to fetch user',
+      500,
+      error instanceof Error ? error.message : 'Unknown error'
     );
   }
 }

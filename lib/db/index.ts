@@ -6,6 +6,7 @@
 import { mockProducts, mockCategories, completeLooks } from '@/lib/mock-data';
 import type { Product, Category } from '@/types';
 import type { CompleteLook } from '@/types/complete-look';
+import { logger } from '@/lib/utils/logger';
 
 // Database configuration
 const DB_CONFIG = {
@@ -26,7 +27,7 @@ let connectionError: Error | null = null;
  */
 export async function initializeDatabase(): Promise<boolean> {
   if (DB_CONFIG.type === 'mock' || !DB_CONFIG.enabled) {
-    console.log('📦 Using mock database (no real DB configured)');
+    logger.log('📦 Using mock database (no real DB configured)');
     dbConnected = true;
     return true;
   }
@@ -38,22 +39,22 @@ export async function initializeDatabase(): Promise<boolean> {
       // Test connection using $connect() instead of $queryRaw
       // $connect() doesn't use prepared statements, avoiding pooler issues
       await prisma.$connect();
-      console.log('✅ Database connected successfully');
+      logger.log('✅ Database connected successfully');
       dbConnected = true;
       connectionError = null;
       return true;
     }
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
+    logger.error('❌ Database connection failed:', error);
     connectionError = error instanceof Error ? error : new Error('Unknown error');
     dbConnected = false;
     
-    console.warn('⚠️ Falling back to mock data');
+    logger.warn('⚠️ Falling back to mock data');
     return false;
   }
 
   // No Prisma available, use mock
-  console.log('📦 Using mock database (Prisma not available)');
+  logger.log('📦 Using mock database (Prisma not available)');
   dbConnected = true;
   return true;
 }
@@ -96,7 +97,7 @@ export async function getDatabaseStatus() {
           } catch (connectError) {
             // Connection failed
             const errorMessage = connectError instanceof Error ? connectError.message : 'Connection failed';
-            console.log('[DB Status] Connection test failed:', errorMessage);
+            logger.log('[DB Status] Connection test failed:', errorMessage);
             
             return {
               connected: false,
@@ -109,7 +110,7 @@ export async function getDatabaseStatus() {
         }
       } catch (importError) {
         // Prisma not available
-        console.log('[DB Status] Prisma not available');
+        logger.log('[DB Status] Prisma not available');
         return {
           connected: false,
           type: 'unknown',
@@ -156,7 +157,7 @@ async function executeQuery<T>(
 
   // If database connection failed, silently fall back to mock data
   if (!dbConnected) {
-    console.log(`[DB] ${queryName}: Using mock data (DB not connected)`);
+    logger.log(`[DB] ${queryName}: Using mock data (DB not connected)`);
     return fallbackData;
   }
 
@@ -174,7 +175,7 @@ async function executeQuery<T>(
       
       // Success!
       if (attempt > 1) {
-        console.log(`✅ ${queryName} succeeded on attempt ${attempt}`);
+        logger.log(`✅ ${queryName} succeeded on attempt ${attempt}`);
       }
       
       return result;
@@ -193,7 +194,7 @@ async function executeQuery<T>(
 
   // All retries failed - silently fall back to mock data
   // Don't log as error to avoid alarming users - this is expected behavior
-  console.log(`[DB] ${queryName}: Connection failed, using mock data (this is normal if DB is not configured)`);
+  logger.log(`[DB] ${queryName}: Connection failed, using mock data (this is normal if DB is not configured)`);
   
   // Update connection status
   dbConnected = false;
@@ -408,7 +409,7 @@ export async function deleteCategory(id: string): Promise<boolean> {
 if (typeof window === 'undefined') {
   initializeDatabase().catch((error) => {
     // Silently handle initialization errors - app will use mock data
-    console.log('[DB] Initialization failed, using mock data:', error instanceof Error ? error.message : 'Unknown error');
+    logger.log('[DB] Initialization failed, using mock data:', error instanceof Error ? error.message : 'Unknown error');
     dbConnected = false;
     connectionError = error instanceof Error ? error : new Error('Unknown error');
   });

@@ -7,6 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { apiSuccess, apiError, apiNotFound } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -43,10 +45,7 @@ export async function GET(
     });
 
     if (variants.length === 0) {
-      return NextResponse.json(
-        { error: "Product not found or has no variants" },
-        { status: 404 }
-      );
+      return apiNotFound("Product or product variants");
     }
 
     // Calculate available stock (stock - reserved)
@@ -76,17 +75,21 @@ export async function GET(
     );
     const hasStock = totalAvailable > 0;
 
-    return NextResponse.json({
-      productId: params.productId,
-      hasStock,
-      totalAvailable,
-      variants: inventory,
-    });
+    return apiSuccess(
+      {
+        productId: params.productId,
+        hasStock,
+        totalAvailable,
+        variants: inventory,
+      },
+      "Inventory fetched successfully"
+    );
   } catch (error) {
-    console.error("Error fetching inventory:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch inventory" },
-      { status: 500 }
+    logger.error("Error fetching inventory:", error);
+    return apiError(
+      "Failed to fetch inventory",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

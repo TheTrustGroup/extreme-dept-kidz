@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Comprehensive diagnostic endpoint to troubleshoot admin login issues
+ * ⚠️ SECURITY: Only available in development mode
  * This endpoint checks:
  * - Database connection
  * - Environment variables
@@ -14,7 +15,14 @@ export const dynamic = 'force-dynamic';
  * - Password verification
  * - JWT generation
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
+  // Block in production unless explicitly enabled via environment variable
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_DEBUG_ENDPOINTS !== 'true') {
+    return NextResponse.json(
+      { error: 'Debug endpoints are disabled in production' },
+      { status: 403 }
+    );
+  }
   const diagnostics: {
     timestamp: string;
     database: {

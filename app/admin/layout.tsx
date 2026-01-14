@@ -54,14 +54,21 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       setCheckingAuth(false);
       setHasCheckedAuth(true);
       
-      // Verify in background (non-blocking)
-      checkAuth().then((authenticated) => {
-        if (!authenticated) {
-          router.push("/admin/login");
-        }
-      }).catch((error) => {
-        console.error("Background auth check error:", error);
-      });
+      // Verify in background (non-blocking) with delay to avoid race conditions
+      setTimeout(() => {
+        checkAuth().then((authenticated) => {
+          if (!authenticated) {
+            // Only redirect if we're definitely not authenticated
+            const currentState = useAdminAuth.getState();
+            if (!currentState.isAuthenticated || !currentState.user) {
+              router.push("/admin/login");
+            }
+          }
+        }).catch((error) => {
+          console.error("Background auth check error:", error);
+          // Don't redirect on errors - might be transient network issues
+        });
+      }, 500); // Small delay to let AuthSync initialize
       return;
     }
 

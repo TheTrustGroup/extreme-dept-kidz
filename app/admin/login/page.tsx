@@ -42,19 +42,15 @@ export default function AdminLoginPage(): JSX.Element {
         return;
       }
 
-      console.log('[Login] Attempting login for:', trimmedEmail);
       const success = await login(trimmedEmail, trimmedPassword);
-      console.log('[Login] Login result:', success);
       
       if (success) {
-        console.log('[Login] ✅ Login successful, redirecting...');
         // Small delay to ensure cookie is set before navigation
         setTimeout(() => {
           router.push("/admin");
           router.refresh(); // Force refresh to update auth state
         }, 300);
       } else {
-        console.error('[Login] ❌ Login returned false');
         setError("Invalid email or password. Please try again.");
         setLoading(false);
       }
@@ -63,12 +59,6 @@ export default function AdminLoginPage(): JSX.Element {
       const errorMessage = err instanceof Error 
         ? err.message 
         : "Login failed. Please check your credentials and try again.";
-      
-      console.error("[Login] ❌ Login error:", err);
-      console.error("[Login] Error details:", {
-        message: err instanceof Error ? err.message : 'Unknown error',
-        stack: err instanceof Error ? err.stack : undefined,
-      });
       
       setError(errorMessage);
       setLoading(false);

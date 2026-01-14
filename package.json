@@ -20,7 +20,9 @@
     "verify-admin": "tsx scripts/verify-admin.ts",
     "generate-hash": "tsx scripts/generate-password-hash.ts",
     "diagnose-login": "tsx scripts/diagnose-login.ts",
-    "test-login": "tsx scripts/test-admin-login.ts"
+    "test-login": "tsx scripts/test-admin-login.ts",
+    "quality-check": "node scripts/quality-check.js",
+    "pre-deploy": "npm run quality-check"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

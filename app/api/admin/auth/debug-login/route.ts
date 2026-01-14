@@ -8,10 +8,18 @@ export const dynamic = 'force-dynamic';
 /**
  * Debug Login Endpoint
  * 
+ * ⚠️ SECURITY: Only available in development mode
  * Comprehensive diagnostic endpoint to identify exactly why login is failing.
  * This provides detailed information about each step of the login process.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Block in production unless explicitly enabled via environment variable
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_DEBUG_ENDPOINTS !== 'true') {
+    return NextResponse.json(
+      { error: 'Debug endpoints are disabled in production' },
+      { status: 403 }
+    );
+  }
   try {
     const { email, password } = await request.json();
 

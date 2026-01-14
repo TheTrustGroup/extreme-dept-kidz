@@ -200,8 +200,15 @@ export const useAdminAuth = create<AdminAuthState>()(
 
           if (response.ok) {
             const data = await response.json();
+            // Handle both apiSuccess format (data.user) and direct format (user)
+            const userData = data.data?.user || data.user;
+            if (!userData) {
+              console.error("[Auth] ❌ No user data in refresh response:", data);
+              // Don't logout on malformed response, just log error
+              return;
+            }
             set({
-              user: data.user,
+              user: userData,
               isAuthenticated: true,
               token: token,
             });
@@ -275,8 +282,16 @@ export const useAdminAuth = create<AdminAuthState>()(
           }
 
           const data = await response.json();
+          // Handle both apiSuccess format (data.user) and direct format (user)
+          const userData = data.data?.user || data.user;
+          if (!userData) {
+            console.error("[Auth] ❌ No user data in response:", data);
+            set({ isAuthenticated: false, user: null, token: null });
+            lastAuthCheck = 0;
+            return false;
+          }
           set({
-            user: data.user,
+            user: userData,
             isAuthenticated: true,
             // Preserve token
             token: token,

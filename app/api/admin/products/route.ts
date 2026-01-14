@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAllProducts, createProduct, getDatabaseStatus } from "@/lib/db";
+import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
+import { createProductSchema, validate } from "@/lib/validation/schemas";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -9,14 +12,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const products = await getAllProducts();
     const dbStatus = await getDatabaseStatus();
 
-    return NextResponse.json({
-      success: true,
-      products,
-      count: products.length,
-      dbStatus, // Include DB status for admin visibility
-    });
+    return apiSuccess(
+      {
+        products,
+        count: products.length,
+        dbStatus, // Include DB status for admin visibility
+      },
+      'Products fetched successfully'
+    );
   } catch (error) {
-    console.error("❌ GET /api/admin/products error:", error);
+    logger.error("❌ GET /api/admin/products error:", error);
     
     // Get status even on error
     const dbStatus = await getDatabaseStatus().catch(() => ({
@@ -27,12 +32,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       enabled: false,
     }));
     
-    return NextResponse.json({
-      success: false,
-      error: "Failed to fetch products",
-      details: error instanceof Error ? error.message : "Unknown error",
-      dbStatus,
-    }, { status: 500 });
+    return apiError(
+      "Failed to fetch products",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
+    );
   }
 }
 
@@ -40,20 +44,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
 
-    // Validate required fields
-    const requiredFields = ['name', 'price', 'category'];
-    const missingFields = requiredFields.filter(field => {
-      if (field === 'category') {
-        return !body.category && !body.categoryId;
-      }
-      return !body[field];
-    });
-
-    if (missingFields.length > 0) {
-      return NextResponse.json({
-        success: false,
-        error: `Missing required fields: ${missingFields.join(', ')}`,
-      }, { status: 400 });
+    // Validate input using Zod schema
+    const validation = validate(createProductSchema, body);
+    if (!validation.success) {
+      return apiValidationError(validation.errors);
     }
 
     // Normalize category - handle both object and ID formats
@@ -147,34 +141,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       revalidatePath('/collections');
       revalidatePath('/admin/products');
     } catch (revalidateError) {
-      console.error('Failed to revalidate cache:', revalidateError);
+      logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails
     }
 
-    const dbStatus = await getDatabaseStatus();
-    
-    return NextResponse.json({
-      success: true,
+    return apiSuccess(
       product,
-      message: 'Product created successfully',
-      dbStatus,
-    }, { status: 201 });
+      'Product created successfully',
+      { statusCode: 201 }
+    );
   } catch (error) {
-    console.error("❌ POST /api/admin/products error:", error);
+    logger.error("❌ POST /api/admin/products error:", error);
     
-    const dbStatus = await getDatabaseStatus().catch(() => ({
-      connected: false,
-      type: 'unknown',
-      error: 'Status check failed',
-      mockMode: true,
-      enabled: false,
-    }));
-    
-    return NextResponse.json({
-      success: false,
-      error: "Failed to create product",
-      details: error instanceof Error ? error.message : "Unknown error",
-      dbStatus,
-    }, { status: 500 });
+    return apiError(
+      "Failed to create product",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
+    );
   }
 }

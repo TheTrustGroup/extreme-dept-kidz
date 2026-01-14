@@ -16,9 +16,13 @@ export function AuthSync(): JSX.Element {
   React.useEffect(() => {
     if (token && isAuthenticated) {
       syncCookie();
-      refreshAuth().catch((error) => {
-        console.error("[AuthSync] Initial refresh error:", error);
-      });
+      // Delay refresh to avoid race conditions with initial auth check
+      setTimeout(() => {
+        refreshAuth().catch((error) => {
+          console.error("[AuthSync] Initial refresh error:", error);
+          // Don't logout on refresh errors - might be transient
+        });
+      }, 1000); // Wait 1 second after mount
     }
   }, []); // Only on mount
 
@@ -41,10 +45,15 @@ export function AuthSync(): JSX.Element {
     const handleVisibilityChange = (): void => {
       if (document.visibilityState === "visible") {
         syncCookie();
-        refreshAuth().catch((error) => {
-          console.error("[AuthSync] Visibility change refresh error:", error);
-        });
-        console.log("[AuthSync] Synced on visibility change");
+        // Only refresh if we still have auth state
+        const currentState = useAdminAuth.getState();
+        if (currentState.token && currentState.isAuthenticated) {
+          refreshAuth().catch((error) => {
+            console.error("[AuthSync] Visibility change refresh error:", error);
+            // Don't logout on refresh errors - might be transient
+          });
+          console.log("[AuthSync] Synced on visibility change");
+        }
       }
     };
 

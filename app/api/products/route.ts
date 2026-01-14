@@ -10,6 +10,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllProducts, getProductsByCategory, getDatabaseStatus } from "@/lib/db";
 import type { Product } from "@/types";
+import { apiSuccess, apiError } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Transform Prisma product to application Product type
@@ -117,40 +119,42 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const total = products.length;
     const paginatedProducts = products.slice(offset, offset + limit);
 
-    return NextResponse.json({
-      products: paginatedProducts,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
+    return apiSuccess(
+      {
+        products: paginatedProducts,
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + limit < total,
+        },
       },
-      dbStatus: await getDatabaseStatus(), // Include DB status
-    });
+      "Products fetched successfully"
+    );
   } catch (error) {
-    console.error("❌ Error fetching products:", error);
+    logger.error("❌ Error fetching products:", error);
     
     // Even on error, try to return mock data as fallback
     try {
       const fallbackProducts = await getAllProducts();
-      return NextResponse.json({
-        products: fallbackProducts.slice(0, 20),
-        pagination: {
-          total: fallbackProducts.length,
-          limit: 20,
-          offset: 0,
-          hasMore: false,
+      return apiSuccess(
+        {
+          products: fallbackProducts.slice(0, 20),
+          pagination: {
+            total: fallbackProducts.length,
+            limit: 20,
+            offset: 0,
+            hasMore: false,
+          },
         },
-        dbStatus: await getDatabaseStatus(),
-        warning: "Using fallback data due to database error",
-      });
+        "Products fetched successfully (using fallback data)",
+        { warning: "Using fallback data due to database error" }
+      );
     } catch (fallbackError) {
-      return NextResponse.json(
-        { 
-          error: "Unable to fetch products. Please try again later.",
-          dbStatus: await getDatabaseStatus(),
-        },
-        { status: 500 }
+      return apiError(
+        "Unable to fetch products. Please try again later.",
+        500,
+        error instanceof Error ? error.message : "Unknown error"
       );
     }
   }

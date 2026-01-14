@@ -6,9 +6,17 @@ export const dynamic = 'force-dynamic';
 /**
  * Database Connection Test Endpoint
  * 
+ * ⚠️ SECURITY: Only available in development mode
  * Tests database connectivity and provides detailed diagnostics.
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(_request: NextRequest): Promise<NextResponse> {
+  // Block in production unless explicitly enabled via environment variable
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_DEBUG_ENDPOINTS !== 'true') {
+    return NextResponse.json(
+      { error: 'Debug endpoints are disabled in production' },
+      { status: 403 }
+    );
+  }
   const diagnostics: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     hasDatabaseUrl: !!process.env.DATABASE_URL,
@@ -69,7 +77,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const isConnectionError = errorMessage.includes('Can\'t reach') || errorMessage.includes('Connection');
     const isAuthError = errorMessage.includes('Authentication failed') || errorCode === 'P1000';
     
-    let recommendations = [
+    const recommendations = [
       'Verify DATABASE_URL is correct in Vercel environment variables',
       'Check if Supabase project is active (not paused)',
       'Verify database password is correct and URL-encoded',

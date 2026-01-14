@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { apiSuccess } from '@/lib/utils/api-response';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,8 +8,8 @@ export const dynamic = 'force-dynamic';
  * 
  * Clears the admin authentication cookie.
  */
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  const response = NextResponse.json({ success: true });
+export async function POST(_request: NextRequest): Promise<NextResponse> {
+  const response = apiSuccess({}, "Logged out successfully");
   
   // Clear the admin-token cookie
   response.cookies.set('admin-token', '', {

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { apiSuccess, apiError, apiNotFound } from '@/lib/utils/api-response';
+import { logger } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,10 +57,7 @@ export async function GET(request: NextRequest) {
     const email = searchParams.get('email')?.trim().toLowerCase();
 
     if (!orderNumber || !email) {
-      return NextResponse.json(
-        { error: 'Order number and email are required' },
-        { status: 400 }
-      );
+      return apiError('Order number and email are required', 400);
     }
 
     // In production, query database:
@@ -79,29 +78,24 @@ export async function GET(request: NextRequest) {
     const order = mockOrders[orderNumber];
 
     if (!order) {
-      return NextResponse.json(
-        { error: 'Order not found. Please check your order number and email.' },
-        { status: 404 }
-      );
+      return apiNotFound('Order');
     }
 
     // Verify email matches
     if (order.email.toLowerCase() !== email) {
-      return NextResponse.json(
-        { error: 'Order not found. Please check your order number and email.' },
-        { status: 404 }
-      );
+      return apiNotFound('Order');
     }
 
-    return NextResponse.json({
-      success: true,
-      order,
-    });
+    return apiSuccess(
+      { order },
+      "Order found successfully"
+    );
   } catch (error) {
-    console.error('Track order error:', error);
-    return NextResponse.json(
-      { error: 'Failed to track order' },
-      { status: 500 }
+    logger.error('Track order error:', error);
+    return apiError(
+      'Failed to track order',
+      500,
+      error instanceof Error ? error.message : 'Unknown error'
     );
   }
 }

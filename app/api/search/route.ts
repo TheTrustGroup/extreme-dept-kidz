@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { mockProducts } from '@/lib/mock-data';
+import { apiSuccess, apiError } from '@/lib/utils/api-response';
+import { logger } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +11,10 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q')?.toLowerCase().trim() || '';
 
     if (!query || query.length < 2) {
-      return NextResponse.json({ results: [], query });
+      return apiSuccess(
+        { results: [], query },
+        "Search query too short (minimum 2 characters)"
+      );
     }
 
     // Search in product name, description, tags, and category
@@ -37,16 +42,20 @@ export async function GET(request: NextRequest) {
         category: product.category.name,
       }));
 
-    return NextResponse.json({
-      results,
-      query,
-      count: results.length,
-    });
+    return apiSuccess(
+      {
+        results,
+        query,
+        count: results.length,
+      },
+      "Search completed successfully"
+    );
   } catch (error) {
-    console.error('Search error:', error);
-    return NextResponse.json(
-      { error: 'Search failed', results: [] },
-      { status: 500 }
+    logger.error('Search error:', error);
+    return apiError(
+      'Search failed',
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
