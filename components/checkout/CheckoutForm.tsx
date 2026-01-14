@@ -480,7 +480,28 @@ function PaymentForm({
           Payment Method
         </label>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Payment method">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" role="radiogroup" aria-label="Payment method">
+          <button
+            type="button"
+            onClick={() => onMethodChange("momo")}
+            className={cn(
+              "p-4 rounded-lg border-2 transition-all duration-200 text-left",
+              "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
+              method === "momo"
+                ? "border-navy-900 bg-cream-100"
+                : "border-cream-200 hover:border-charcoal-400"
+            )}
+            aria-pressed={method === "momo"}
+            aria-label="MTN Mobile Money payment method"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center font-bold text-lg">
+                M
+              </div>
+              <Body className="font-semibold text-charcoal-900">MoMo</Body>
+            </div>
+          </button>
+
           <button
             type="button"
             onClick={() => onMethodChange("card")}
@@ -593,7 +614,18 @@ function PaymentForm({
       )}
 
       {/* Payment Method Info */}
-      {method !== "card" && (
+      {method === "momo" && (
+        <div className="p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+          <Body className="text-sm text-charcoal-700 font-medium mb-2">
+            💳 MTN Mobile Money Payment
+          </Body>
+          <Body className="text-xs text-charcoal-600">
+            After placing your order, you will receive a prompt on your phone to approve the payment. 
+            Please ensure your phone number is correct and you have sufficient MoMo balance.
+          </Body>
+        </div>
+      )}
+      {method !== "card" && method !== "momo" && (
         <div className="p-4 bg-cream-100 rounded-lg border border-cream-200">
           <Body className="text-sm text-charcoal-600">
             {method === "paypal" &&

@@ -3,15 +3,31 @@ import { prisma } from '@/lib/db/prisma';
 import { verifyPassword } from '@/lib/auth/password';
 import { generateToken } from '@/lib/auth/jwt';
 import { checkRateLimit, getClientIP } from '@/lib/auth/rate-limit';
+import { detectBot } from '@/lib/security/bot-detector';
 import { apiSuccess, apiError, apiValidationError, apiRateLimit, apiUnauthorized } from '@/lib/utils/api-response';
 import { adminLoginSchema, validate } from '@/lib/validation/schemas';
 import { logger } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
+// Track failed login attempts
+const failedAttempts = new Map<string, number>();
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // Rate limiting - 5 attempts per 15 minutes per IP
+    // 1. BOT DETECTION
+    const botDetection = detectBot(request);
+    
+    if (botDetection.isBot && botDetection.score > 70) {
+      logger.warn('🤖 Bot detected on login:', botDetection.reasons);
+      return apiError(
+        'Suspicious activity detected',
+        403,
+        'Request blocked by security system'
+      );
+    }
+
+    // 2. RATE LIMITING - 5 attempts per 15 minutes per IP
     const clientIP = getClientIP(request);
     const rateLimit = checkRateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
@@ -110,8 +126,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     if (!isValid) {
       logger.log(`[Login] ❌ Invalid password for user ${user.email}`);
+      
+      // Track failed attempts
+      const attempts = (failedAttempts.get(clientIP) || 0) + 1;
+      failedAttempts.set(clientIP, attempts);
+
+      // Block after 10 failed attempts
+      if (attempts >= 10) {
+        logger.error('🚨 Account locked due to too many failed attempts:', user.email);
+        return apiError(
+          'Account temporarily locked due to too many failed attempts',
+          423
+        );
+      }
+
+      // Timing attack prevention - delay response
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       return apiUnauthorized('Invalid email or password');
     }
+
+    // Clear failed attempts on successful login
+    failedAttempts.delete(clientIP);
     
     logger.log(`[Login] ✅ Password verified successfully for user ${user.email}`);
 
@@ -147,6 +183,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     response.headers.set('X-RateLimit-Limit', '5');
     response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
     response.headers.set('X-RateLimit-Reset', rateLimit.resetTime.toString());
+    
+    // Security headers
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-XSS-Protection', '1; mode=block');
 
     // Set cookie for middleware authentication
     const isProduction = process.env.NODE_ENV === 'production';

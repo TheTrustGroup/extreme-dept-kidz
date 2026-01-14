@@ -7,6 +7,13 @@ import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { CheckoutOrderSummary } from "@/components/checkout/CheckoutOrderSummary";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useRouter } from "next/navigation";
+import type { CheckoutFormData } from "@/types/checkout";
+
+const SHIPPING_METHODS = [
+  { id: "standard" as const, price: 800 },
+  { id: "express" as const, price: 1500 },
+  { id: "overnight" as const, price: 2500 },
+];
 
 /**
  * Checkout Page Client Component
@@ -24,11 +31,55 @@ export function CheckoutPageClient(): JSX.Element | null {
     }
   }, [items, router]);
 
-  const handleSubmit = (_data: unknown): void => {
-    // In production, send to payment processing API
-    // await fetch('/api/checkout', { method: 'POST', body: JSON.stringify(data) });
-    // Redirect to success page
-    router.push("/checkout/success");
+  const handleSubmit = async (data: CheckoutFormData): Promise<void> => {
+    try {
+      // Only handle MoMo payments for now
+      if (data.payment.method !== "momo") {
+        alert("MoMo payment is currently the only supported method. Please select MoMo.");
+        return;
+      }
+
+      // Calculate total including shipping
+      const cartTotal = useCartStore.getState().getTotal();
+      const shippingPrice = SHIPPING_METHODS.find(m => m.id === shippingMethod)?.price || 0;
+      const total = cartTotal + shippingPrice;
+
+      // Generate order ID
+      const orderId = `ORD-${Date.now()}`;
+
+      // Extract phone number from shipping address
+      const phoneNumber = data.shippingAddress.phone.replace(/\D/g, ''); // Remove non-digits
+      
+      // Initiate MoMo payment
+      const response = await fetch('/api/payment/momo/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total / 100, // Convert cents to GHS
+          phoneNumber: phoneNumber,
+          orderId,
+          customerName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`,
+          customerEmail: data.shippingAddress.email,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success || !result.data?.referenceId) {
+        alert(result.error || 'Payment initiation failed. Please try again.');
+        return;
+      }
+
+      // Store reference ID for polling
+      sessionStorage.setItem('paymentReferenceId', result.data.referenceId);
+      sessionStorage.setItem('orderId', orderId);
+
+      // Redirect to payment status page
+      router.push(`/checkout/payment-status?ref=${result.data.referenceId}`);
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   if (items.length === 0) {

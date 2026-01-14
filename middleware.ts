@@ -1,28 +1,130 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verifyToken } from '@/lib/auth/jwt';
+import { detectBot } from '@/lib/security/bot-detector';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limiter';
 
-export function middleware(request: NextRequest): NextResponse {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for API routes - they handle their own auth
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
+  // 1. SECURITY HEADERS (all requests)
+  const response = NextResponse.next();
+  response.headers.set('X-DNS-Prefetch-Control', 'on');
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=()'
+  );
+
+  // 2. BOT PROTECTION (all API routes except webhooks)
+  if (pathname.startsWith("/api") && !pathname.includes("/webhook") && !pathname.includes("/callback")) {
+    const botDetection = detectBot(request);
+    
+    if (botDetection.isBot && botDetection.score > 70) {
+      console.warn('🤖 High-confidence bot blocked:', pathname, botDetection.reasons);
+      return NextResponse.json(
+        { error: 'Access denied' },
+        { status: 403 }
+      );
+    }
   }
 
-  // Protect admin routes (except login)
+  // 3. RATE LIMITING (API routes)
+  if (pathname.startsWith("/api")) {
+    let rateLimitConfig = RATE_LIMITS.PUBLIC_READ;
+
+    // Apply stricter limits based on endpoint
+    if (pathname.includes("/login") || pathname.includes("/auth")) {
+      rateLimitConfig = RATE_LIMITS.AUTH_LOGIN;
+    } else if (pathname.includes("/upload")) {
+      rateLimitConfig = RATE_LIMITS.FILE_UPLOAD;
+    } else if (pathname.includes("/payment")) {
+      rateLimitConfig = RATE_LIMITS.PAYMENT;
+    } else if (pathname.startsWith("/api/admin") && request.method !== "GET") {
+      rateLimitConfig = RATE_LIMITS.ADMIN_WRITE;
+    }
+
+    const rateLimit = checkRateLimit(request, rateLimitConfig);
+    
+    if (!rateLimit.allowed) {
+      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Rate limit exceeded',
+          retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+            'X-RateLimit-Limit': rateLimitConfig.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+          },
+        }
+      );
+    }
+  }
+
+  // 4. ADMIN ROUTE PROTECTION
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    // Check for admin authentication in headers (we'll set this via API)
-    // For now, we'll handle auth in the layout/component level
-    // This middleware can be enhanced later with proper session management
+    const token = request.cookies.get("admin-token")?.value;
+
+    if (!token) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+
+    try {
+      const payload = verifyToken(token);
+      if (!payload) {
+        return NextResponse.redirect(new URL("/admin/login", request.url));
+      }
+    } catch (error) {
+      console.warn("🚫 Invalid admin token");
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
   }
 
-  return NextResponse.next();
+  // 5. ADMIN API PROTECTION
+  if (pathname.startsWith("/api/admin")) {
+    const token = request.cookies.get("admin-token")?.value || 
+                  request.headers.get("Authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    try {
+      const payload = verifyToken(token);
+      if (!payload) {
+        return NextResponse.json(
+          { error: "Invalid or expired token" },
+          { status: 401 }
+        );
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 }
+      );
+    }
+  }
+
+  return response;
 }
 
 export const config = {
-  // Match admin pages but exclude API routes
   matcher: [
     "/admin/:path*",
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/api/:path*",
   ],
 };
