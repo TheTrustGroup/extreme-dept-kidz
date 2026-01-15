@@ -28,6 +28,9 @@ export default function AdminLoginPage(): JSX.Element {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
+    
+    console.log('[LoginPage] Form submitted');
     setError("");
     setLoading(true);
 
@@ -36,26 +39,40 @@ export default function AdminLoginPage(): JSX.Element {
       const trimmedEmail = email.trim();
       const trimmedPassword = password.trim();
 
+      console.log('[LoginPage] Attempting login with email:', trimmedEmail);
+
       if (!trimmedEmail || !trimmedPassword) {
         setError("Please enter both email and password.");
         setLoading(false);
         return;
       }
 
+      if (!login) {
+        console.error('[LoginPage] Login function is undefined!');
+        setError("Login system error. Please refresh the page and try again.");
+        setLoading(false);
+        return;
+      }
+
       const success = await login(trimmedEmail, trimmedPassword);
       
+      console.log('[LoginPage] Login result:', success);
+      
       if (success) {
+        console.log('[LoginPage] Login successful, redirecting...');
         // Small delay to ensure cookie is set before navigation
         setTimeout(() => {
           router.push("/admin");
           router.refresh(); // Force refresh to update auth state
         }, 300);
       } else {
+        console.log('[LoginPage] Login failed - invalid credentials');
         setError("Invalid email or password. Please try again.");
         setLoading(false);
       }
     } catch (err) {
       // Get the actual error message
+      console.error('[LoginPage] Login error:', err);
       const errorMessage = err instanceof Error 
         ? err.message 
         : "Login failed. Please check your credentials and try again.";
@@ -185,7 +202,14 @@ export default function AdminLoginPage(): JSX.Element {
               variant="primary"
               size="lg"
               className="w-full"
-              disabled={loading}
+              disabled={loading || !email.trim() || !password.trim()}
+              onClick={(e) => {
+                // Ensure form submission is handled by React
+                if (!email.trim() || !password.trim()) {
+                  e.preventDefault();
+                  setError("Please enter both email and password.");
+                }
+              }}
             >
               {loading ? "Signing in..." : "SIGN IN"}
             </Button>
