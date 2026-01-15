@@ -149,9 +149,18 @@ export function InventoryManagement(): JSX.Element {
       if (result.success > 0) {
         // Reload inventory to reflect synced changes
         loadInventory();
+        // Show success message
+        console.log(`✅ Successfully synced ${result.success} update(s)`);
+      }
+      if (result.failed > 0) {
+        console.warn(`⚠️ ${result.failed} update(s) failed to sync`);
+      }
+      if (result.success === 0 && result.failed === 0) {
+        console.log('ℹ️ No pending updates to sync');
       }
     } catch (error) {
       console.error('Manual sync failed:', error);
+      // Don't show alert - error is logged, user can see in console if needed
     } finally {
       setIsSyncing(false);
     }

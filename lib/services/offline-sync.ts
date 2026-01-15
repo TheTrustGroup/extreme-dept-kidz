@@ -221,7 +221,24 @@ class OfflineSyncService {
         });
 
         if (!response.ok) {
-          throw new Error(`Sync failed: ${response.status} ${response.statusText}`);
+          const errorText = await response.text().catch(() => 'Unknown error');
+          let errorMessage = `Sync failed: ${response.status} ${response.statusText}`;
+          
+          // Try to parse error message from response
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorData.message || errorMessage;
+          } catch {
+            // Use default error message
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
+        // Verify response is successful
+        const responseData = await response.json().catch(() => ({}));
+        if (!responseData.success && response.status !== 200) {
+          throw new Error(responseData.error || 'Sync failed');
         }
 
         // Success - remove from pending
@@ -229,10 +246,21 @@ class OfflineSyncService {
         this.removeUpdate(update.id);
       } catch (error) {
         console.error(`[OfflineSync] Failed to sync update ${update.id}:`, error);
+        
+        // Check if it's an authentication error (401/403)
+        if (error instanceof Error) {
+          if (error.message.includes('401') || error.message.includes('403') || error.message.includes('Unauthorized')) {
+            console.warn(`[OfflineSync] Authentication error - user may need to log in again`);
+            // Don't mark as failed immediately - might be transient auth issue
+            this.updateUpdateStatus(update.id, 'pending');
+            continue; // Skip this update, try others
+          }
+        }
+        
         this.updateUpdateStatus(update.id, 'failed');
         
         // If it's a network error, stop trying (we're probably offline again)
-        if (error instanceof TypeError && error.message.includes('fetch')) {
+        if (error instanceof TypeError && (error.message.includes('fetch') || error.message.includes('network'))) {
           this.isOnline = false;
           this.notifyListeners(false);
           break;
@@ -264,13 +292,24 @@ class OfflineSyncService {
    */
   async manualSync(): Promise<{ success: number; failed: number }> {
     const beforeCount = this.getPendingUpdates().length;
+    
+    if (beforeCount === 0) {
+      return { success: 0, failed: 0 };
+    }
+    
+    if (!this.isOnline) {
+      console.warn('[OfflineSync] Cannot sync - currently offline');
+      return { success: 0, failed: beforeCount };
+    }
+    
     await this.attemptSync();
     const afterCount = this.getPendingUpdates().length;
     const synced = beforeCount - afterCount;
+    const failed = this.getPendingUpdates().filter(u => u.status === 'failed').length;
     
     return {
       success: synced,
-      failed: afterCount,
+      failed: failed,
     };
   }
 

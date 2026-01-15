@@ -64,13 +64,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Find user - normalize email
+    // Find user - normalize email for lookup (case-insensitive)
+    // Email is stored exactly as provided, but we lookup case-insensitively
     const normalizedEmail = email.toLowerCase().trim();
+    const trimmedEmail = email.trim();
     let user;
     try {
+      // Try exact match first (for case-sensitive storage like Admin@extremedeptkidz.com)
       user = await prisma.adminUser.findUnique({
-        where: { email: normalizedEmail },
+        where: { email: trimmedEmail },
       });
+      
+      // If not found with exact match, try case-insensitive lookup
+      // This handles both Admin@extremedeptkidz.com and admin@extremedeptkidz.com
+      if (!user) {
+        // Get all admin users and find case-insensitive match
+        const allAdmins = await prisma.adminUser.findMany({
+          where: { isActive: true },
+        });
+        user = allAdmins.find(u => u.email.toLowerCase() === normalizedEmail) || null;
+      }
     } catch (dbError) {
       logger.error('Database query error:', dbError);
       const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
