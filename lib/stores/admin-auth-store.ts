@@ -75,15 +75,35 @@ export const useAdminAuth = create<AdminAuthState>()(
         try {
           console.log('[Auth] Starting login for:', email);
           
-          // Clear any existing invalid cookies first
+          // Clear any existing invalid cookies and localStorage first
           if (typeof window !== 'undefined') {
+            // Clear cookie
             document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            document.cookie = 'admin-token=; path=/; domain=' + window.location.hostname + '; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            
+            // Clear localStorage auth data
+            try {
+              localStorage.removeItem('admin-auth-storage');
+            } catch (e) {
+              console.warn('[Auth] Could not clear localStorage:', e);
+            }
+            
+            // Clear any stale state
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+            });
           }
           
-          const response = await fetch("/api/admin/auth/login", {
+          // Add cache-busting timestamp to prevent any caching
+          const timestamp = Date.now();
+          const response = await fetch(`/api/admin/auth/login?t=${timestamp}`, {
             method: "POST",
             headers: { 
               "Content-Type": "application/json",
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+              "Pragma": "no-cache",
             },
             body: JSON.stringify({ email: email.trim(), password: password.trim() }),
             credentials: 'include', // Include cookies

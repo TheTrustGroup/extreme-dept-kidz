@@ -214,6 +214,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
     
+    // CRITICAL: Add cache-busting headers to prevent any caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
     // Add rate limit headers
     response.headers.set('X-RateLimit-Limit', '5');
     response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());

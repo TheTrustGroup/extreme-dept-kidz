@@ -35,6 +35,21 @@ export default function AdminLoginPage(): JSX.Element {
     setLoading(true);
 
     try {
+      // Clear any stale cache/storage before login
+      if (typeof window !== 'undefined') {
+        // Clear localStorage
+        try {
+          localStorage.removeItem('admin-auth-storage');
+        } catch (e) {
+          console.warn('[LoginPage] Could not clear localStorage:', e);
+        }
+        
+        // Clear all admin-token cookies (various paths/domains)
+        document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'admin-token=; path=/admin; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'admin-token=; path=/; domain=' + window.location.hostname + '; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
+
       // Trim email and password to avoid whitespace issues
       const trimmedEmail = email.trim();
       const trimmedPassword = password.trim();
