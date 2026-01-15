@@ -7,6 +7,15 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limiter';
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
+  // CRITICAL: Identify diagnostic/debug endpoints FIRST - they bypass all security checks
+  // These endpoints have their own security and are needed for troubleshooting
+  const isDiagnosticEndpoint = pathname.includes('/diagnose') || 
+                                pathname.includes('/test-db') || 
+                                pathname.includes('/test-login') ||
+                                pathname.includes('/debug-login') ||
+                                pathname.includes('/test') ||
+                                pathname.includes('/verify-password');
+
   // 1. SECURITY HEADERS (all requests)
   const response = NextResponse.next();
   response.headers.set('X-DNS-Prefetch-Control', 'on');
@@ -20,8 +29,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     'camera=(), microphone=(), geolocation=()'
   );
 
-  // 2. BOT PROTECTION (all API routes except webhooks)
-  if (pathname.startsWith("/api") && !pathname.includes("/webhook") && !pathname.includes("/callback")) {
+  // 2. BOT PROTECTION (all API routes except webhooks and diagnostic endpoints)
+  if (pathname.startsWith("/api") && 
+      !pathname.includes("/webhook") && 
+      !pathname.includes("/callback") &&
+      !isDiagnosticEndpoint) {
     const botDetection = detectBot(request);
     
     if (botDetection.isBot && botDetection.score > 70) {
@@ -33,8 +45,8 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // 3. RATE LIMITING (API routes)
-  if (pathname.startsWith("/api")) {
+  // 3. RATE LIMITING (API routes, but skip diagnostic endpoints)
+  if (pathname.startsWith("/api") && !isDiagnosticEndpoint) {
     let rateLimitConfig = RATE_LIMITS.PUBLIC_READ;
 
     // Apply stricter limits based on endpoint
@@ -98,13 +110,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // 5. ADMIN API PROTECTION
-  // Exclude diagnostic/debug endpoints from authentication (they have their own security checks)
-  const isDiagnosticEndpoint = pathname.includes('/diagnose') || 
-                                pathname.includes('/test-db') || 
-                                pathname.includes('/test-login') ||
-                                pathname.includes('/debug-login') ||
-                                pathname.includes('/test');
-  
+  // Diagnostic endpoints are already excluded (checked at top of function)
   if (pathname.startsWith("/api/admin") && !isDiagnosticEndpoint) {
     const token = request.cookies.get("admin-token")?.value || 
                   request.headers.get("Authorization")?.replace("Bearer ", "");

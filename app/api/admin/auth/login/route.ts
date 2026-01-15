@@ -225,14 +225,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     response.headers.set('X-XSS-Protection', '1; mode=block');
 
     // Set cookie for middleware authentication
+    // CRITICAL: Cookie must be set correctly for authentication to work
     const isProduction = process.env.NODE_ENV === 'production';
     response.cookies.set('admin-token', token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax', // Works for same-site requests
-      maxAge: 60 * 60 * 24 * 7, // 7 days (extended from 24 hours)
-      path: '/',
+      httpOnly: true, // Prevents XSS attacks
+      secure: isProduction, // HTTPS only in production
+      sameSite: 'lax', // Works for same-site requests, allows top-level navigation
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/', // Available site-wide
     });
+    
+    logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: lax)`);
 
     return response;
   } catch (error) {

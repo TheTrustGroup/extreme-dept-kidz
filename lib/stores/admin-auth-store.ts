@@ -75,16 +75,33 @@ export const useAdminAuth = create<AdminAuthState>()(
         try {
           console.log('[Auth] Starting login for:', email);
           
+          // Clear any existing invalid cookies first
+          if (typeof window !== 'undefined') {
+            document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          }
+          
           const response = await fetch("/api/admin/auth/login", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
+            headers: { 
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: email.trim(), password: password.trim() }),
             credentials: 'include', // Include cookies
+            cache: 'no-store', // Prevent caching
           });
 
           console.log('[Auth] Login response status:', response.status, response.statusText);
 
-          const data = await response.json();
+          // Handle non-JSON responses
+          let data;
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+          } else {
+            const text = await response.text();
+            console.error('[Auth] ❌ Non-JSON response:', text);
+            throw new Error(`Server returned non-JSON response: ${response.statusText}`);
+          }
           console.log('[Auth] Login response data:', {
             success: data.success,
             hasToken: !!data.token,
@@ -274,29 +291,43 @@ export const useAdminAuth = create<AdminAuthState>()(
         }
 
         if (!token) {
+          console.warn('[Auth] No token available, clearing auth state');
           set({ isAuthenticated: false, user: null });
           return false;
         }
 
         try {
           lastAuthCheck = now;
+          
+          // Ensure cookie is synced before checking
+          if (typeof window !== 'undefined') {
+            get().syncCookie();
+          }
+          
           const response = await fetch("/api/admin/auth/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            // Add cache control to prevent aggressive revalidation
-            cache: 'no-store',
+            credentials: 'include', // Include cookies
+            cache: 'no-store', // Prevent caching
           });
 
           if (!response.ok) {
             // Only clear auth if it's a 401 (unauthorized), not other errors
             if (response.status === 401) {
+              console.warn('[Auth] 401 Unauthorized - clearing auth state');
               set({ isAuthenticated: false, user: null, token: null });
               lastAuthCheck = 0; // Reset on auth failure
+              
+              // Clear cookie
+              if (typeof window !== 'undefined') {
+                document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+              }
               return false;
             }
             // For other errors (500, etc.), keep current state
             // This prevents logout on transient server errors
+            console.warn(`[Auth] Auth check returned ${response.status}, keeping current state`);
             return isAuthenticated;
           }
 
@@ -309,18 +340,30 @@ export const useAdminAuth = create<AdminAuthState>()(
             lastAuthCheck = 0;
             return false;
           }
+          
+          // Update state with fresh user data
           set({
             user: userData,
             isAuthenticated: true,
-            // Preserve token
-            token: token,
+            token: token, // Preserve token
           });
+          
+          // Ensure cookie is still set
+          if (typeof window !== 'undefined') {
+            get().syncCookie();
+          }
 
           return true;
         } catch (error) {
-          console.error("Auth check error:", error);
+          console.error("[Auth] Auth check error:", error);
           // On network errors, don't clear auth state - just return current state
           // This prevents logout on network issues
+          // But if it's a persistent error, we might need to clear
+          if (error instanceof Error && error.message.includes('Failed to fetch')) {
+            // Network error - keep state
+            return isAuthenticated;
+          }
+          // Other errors - be more cautious
           return isAuthenticated;
         }
       },

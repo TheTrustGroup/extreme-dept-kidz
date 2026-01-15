@@ -17,12 +17,21 @@ export function AuthSync(): JSX.Element {
     if (token && isAuthenticated) {
       syncCookie();
       // Delay refresh to avoid race conditions with initial auth check
+      // Increased delay to ensure everything is initialized
       setTimeout(() => {
         refreshAuth().catch((error) => {
           console.error("[AuthSync] Initial refresh error:", error);
-          // Don't logout on refresh errors - might be transient
+          // Check if error is persistent (not just network)
+          if (error instanceof Error && !error.message.includes('fetch') && !error.message.includes('network')) {
+            // Persistent auth error - might need to logout
+            const currentState = useAdminAuth.getState();
+            if (!currentState.token || !currentState.isAuthenticated) {
+              console.warn('[AuthSync] Persistent auth error, clearing state');
+              useAdminAuth.getState().logout();
+            }
+          }
         });
-      }, 1000); // Wait 1 second after mount
+      }, 2000); // Increased to 2 seconds to ensure proper initialization
     }
   }, []); // Only on mount
 

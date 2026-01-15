@@ -60,15 +60,20 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
           if (!authenticated) {
             // Only redirect if we're definitely not authenticated
             const currentState = useAdminAuth.getState();
-            if (!currentState.isAuthenticated || !currentState.user) {
+            if (!currentState.isAuthenticated || !currentState.user || !currentState.token) {
+              console.warn('[AdminLayout] Auth check failed, redirecting to login');
               router.push("/admin/login");
             }
           }
         }).catch((error) => {
-          console.error("Background auth check error:", error);
-          // Don't redirect on errors - might be transient network issues
+          console.error("[AdminLayout] Background auth check error:", error);
+          // On persistent errors, check if we still have valid state
+          const currentState = useAdminAuth.getState();
+          if (!currentState.token || !currentState.isAuthenticated) {
+            router.push("/admin/login");
+          }
         });
-      }, 500); // Small delay to let AuthSync initialize
+      }, 1000); // Increased delay to let AuthSync initialize properly
       return;
     }
 
@@ -79,12 +84,14 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       try {
         const authenticated = await checkAuth();
         if (!authenticated) {
+          console.warn('[AdminLayout] Initial auth check failed, redirecting to login');
           router.push("/admin/login");
         }
       } catch (error) {
-        console.error("Auth check error:", error);
-        // Only redirect if we're definitely not authenticated
-        if (!isAuthenticated || !user) {
+        console.error("[AdminLayout] Auth check error:", error);
+        // On error, check current state before redirecting
+        const currentState = useAdminAuth.getState();
+        if (!currentState.isAuthenticated || !currentState.user || !currentState.token) {
           router.push("/admin/login");
         }
       } finally {
