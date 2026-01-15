@@ -20,11 +20,21 @@ export interface JWTPayload {
  */
 export function generateToken(payload: JWTPayload): string {
   if (!JWT_SECRET || JWT_SECRET.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters long');
+    const errorMsg = `JWT_SECRET must be at least 32 characters long. Current length: ${JWT_SECRET?.length || 0}. Set JWT_SECRET in Vercel environment variables.`;
+    console.error('[JWT] ❌', errorMsg);
+    throw new Error(errorMsg);
   }
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  } as jwt.SignOptions);
+  
+  try {
+    const token = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    } as jwt.SignOptions);
+    console.log('[JWT] ✅ Token generated successfully');
+    return token;
+  } catch (error) {
+    console.error('[JWT] ❌ Token generation error:', error);
+    throw new Error(`Failed to generate token: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**

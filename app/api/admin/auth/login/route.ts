@@ -173,11 +173,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Generate token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    let token: string;
+    try {
+      token = generateToken({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      });
+      logger.log(`[Login] ✅ Token generated successfully for user ${user.email}`);
+    } catch (tokenError) {
+      logger.error('[Login] ❌ Token generation failed:', tokenError);
+      const errorMessage = tokenError instanceof Error ? tokenError.message : 'Unknown error';
+      
+      // Check if it's a JWT_SECRET issue
+      if (errorMessage.includes('JWT_SECRET') || errorMessage.includes('secret')) {
+        return apiError(
+          'Authentication configuration error. JWT_SECRET is not set or invalid.',
+          500,
+          'Please check JWT_SECRET in Vercel environment variables. It must be at least 32 characters long.'
+        );
+      }
+      
+      return apiError(
+        'Token generation failed',
+        500,
+        errorMessage
+      );
+    }
 
     // Create response with token in both JSON and cookie
     // Note: Must match the format expected by admin-auth-store.ts

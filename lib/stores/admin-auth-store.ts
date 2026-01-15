@@ -93,14 +93,33 @@ export const useAdminAuth = create<AdminAuthState>()(
           });
 
           if (!response.ok) {
+            // Try to get error message from response
+            let errorMessage = data.error || data.message || `Login failed: ${response.statusText}`;
+            
+            // Handle specific error cases
+            if (response.status === 401) {
+              errorMessage = data.error || 'Invalid email or password. Please check your credentials.';
+            } else if (response.status === 403) {
+              errorMessage = data.error || 'Access denied. Please contact administrator.';
+            } else if (response.status === 429) {
+              errorMessage = data.error || 'Too many login attempts. Please wait and try again.';
+            } else if (response.status === 500) {
+              errorMessage = data.error || data.message || 'Server error. Please try again later.';
+              // Log server errors for debugging
+              if (data.message && data.message.includes('JWT_SECRET')) {
+                errorMessage = 'Authentication configuration error. Please contact administrator.';
+              }
+            }
+            
             console.error("[Auth] ❌ Login failed:", {
               status: response.status,
               statusText: response.statusText,
-              error: data.error,
-              diagnostic: data.diagnostic,
+              error: errorMessage,
+              fullError: data,
             });
-            // Throw error with message for better error handling
-            throw new Error(data.error || `Login failed: ${response.statusText}`);
+            
+            // Throw error with user-friendly message
+            throw new Error(errorMessage);
           }
 
           // Verify we have the required data
