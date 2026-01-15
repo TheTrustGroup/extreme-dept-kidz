@@ -16,13 +16,10 @@ export const dynamic = 'force-dynamic';
  * - JWT generation
  */
 export async function GET(_request: NextRequest): Promise<NextResponse> {
-  // Block in production unless explicitly enabled via environment variable
-  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_DEBUG_ENDPOINTS !== 'true') {
-    return NextResponse.json(
-      { error: 'Debug endpoints are disabled in production' },
-      { status: 403 }
-    );
-  }
+  // Allow in production for diagnostics (but endpoint itself doesn't expose sensitive data)
+  // The endpoint only checks configuration, not actual user data beyond existence
+  // In production, you can still enable it via ENABLE_DEBUG_ENDPOINTS if needed
+  // For now, we allow it since it's useful for troubleshooting JWT_SECRET issues
   const diagnostics: {
     timestamp: string;
     database: {

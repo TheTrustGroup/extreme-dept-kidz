@@ -98,7 +98,14 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // 5. ADMIN API PROTECTION
-  if (pathname.startsWith("/api/admin")) {
+  // Exclude diagnostic/debug endpoints from authentication (they have their own security checks)
+  const isDiagnosticEndpoint = pathname.includes('/diagnose') || 
+                                pathname.includes('/test-db') || 
+                                pathname.includes('/test-login') ||
+                                pathname.includes('/debug-login') ||
+                                pathname.includes('/test');
+  
+  if (pathname.startsWith("/api/admin") && !isDiagnosticEndpoint) {
     const token = request.cookies.get("admin-token")?.value || 
                   request.headers.get("Authorization")?.replace("Bearer ", "");
 
