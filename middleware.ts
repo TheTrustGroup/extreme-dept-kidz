@@ -45,14 +45,15 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // 3. RATE LIMITING (API routes, but skip diagnostic endpoints)
-  if (pathname.startsWith("/api") && !isDiagnosticEndpoint) {
+  // 3. RATE LIMITING (API routes, but skip diagnostic endpoints and login endpoints)
+  // Login endpoints have their own rate limiting logic, so we skip them here to avoid double-limiting
+  const isLoginEndpoint = pathname.includes("/login") || pathname.includes("/auth/login");
+  
+  if (pathname.startsWith("/api") && !isDiagnosticEndpoint && !isLoginEndpoint) {
     let rateLimitConfig = RATE_LIMITS.PUBLIC_READ;
 
     // Apply stricter limits based on endpoint
-    if (pathname.includes("/login") || pathname.includes("/auth")) {
-      rateLimitConfig = RATE_LIMITS.AUTH_LOGIN;
-    } else if (pathname.includes("/upload")) {
+    if (pathname.includes("/upload")) {
       rateLimitConfig = RATE_LIMITS.FILE_UPLOAD;
     } else if (pathname.includes("/payment")) {
       rateLimitConfig = RATE_LIMITS.PAYMENT;
@@ -110,8 +111,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // 5. ADMIN API PROTECTION
-  // Diagnostic endpoints are already excluded (checked at top of function)
-  if (pathname.startsWith("/api/admin") && !isDiagnosticEndpoint) {
+  // Diagnostic endpoints and login endpoints are already excluded (checked at top of function)
+  // Login endpoint doesn't require authentication (it's the authentication endpoint itself)
+  if (pathname.startsWith("/api/admin") && !isDiagnosticEndpoint && !isLoginEndpoint) {
     const token = request.cookies.get("admin-token")?.value || 
                   request.headers.get("Authorization")?.replace("Bearer ", "");
 
