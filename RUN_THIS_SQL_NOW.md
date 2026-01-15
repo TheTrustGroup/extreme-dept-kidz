@@ -1,26 +1,20 @@
-# 🚨 URGENT: Update Database Admin User
+# 🚨 RUN THIS SQL IN SUPABASE NOW
 
-## ⚠️ Current Problem
+## ⚠️ URGENT: Database Has Wrong Password Hash
 
-The diagnostic endpoint shows:
-- ✅ Database connected
-- ✅ JWT_SECRET is set
-- ✅ Admin user exists
-- ❌ **Password hash is WRONG** - doesn't match "VisionaryIntro"
-
-**The database has the OLD password hash!**
+The diagnostic endpoint shows the password hash doesn't match "VisionaryIntro".
 
 ---
 
-## ✅ IMMEDIATE FIX
-
-### Step 1: Open Supabase SQL Editor
+## ✅ STEP 1: Open Supabase SQL Editor
 
 1. Go to: https://supabase.com/dashboard
 2. Select your project
-3. Click **SQL Editor** → **New Query**
+3. **SQL Editor** → **New Query**
 
-### Step 2: Copy & Paste This SQL
+---
+
+## ✅ STEP 2: Copy & Paste This SQL
 
 ```sql
 -- Delete ALL existing admin users
@@ -64,7 +58,9 @@ FROM "AdminUser"
 WHERE email = 'Admin@extremedeptkidz.com';
 ```
 
-### Step 3: Click "Run"
+---
+
+## ✅ STEP 3: Click "Run"
 
 **Expected:**
 - "Success. 1 row inserted"
@@ -72,7 +68,7 @@ WHERE email = 'Admin@extremedeptkidz.com';
 
 ---
 
-## ✅ Step 4: Test Again
+## ✅ STEP 4: Test Diagnostic Endpoint
 
 **Wait 10 seconds**, then visit:
 ```
@@ -92,7 +88,7 @@ https://extremedeptkidz.com/api/admin/auth/diagnose
 
 ---
 
-## ✅ Step 5: Test Login
+## ✅ STEP 5: Test Login
 
 1. **Private window**
 2. **Go to:** `https://extremedeptkidz.com/admin/login`
@@ -104,12 +100,12 @@ https://extremedeptkidz.com/api/admin/auth/diagnose
 
 ---
 
-## 🔑 Credentials
+## 🔑 Final Credentials
 
-- **Email:** `Admin@extremedeptkidz.com` (exact case)
+- **Email:** `Admin@extremedeptkidz.com`
 - **Password:** `VisionaryIntro`
-- **Password Hash:** `$2b$12$N46VhRKYCI/xyxFIB6tPhOH2U.yNv2AXGwm0UlTh/gC00v4FHOvTG` ✅ VERIFIED
+- **Hash:** `$2b$12$N46VhRKYCI/xyxFIB6tPhOH2U.yNv2AXGwm0UlTh/gC00v4FHOvTG` ✅
 
 ---
 
-**Status:** Run the SQL NOW to fix the password hash! 🚀
+**Status:** Run the SQL above in Supabase NOW! 🚀

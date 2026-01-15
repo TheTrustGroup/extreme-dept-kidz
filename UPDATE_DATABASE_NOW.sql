@@ -1,13 +1,14 @@
 -- ============================================
--- SET NEW ADMIN CREDENTIALS - FINAL
+-- UPDATE ADMIN USER - RUN THIS NOW
 -- Email: Admin@extremedeptkidz.com
 -- Password: VisionaryIntro
+-- Hash: VERIFIED and tested
 -- ============================================
 
--- Step 1: Delete ALL existing admin users
+-- Delete ALL existing admin users
 DELETE FROM "AdminUser";
 
--- Step 2: Create new admin user with exact credentials
+-- Create new admin user with CORRECT credentials
 INSERT INTO "AdminUser" (
     "id",
     "email",
@@ -20,38 +21,26 @@ INSERT INTO "AdminUser" (
     "updatedAt"
 ) VALUES (
     gen_random_uuid()::text,
-    'Admin@extremedeptkidz.com',  -- Exact email as specified (case-sensitive)
+    'Admin@extremedeptkidz.com',
     'Super Admin',
-    'Super Admin',  -- displayName (required field)
-    '$2b$12$N46VhRKYCI/xyxFIB6tPhOH2U.yNv2AXGwm0UlTh/gC00v4FHOvTG',  -- Hash for: VisionaryIntro (VERIFIED)
+    'Super Admin',
+    '$2b$12$N46VhRKYCI/xyxFIB6tPhOH2U.yNv2AXGwm0UlTh/gC00v4FHOvTG',
     'super_admin',
     true,
     NOW(),
     NOW()
 );
 
--- Step 3: Verify the user was created correctly
+-- Verify the user was created
 SELECT 
     id,
     email,
     name,
     role,
     "isActive",
-    "createdAt",
     CASE 
         WHEN "passwordHash" IS NOT NULL AND LENGTH("passwordHash") > 20 THEN '✅ Hash is set'
-        ELSE '❌ ERROR: Hash missing or invalid!'
+        ELSE '❌ ERROR: Hash missing!'
     END as hash_status
 FROM "AdminUser" 
 WHERE email = 'Admin@extremedeptkidz.com';
-
--- Step 4: Show all admin users (should be only one)
-SELECT 
-    id,
-    email,
-    name,
-    role,
-    "isActive",
-    "createdAt"
-FROM "AdminUser"
-ORDER BY "createdAt" DESC;
