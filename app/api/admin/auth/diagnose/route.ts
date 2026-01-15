@@ -78,8 +78,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       },
     },
     testLogin: {
-      email: 'admin@extremedeptkidz.com',
-      password: 'Admin123!',
+      email: 'Admin@extremedeptkidz.com', // Updated to exact case
+      password: 'VisionaryIntro', // Updated to new password
       userExists: false,
       userActive: false,
       passwordValid: false,
@@ -132,13 +132,22 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       diagnostics.database.adminUserCount = adminUsers.length;
       diagnostics.database.adminUsers = adminUsers;
 
-      // Test login with default credentials
+      // Test login with new credentials
       const testEmail = diagnostics.testLogin.email;
       const testPassword = diagnostics.testLogin.password;
 
-      const user = await prisma.adminUser.findUnique({
-        where: { email: testEmail.toLowerCase() },
+      // Try exact match first, then case-insensitive
+      let user = await prisma.adminUser.findUnique({
+        where: { email: testEmail }, // Exact case match
       });
+      
+      // If not found, try case-insensitive
+      if (!user) {
+        const allUsers = await prisma.adminUser.findMany({
+          where: { isActive: true },
+        });
+        user = allUsers.find(u => u.email.toLowerCase() === testEmail.toLowerCase()) || null;
+      }
 
       if (user) {
         diagnostics.testLogin.userExists = true;
