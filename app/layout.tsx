@@ -118,12 +118,7 @@ export default function RootLayout({
           href="https://images.unsplash.com"
         />
         {/* Performance: Preload critical resources */}
-        <link
-          rel="preload"
-          href="/IMG_8640.PNG"
-          as="image"
-          type="image/png"
-        />
+        {/* Logo is loaded with priority in Header component, no need for preload here */}
         {/* Performance: Resource hints */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
