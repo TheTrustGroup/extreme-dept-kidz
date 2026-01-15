@@ -21,7 +21,7 @@ INSERT INTO "AdminUser" (
     gen_random_uuid()::text,
     'Admin@extremedeptkidz.com',  -- Exact email as specified (case-sensitive)
     'Super Admin',
-    '$2b$12$YicRzPsg/PmcXaEmCPHCP.65fntxG.MGLfVXdv5Vi.RvkWNK6syiG',  -- Hash for: VisionaryIntro
+    '$2b$12$QuDkXzpHpwqgV7bs8V76iu0cKLcF089PuKXw27dqwkIVb4c.0gC7O',  -- Hash for: VisionaryIntro (VERIFIED)
     'super_admin',
     true,
     NOW(),
