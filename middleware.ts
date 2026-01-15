@@ -83,11 +83,17 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     try {
       const payload = verifyToken(token);
       if (!payload) {
-        return NextResponse.redirect(new URL("/admin/login", request.url));
+        console.warn("🚫 Invalid admin token in middleware - redirecting to login");
+        // Clear the invalid cookie
+        const response = NextResponse.redirect(new URL("/admin/login", request.url));
+        response.cookies.delete('admin-token');
+        return response;
       }
     } catch (error) {
-      console.warn("🚫 Invalid admin token");
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      console.warn("🚫 Token verification error in middleware:", error);
+      const response = NextResponse.redirect(new URL("/admin/login", request.url));
+      response.cookies.delete('admin-token');
+      return response;
     }
   }
 
@@ -106,16 +112,29 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     try {
       const payload = verifyToken(token);
       if (!payload) {
-        return NextResponse.json(
-          { error: "Invalid or expired token" },
+        console.warn("🚫 Invalid admin token in API middleware");
+        const response = NextResponse.json(
+          { 
+            error: "Invalid or expired token",
+            message: "Please log in again. If this persists, check JWT_SECRET in environment variables."
+          },
           { status: 401 }
         );
+        // Clear invalid cookie
+        response.cookies.delete('admin-token');
+        return response;
       }
     } catch (error) {
-      return NextResponse.json(
-        { error: "Invalid or expired token" },
+      console.error("🚫 Token verification error in API middleware:", error);
+      const response = NextResponse.json(
+        { 
+          error: "Invalid or expired token",
+          message: "Token verification failed. Please log in again."
+        },
         { status: 401 }
       );
+      response.cookies.delete('admin-token');
+      return response;
     }
   }
 
