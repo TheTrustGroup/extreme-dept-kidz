@@ -58,11 +58,24 @@ export function apiError(
   // Never expose sensitive errors in production
   const isProduction = process.env.NODE_ENV === 'production';
   
+  // Allow configuration errors to be shown even in production (they're not sensitive)
+  const isConfigurationError = 
+    error.includes('JWT_SECRET') ||
+    error.includes('DATABASE_URL') ||
+    error.includes('Database connection') ||
+    error.includes('Environment variable') ||
+    error.includes('configuration');
+  
+  // Show actual error for configuration issues, generic message for other 500 errors
+  const errorMessage = isProduction && status === 500 && !isConfigurationError
+    ? 'Internal server error'
+    : error;
+  
   return NextResponse.json(
     {
       success: false,
-      error: isProduction && status === 500 ? 'Internal server error' : error,
-      details: isProduction ? undefined : details,
+      error: errorMessage,
+      details: isProduction && !isConfigurationError ? undefined : details,
       code,
       metadata: {
         timestamp: new Date().toISOString(),

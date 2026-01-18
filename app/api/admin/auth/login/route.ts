@@ -16,6 +16,30 @@ const failedAttempts = new Map<string, number>();
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // 0. ENVIRONMENT CHECK - Fail fast if critical env vars are missing
+    if (!process.env.DATABASE_URL) {
+      logger.error('[Login] ❌ DATABASE_URL is not set');
+      return apiError(
+        'Database configuration error. DATABASE_URL environment variable is not set.',
+        500,
+        'Please check Vercel environment variables and ensure DATABASE_URL is configured.',
+        'MISSING_DATABASE_URL'
+      );
+    }
+
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+      logger.error('[Login] ❌ JWT_SECRET is missing or too short', {
+        hasSecret: !!process.env.JWT_SECRET,
+        length: process.env.JWT_SECRET?.length || 0,
+      });
+      return apiError(
+        'Authentication configuration error. JWT_SECRET environment variable is missing or invalid (must be at least 32 characters).',
+        500,
+        'Please check Vercel environment variables and ensure JWT_SECRET is set to a secure value (32+ characters).',
+        'MISSING_JWT_SECRET'
+      );
+    }
+
     // 1. BOT DETECTION
     const botDetection = detectBot(request);
     
