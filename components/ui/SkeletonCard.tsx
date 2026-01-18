@@ -17,8 +17,6 @@ export function SkeletonCard({ className }: SkeletonCardProps): JSX.Element {
     <div 
       className={cn(
         "relative overflow-hidden rounded-lg bg-cream-50 w-full flex flex-col",
-        // Match ProductCard shadow
-        // Design System: Shadow levels (Tier 2)
         "shadow-sm",
         className
       )}

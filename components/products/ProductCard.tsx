@@ -75,12 +75,9 @@ export const ProductCard = React.memo(function ProductCard({
       <m.article
         className={cn(
           "relative overflow-hidden rounded-lg bg-cream-50 w-full",
-          // Design System: Shadow levels (Tier 2)
           "shadow-sm",
           "group-hover:shadow-lg",
-          // Design System: Animation timing (Tier 2)
           "transition-all duration-normal ease-in-out",
-          // Prevent layout shift - maintain consistent structure
           "flex flex-col"
         )}
         whileHover={{ scale: 1.02, y: -4 }}

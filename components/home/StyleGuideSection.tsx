@@ -124,7 +124,6 @@ export function StyleGuideSection(): JSX.Element {
                     className="block focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-xl"
                     aria-label={`View ${look.name} style guide look`}
                   >
-                    // Design System: Shadow levels (Tier 2)
                     <div className="bg-cream-100 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-normal">
                       {/* Look Image */}
                       <div className="relative aspect-[3/4] overflow-hidden">

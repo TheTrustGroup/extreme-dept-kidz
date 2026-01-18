@@ -121,9 +121,7 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
         <m.div
           className={cn(
             "relative overflow-hidden rounded-xl",
-            // Design System: Shadow levels (Tier 2)
             "bg-cream-100 shadow-md",
-            // Design System: 4:5 aspect ratio (consistent)
             "aspect-[4/5]",
             "transition-all duration-500"
           )}

@@ -101,7 +101,6 @@ function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element
         <m.div
           className={cn(
             "relative overflow-hidden rounded-xl",
-            // Design System: Shadow levels (Tier 2)
             "bg-cream-100 shadow-sm",
             "aspect-[4/5] md:aspect-[3/4]",
             "transition-all duration-300"

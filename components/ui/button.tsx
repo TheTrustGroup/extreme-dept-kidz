@@ -57,13 +57,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Variant styles (Design System: Button Styles)
     const variants = {
       primary: cn(
-        // Default state
         "bg-navy-900 text-cream-50",
-        // Hover state (Motion Guidelines: 200ms, scale 1.02, shadow)
-        // Design System: Shadow and animation (Tier 2)
         "hover:bg-navy-800 hover:scale-[1.02] hover:shadow-navy",
         "transition-all duration-normal ease-in-out",
-        // Active state (Motion Guidelines: 100ms, scale 0.98)
         "active:bg-navy-950 active:scale-[0.98] active:transition-all active:duration-100",
         // Focus ring
         "focus-visible:ring-navy-500",
