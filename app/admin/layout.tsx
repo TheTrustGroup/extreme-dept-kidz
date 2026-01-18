@@ -29,6 +29,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user, checkAuth, token } = useAdminAuth();
+  const setAuthState = useAdminAuth.getState();
 
   // Enable keyboard shortcuts (must be called unconditionally)
   useAdminKeyboards();
@@ -49,48 +50,22 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       return;
     }
 
-    // If we have a token and user from persisted state, trust it initially
-    // This handles the case where user just logged in and is being redirected
+    // CRITICAL FIX: If middleware allowed this request through, the cookie is valid
+    // Trust middleware's decision - only verify auth state, don't redirect if we have persisted state
+    // This prevents the loop where middleware allows request but AdminLayout redirects anyway
     if (token && isAuthenticated && user && !hasCheckedAuth) {
-      // For fresh logins, give more time for cookie to be available
-      // The cookie is set by server (httpOnly) and might not be immediately available
+      // Middleware already validated the cookie, so we can trust the persisted state
+      // Just verify in background without redirecting on failure (middleware will handle it)
       setCheckingAuth(false);
       setHasCheckedAuth(true);
       
-      // Verify in background with longer delay for post-login scenarios
+      // Verify in background without redirecting - middleware is the source of truth for route protection
       setTimeout(() => {
-        checkAuth().then((authenticated) => {
-          if (!authenticated) {
-            // Only redirect if we're definitely not authenticated
-            const currentState = useAdminAuth.getState();
-            if (!currentState.isAuthenticated || !currentState.user || !currentState.token) {
-              console.warn('[AdminLayout] Auth check failed, redirecting to login');
-              router.push("/admin/login");
-            } else {
-              // If we have state but checkAuth failed, might be transient error
-              // Try once more after a short delay
-              setTimeout(() => {
-                checkAuth().then((retryAuth) => {
-                  if (!retryAuth) {
-                    const finalState = useAdminAuth.getState();
-                    if (!finalState.isAuthenticated || !finalState.user || !finalState.token) {
-                      console.warn('[AdminLayout] Retry auth check failed, redirecting to login');
-                      router.push("/admin/login");
-                    }
-                  }
-                });
-              }, 1000);
-            }
-          }
-        }).catch((error) => {
+        checkAuth().catch((error) => {
           console.error("[AdminLayout] Background auth check error:", error);
-          // On persistent errors, check if we still have valid state
-          const currentState = useAdminAuth.getState();
-          if (!currentState.token || !currentState.isAuthenticated) {
-            router.push("/admin/login");
-          }
+          // Don't redirect - middleware will handle invalid auth on next request
         });
-      }, 1500); // Increased delay to ensure cookie is available after login redirect
+      }, 500);
       return;
     }
 
@@ -100,16 +75,25 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       setHasCheckedAuth(true);
       try {
         const authenticated = await checkAuth();
+        // CRITICAL: Don't redirect if middleware already allowed the request
+        // If we reach here without persisted state, middleware already validated the cookie
+        // Only clear state if checkAuth fails, but don't redirect (middleware will handle it)
         if (!authenticated) {
-          console.warn('[AdminLayout] Initial auth check failed, redirecting to login');
-          router.push("/admin/login");
+          console.warn('[AdminLayout] Auth check failed, but trusting middleware decision');
+          // Clear invalid state but don't redirect - middleware will redirect on next request if needed
+          const currentState = useAdminAuth.getState();
+          if (!currentState.token) {
+          // Only clear state if we truly have no token
+          useAdminAuth.setState({ isAuthenticated: false, user: null, token: null });
+          }
         }
       } catch (error) {
         console.error("[AdminLayout] Auth check error:", error);
-        // On error, check current state before redirecting
+        // Don't redirect - middleware is the source of truth
+        // Only clear state if we truly have no token
         const currentState = useAdminAuth.getState();
-        if (!currentState.isAuthenticated || !currentState.user || !currentState.token) {
-          router.push("/admin/login");
+        if (!currentState.token) {
+          useAdminAuth.setState({ isAuthenticated: false, user: null, token: null });
         }
       } finally {
         setCheckingAuth(false);
