@@ -56,14 +56,11 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
       <TopBar />
       <m.header
         className={cn(
-          "fixed left-0 right-0 z-50",
+          "fixed top-8 left-0 right-0 z-50",
           isScrolled
             ? "bg-cream-50/95 backdrop-blur-lg border-b border-cream-200/30 shadow-sm"
             : "bg-cream-50/95 backdrop-blur-md"
         )}
-        style={{
-          top: "2rem",
-        }}
         initial={false}
         animate={{
           height: isScrolled
