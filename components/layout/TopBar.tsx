@@ -5,7 +5,7 @@ import { Truck, HeadphonesIcon, Package } from "lucide-react";
 
 export function TopBar(): JSX.Element {
   return (
-    <div className="bg-charcoal-900 text-cream-50 text-xs py-2 border-b border-charcoal-800/50">
+    <div className="fixed top-0 left-0 right-0 z-60 bg-charcoal-900 text-cream-50 text-xs py-2 border-b border-charcoal-800/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 sm:space-x-6">

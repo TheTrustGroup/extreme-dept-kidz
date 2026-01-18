@@ -81,7 +81,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps): JSX.Element {
           />
           <m.div
             ref={menuRef}
-            className="absolute top-full left-0 right-0 bg-white border-t-2 border-charcoal-200 shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-50"
+            className="fixed top-[5.5rem] md:top-[6.5rem] left-0 right-0 bg-white border-t-2 border-charcoal-200 shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-45"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
