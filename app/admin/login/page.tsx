@@ -86,57 +86,78 @@ export default function AdminLoginPage(): JSX.Element {
       if (success) {
         console.log('[LoginPage] ✅ Login successful, verifying cookie before redirect...');
         
-        // CRITICAL: Verify cookie is available before redirecting
-        // This prevents the refresh loop by ensuring middleware can read the cookie
+        // CRITICAL FIX: Use AbortController to ensure fetch requests complete before navigation
+        // This prevents "message port closed" errors from browser extensions
+        const abortController = new AbortController();
         let cookieVerified = false;
         let attempts = 0;
         const maxAttempts = 5;
         
-        while (!cookieVerified && attempts < maxAttempts) {
-          attempts++;
-          console.log(`[LoginPage] Verifying cookie (attempt ${attempts}/${maxAttempts})...`);
-          
-          try {
-            // Make a test request to verify cookie is available to the server
-            const verifyResponse = await fetch('/api/admin/auth/me', {
-              method: 'GET',
-              credentials: 'include', // Include cookies
-              cache: 'no-store',
-              headers: {
-                'Cache-Control': 'no-cache',
-              },
-            });
+        try {
+          while (!cookieVerified && attempts < maxAttempts) {
+            attempts++;
+            console.log(`[LoginPage] Verifying cookie (attempt ${attempts}/${maxAttempts})...`);
             
-            if (verifyResponse.ok) {
-              console.log('[LoginPage] ✅ Cookie verified successfully!');
-              cookieVerified = true;
-              break;
-            } else {
-              console.log(`[LoginPage] ⏳ Cookie not ready yet (status: ${verifyResponse.status}), waiting...`);
+            try {
+              // Make a test request to verify cookie is available to the server
+              // Use AbortController to properly handle cancellation if needed
+              const verifyResponse = await fetch('/api/admin/auth/me', {
+                method: 'GET',
+                credentials: 'include', // Include cookies
+                cache: 'no-store',
+                signal: abortController.signal, // Allow proper cancellation
+                headers: {
+                  'Cache-Control': 'no-cache',
+                },
+              });
+              
+              if (verifyResponse.ok) {
+                console.log('[LoginPage] ✅ Cookie verified successfully!');
+                cookieVerified = true;
+                break;
+              } else {
+                console.log(`[LoginPage] ⏳ Cookie not ready yet (status: ${verifyResponse.status}), waiting...`);
+                // Wait before retrying
+                await new Promise(resolve => setTimeout(resolve, 200));
+              }
+            } catch (error) {
+              // Check if error is from abort (expected if we need to cancel)
+              if (error instanceof Error && error.name === 'AbortError') {
+                console.log('[LoginPage] Cookie verification aborted (navigation starting)');
+                break;
+              }
+              console.warn('[LoginPage] ⚠️ Cookie verification error:', error);
               // Wait before retrying
               await new Promise(resolve => setTimeout(resolve, 200));
             }
-          } catch (error) {
-            console.warn('[LoginPage] ⚠️ Cookie verification error:', error);
-            // Wait before retrying
-            await new Promise(resolve => setTimeout(resolve, 200));
           }
+        } finally {
+          // Ensure all fetch requests are properly cleaned up
+          abortController.abort();
         }
         
         if (!cookieVerified) {
           console.warn('[LoginPage] ⚠️ Cookie verification failed after max attempts, proceeding with redirect anyway...');
         }
         
+        // CRITICAL: Ensure all async operations complete before navigation
+        // Wait for any pending state updates to complete
+        await new Promise(resolve => {
+          // Use requestAnimationFrame to ensure DOM updates are complete
+          requestAnimationFrame(() => {
+            // Use setTimeout to ensure all microtasks complete
+            setTimeout(resolve, 100);
+          });
+        });
+        
         // Clear loading state before redirect
         setLoading(false);
         
-        // Additional delay to ensure browser has fully processed the cookie
-        // Even if verification passed, give browser time to finalize cookie processing
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
+        // CRITICAL FIX: Use router.replace() instead of window.location.href
+        // This prevents full page reload which cancels in-flight requests
+        // router.replace() uses client-side navigation, avoiding "message port closed" errors
         console.log('[LoginPage] 🔄 Redirecting to admin dashboard...');
-        // Use window.location for full page reload to ensure cookie is available
-        window.location.href = "/admin";
+        router.replace("/admin");
       } else {
         console.log('[LoginPage] Login failed - invalid credentials');
         setError("Invalid email or password. Please try again.");
