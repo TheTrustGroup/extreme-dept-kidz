@@ -76,6 +76,9 @@ export default function AdminLoginPage(): JSX.Element {
       if (success) {
         console.log('[LoginPage] Login successful, preparing redirect...');
         
+        // Clear loading state before redirect
+        setLoading(false);
+        
         // CRITICAL: Wait longer to ensure:
         // 1. Server cookie is fully set (httpOnly cookie from server response)
         // 2. Zustand state is persisted to localStorage
@@ -86,7 +89,7 @@ export default function AdminLoginPage(): JSX.Element {
           console.log('[LoginPage] Redirecting to admin dashboard...');
           // Use window.location for full page reload to ensure cookie is available
           window.location.href = "/admin";
-        }, 500);
+        }, 300);
       } else {
         console.log('[LoginPage] Login failed - invalid credentials');
         setError("Invalid email or password. Please try again.");

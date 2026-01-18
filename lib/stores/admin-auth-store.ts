@@ -199,12 +199,12 @@ export const useAdminAuth = create<AdminAuthState>()(
           // We only sync non-httpOnly cookies if needed, but admin-token is httpOnly for security
           console.log('[Auth] ✅ Auth state set. Cookie is set by server (httpOnly).');
           
-          // Wait a moment to ensure state is persisted
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // Wait a moment to ensure state is persisted to localStorage
+          await new Promise(resolve => setTimeout(resolve, 200));
 
           // Reset auth check timer on successful login
           lastAuthCheck = Date.now();
-          console.log('[Auth] ✅ Login successful!');
+          console.log('[Auth] ✅ Login successful! Returning true.');
           return true;
         } catch (error) {
           console.error("[Auth] ❌ Login error:", error);
