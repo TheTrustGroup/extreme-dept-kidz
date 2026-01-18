@@ -199,12 +199,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     logger.log(`[Login] ✅ Password verified successfully for user ${user.email}`);
 
-    // Update last login
+    // Update last login (non-blocking - don't fail login if this fails)
     if (prisma) {
-      await prisma.adminUser.update({
-        where: { id: user.id },
-        data: { lastLoginAt: new Date() },
-      });
+      try {
+        await prisma.adminUser.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+      } catch (updateError) {
+        // Log but don't fail login if lastLoginAt update fails
+        logger.warn('[Login] ⚠️ Failed to update lastLoginAt:', updateError);
+      }
     }
 
     // Generate token
@@ -277,23 +282,47 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: lax)`);
 
-    // Log successful login
-    await logActivity({
-      adminUserId: user.id,
-      action: ActivityActions.LOGIN,
-      details: {
-        email: user.email,
-        role: user.role,
-      },
-    }, request);
+    // Log successful login (non-blocking - don't fail login if this fails)
+    try {
+      await logActivity({
+        adminUserId: user.id,
+        action: ActivityActions.LOGIN,
+        details: {
+          email: user.email,
+          role: user.role,
+        },
+      }, request);
+    } catch (activityError) {
+      // Log but don't fail login if activity logging fails
+      logger.warn('[Login] ⚠️ Failed to log activity:', activityError);
+    }
 
     return response;
   } catch (error) {
-    logger.error('Login error:', error);
+    logger.error('[Login] ❌ Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    // Log full error details for debugging
+    logger.error('[Login] ❌ Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      name: error instanceof Error ? error.name : undefined,
+    });
+    
+    // Check if it's a known configuration error
+    const isConfigError = 
+      errorMessage.includes('DATABASE_URL') ||
+      errorMessage.includes('JWT_SECRET') ||
+      errorMessage.includes('Environment variable') ||
+      errorMessage.includes('configuration');
+    
     return apiError(
-      'Login failed',
+      isConfigError 
+        ? errorMessage 
+        : 'Login failed. Please try again or contact support if the issue persists.',
       500,
-      error instanceof Error ? error.message : 'Unknown error'
+      process.env.NODE_ENV === 'development' ? errorMessage : (isConfigError ? errorMessage : undefined)
     );
   }
 }
