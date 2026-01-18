@@ -237,7 +237,14 @@ export default function AdminLoginPage(): JSX.Element {
                 }
               }}
             >
-              {loading ? "Signing in..." : "SIGN IN"}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⏳</span>
+                  Signing in...
+                </span>
+              ) : (
+                "SIGN IN"
+              )}
             </Button>
 
             {/* Security Note */}
