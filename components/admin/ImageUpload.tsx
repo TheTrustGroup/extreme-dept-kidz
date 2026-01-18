@@ -5,7 +5,6 @@ import Image from "next/image";
 import { X, Upload, MoveLeft, MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 
 interface ImageUploadProps {
   images: string[];
@@ -29,7 +28,6 @@ export function ImageUpload({
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const { token, isAuthenticated, checkAuth, syncCookie, refreshAuth } = useAdminAuth();
 
   const handleFileSelect = async (files: FileList | null): Promise<void> => {
     if (!files || files.length === 0) return;
@@ -39,72 +37,13 @@ export function ImageUpload({
       return;
     }
 
-    // CRITICAL: Verify and sync authentication before uploading
-    console.log('[ImageUpload] Verifying authentication...');
-    
-    // Get token first to avoid race conditions
-    let currentToken = useAdminAuth.getState().token;
-    
-    // Ensure cookie is synced (non-blocking)
-    syncCookie();
-    
-    // Verify auth is valid (with timeout to prevent hanging)
-    let authValid = false;
-    try {
-      authValid = await Promise.race([
-        checkAuth(),
-        new Promise<boolean>((resolve) => {
-          setTimeout(() => resolve(false), 5000); // 5 second timeout
-        })
-      ]);
-    } catch (error) {
-      console.error('[ImageUpload] Auth check error:', error);
-      // Continue with upload if we have a token, even if check fails
-      authValid = !!currentToken;
-    }
-    
-    console.log('[ImageUpload] Auth check result:', authValid);
-    
-    // If auth check failed but we have a token, try refresh
-    if (!authValid && currentToken) {
-      console.warn('[ImageUpload] Auth check failed but token exists - attempting refresh...');
-      try {
-        await Promise.race([
-          refreshAuth(),
-          new Promise<void>((resolve) => {
-            setTimeout(() => resolve(), 3000); // 3 second timeout
-          })
-        ]);
-        currentToken = useAdminAuth.getState().token;
-        authValid = !!currentToken;
-      } catch (error) {
-        console.error('[ImageUpload] Auth refresh failed:', error);
-        // Continue if we still have a token
-        authValid = !!currentToken;
-      }
-    }
-    
-    // Get fresh token after auth verification
-    currentToken = useAdminAuth.getState().token || currentToken;
-    console.log('[ImageUpload] Token exists:', !!currentToken);
-    console.log('[ImageUpload] Token length:', currentToken?.length || 0);
-    
-    if (!currentToken) {
-      console.error('[ImageUpload] Token not found in store');
-      alert("Authentication token not found. Please refresh the page and log in again.");
-      return;
-    }
-
-    // CRITICAL: Ensure cookie is synced one more time before upload
-    syncCookie();
-    console.log('[ImageUpload] Cookie synced before upload');
+    // Authentication is handled by httpOnly cookie sent automatically with credentials: 'include'
+    // No need to check token in store - middleware validates cookie on server
+    console.log('[ImageUpload] Starting upload - cookie will be sent automatically');
 
     setUploading(true);
 
     try {
-      // Get token once for all uploads
-      const uploadToken = useAdminAuth.getState().token;
-      console.log('[ImageUpload] Using token for upload:', uploadToken ? 'Yes' : 'No');
       
       const uploadPromises = Array.from(files).map(async (file) => {
         // Validate file type
@@ -120,22 +59,8 @@ export function ImageUpload({
         const formData = new FormData();
         formData.append("file", file);
         
-        // CRITICAL: Add token to FormData as fallback (some browsers don't send custom headers with FormData)
-        if (uploadToken) {
-          formData.append("token", uploadToken);
-          console.log('[ImageUpload] Added token to FormData');
-        }
-
-        // Prepare headers with authentication
-        // Note: With FormData, custom headers might not be sent by all browsers
-        // So we also include token in FormData above
+        // No token needed - httpOnly cookie is sent automatically with credentials: 'include'
         const headers: HeadersInit = {};
-        if (uploadToken) {
-          headers['Authorization'] = `Bearer ${uploadToken}`;
-          console.log('[ImageUpload] Added Authorization header');
-        } else {
-          console.warn('[ImageUpload] No token available for Authorization header');
-        }
 
         console.log('[ImageUpload] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)}KB)`);
         
@@ -179,13 +104,7 @@ export function ImageUpload({
             console.warn(`[ImageUpload] Upload attempt ${retryCount} failed, retrying...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // 1s, 2s delays
             
-            // Refresh token before retry
-            syncCookie();
-            const retryToken = useAdminAuth.getState().token;
-            if (retryToken) {
-              formData.set('token', retryToken);
-              headers['Authorization'] = `Bearer ${retryToken}`;
-            }
+            // Cookie is automatically sent with credentials: 'include' - no token refresh needed
           }
         }
 
