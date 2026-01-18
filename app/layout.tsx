@@ -131,7 +131,7 @@ export default function RootLayout({
             <Suspense fallback={<PageLoader />}>
               <Header cartItemCount={0} />
             </Suspense>
-            <main id="main-content" className="flex-1 pt-[calc(2rem+4.5rem)] md:pt-[calc(2rem+5.5rem)]" role="main">
+            <main id="main-content" className="flex-1 pt-[calc(2rem+3.5rem)] md:pt-[calc(2rem+4.5rem)]" role="main">
               <Suspense fallback={<PageLoader />}>
                 {children}
               </Suspense>

@@ -56,48 +56,51 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
       <TopBar />
       <m.header
         className={cn(
-          "fixed top-8 left-0 right-0 z-50",
+          "fixed top-0 left-0 right-0 z-50",
           isScrolled
-            ? "bg-cream-50/95 backdrop-blur-md border-b border-cream-200/50 shadow-sm"
-            : "bg-cream-50/95 backdrop-blur-sm"
+            ? "bg-cream-50/95 backdrop-blur-lg border-b border-cream-200/30 shadow-sm"
+            : "bg-cream-50/95 backdrop-blur-md"
         )}
         initial={false}
         animate={{
           height: isScrolled
             ? isMobile
-              ? "4rem"
-              : "4.5rem"
+              ? "3.25rem"
+              : "4rem"
             : isMobile
-              ? "4.5rem"
-              : "5.5rem",
+              ? "3.5rem"
+              : "4.5rem",
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <div className="h-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="h-full flex items-center justify-between gap-2 sm:gap-4">
-            {/* Logo */}
+        <div className="h-full max-w-7xl mx-auto">
+          <div className="h-full flex items-center">
+            {/* Logo - Left Aligned with Consistent Padding */}
             <m.div
-              className="flex-shrink-0 min-w-0 flex items-center"
-              whileHover={{ scale: 1.02 }}
+              className={cn(
+                "flex-shrink-0 flex items-center h-full pl-4 sm:pl-4 md:pl-5 lg:pl-7",
+                isScrolled && "opacity-95"
+              )}
+              whileHover={{ scale: 1.01 }}
               transition={{ duration: 0.2 }}
             >
-              <Link href="/" className="flex items-center">
+              <Link href="/" className="flex items-center h-full">
                 <Image
                   src="/IMG_8640.PNG"
                   alt="EXTREME DEPT KIDZ"
-                  width={2800}
-                  height={480}
-                  className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto object-contain max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[420px] xl:max-w-none"
+                  width={1080}
+                  height={720}
+                  className="h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]"
                   priority
                   quality={100}
-                  sizes="(max-width: 640px) 560px, (max-width: 768px) 640px, (max-width: 1024px) 720px, 840px"
+                  sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
                   unoptimized={false}
                 />
               </Link>
             </m.div>
 
-            {/* Desktop Navigation - Design System: Show at lg breakpoint (1024px) for better tablet experience */}
-            <nav id="main-navigation" className="hidden lg:flex items-center space-x-8 2xl:space-x-10" aria-label="Main navigation">
+            {/* Desktop Navigation - Centered between Logo and Actions */}
+            <nav id="main-navigation" className="hidden lg:flex items-center justify-center flex-1 space-x-7 2xl:space-x-8" aria-label="Main navigation">
               {navLinks.map((link) => (
                 <div
                   key={link.label}
@@ -115,8 +118,8 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
               ))}
             </nav>
 
-            {/* Right Side Actions */}
-            <div className="flex items-center justify-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 flex-shrink-0">
+            {/* Right Side Actions - Right Aligned with Consistent Padding */}
+            <div className="flex items-center justify-center space-x-3 sm:space-x-3 md:space-x-4 lg:space-x-5 flex-shrink-0 ml-auto pr-4 sm:pr-4 md:pr-5 lg:pr-6">
               {/* Desktop Icons */}
               <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
                 <IconButton 
@@ -126,7 +129,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                 >
                   <Search className="w-5 h-5" />
                 </IconButton>
-                <Link href="/account" className="relative p-2 text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg flex items-center justify-center">
+                <Link href="/account" className="relative p-2.5 min-h-[44px] min-w-[44px] text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg flex items-center justify-center">
                   <User className="w-5 h-5" aria-label="Account" />
                 </Link>
                 <IconButton
@@ -150,12 +153,12 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
 
               {/* Mobile/Tablet Menu Button */}
               <button
-                className="xl:hidden flex items-center justify-center text-charcoal-900 hover:text-navy-900 transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 p-2 min-h-[44px]"
+                className="xl:hidden flex items-center justify-center text-charcoal-900 hover:text-navy-900 transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 p-3 min-h-[44px] min-w-[44px]"
                 aria-label="Toggle menu"
                 aria-expanded={isMobileMenuOpen}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <Menu className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex-shrink-0" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 flex-shrink-0" />
               </button>
             </div>
           </div>
@@ -194,7 +197,7 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
           "transition-colors duration-300",
           "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-2 py-1 block"
         )}
-        whileHover={{ y: -1 }}
+        whileHover={{ y: -0.5 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {children}
@@ -222,7 +225,7 @@ function IconButton({ className, children, ...props }: IconButtonProps): JSX.Ele
   return (
     <button
       className={cn(
-        "relative p-2 text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300",
+        "relative p-2.5 min-h-[44px] min-w-[44px] text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100/50 transition-colors duration-300",
         "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
         className
       )}
