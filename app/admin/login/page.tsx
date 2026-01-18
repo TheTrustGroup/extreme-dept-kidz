@@ -84,22 +84,59 @@ export default function AdminLoginPage(): JSX.Element {
       console.log('[LoginPage] Login result:', success);
       
       if (success) {
-        console.log('[LoginPage] Login successful, preparing redirect...');
+        console.log('[LoginPage] ✅ Login successful, verifying cookie before redirect...');
+        
+        // CRITICAL: Verify cookie is available before redirecting
+        // This prevents the refresh loop by ensuring middleware can read the cookie
+        let cookieVerified = false;
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        while (!cookieVerified && attempts < maxAttempts) {
+          attempts++;
+          console.log(`[LoginPage] Verifying cookie (attempt ${attempts}/${maxAttempts})...`);
+          
+          try {
+            // Make a test request to verify cookie is available to the server
+            const verifyResponse = await fetch('/api/admin/auth/me', {
+              method: 'GET',
+              credentials: 'include', // Include cookies
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache',
+              },
+            });
+            
+            if (verifyResponse.ok) {
+              console.log('[LoginPage] ✅ Cookie verified successfully!');
+              cookieVerified = true;
+              break;
+            } else {
+              console.log(`[LoginPage] ⏳ Cookie not ready yet (status: ${verifyResponse.status}), waiting...`);
+              // Wait before retrying
+              await new Promise(resolve => setTimeout(resolve, 200));
+            }
+          } catch (error) {
+            console.warn('[LoginPage] ⚠️ Cookie verification error:', error);
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        }
+        
+        if (!cookieVerified) {
+          console.warn('[LoginPage] ⚠️ Cookie verification failed after max attempts, proceeding with redirect anyway...');
+        }
         
         // Clear loading state before redirect
         setLoading(false);
         
-        // CRITICAL: Wait longer to ensure:
-        // 1. Server cookie is fully set (httpOnly cookie from server response)
-        // 2. Zustand state is persisted to localStorage
-        // 3. Browser has processed the Set-Cookie header
-        // Use window.location instead of router.push for a full page reload
-        // This ensures middleware can read the cookie properly
-        setTimeout(() => {
-          console.log('[LoginPage] Redirecting to admin dashboard...');
-          // Use window.location for full page reload to ensure cookie is available
-          window.location.href = "/admin";
-        }, 300);
+        // Additional delay to ensure browser has fully processed the cookie
+        // Even if verification passed, give browser time to finalize cookie processing
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        console.log('[LoginPage] 🔄 Redirecting to admin dashboard...');
+        // Use window.location for full page reload to ensure cookie is available
+        window.location.href = "/admin";
       } else {
         console.log('[LoginPage] Login failed - invalid credentials');
         setError("Invalid email or password. Please try again.");
