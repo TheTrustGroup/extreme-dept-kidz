@@ -241,20 +241,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Create response with token in both JSON and cookie
-    // Note: Must match the format expected by admin-auth-store.ts
+    // Create response - MUST NOT REDIRECT
+    // Return simple success response
     let response: NextResponse;
     try {
-      response = NextResponse.json({
-        success: true,
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name || 'Admin User', // Fallback if name is null
-          role: user.role,
-        },
-      });
+      response = NextResponse.json({ success: true });
       logger.log('[Login] ✅ Response JSON created successfully');
     } catch (jsonError) {
       logger.error('[Login] ❌ Failed to create JSON response:', jsonError);

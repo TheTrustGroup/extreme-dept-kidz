@@ -1,12 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { m } from "framer-motion";
 import { Eye, EyeOff, Lock } from "lucide-react";
-import { useAdminAuth } from "@/lib/stores/admin-auth-store";
-import { Button } from "@/components/ui/button";
 import { H1, Body } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 
@@ -23,82 +20,33 @@ export default function AdminLoginPage(): JSX.Element {
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
-  const router = useRouter();
-  const { login } = useAdminAuth();
-  
-  // Debug: Check if login function is available
-  React.useEffect(() => {
-    if (!login) {
-      console.error('[LoginPage] ⚠️ Login function is not available from useAdminAuth hook');
-      setError("Login system error. Please refresh the page.");
-    } else {
-      console.log('[LoginPage] ✅ Login function available');
-    }
-  }, [login]);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
-    
-    console.log('[LoginPage] Form submitted');
+  async function handleLogin(): Promise<void> {
     setError("");
     setLoading(true);
 
-    try {
-      // Clear any stale cookies before login (middleware will handle auth)
-      if (typeof window !== 'undefined') {
-        // Clear all admin-token cookies (various paths/domains)
-        document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        document.cookie = 'admin-token=; path=/admin; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        document.cookie = 'admin-token=; path=/; domain=' + window.location.hostname + '; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      }
+    const res = await fetch('/api/admin/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // REQUIRED for cookies
+      body: JSON.stringify({ email, password }),
+    });
 
-      // Trim email and password to avoid whitespace issues
-      const trimmedEmail = email.trim();
-      const trimmedPassword = password.trim();
-
-      console.log('[LoginPage] Attempting login with email:', trimmedEmail);
-
-      if (!trimmedEmail || !trimmedPassword) {
-        setError("Please enter both email and password.");
-        setLoading(false);
-        return;
-      }
-
-      if (!login) {
-        console.error('[LoginPage] Login function is undefined!');
-        setError("Login system error. Please refresh the page and try again.");
-        setLoading(false);
-        return;
-      }
-
-      const success = await login(trimmedEmail, trimmedPassword);
-      
-      console.log('[LoginPage] Login result:', success);
-      
-      if (success) {
-        console.log('[LoginPage] ✅ Login successful! Cookie set by server. Middleware will handle redirect.');
-        // Clear loading state
-        setLoading(false);
-        // CRITICAL: Do NOT redirect here. Let middleware handle it.
-        // Simply reload the page - middleware will see the cookie and allow access to /admin
-        window.location.href = "/admin";
-      } else {
-        console.log('[LoginPage] Login failed - invalid credentials');
-        setError("Invalid email or password. Please try again.");
-        setLoading(false);
-      }
-    } catch (err) {
-      // Get the actual error message
-      console.error('[LoginPage] Login error:', err);
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : "Login failed. Please check your credentials and try again.";
-      
-      setError(errorMessage);
+    if (!res.ok) {
+      // show error
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'Login failed. Please check your credentials.');
       setLoading(false);
+      return;
     }
-  };
+
+    // DO NOTHING ELSE
+    // NO redirect
+    // NO router.push
+    // NO refresh
+
+    // Let middleware handle navigation on next render
+    window.location.href = '/admin';
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cream-50 via-cream-100 to-navy-50 flex items-center justify-center p-4">
@@ -130,7 +78,7 @@ export default function AdminLoginPage(): JSX.Element {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <div className="p-8 space-y-6">
             {error && (
               <m.div
                 initial={{ opacity: 0, y: -10 }}
@@ -206,39 +154,30 @@ export default function AdminLoginPage(): JSX.Element {
                 />
                 <span className="text-sm text-charcoal-700">Remember me</span>
               </label>
-              <button
-                type="button"
-                onClick={() => router.push('/admin/forgot-password')}
+              <a
+                href="/admin/forgot-password"
                 className="text-sm text-navy-900 hover:text-navy-700 font-medium transition-colors"
               >
                 Forgot password?
-              </button>
+              </a>
             </div>
 
             {/* Submit Button */}
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-full"
+            <button
+              type="button"
+              onClick={handleLogin}
               disabled={loading || !email.trim() || !password.trim()}
-              onClick={(e) => {
-                // Ensure form submission is handled by React
-                if (!email.trim() || !password.trim()) {
-                  e.preventDefault();
-                  setError("Please enter both email and password.");
-                }
-              }}
+              className="w-full px-6 py-3 bg-navy-900 text-cream-50 font-semibold rounded-lg hover:bg-navy-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
-                <span className="flex items-center gap-2">
+                <>
                   <span className="animate-spin">⏳</span>
                   Signing in...
-                </span>
+                </>
               ) : (
                 "SIGN IN"
               )}
-            </Button>
+            </button>
 
             {/* Security Note */}
             <div className="flex items-center justify-center gap-2 text-xs text-charcoal-600 pt-4 border-t border-cream-200">
@@ -259,7 +198,7 @@ export default function AdminLoginPage(): JSX.Element {
                 </div>
               </div>
             )}
-          </form>
+          </div>
         </m.div>
       </Container>
     </div>
