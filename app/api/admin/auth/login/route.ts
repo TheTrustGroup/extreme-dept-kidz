@@ -266,10 +266,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
     
-    // Add rate limit headers
-    response.headers.set('X-RateLimit-Limit', '5');
-    response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
-    response.headers.set('X-RateLimit-Reset', rateLimit.resetTime.toString());
+    // Add rate limit headers (safe access with fallbacks)
+    try {
+      response.headers.set('X-RateLimit-Limit', '5');
+      if (rateLimit && typeof rateLimit.remaining === 'number') {
+        response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
+      }
+      if (rateLimit && rateLimit.resetTime) {
+        response.headers.set('X-RateLimit-Reset', rateLimit.resetTime.toString());
+      }
+    } catch (headerError) {
+      logger.warn('[Login] ⚠️ Failed to set rate limit headers:', headerError);
+      // Don't fail login if headers fail
+    }
     
     // Security headers
     response.headers.set('X-Content-Type-Options', 'nosniff');
