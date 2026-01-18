@@ -84,51 +84,65 @@ export default function AdminLoginPage(): JSX.Element {
       console.log('[LoginPage] Login result:', success);
       
       if (success) {
-        console.log('[LoginPage] ✅ Login successful, verifying cookie before redirect...');
+        console.log('[LoginPage] ✅ Login successful, verifying authentication before redirect...');
+        
+        // Get the token from the auth store (it was just set by the login function)
+        // Access the store's getState method directly
+        const authState = useAdminAuth.getState();
+        const token = authState.token;
+        
+        if (!token) {
+          console.warn('[LoginPage] ⚠️ No token in auth state, proceeding with redirect anyway...');
+          setLoading(false);
+          router.replace("/admin");
+          return;
+        }
         
         // CRITICAL FIX: Use AbortController to ensure fetch requests complete before navigation
         // This prevents "message port closed" errors from browser extensions
         const abortController = new AbortController();
-        let cookieVerified = false;
+        let authVerified = false;
         let attempts = 0;
-        const maxAttempts = 5;
+        const maxAttempts = 3; // Reduced attempts since we're using Authorization header
         
         try {
-          while (!cookieVerified && attempts < maxAttempts) {
+          while (!authVerified && attempts < maxAttempts) {
             attempts++;
-            console.log(`[LoginPage] Verifying cookie (attempt ${attempts}/${maxAttempts})...`);
+            console.log(`[LoginPage] Verifying authentication (attempt ${attempts}/${maxAttempts})...`);
             
             try {
-              // Make a test request to verify cookie is available to the server
-              // Use AbortController to properly handle cancellation if needed
+              // Make a test request to verify authentication works
+              // CRITICAL: Send Authorization header with token (cookie might not be ready yet)
+              // authenticateRequest() checks Authorization header first, then cookie
               const verifyResponse = await fetch('/api/admin/auth/me', {
                 method: 'GET',
-                credentials: 'include', // Include cookies
+                credentials: 'include', // Include cookies (for when cookie is ready)
                 cache: 'no-store',
                 signal: abortController.signal, // Allow proper cancellation
                 headers: {
+                  'Authorization': `Bearer ${token}`, // CRITICAL: Send token in header
                   'Cache-Control': 'no-cache',
                 },
               });
               
               if (verifyResponse.ok) {
-                console.log('[LoginPage] ✅ Cookie verified successfully!');
-                cookieVerified = true;
+                console.log('[LoginPage] ✅ Authentication verified successfully!');
+                authVerified = true;
                 break;
               } else {
-                console.log(`[LoginPage] ⏳ Cookie not ready yet (status: ${verifyResponse.status}), waiting...`);
+                console.log(`[LoginPage] ⏳ Auth not ready yet (status: ${verifyResponse.status}), waiting...`);
                 // Wait before retrying
-                await new Promise(resolve => setTimeout(resolve, 200));
+                await new Promise(resolve => setTimeout(resolve, 300));
               }
             } catch (error) {
               // Check if error is from abort (expected if we need to cancel)
               if (error instanceof Error && error.name === 'AbortError') {
-                console.log('[LoginPage] Cookie verification aborted (navigation starting)');
+                console.log('[LoginPage] Auth verification aborted (navigation starting)');
                 break;
               }
-              console.warn('[LoginPage] ⚠️ Cookie verification error:', error);
+              console.warn('[LoginPage] ⚠️ Auth verification error:', error);
               // Wait before retrying
-              await new Promise(resolve => setTimeout(resolve, 200));
+              await new Promise(resolve => setTimeout(resolve, 300));
             }
           }
         } finally {
@@ -136,8 +150,8 @@ export default function AdminLoginPage(): JSX.Element {
           abortController.abort();
         }
         
-        if (!cookieVerified) {
-          console.warn('[LoginPage] ⚠️ Cookie verification failed after max attempts, proceeding with redirect anyway...');
+        if (!authVerified) {
+          console.warn('[LoginPage] ⚠️ Auth verification failed after max attempts, proceeding with redirect anyway...');
         }
         
         // CRITICAL: Ensure all async operations complete before navigation
