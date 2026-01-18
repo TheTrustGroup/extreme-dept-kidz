@@ -41,15 +41,18 @@ export function Footer(): JSX.Element {
               transition={{ duration: 0.4 }}
               className="space-y-6"
             >
-              <div className="flex items-center space-x-3">
-                <Image
-                  src="/IMG_8640.PNG"
-                  alt="EXTREME DEPT KIDZ"
-                  width={200}
-                  height={34}
-                  className="h-8 w-auto object-contain"
-                  priority={false}
-                />
+              <div className="flex items-center">
+                <Link href="/" className="flex items-center">
+                  <Image
+                    src="/IMG_8640.PNG"
+                    alt="EXTREME DEPT KIDZ"
+                    width={1080}
+                    height={720}
+                    className="h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]"
+                    priority={false}
+                    sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
+                  />
+                </Link>
               </div>
               <p className="font-sans text-base text-cream-200/80 leading-relaxed max-w-md">
                 Elevated style for young legends. Premium streetwear and luxury essentials for the modern boy.
