@@ -8,6 +8,10 @@ const HeroSection = dynamic(() => import("@/components/home").then((mod) => ({ d
   ssr: true, // Hero is above fold, load immediately
 });
 
+const TrustBar = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.TrustBar })), {
+  ssr: true, // Trust signals are important for first-time visitors
+});
+
 const NewArrivalsSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })), {
   ssr: false, // Below fold, can lazy load
 });
@@ -89,6 +93,9 @@ export default function Home() {
       <div className="relative">
         {/* Hero Section - Full viewport height */}
         <HeroSection />
+
+        {/* Trust Bar - Prominent trust signals for first-time visitors */}
+        <TrustBar />
 
         {/* New Arrivals Section - Boys Focused */}
         <NewArrivalsSection />

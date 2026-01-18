@@ -2,10 +2,17 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Viewing orders requires manager role or higher
+  const auth = await authenticateAndAuthorize(request, 'manager');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Manager role required to view orders.' }, { status: 403 });
+  }
   try {
     if (!prisma) {
       return apiError("Database not available", 500);

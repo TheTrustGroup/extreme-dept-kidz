@@ -24,21 +24,23 @@ export function getOptimizedImageProps(
 
 /**
  * Get blur data URL for images (for loading state)
+ * 
+ * Performance: Generates a tiny base64-encoded image placeholder
+ * that matches the brand colors (cream palette)
  */
 export function getImageBlurDataURL(width = 10, height = 10): string {
+  // Use brand colors (cream palette) for placeholder
   const shimmer = (w: number, h: number) => `
     <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="g">
-          <stop stop-color="#f6f7f8" offset="0%" />
-          <stop stop-color="#edeef1" offset="20%" />
-          <stop stop-color="#f6f7f8" offset="40%" />
-          <stop stop-color="#f6f7f8" offset="100%" />
+          <stop stop-color="#fdfbf6" offset="0%" />
+          <stop stop-color="#faf7ed" offset="50%" />
+          <stop stop-color="#fdfbf6" offset="100%" />
         </linearGradient>
       </defs>
-      <rect width="${w}" height="${h}" fill="#f6f7f8" />
+      <rect width="${w}" height="${h}" fill="#fdfbf6" />
       <rect id="r" width="${w}" height="${h}" fill="url(#g)" />
-      <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite"  />
     </svg>
   `;
 
@@ -48,6 +50,14 @@ export function getImageBlurDataURL(width = 10, height = 10): string {
       : window.btoa(str);
 
   return `data:image/svg+xml;base64,${toBase64(shimmer(width, height))}`;
+}
+
+/**
+ * Get optimized blur placeholder for product cards
+ * Matches ProductCard aspect ratio (1:1 square)
+ */
+export function getProductCardBlurPlaceholder(): string {
+  return getImageBlurDataURL(280, 280);
 }
 
 /**

@@ -6,6 +6,8 @@ import { getDashboardStats } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
 import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RevenueChart } from "@/components/admin/analytics/RevenueChart";
+import { OrderTrendsChart } from "@/components/admin/analytics/OrderTrendsChart";
 
 /**
  * Analytics Page
@@ -84,11 +86,20 @@ export default function AnalyticsPage(): JSX.Element {
         </div>
       </div>
 
-      {/* Charts Placeholder */}
-      <div className="bg-cream-50 rounded-xl p-6 border border-cream-200">
-        <h2 className="text-xl font-bold text-charcoal-900 mb-4">Revenue Over Time</h2>
-        <div className="h-64 flex items-center justify-center bg-cream-100 rounded-lg">
-          <p className="text-charcoal-600">Chart will be implemented with Recharts</p>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <RevenueChart data={stats.revenueData || []} loading={loading} />
+        </div>
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <OrderTrendsChart
+            data={stats.revenueData?.map((point, index) => ({
+              date: point.date,
+              orders: Math.floor(Math.random() * 10) + 1, // Mock for now
+              revenue: point.revenue,
+            })) || []}
+            loading={loading}
+          />
         </div>
       </div>
     </div>

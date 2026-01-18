@@ -4,6 +4,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { cookies } from 'next/headers';
 import { authenticateRequest } from '@/lib/auth/middleware';
+import { hasRequiredRole } from '@/lib/auth/rbac';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth/jwt';
 import { prisma } from '@/lib/db/prisma';
 import { logger } from '@/lib/utils/logger';
@@ -114,7 +115,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const tokenInFormData = formData.get('token') as string | null;
     console.log('[Upload] Token in FormData:', !!tokenInFormData);
 
-    // CRITICAL: Verify authentication (checks cookie, header, and FormData token)
+    // CRITICAL: Verify authentication and authorization
+    // First check authentication
     const authResult = await verifyAdminAuth(request, tokenInFormData || undefined);
 
     if (!authResult.authenticated || !authResult.user) {
@@ -141,7 +143,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    console.log('[Upload] ✅ Authentication successful via', authResult.method);
+    // RBAC: Uploading images requires admin role or higher
+    if (!hasRequiredRole(authResult.user.role, 'admin')) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient permissions',
+          message: 'Admin role required to upload images.',
+          userRole: authResult.user.role,
+        },
+        { status: 403 }
+      );
+    }
+
+    // RBAC: Uploading images requires admin role or higher
+    if (!hasRequiredRole(authResult.user.role, 'admin')) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient permissions',
+          message: 'Admin role required to upload images.',
+          userRole: authResult.user.role,
+        },
+        { status: 403 }
+      );
+    }
+
+    console.log('[Upload] ✅ Authentication and authorization successful via', authResult.method);
 
     const file = formData.get('file') as File | null;
 

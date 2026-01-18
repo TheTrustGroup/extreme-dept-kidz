@@ -63,27 +63,43 @@ export function ProductGrid({
       className={cn(
         "grid",
         getGridCols(columns),
-        "gap-4 sm:gap-5 md:gap-6 lg:gap-8 xl:gap-10",
+        // Design System: 16px mobile, 20px tablet, 24px desktop (8px base unit)
+        "gap-4", // 16px mobile - touch-friendly spacing
+        "sm:gap-5", // 20px small mobile
+        "md:gap-6", // 24px tablet
+        "lg:gap-6", // 24px desktop (Design System standard)
+        "xl:gap-6", // 24px large desktop
         className
       )}
     >
       {isLoading ? (
-        // Loading state - show skeleton cards
+        // Loading state - show skeleton cards with proper dimensions to prevent layout shift
         Array.from({ length: columns * 2 }).map((_, index) => (
           <SkeletonCard key={`skeleton-${index}`} />
         ))
       ) : (
         // Product cards with stagger animation
-        products.map((product, index) => (
-          <m.div
-            key={product.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.03 }}
-          >
-            <ProductCard product={product} />
-          </m.div>
-        ))
+        products.map((product, index) => {
+          // Performance: First 4 cards are above fold - prioritize loading
+          const isAboveFold = index < 4;
+          
+          return (
+            <m.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.03 }}
+              // Prevent layout shift by maintaining consistent structure
+              className="w-full"
+            >
+              <ProductCard 
+                product={product} 
+                priority={isAboveFold}
+                fetchPriority={isAboveFold ? "auto" : "low"}
+              />
+            </m.div>
+          );
+        })
       )}
     </div>
   );

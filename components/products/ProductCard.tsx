@@ -4,15 +4,18 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
-import { Heart, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
+import { getProductCardBlurPlaceholder } from "@/lib/utils/image-utils";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { WishlistButton } from "@/components/WishlistButton";
 
 interface ProductCardProps {
   product: Product;
   className?: string;
+  priority?: boolean;
+  fetchPriority?: "auto" | "high" | "low";
 }
 
 /**
@@ -22,7 +25,12 @@ interface ProductCardProps {
  * Displays product image, name, and price with smooth transitions.
  * Optimized with React.memo for performance.
  */
-export const ProductCard = React.memo(function ProductCard({ product, className }: ProductCardProps): JSX.Element {
+export const ProductCard = React.memo(function ProductCard({ 
+  product, 
+  className,
+  priority = false,
+  fetchPriority = "low"
+}: ProductCardProps): JSX.Element {
   const [isHovered, setIsHovered] = React.useState(false);
   const addToCart = useCartStore((state) => state.addItem);
 
@@ -55,128 +63,226 @@ export const ProductCard = React.memo(function ProductCard({ product, className 
     <Link
       href={`/products/${product.slug}`}
       className={cn(
-        "group block focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg",
+        "group block focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2 rounded-lg",
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
       aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
     >
       <m.article
-        className="relative overflow-hidden rounded-lg bg-cream-50 shadow-sm group-hover:shadow-xl transition-shadow duration-300"
-        whileHover={{ scale: 1.02, y: -8 }}
+        className={cn(
+          "relative overflow-hidden rounded-lg bg-cream-50 w-full",
+          // Design System: Shadow levels (Tier 2)
+          "shadow-sm",
+          "group-hover:shadow-lg",
+          // Design System: Animation timing (Tier 2)
+          "transition-all duration-normal ease-in-out",
+          // Prevent layout shift - maintain consistent structure
+          "flex flex-col"
+        )}
+        whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         aria-label={product.name}
       >
-        {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-cream-100">
+        {/* Image Container (Design System: 280×280px, 8px top radius, cream-100 bg) */}
+        <div className="relative aspect-square overflow-hidden bg-cream-100 rounded-t-lg">
           {/* Primary Image */}
           <Image
             src={primaryImage.url}
-            alt={primaryImage.alt || product.name}
+            alt={primaryImage.alt || `${product.name} - ${product.category.name}`}
             fill
             className={cn(
-              "object-cover transition-opacity duration-200",
+              "object-cover",
+              // Design System: Animation timing (Tier 2)
+              "transition-opacity duration-fast ease-in-out",
               isHovered && secondaryImage ? "opacity-0" : "opacity-100"
             )}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            loading="lazy"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+            loading={priority ? "eager" : "lazy"}
             quality={85}
+            fetchPriority={fetchPriority}
+            // Performance: Add blur placeholder to prevent layout shift
+            placeholder="blur"
+            blurDataURL={getProductCardBlurPlaceholder()}
           />
 
-          {/* Secondary Image (on hover) */}
+          {/* Secondary Image (on hover) - Preload to prevent CLS */}
           {secondaryImage && (
             <Image
               src={secondaryImage.url}
-              alt={secondaryImage.alt || `${product.name} - alternate view`}
+              alt={secondaryImage.alt || `${product.name} - alternate view - ${product.category.name}`}
               fill
               className={cn(
-                "object-cover transition-opacity duration-200",
+                "object-cover",
+                // Design System: Animation timing (Tier 2)
+                "transition-opacity duration-fast ease-in-out",
                 isHovered ? "opacity-100" : "opacity-0"
               )}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              loading="lazy"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+              // Performance: Preload secondary image to prevent layout shift on hover
+              loading="eager"
               quality={85}
+              fetchPriority="high"
+              // Hidden but loaded to reserve space
+              style={{ position: "absolute" }}
             />
           )}
 
-          {/* Quick Add to Cart Button (Bottom) */}
+          {/* Quick Add to Cart Button (Design System: Bottom, 48px height, visible on hover) */}
           {product.inStock && (
             <m.div
-              className="absolute bottom-0 left-0 right-0 z-10 p-3"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
+              className="absolute bottom-0 left-0 right-0 z-10 px-3 pb-3"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 8 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <m.button
                 onClick={handleQuickAdd}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-navy-900 text-cream-50 rounded-lg font-sans text-sm font-semibold uppercase tracking-wide hover:bg-navy-800 transition-colors duration-200 shadow-lg"
+                className={cn(
+                  "w-full flex items-center justify-center gap-2",
+                  // Design System: 48px height, Navy 900 bg, Cream 50 text
+                  "h-12 min-h-[48px] px-4 py-3",
+                  "bg-navy-900 text-cream-50",
+                  "rounded-lg",
+                  // Typography (Design System: Inter, 14px, Semibold, Uppercase, 0.5px letter-spacing)
+                  "font-sans text-sm font-semibold uppercase tracking-wide",
+                  // Hover state
+                  "hover:bg-navy-800",
+                  // Design System: Colored shadow (Tier 2)
+                  "shadow-navy",
+                  // Design System: Animation timing (Tier 2)
+                  "transition-colors duration-fast",
+                  // Focus
+                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
+                )}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 aria-label={`Quick add ${product.name} to cart`}
               >
-                <ShoppingBag className="w-4 h-4" />
+                <ShoppingBag className="w-4 h-4" aria-hidden="true" />
                 <span>Add to Cart</span>
               </m.button>
             </m.div>
           )}
 
-          {/* Badges */}
+          {/* Badges (Design System: Top-left, 12px offset, 8px gap) */}
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
             {isNew && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-charcoal-900 text-cream-50 text-xs font-semibold uppercase tracking-wide">
+              <span
+                className={cn(
+                  "inline-flex items-center",
+                  // Design System: 6px 12px padding, 24px height, 12px border radius
+                  "px-3 py-1.5 h-6",
+                  "bg-charcoal-900 text-cream-50",
+                  "rounded-full",
+                  // Typography (Design System: Inter, 11px, Semibold, Uppercase, 1px letter-spacing)
+                  "font-sans text-[11px] font-semibold uppercase tracking-widest"
+                )}
+              >
                 NEW
               </span>
             )}
             {isOnSale && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-navy-900 text-cream-50 text-xs font-semibold uppercase tracking-wide">
-                Sale
+              <span
+                className={cn(
+                  "inline-flex items-center",
+                  // Design System: 6px 12px padding, 24px height, 12px border radius
+                  "px-3 py-1.5 h-6",
+                  "bg-navy-900 text-cream-50",
+                  "rounded-full",
+                  // Typography (Design System: Inter, 11px, Semibold, Uppercase, 1px letter-spacing)
+                  "font-sans text-[11px] font-semibold uppercase tracking-widest"
+                )}
+              >
+                SALE
               </span>
             )}
           </div>
 
-          {/* Wishlist Icon */}
+          {/* Wishlist Icon (Design System: Top-right, 12px offset, 40×40px) */}
           <div className="absolute top-3 right-3 z-10">
             <WishlistButton product={product} size="md" />
           </div>
 
-          {/* Out of Stock Overlay */}
+          {/* Out of Stock Overlay (Design System: Cream 50, 90% opacity) */}
           {!product.inStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-cream-50/90">
-              <span className="font-serif text-lg font-medium text-charcoal-600 uppercase tracking-wide">
+            <div className="absolute inset-0 z-[5] flex items-center justify-center bg-cream-50/90">
+              <span
+                className={cn(
+                  // Typography (Design System: Playfair Display, 18px, Medium, Uppercase, 1px letter-spacing)
+                  "font-serif text-lg font-medium text-charcoal-600 uppercase tracking-wide"
+                )}
+              >
                 Out of Stock
               </span>
             </div>
           )}
         </div>
 
-        {/* Product Info */}
+        {/* Product Info (Design System: 16px padding, 8px gap) */}
         <div className="p-4 space-y-2">
-          {/* Product Name */}
-          <m.h3
-            className="font-serif text-base md:text-lg font-medium text-charcoal-900 line-clamp-2"
-            whileHover={{ color: "#102a43" }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+          {/* Product Name (Design System: H4 - Playfair Display, 18px desktop/16px mobile, Medium, 1.4 line-height) */}
+          <h3
+            className={cn(
+              "font-serif font-medium text-charcoal-900 line-clamp-2",
+              "text-base md:text-lg", // 16px mobile, 18px desktop
+              "leading-[1.4]"
+            )}
           >
             {product.name}
-          </m.h3>
+          </h3>
 
-          {/* Price */}
+          {/* Price Section (Design System: Horizontal flex, 8px gap) */}
           <div className="flex items-baseline gap-2">
-            <span className="font-sans text-lg md:text-xl font-semibold text-charcoal-900">
+            {/* Current Price (Design System: Inter, 20px desktop/18px mobile, Bold) */}
+            <span className="font-sans text-lg md:text-xl font-bold text-charcoal-900">
               {formatPrice(product.price)}
             </span>
+            {/* Original Price (Design System: Inter, 14px, Regular, line-through, Charcoal 500) */}
             {isOnSale && product.originalPrice && (
-              <span className="font-sans text-sm text-charcoal-500 line-through">
+              <span className="font-sans text-sm font-normal text-charcoal-500 line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
 
-          {/* Category (optional, subtle) */}
-          <p className="font-sans text-xs text-charcoal-500 uppercase tracking-wider">
+          {/* Category Label (Design System: Inter, 11px, Medium, Uppercase, 1px letter-spacing, Charcoal 600) */}
+          <p className="font-sans text-[11px] font-medium text-charcoal-600 uppercase tracking-widest">
             {product.category.name}
           </p>
+
+          {/* Size Guide (Design System: Tier 2 - Reduce hesitation) */}
+          {product.sizes && product.sizes.length > 0 && (
+            <div className="pt-2 border-t border-cream-200">
+              <div className="flex items-center justify-between">
+                <span className="font-sans text-xs text-charcoal-600">Available Sizes:</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {product.sizes.slice(0, 4).map((sizeItem) => (
+                    <span
+                      key={sizeItem.size}
+                      className={cn(
+                        "font-sans text-[10px] font-medium px-1.5 py-0.5 rounded",
+                        sizeItem.inStock
+                          ? "bg-cream-100 text-charcoal-700 border border-cream-300"
+                          : "bg-cream-50 text-charcoal-400 border border-cream-200 line-through"
+                      )}
+                      aria-label={sizeItem.inStock ? `Size ${sizeItem.size} available` : `Size ${sizeItem.size} out of stock`}
+                    >
+                      {sizeItem.size}
+                    </span>
+                  ))}
+                  {product.sizes.length > 4 && (
+                    <span className="font-sans text-[10px] text-charcoal-500">
+                      +{product.sizes.length - 4} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </m.article>
     </Link>

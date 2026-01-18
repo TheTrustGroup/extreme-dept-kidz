@@ -4,10 +4,18 @@ import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { createCollectionSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { revalidatePath } from "next/cache";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Viewing collections requires viewer role or higher
+  const auth = await authenticateAndAuthorize(request, 'viewer');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
   try {
     if (!prisma) {
       // Return empty array instead of error - collections are optional
@@ -42,6 +50,13 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Creating collections requires admin role or higher
+  const auth = await authenticateAndAuthorize(request, 'admin');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to create collections.' }, { status: 403 });
+  }
+
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -81,6 +96,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
     }
+
+    // Log activity
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.COLLECTION_CREATED,
+      resource: 'Collection',
+      resourceId: collection.id,
+      details: {
+        name: collection.name,
+        slug: collection.slug,
+      },
+    }, request);
 
     return apiSuccess(collection, "Collection created successfully", { statusCode: 201 });
   } catch (error) {

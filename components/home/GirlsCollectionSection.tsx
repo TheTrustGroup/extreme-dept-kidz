@@ -25,9 +25,14 @@ export function GirlsCollectionSection({ products }: GirlsCollectionSectionProps
   }, [products]);
 
   return (
-    <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 bg-cream-50">
+    <section 
+      // Design System: Large section spacing - 48px mobile, 64px tablet, 96px desktop
+      className="py-12 md:py-16 lg:py-24 bg-cream-50"
+      aria-labelledby="girls-collection-heading"
+    >
       <Container size="lg">
-        <div className="space-y-6 xs:space-y-8 sm:space-y-10">
+        {/* Design System: Medium spacing between header and content - 24px mobile, 32px desktop */}
+        <div className="space-y-6 lg:space-y-8">
           {/* Section Header */}
           <m.div
             className="text-center"
@@ -36,17 +41,24 @@ export function GirlsCollectionSection({ products }: GirlsCollectionSectionProps
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
           >
-            <H2 className="text-charcoal-900 text-xl xs:text-2xl sm:text-3xl font-serif font-semibold">
+            <H2 
+              id="girls-collection-heading"
+              className="text-charcoal-900"
+            >
               For Her
             </H2>
-            <Body className="mt-2 text-charcoal-600 text-sm sm:text-base">
+            <Body className="mt-2 sm:mt-4 text-charcoal-600">
               Select styles for girls
             </Body>
           </m.div>
 
           {/* Products Grid - Single Row, 4 Products */}
           {girlsProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+            <div 
+              className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 md:gap-6"
+              role="list"
+              aria-label="Girls collection products"
+            >
               {girlsProducts.map((product, index) => (
                 <m.div
                   key={product.id}
@@ -54,13 +66,14 @@ export function GirlsCollectionSection({ products }: GirlsCollectionSectionProps
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
+                  role="listitem"
                 >
                   <ProductCard product={product} />
                 </m.div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-charcoal-500 text-sm">
+            <div className="text-center py-12 text-charcoal-500 text-sm" role="status" aria-live="polite">
               <p>Girls collection coming soon</p>
             </div>
           )}
@@ -70,12 +83,12 @@ export function GirlsCollectionSection({ products }: GirlsCollectionSectionProps
             <Button
               variant="secondary"
               size="sm"
-              className="inline-flex items-center space-x-2"
+              className="inline-flex items-center space-x-2 min-h-[44px]"
               asChild
             >
-              <Link href="/collections/girls">
+              <Link href="/collections/girls" aria-label="View girls collection">
                 <span>View Girls Collection</span>
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
               </Link>
             </Button>
           </div>

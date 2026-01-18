@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, extractTokenFromHeader } from './jwt';
 import { prisma } from '@/lib/db/prisma';
+import { hasRequiredRole, requireRole, type AdminRole } from './rbac';
 
 export interface AuthenticatedUser {
   id: string;
@@ -11,6 +12,10 @@ export interface AuthenticatedUser {
 export interface AuthResult {
   user: AuthenticatedUser | null;
   error: NextResponse | null;
+}
+
+export interface AuthAndRoleResult extends AuthResult {
+  authorized: boolean;
 }
 
 /**
@@ -106,14 +111,74 @@ export async function authenticateRequest(
 }
 
 /**
+ * Authenticate and authorize request with role check
+ * 
+ * @param request - Next.js request object
+ * @param requiredRole - Minimum role required (or array of allowed roles)
+ * @returns AuthAndRoleResult with user, error, and authorization status
+ * 
+ * @example
+ * const result = await authenticateAndAuthorize(request, 'admin');
+ * if (result.error) return result.error;
+ * if (!result.authorized) return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+ */
+export async function authenticateAndAuthorize(
+  request: NextRequest,
+  requiredRole: AdminRole | AdminRole[]
+): Promise<AuthAndRoleResult> {
+  // First authenticate
+  const authResult = await authenticateRequest(request);
+  
+  if (authResult.error || !authResult.user) {
+    return {
+      ...authResult,
+      authorized: false,
+    };
+  }
+
+  // Then check authorization
+  const userRole = authResult.user.role;
+  let authorized: boolean;
+
+  if (Array.isArray(requiredRole)) {
+    // Multiple roles allowed
+    authorized = requireRole(userRole, requiredRole);
+  } else {
+    // Single role required (hierarchical)
+    authorized = hasRequiredRole(userRole, requiredRole);
+  }
+
+  if (!authorized) {
+    return {
+      user: authResult.user,
+      error: NextResponse.json(
+        {
+          error: 'Insufficient permissions',
+          message: `This action requires ${Array.isArray(requiredRole) ? requiredRole.join(' or ') : requiredRole} role or higher`,
+          userRole: userRole,
+          requiredRole: Array.isArray(requiredRole) ? requiredRole : [requiredRole],
+        },
+        { status: 403 }
+      ),
+      authorized: false,
+    };
+  }
+
+  return {
+    user: authResult.user,
+    error: null,
+    authorized: true,
+  };
+}
+
+/**
  * Check if user has required role
+ * 
+ * @deprecated Use hasRequiredRole from '@/lib/auth/rbac' instead
+ * Kept for backward compatibility during migration
  */
 export function hasRole(userRole: string, requiredRole: string): boolean {
-  const roleHierarchy: Record<string, number> = {
-    editor: 1,
-    manager: 2,
-    super_admin: 3,
-  };
-
-  return (roleHierarchy[userRole] || 0) >= (roleHierarchy[requiredRole] || 0);
+  // Import the new RBAC function
+  const { hasRequiredRole } = require('./rbac');
+  return hasRequiredRole(userRole, requiredRole as any);
 }

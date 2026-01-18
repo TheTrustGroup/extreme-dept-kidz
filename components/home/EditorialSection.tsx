@@ -9,7 +9,11 @@ import { cn } from "@/lib/utils";
 
 export function EditorialSection(): JSX.Element {
   return (
-    <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
+    <section 
+      // Design System: XLarge section spacing - 48px mobile, 80px tablet, 128px desktop
+      className="py-12 md:py-20 lg:py-32 bg-cream-50"
+      aria-labelledby="editorial-heading"
+    >
       <Container size="lg">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-0">
           {/* Image Side - 60% */}
@@ -20,7 +24,11 @@ export function EditorialSection(): JSX.Element {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
-            <div className="relative w-full h-full bg-cream-200">
+            <div 
+              className="relative w-full h-full bg-cream-200"
+              role="img"
+              aria-label="Lifestyle editorial image - The EXTREME DEPT Boy collection"
+            >
               {/* Image will be added later */}
             </div>
           </m.div>
@@ -40,16 +48,19 @@ export function EditorialSection(): JSX.Element {
               </Caption>
 
               {/* Headline */}
-              <H2 className="text-charcoal-900 leading-tight text-3xl md:text-4xl lg:text-5xl">
+              <H2 
+                id="editorial-heading"
+                className="text-charcoal-900"
+              >
                 Built for Adventure, Designed for Style
               </H2>
 
               {/* Body Paragraph */}
               <div className="space-y-4">
-                <Body className="text-lg md:text-xl text-charcoal-700 leading-relaxed">
+                <Body className="text-charcoal-700">
                   From the playground to the city streets, every piece is crafted for the modern boy who moves with confidence.
                 </Body>
-                <Body className="text-lg md:text-xl text-charcoal-700 leading-relaxed">
+                <Body className="text-charcoal-700">
                   Premium streetwear meets luxury essentials. Our collections celebrate both play and sophistication, designed for young legends who demand quality and style.
                 </Body>
               </div>
@@ -68,8 +79,10 @@ export function EditorialSection(): JSX.Element {
                     "inline-flex items-center font-sans text-base md:text-lg font-medium",
                     "text-charcoal-900 hover:text-navy-900",
                     "transition-colors duration-300",
-                    "group relative"
+                    "group relative min-h-[44px]",
+                    "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-2"
                   )}
+                  aria-label="Explore the boys collection"
                 >
                   <span className="relative">
                     Explore the Collection
@@ -80,6 +93,7 @@ export function EditorialSection(): JSX.Element {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"

@@ -263,22 +263,51 @@ enum UserRole {
 // ============================================
 
 model AdminUser {
-  id            String      @id @default(cuid())
-  email         String      @unique
-  name          String
-  passwordHash  String      // Hashed password (never store plain text!)
-  role          AdminRole   @default(editor)
-  isActive      Boolean     @default(true)
-  lastLoginAt   DateTime?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id                      String      @id @default(cuid())
+  email                   String      @unique
+  name                    String
+  passwordHash            String      // Hashed password (never store plain text!)
+  role                    AdminRole   @default(viewer)
+  isActive                Boolean     @default(true)
+  lastLoginAt             DateTime?
+  passwordResetToken      String?     // Token for password reset
+  passwordResetExpiresAt DateTime?    // Token expiration time
+  passwordResetRequestedAt DateTime?  // When reset was requested
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+  activityLogs            AdminActivityLog[] // Activity log entries
 
   @@index([email])
   @@index([role])
+  @@index([passwordResetToken])
 }
 
 enum AdminRole {
   super_admin
+  admin
   manager
-  editor
+  viewer
+}
+
+// ============================================
+// ADMIN ACTIVITY LOGGING
+// ============================================
+
+model AdminActivityLog {
+  id          String    @id @default(cuid())
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  action      String    // e.g., "product.created", "order.updated", "user.deleted"
+  resource    String?   // e.g., "Product", "Order", "AdminUser"
+  resourceId  String?   // ID of affected resource
+  details     Json?     // Additional context (before/after values, etc.)
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([adminUserId])
+  @@index([action])
+  @@index([resource])
+  @@index([resourceId])
+  @@index([createdAt])
 }

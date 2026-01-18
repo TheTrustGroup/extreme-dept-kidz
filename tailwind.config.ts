@@ -105,6 +105,26 @@ const config: Config = {
         serif: ["var(--font-playfair)", "serif"],
         sans: ["var(--font-inter)", "sans-serif"],
       },
+      boxShadow: {
+        // Design System: Shadow levels (Tier 2)
+        'sm': '0 1px 3px rgba(0, 0, 0, 0.08)',
+        'md': '0 4px 12px rgba(0, 0, 0, 0.1)',
+        'lg': '0 8px 24px rgba(0, 0, 0, 0.12)',
+        'xl': '0 12px 40px rgba(0, 0, 0, 0.15)',
+        'navy': '0 4px 12px rgba(16, 42, 67, 0.3)',
+      },
+      transitionDuration: {
+        // Design System: Animation timing (Tier 2)
+        'fast': '150ms',
+        'normal': '300ms',
+        'slow': '500ms',
+      },
+      transitionTimingFunction: {
+        // Design System: Easing functions
+        'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'out': 'cubic-bezier(0, 0, 0.2, 1)',
+        'in': 'cubic-bezier(0.4, 0, 1, 1)',
+      },
       animation: {
         // Smooth animation presets
         "fade-in": "fadeIn 0.6s ease-in-out",

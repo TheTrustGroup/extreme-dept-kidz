@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
-import { H2 } from "@/components/ui/typography";
+import { H2, H3, Body } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 
 interface StyleCategory {
@@ -45,9 +45,14 @@ const styleCategories: StyleCategory[] = [
 
 export function ShopByStyleSection(): JSX.Element {
   return (
-    <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
+    <section 
+      // Design System: 48px mobile, 64px tablet, 96px desktop section spacing
+      className="py-12 md:py-16 lg:py-24 bg-cream-50"
+      aria-labelledby="shop-by-style-heading"
+    >
       <Container size="lg">
-        <div className="space-y-8 xs:space-y-10 sm:space-y-12 md:space-y-14 lg:space-y-16">
+        {/* Design System: 32px mobile, 48px desktop spacing */}
+        <div className="space-y-8 lg:space-y-12">
           {/* Section Title */}
           <m.div
             className="text-center"
@@ -56,16 +61,24 @@ export function ShopByStyleSection(): JSX.Element {
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
           >
-            <H2 className="text-charcoal-900 text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-serif font-bold">
+            <H2 
+              id="shop-by-style-heading"
+              className="text-charcoal-900"
+            >
               Shop by Style
             </H2>
-            <p className="mt-4 text-charcoal-600 text-base sm:text-lg">
+            <Body className="mt-4 sm:mt-6 text-charcoal-600">
               Curated collections for the modern boy
-            </p>
+            </Body>
           </m.div>
 
-          {/* Categories Grid - 2x2 Desktop, Stack Mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xs:gap-5 sm:gap-6 md:gap-8 lg:gap-10">
+          {/* Categories Grid - 2x2 Desktop, Stack Mobile - Touch-friendly spacing */}
+          <div 
+            // Design System: Grid gaps - 16px mobile, 20px tablet, 24px desktop, 32px large desktop
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8"
+            role="list"
+            aria-label="Style categories"
+          >
             {styleCategories.map((category, index) => (
               <StyleCategoryCard
                 key={category.id}
@@ -96,32 +109,46 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
         delay: index * 0.1,
         ease: "easeOut",
       }}
+      role="listitem"
+      // Prevent layout shift with consistent structure
+      className="w-full"
     >
-      <Link href={category.href} className="block group">
+      <Link 
+        href={category.href} 
+        className="block group focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-xl touch-manipulation"
+        aria-label={`Shop ${category.name} collection`}
+      >
         <m.div
           className={cn(
             "relative overflow-hidden rounded-xl",
-            "bg-cream-100 shadow-lg",
-            "aspect-[4/5] md:aspect-[3/4]",
+            // Design System: Shadow levels (Tier 2)
+            "bg-cream-100 shadow-md",
+            // Design System: 4:5 aspect ratio (consistent)
+            "aspect-[4/5]",
             "transition-all duration-500"
           )}
           whileHover={{ scale: 1.02, y: -8 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          {/* Image */}
+          {/* Image - Fixed aspect ratio prevents layout shift */}
           <div className="relative w-full h-full">
             {category.image ? (
               <Image
                 src={category.image}
                 loading="lazy"
                 quality={90}
-                alt={category.name}
+                alt={`${category.name} style category - ${category.name} products`}
                 fill
                 className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                aria-hidden="false"
               />
             ) : (
-              <div className="w-full h-full bg-cream-200" />
+              <div 
+                className="w-full h-full bg-cream-200" 
+                aria-label={`${category.name} style category placeholder`}
+                role="img"
+              />
             )}
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/80 via-charcoal-900/40 to-transparent" />
@@ -132,15 +159,16 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
             />
           </div>
 
-          {/* Category Name Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 lg:p-10">
-            <m.h3
-              className="font-serif text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-cream-50 tracking-tight"
+          {/* Category Name Overlay - Touch-friendly padding */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8">
+            <m.div
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
-              {category.name}
-            </m.h3>
+              <H3 className="text-cream-50">
+                {category.name}
+              </H3>
+            </m.div>
           </div>
 
           {/* Hover Shadow Effect */}

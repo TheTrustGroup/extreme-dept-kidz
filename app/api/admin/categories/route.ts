@@ -4,10 +4,18 @@ import { revalidatePath } from "next/cache";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createCategorySchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Viewing categories requires viewer role or higher
+  const auth = await authenticateAndAuthorize(request, 'viewer');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
   try {
     const categories = await getAllCategories();
     
@@ -29,6 +37,13 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Creating categories requires admin role or higher
+  const auth = await authenticateAndAuthorize(request, 'admin');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to create categories.' }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
 
@@ -58,6 +73,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
     }
+
+    // Log activity
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.CATEGORY_CREATED,
+      resource: 'Category',
+      resourceId: category.id,
+      details: {
+        name: category.name,
+        slug: category.slug,
+      },
+    }, request);
     
     return apiSuccess(
       category,

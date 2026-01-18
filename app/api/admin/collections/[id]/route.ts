@@ -4,13 +4,21 @@ import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/uti
 import { updateCollectionSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { revalidatePath } from "next/cache";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // RBAC: Viewing collections requires viewer role or higher
+  const auth = await authenticateAndAuthorize(request, 'viewer');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -47,6 +55,13 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // RBAC: Updating collections requires admin role or higher
+  const auth = await authenticateAndAuthorize(request, 'admin');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to update collections.' }, { status: 403 });
+  }
+
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -81,6 +96,18 @@ export async function PUT(
       logger.error('Failed to revalidate cache:', revalidateError);
     }
 
+    // Log activity
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.COLLECTION_UPDATED,
+      resource: 'Collection',
+      resourceId: id,
+      details: {
+        name: collection.name,
+        changes: validation.data,
+      },
+    }, request);
+
     return apiSuccess(collection, "Collection updated successfully");
   } catch (error) {
     logger.error("Failed to update collection:", error);
@@ -93,9 +120,16 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // RBAC: Deleting collections requires admin role or higher
+  const auth = await authenticateAndAuthorize(request, 'admin');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to delete collections.' }, { status: 403 });
+  }
+
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -109,6 +143,8 @@ export async function DELETE(
       return apiNotFound("Collection");
     }
 
+    const collectionName = existing.name;
+
     await prisma.collection.delete({
       where: { id },
     });
@@ -120,6 +156,17 @@ export async function DELETE(
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
     }
+
+    // Log activity
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.COLLECTION_DELETED,
+      resource: 'Collection',
+      resourceId: id,
+      details: {
+        name: collectionName,
+      },
+    }, request);
 
     return apiSuccess({ id }, "Collection deleted successfully");
   } catch (error) {

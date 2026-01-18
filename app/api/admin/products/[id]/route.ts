@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +13,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // RBAC: Viewing products requires viewer role or higher
+  const auth = await authenticateAndAuthorize(request, 'viewer');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -51,6 +59,15 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // Store request for activity logging
+  const requestForLogging = request;
+  // RBAC: Updating products requires admin role or higher
+  const auth = await authenticateAndAuthorize(request, 'admin');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to update products.' }, { status: 403 });
+  }
+
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -146,6 +163,22 @@ export async function PUT(
       // Don't fail the request if revalidation fails
     }
 
+    // Log activity
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.PRODUCT_UPDATED,
+      resource: 'Product',
+      resourceId: id,
+      details: {
+        name: product.name,
+        changes: {
+          name: name || undefined,
+          price: price !== undefined ? price : undefined,
+          sku: sku || undefined,
+        },
+      },
+    }, requestForLogging);
+
     return apiSuccess(product, "Product updated successfully");
   } catch (error) {
     logger.error("Failed to update product:", error);
@@ -161,6 +194,15 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // Store request for activity logging
+  const requestForLogging = request;
+  // RBAC: Deleting products requires admin role or higher
+  const auth = await authenticateAndAuthorize(request, 'admin');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to delete products.' }, { status: 403 });
+  }
+
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -173,6 +215,10 @@ export async function DELETE(
     if (!existing) {
       return apiNotFound("Product");
     }
+
+    // Store product info for logging before deletion
+    const productName = existing.name;
+    const productSku = existing.sku;
 
     await prisma.product.delete({
       where: { id },
@@ -187,6 +233,18 @@ export async function DELETE(
       logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails
     }
+
+    // Log activity
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.PRODUCT_DELETED,
+      resource: 'Product',
+      resourceId: id,
+      details: {
+        name: productName,
+        sku: productSku,
+      },
+    }, requestForLogging);
 
     return apiSuccess({ id }, "Product deleted successfully");
   } catch (error) {

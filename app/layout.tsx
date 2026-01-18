@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Playfair_Display, Inter } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
+import { FloatingCartButton } from "@/components/layout/FloatingCartButton";
 import { Providers } from "@/components/providers";
 import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { WebVitals } from "./web-vitals";
@@ -139,6 +140,7 @@ export default function RootLayout({
               <Footer />
             </Suspense>
             <CartDrawerWrapper />
+            <FloatingCartButton />
             <WebVitals />
           </Providers>
         </ErrorBoundary>

@@ -51,15 +51,15 @@
   --color-forest-900: #194229;
   --color-forest-950: #0c2416;
 
-  /* Spacing scale */
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
-  --spacing-2xl: 4rem;
-  --spacing-3xl: 6rem;
-  --spacing-4xl: 8rem;
+    /* Spacing scale - 8px-32px steps for consistent rhythm */
+  --spacing-xs: 0.5rem;    /* 8px */
+  --spacing-sm: 1rem;      /* 16px */
+  --spacing-md: 1.5rem;    /* 24px */
+  --spacing-lg: 2rem;      /* 32px */
+  --spacing-xl: 3rem;      /* 48px */
+  --spacing-2xl: 4rem;     /* 64px */
+  --spacing-3xl: 6rem;     /* 96px */
+  --spacing-4xl: 8rem;     /* 128px */
 
   /* Typography scale */
   --font-size-xs: 0.75rem;
@@ -105,25 +105,32 @@ body {
   background-color: var(--color-cream-50);
   line-height: 1.6;
   overflow-x: hidden;
-  /* Performance optimizations */
-  will-change: scroll-position;
+  /* Performance optimizations - removed will-change from body (too broad) */
 }
 
 /* Optimize image rendering */
 img {
-  content-visibility: auto;
+  /* content-visibility: auto removed - too broad, use selectively */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   /* Lazy loading optimization */
   loading: lazy;
-  /* Prevent layout shift */
-  aspect-ratio: attr(width) / attr(height);
+  /* Prevent layout shift - ensure aspect ratio is maintained */
+  max-width: 100%;
+  height: auto;
 }
 
 /* Next.js Image optimization */
 img[data-nimg] {
-  content-visibility: auto;
+  /* content-visibility: auto removed - use selectively on below-fold images */
   contain: layout style paint;
+  /* Prevent layout shift */
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* Ensure images maintain aspect ratio to prevent CLS */
+img[width][height] {
+  height: auto;
 }
 
 /* High-quality logo rendering in header */
@@ -262,6 +269,41 @@ textarea:focus-visible {
   content-visibility: auto;
 }
 
+/* Performance: Reduce layout shift for images */
+.image-container {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}
+
+/* Performance: Optimize font loading */
+@font-face {
+  font-display: swap;
+}
+
+/* Performance: Touch optimization for mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Enhanced interactive feedback */
+button, 
+a[role="button"],
+input[type="button"],
+input[type="submit"] {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Smooth transitions for interactive elements */
+a, button, input, select, textarea {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -282,31 +324,7 @@ textarea:focus-visible {
   }
 }
 
-/* Screen reader only content */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-.sr-only:focus,
-.sr-only:focus-within,
-.focus-within\:not-sr-only:focus-within {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: inherit;
-  margin: inherit;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
+/* Duplicate .sr-only removed - using definition above */
 
 /* Live region for dynamic content announcements */
 [role="status"],
@@ -326,11 +344,24 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Touch target optimization for mobile */
+/* Touch target optimization for mobile - WCAG 2.5.5 Target Size */
 @media (max-width: 768px) {
-  button, a, input, select, textarea {
+  button, 
+  a[role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  textarea {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Ensure interactive links have adequate touch targets */
+  a:not([aria-hidden="true"]) {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
   }
 }
 

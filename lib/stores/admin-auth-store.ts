@@ -7,7 +7,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type AdminRole = "super_admin" | "manager" | "editor";
+export type AdminRole = "super_admin" | "admin" | "manager" | "viewer";
 
 export interface AdminUser {
   id: string;
@@ -30,6 +30,7 @@ interface AdminAuthState {
 }
 
 // Permission matrix
+// Updated to match context requirements: super_admin, admin, manager, viewer
 const PERMISSIONS: Record<AdminRole, string[]> = {
   super_admin: [
     "view_dashboard",
@@ -41,22 +42,38 @@ const PERMISSIONS: Record<AdminRole, string[]> = {
     "view_analytics",
     "manage_settings",
     "manage_users",
+    "manage_roles",
+    "manage_categories",
+    "manage_collections",
+    "manage_inventory",
+    "manage_looks",
+    "system_settings",
+  ],
+  admin: [
+    "view_dashboard",
+    "manage_products",
+    "delete_products",
+    "view_analytics",
+    "manage_settings",
+    "manage_categories",
+    "manage_collections",
     "manage_looks",
   ],
   manager: [
     "view_dashboard",
-    "manage_products",
+    "view_products",
     "manage_orders",
     "refund_orders",
-    "manage_customers",
     "view_analytics",
-    "manage_looks",
+    "manage_inventory",
+    "view_inventory",
   ],
-  editor: [
+  viewer: [
     "view_dashboard",
-    "manage_products",
+    "view_products",
+    "view_orders",
     "view_analytics",
-    "manage_looks",
+    "view_inventory",
   ],
 };
 
@@ -177,17 +194,13 @@ export const useAdminAuth = create<AdminAuthState>()(
             isAuthenticated: true,
           });
 
-          // CRITICAL: Sync cookie immediately after login
-          if (typeof window !== 'undefined' && data.token) {
-            const isProduction = process.env.NODE_ENV === 'production';
-            const maxAge = 60 * 60 * 24 * 7; // 7 days
-            document.cookie = `admin-token=${data.token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
-            console.log('[Auth] ✅ Cookie synced after login');
-            
-            // Verify cookie was set
-            const cookieSet = document.cookie.includes('admin-token');
-            console.log('[Auth] Cookie verification:', cookieSet ? '✅ Set' : '❌ Not set');
-          }
+          // NOTE: Cookie is set by server (httpOnly), so we don't need to set it client-side
+          // The server sets the cookie in the response, which is automatically included in subsequent requests
+          // We only sync non-httpOnly cookies if needed, but admin-token is httpOnly for security
+          console.log('[Auth] ✅ Auth state set. Cookie is set by server (httpOnly).');
+          
+          // Wait a moment to ensure state is persisted
+          await new Promise(resolve => setTimeout(resolve, 100));
 
           // Reset auth check timer on successful login
           lastAuthCheck = Date.now();
@@ -279,11 +292,14 @@ export const useAdminAuth = create<AdminAuthState>()(
       },
 
       syncCookie: (): void => {
+        // NOTE: admin-token is set as httpOnly by the server for security
+        // httpOnly cookies cannot be set or read by client-side JavaScript
+        // The cookie is automatically included in requests by the browser
+        // This function is kept for compatibility but doesn't actually set the cookie
         const { token } = get();
         if (token && typeof window !== 'undefined') {
-          const isProduction = process.env.NODE_ENV === 'production';
-          const maxAge = 60 * 60 * 24 * 7; // 7 days
-          document.cookie = `admin-token=${token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+          // Cookie is managed by server, just log for debugging
+          console.log('[Auth] Cookie sync called (cookie is httpOnly, managed by server)');
         }
       },
 
@@ -319,10 +335,8 @@ export const useAdminAuth = create<AdminAuthState>()(
         try {
           lastAuthCheck = now;
           
-          // Ensure cookie is synced before checking
-          if (typeof window !== 'undefined') {
-            get().syncCookie();
-          }
+          // Cookie is httpOnly and managed by server, no need to sync client-side
+          // It's automatically included in requests by the browser
           
           const response = await fetch("/api/admin/auth/me", {
             headers: {
@@ -368,10 +382,7 @@ export const useAdminAuth = create<AdminAuthState>()(
             token: token, // Preserve token
           });
           
-          // Ensure cookie is still set
-          if (typeof window !== 'undefined') {
-            get().syncCookie();
-          }
+          // Cookie is httpOnly and managed by server, automatically included in requests
 
           return true;
         } catch (error) {
@@ -404,12 +415,11 @@ export const useAdminAuth = create<AdminAuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
-        // CRITICAL: Sync cookie on page load/hydration
+        // NOTE: Cookie is httpOnly and managed by server
+        // On hydration, we just restore the state from localStorage
+        // The cookie is automatically included in API requests by the browser
         if (state?.token && typeof window !== 'undefined') {
-          const isProduction = process.env.NODE_ENV === 'production';
-          const maxAge = 60 * 60 * 24 * 7; // 7 days
-          document.cookie = `admin-token=${state.token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
-          console.log('[Auth] Cookie synced on hydration');
+          console.log('[Auth] State rehydrated from localStorage');
         }
       },
     }

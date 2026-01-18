@@ -216,3 +216,63 @@ export async function updateLook(_id: string, look: Partial<(typeof styleLooks)[
 export async function deleteLook(_id: string): Promise<void> {
   await delay(300);
 }
+
+// Inventory Analytics
+export interface InventoryAnalytics {
+  totalValue: number;
+  totalItems: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  turnoverRate: number;
+  averageStockLevel: number;
+  stockByCategory: Array<{
+    category: string;
+    value: number;
+    items: number;
+  }>;
+  stockVelocity: Array<{
+    variantId: string;
+    productName: string;
+    size: string;
+    velocity: number;
+    daysUntilOut: number | null;
+  }>;
+  reorderSuggestions: Array<{
+    variantId: string;
+    productName: string;
+    size: string;
+    currentStock: number;
+    reorderPoint: number;
+    suggestedOrder: number;
+    urgency: 'critical' | 'high' | 'medium' | 'low';
+  }>;
+}
+
+export async function getInventoryAnalytics(): Promise<InventoryAnalytics> {
+  try {
+    const response = await fetch('/api/admin/inventory/analytics', {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch inventory analytics');
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Failed to get inventory analytics:', error);
+    // Return empty analytics on error
+    return {
+      totalValue: 0,
+      totalItems: 0,
+      lowStockCount: 0,
+      outOfStockCount: 0,
+      turnoverRate: 0,
+      averageStockLevel: 0,
+      stockByCategory: [],
+      stockVelocity: [],
+      reorderSuggestions: [],
+    };
+  }
+}

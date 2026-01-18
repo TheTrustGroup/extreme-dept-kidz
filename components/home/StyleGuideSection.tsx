@@ -10,7 +10,7 @@ import { completeLooks } from "@/lib/mock-data";
 import type { CompleteLook } from "@/types";
 import { calculateBundleDiscount, getProductById } from "@/lib/utils/styling-utils";
 import { Button } from "@/components/ui/button";
-import { H2 } from "@/components/ui/typography";
+import { H2, H3, Body, Caption } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 import { formatPrice } from "@/lib/utils";
 import { getImageBlurDataURL } from "@/lib/utils/image-utils";
@@ -67,27 +67,40 @@ export function StyleGuideSection(): JSX.Element {
   }
 
   return (
-    <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
+    <section 
+      // Design System: XLarge section spacing - 48px mobile, 80px tablet, 128px desktop
+      className="py-12 md:py-20 lg:py-32 bg-cream-50"
+      aria-labelledby="style-guide-heading"
+    >
       <Container size="lg">
-        <div className="space-y-8 xs:space-y-10 sm:space-y-12 md:space-y-14 lg:space-y-16">
+        {/* Design System: Large spacing between header and content - 32px mobile, 48px desktop */}
+        <div className="space-y-8 lg:space-y-12">
           {/* Section Header */}
           <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
-            className="text-center space-y-3"
+            className="text-center space-y-3 sm:space-y-4"
           >
-            <H2 className="text-charcoal-900 text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-serif font-bold">
+            <H2 
+              id="style-guide-heading"
+              className="text-charcoal-900"
+            >
               STYLE GUIDE
             </H2>
-            <p className="text-charcoal-600 text-sm md:text-base max-w-2xl mx-auto">
+            <Body className="text-charcoal-600 max-w-2xl mx-auto">
               Curated looks for effortless style
-            </p>
+            </Body>
           </m.div>
 
           {/* Looks Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
+          <div 
+            // Design System: Grid gaps - 24px mobile, 32px tablet, 32px desktop
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-8"
+            role="list"
+            aria-label="Featured style guide looks"
+          >
             {featuredLooks.map((look, index) => {
               const lookProducts = look.products
                 .map(({ productId }) => getProductById(productId))
@@ -104,23 +117,27 @@ export function StyleGuideSection(): JSX.Element {
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   className="group"
+                  role="listitem"
                 >
                   <Link 
                     href={completeLooks.some(cl => cl.id === look.id) ? `/looks/${look.id}` : `/style-guide/${look.id}`} 
-                    className="block"
+                    className="block focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-xl"
+                    aria-label={`View ${look.name} style guide look`}
                   >
-                    <div className="bg-cream-100 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300">
+                    // Design System: Shadow levels (Tier 2)
+                    <div className="bg-cream-100 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-normal">
                       {/* Look Image */}
                       <div className="relative aspect-[3/4] overflow-hidden">
                         <Image
                           src={look.mainImage}
-                          alt={look.name}
+                          alt={`${look.name} - ${look.description || 'Complete look'}`}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           quality={85}
                           placeholder="blur"
                           blurDataURL={getImageBlurDataURL(600, 800)}
+                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/60 via-transparent to-transparent" />
                         
@@ -135,16 +152,16 @@ export function StyleGuideSection(): JSX.Element {
                       {/* Look Info */}
                       <div className="p-6 space-y-4">
                         <div>
-                          <h3 className="font-serif text-xl md:text-2xl font-bold text-charcoal-900 mb-2">
+                          <H3 className="text-charcoal-900 mb-2">
                             {look.name}
-                          </h3>
-                          <p className="font-sans text-sm text-charcoal-600 line-clamp-2 mb-3">
+                          </H3>
+                          <Body className="text-charcoal-600 line-clamp-2 mb-3 text-sm">
                             {look.description}
-                          </p>
+                          </Body>
                         </div>
 
                         {/* Product Count & Details */}
-                        <div className="flex items-center gap-2 text-xs text-charcoal-500 mb-3">
+                        <Caption className="text-charcoal-500 mb-3 flex items-center gap-2">
                           <span>{requiredProducts.length} pieces</span>
                           {look.ageRange && (
                             <>
@@ -158,7 +175,7 @@ export function StyleGuideSection(): JSX.Element {
                               <span>{look.occasion}</span>
                             </>
                           )}
-                        </div>
+                        </Caption>
 
                         {/* Pricing */}
                         <div className="flex items-baseline gap-2">
@@ -176,12 +193,12 @@ export function StyleGuideSection(): JSX.Element {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="w-full flex items-center justify-center gap-2"
+                          className="w-full flex items-center justify-center gap-2 min-h-[44px]"
                           asChild
                         >
                           <span>
                             SHOP LOOK
-                            <ArrowRight className="w-4 h-4" />
+                            <ArrowRight className="w-4 h-4" aria-hidden="true" />
                           </span>
                         </Button>
                       </div>
@@ -203,11 +220,12 @@ export function StyleGuideSection(): JSX.Element {
             <Button
               variant="secondary"
               size="lg"
+              className="min-h-[44px]"
               asChild
             >
-              <Link href="/style-guide" className="flex items-center gap-2">
+              <Link href="/style-guide" className="flex items-center gap-2" aria-label="View all style guide looks">
                 VIEW ALL LOOKS
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </Link>
             </Button>
           </m.div>

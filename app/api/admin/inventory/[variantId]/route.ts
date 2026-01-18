@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateInventorySchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,12 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ variantId: string }> }
 ): Promise<NextResponse> {
+  // RBAC: Updating inventory requires manager role or higher
+  const auth = await authenticateAndAuthorize(request, 'manager');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Manager role required to update inventory.' }, { status: 403 });
+  }
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -58,7 +65,7 @@ export async function PUT(
       data: { stock: newStock },
     });
 
-    // Log inventory change
+    // Log inventory change (existing inventory log)
     try {
       await prisma.inventoryLog.create({
         data: {
@@ -72,6 +79,21 @@ export async function PUT(
       // Silently fail if logging is not available
       logger.warn("Failed to log inventory change:", logError);
     }
+
+    // Log admin activity (auth is already checked at the start of the function)
+    const { logActivity, ActivityActions } = await import('@/lib/services/admin/activity.service');
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.INVENTORY_UPDATED,
+      resource: 'ProductVariant',
+      resourceId: variantId,
+      details: {
+        action,
+        previousStock: oldStock,
+        newStock,
+        change: newStock - oldStock,
+      },
+    }, request);
 
     return apiSuccess(
       {

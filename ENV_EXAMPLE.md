@@ -25,7 +25,11 @@ MOMO_CALLBACK_URL=https://extremedeptkidz.com/api/payment/momo/callback
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/extremedeptkidz
 
-# Email (for order confirmations)
+# Email - Resend (for password resets and admin notifications)
+RESEND_API_KEY=re_your_resend_api_key_here
+FROM_EMAIL=noreply@extremedeptkidz.com
+
+# Email - SMTP (for order confirmations - optional, can use Resend instead)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com

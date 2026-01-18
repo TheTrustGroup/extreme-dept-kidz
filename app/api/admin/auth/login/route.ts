@@ -7,6 +7,7 @@ import { detectBot } from '@/lib/security/bot-detector';
 import { apiSuccess, apiError, apiValidationError, apiRateLimit, apiUnauthorized } from '@/lib/utils/api-response';
 import { adminLoginSchema, validate } from '@/lib/validation/schemas';
 import { logger } from '@/lib/utils/logger';
+import { logActivity, ActivityActions } from '@/lib/services/admin/activity.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,6 +141,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!isValid) {
       logger.log(`[Login] ❌ Invalid password for user ${user.email}`);
       
+      // Log failed login attempt
+      await logActivity({
+        adminUserId: user.id,
+        action: ActivityActions.LOGIN_FAILED,
+        details: {
+          email: user.email,
+          reason: 'Invalid password',
+        },
+      }, request);
+      
       // Track failed attempts
       const attempts = (failedAttempts.get(clientIP) || 0) + 1;
       failedAttempts.set(clientIP, attempts);
@@ -241,6 +252,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
     
     logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: lax)`);
+
+    // Log successful login
+    await logActivity({
+      adminUserId: user.id,
+      action: ActivityActions.LOGIN,
+      details: {
+        email: user.email,
+        role: user.role,
+      },
+    }, request);
 
     return response;
   } catch (error) {

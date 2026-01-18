@@ -18,6 +18,8 @@ import {
   LogOut,
   Menu,
   X,
+  FileText,
+  UserCog,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { cn } from "@/lib/utils";
@@ -65,7 +67,16 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
         { label: "All Products", href: "/admin/products", icon: Package },
         { label: "Add New", href: "/admin/products/new", icon: Package },
         { label: "Categories", href: "/admin/categories", icon: Package },
-        { label: "Inventory", href: "/admin/inventory", icon: Package },
+      ],
+    },
+    {
+      label: "Inventory",
+      href: "/admin/inventory",
+      icon: Package,
+      children: [
+        { label: "Dashboard", href: "/admin/inventory", icon: Package },
+        { label: "Forecast", href: "/admin/inventory/forecast", icon: Package },
+        { label: "Reports", href: "/admin/inventory/reports", icon: Package },
       ],
     },
     {
@@ -98,6 +109,16 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       label: "Analytics",
       href: "/admin/analytics",
       icon: BarChart3,
+    },
+    {
+      label: "Activity Log",
+      href: "/admin/activity",
+      icon: FileText,
+    },
+    {
+      label: "Admin Users",
+      href: "/admin/users",
+      icon: UserCog,
     },
     {
       label: "Settings",

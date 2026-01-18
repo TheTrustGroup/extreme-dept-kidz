@@ -1,188 +1,132 @@
-# 🔧 Fix Database Connection Issue
+# Fix Database Connection
 
-## Problem
-The diagnostic shows:
-```
-Can't reach database server at `db.puuszplmdbindiesfxlr.supabase.co:5432`
-```
+## Current Issue
 
-This means Vercel can't connect to your Supabase database.
+The script is getting: "Authentication failed against database server"
 
-## ✅ Solution: Use Supabase Connection Pooler
+This means your `DATABASE_URL` in `.env.local` is either:
+- Incorrect
+- Expired
+- Missing required parameters
 
-Vercel serverless functions work better with Supabase's **connection pooler** instead of direct connections.
+---
 
-### Step 1: Get Connection Pooler URL from Supabase
+## Step 1: Get Correct Connection String from Supabase
 
-1. Go to **Supabase Dashboard** → Your Project
-2. Click **Settings** (gear icon) → **Database**
-3. Scroll down to **Connection Pooling**
-4. Find **Connection String** under **Transaction Mode** or **Session Mode**
-5. It should look like:
+### Option A: Connection Pooling (Recommended for Production)
+
+1. Go to [Supabase Dashboard](https://app.supabase.com)
+2. Select your project
+3. Go to **Settings** → **Database**
+4. Scroll to **Connection string**
+5. Select **Connection pooling** tab
+6. Copy the **URI** connection string
+7. It should look like:
    ```
-   postgresql://postgres.puuszplmdbindiesfxlr:[YOUR-PASSWORD]@aws-0-[region].pooler.supabase.com:6543/postgres
-   ```
-   OR
-   ```
-   postgresql://postgres.puuszplmdbindiesfxlr:[YOUR-PASSWORD]@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true
+   postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true
    ```
 
-### Step 2: Update DATABASE_URL in Vercel
+### Option B: Direct Connection (For Scripts)
 
-1. Go to **Vercel Dashboard** → Your Project → **Settings** → **Environment Variables**
-2. Find `DATABASE_URL`
-3. Click **Edit**
-4. Replace the value with the **Connection Pooler URL** from Step 1
-5. Make sure to:
-   - Replace `[YOUR-PASSWORD]` with your actual password: `Zillion0031!`
-   - URL encode the password: `Zillion0031%21`
-   - Keep `?pgbouncer=true` if it's in the pooler URL
-   - OR add `?sslmode=require` if not present
-6. Click **Save**
-
-**Example Connection Pooler URL:**
-```
-postgresql://postgres.puuszplmdbindiesfxlr:Zillion0031%21@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require
-```
-
-### Step 3: Alternative - Check Supabase Project Status
-
-If connection pooler doesn't work, check:
-
-1. **Is your Supabase project active?**
-   - Go to Supabase Dashboard
-   - Check if project shows as "Active" (not "Paused")
-   - Free tier projects pause after inactivity
-
-2. **Restore paused project:**
-   - If paused, click "Restore" to reactivate it
-   - Wait a few minutes for it to fully start
-
-3. **Get fresh connection string:**
-   - Go to Settings → Database
-   - Copy the **Connection String** (not pooler)
-   - Make sure it's the latest one
-
-### Step 4: Try Direct Connection with Port 5432
-
-If pooler doesn't work, try the direct connection:
-
-1. Go to Supabase Dashboard → Settings → Database
-2. Find **Connection String** (not Connection Pooling)
-3. Copy the connection string
+1. Same steps as above
+2. Select **Direct connection** tab instead
+3. Copy the **URI** connection string
 4. It should look like:
    ```
-   postgresql://postgres:[YOUR-PASSWORD]@db.puuszplmdbindiesfxlr.supabase.co:5432/postgres
+   postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
    ```
-5. Update `DATABASE_URL` in Vercel with this value
-6. Make sure password is URL encoded: `Zillion0031%21`
-7. Add `?sslmode=require` at the end
+
+---
+
+## Step 2: Update .env.local
+
+1. Open `.env.local` in your project root
+2. Find or add `DATABASE_URL`
+3. Replace with the connection string from Supabase
+4. Make sure there are no extra spaces or quotes
 
 **Example:**
-```
-postgresql://postgres:Zillion0031%21@db.puuszplmdbindiesfxlr.supabase.co:5432/postgres?sslmode=require
-```
-
-### Step 5: Redeploy on Vercel
-
-**Important:** After updating `DATABASE_URL`:
-
-1. Go to **Deployments** tab
-2. Click **⋯** on the latest deployment
-3. Click **Redeploy**
-4. Wait for deployment to complete
-
-### Step 6: Test Again
-
-Visit the diagnostic endpoint:
-```
-https://your-domain.vercel.app/api/admin/auth/diagnose
+```env
+DATABASE_URL=postgresql://postgres.xxxxx:your-password@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
-Should now show:
-```json
-{
-  "database": {
-    "connected": true
-  }
-}
+**Important:**
+- No quotes around the URL
+- No spaces
+- Replace `[password]` with your actual database password
+- If password has special characters, they may need URL encoding
+
+---
+
+## Step 3: Get Your Database Password
+
+If you don't know your database password:
+
+1. Go to Supabase Dashboard
+2. **Settings** → **Database**
+3. Scroll to **Database password**
+4. Click **Reset database password** if needed
+5. Copy the new password
+6. Update `DATABASE_URL` with the new password
+
+---
+
+## Step 4: Test Connection
+
+After updating `.env.local`, test the connection:
+
+```bash
+npm run cleanup-and-create-admin
+```
+
+If it works, you'll see:
+```
+🧹 Starting cleanup and admin creation...
+📋 Step 1: Deleting all existing admin users...
+✅ Deleted X admin user(s)
 ```
 
 ---
 
 ## Common Issues
 
-### Issue: "Project is paused"
+### Issue: "Connection refused"
+**Fix:** Check if you're using the correct port (6543 for pooling, 5432 for direct)
 
-**Fix:**
-- Go to Supabase Dashboard
-- Click "Restore" if project is paused
-- Wait 2-3 minutes for it to fully start
-- Try connecting again
+### Issue: "Password authentication failed"
+**Fix:** 
+- Reset database password in Supabase
+- Update DATABASE_URL with new password
+- Make sure password is URL-encoded if it has special characters
+
+### Issue: "Database does not exist"
+**Fix:** Make sure the database name in the URL is `postgres` (default for Supabase)
 
 ### Issue: "Connection timeout"
-
-**Fix:**
-- Use Connection Pooler instead of direct connection
-- Pooler is optimized for serverless (Vercel)
-- Direct connection may timeout in serverless environments
-
-### Issue: "Authentication failed"
-
-**Fix:**
-- Check password is correct
-- Make sure password is URL encoded (`!` becomes `%21`)
-- Verify connection string format
-
-### Issue: "SSL required"
-
-**Fix:**
-- Add `?sslmode=require` to connection string
-- Or use pooler which handles SSL automatically
+**Fix:** 
+- Check your internet connection
+- Try direct connection instead of pooling
+- Check Supabase project status
 
 ---
 
-## Quick Checklist
+## Quick Check
 
-- [ ] Supabase project is **Active** (not paused)
-- [ ] Got Connection Pooler URL from Supabase
-- [ ] Updated `DATABASE_URL` in Vercel with pooler URL
-- [ ] Password is URL encoded (`Zillion0031%21`)
-- [ ] Added `?sslmode=require` or `?pgbouncer=true`
-- [ ] Redeployed on Vercel
-- [ ] Diagnostic endpoint shows `database.connected: true`
+Run this to verify DATABASE_URL format:
+
+```bash
+# Check if DATABASE_URL is set (won't show the actual value for security)
+node -e "console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set')"
+```
+
+Or check your `.env.local` file directly.
 
 ---
 
-## Connection String Formats
+## Need Help?
 
-### Direct Connection (may timeout in serverless):
-```
-postgresql://postgres:Zillion0031%21@db.puuszplmdbindiesfxlr.supabase.co:5432/postgres?sslmode=require
-```
-
-### Connection Pooler (Recommended for Vercel):
-```
-postgresql://postgres.puuszplmdbindiesfxlr:Zillion0031%21@aws-0-[region].pooler.supabase.com:6543/postgres?sslmode=require
-```
-
-OR
-
-```
-postgresql://postgres.puuszplmdbindiesfxlr:Zillion0031%21@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true&sslmode=require
-```
-
-**Note:** Replace `[region]` with your actual region (e.g., `us-east-1`, `eu-west-1`)
-
----
-
-## Next Steps After Database Connects
-
-Once the database connection works:
-
-1. **Create admin user** (if not exists):
-   - Run SQL in Supabase (see FIX_LOGIN_NOW.md)
-   
-2. **Test login:**
-   - Go to `/admin/login`
-   - Use: `admin@extremedeptkidz.com` / `Admin123!`
+If you're still having issues:
+1. Double-check the connection string from Supabase
+2. Make sure you copied the entire string
+3. Verify the password is correct
+4. Try the direct connection instead of pooling

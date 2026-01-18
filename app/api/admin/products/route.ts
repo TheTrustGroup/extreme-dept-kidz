@@ -4,10 +4,18 @@ import { getAllProducts, createProduct, getDatabaseStatus } from "@/lib/db";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Viewing products requires viewer role or higher
+  const auth = await authenticateAndAuthorize(request, 'viewer');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+  }
   try {
     const products = await getAllProducts();
     const dbStatus = await getDatabaseStatus();
@@ -41,6 +49,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Creating products requires admin role or higher
+  const auth = await authenticateAndAuthorize(request, 'admin');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to create products.' }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
 
@@ -144,6 +159,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails
     }
+
+    // Log activity
+    await logActivity({
+      adminUserId: auth.user!.id,
+      action: ActivityActions.PRODUCT_CREATED,
+      resource: 'Product',
+      resourceId: product.id,
+      details: {
+        name: product.name,
+        price: product.price,
+        sku: product.sku,
+      },
+    }, request);
 
     return apiSuccess(
       product,

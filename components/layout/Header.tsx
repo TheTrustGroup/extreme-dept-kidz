@@ -96,8 +96,8 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
               </Link>
             </m.div>
 
-            {/* Desktop Navigation */}
-            <nav id="main-navigation" className="hidden xl:flex items-center space-x-8 2xl:space-x-10" aria-label="Main navigation">
+            {/* Desktop Navigation - Design System: Show at lg breakpoint (1024px) for better tablet experience */}
+            <nav id="main-navigation" className="hidden lg:flex items-center space-x-8 2xl:space-x-10" aria-label="Main navigation">
               {navLinks.map((link) => (
                 <div
                   key={link.label}

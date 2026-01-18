@@ -86,7 +86,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // 4. ADMIN ROUTE PROTECTION
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+  // Allow access to login, forgot-password, and reset-password pages without auth
+  const publicAdminRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
+  const isPublicAdminRoute = publicAdminRoutes.some(route => pathname.startsWith(route));
+  
+  if (pathname.startsWith("/admin") && !isPublicAdminRoute) {
     const token = request.cookies.get("admin-token")?.value;
 
     if (!token) {

@@ -15,7 +15,7 @@ export function AuthSync(): JSX.Element {
   // Sync auth on mount
   React.useEffect(() => {
     if (token && isAuthenticated) {
-      syncCookie();
+      // NOTE: Cookie is httpOnly and managed by server, no client-side sync needed
       // Delay refresh to avoid race conditions with initial auth check
       // Increased delay to ensure everything is initialized
       setTimeout(() => {
@@ -35,25 +35,28 @@ export function AuthSync(): JSX.Element {
     }
   }, []); // Only on mount
 
-  // Sync cookie periodically (every 5 minutes)
+  // Periodic auth refresh (every 5 minutes)
+  // NOTE: Cookie is httpOnly and managed by server, no client-side sync needed
   React.useEffect(() => {
     if (!token || !isAuthenticated) return;
 
     const interval = setInterval(() => {
-      syncCookie();
-      console.log("[AuthSync] Periodic cookie sync");
+      refreshAuth().catch((error) => {
+        console.error("[AuthSync] Periodic refresh error:", error);
+      });
+      console.log("[AuthSync] Periodic auth refresh");
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
-  }, [token, isAuthenticated, syncCookie]);
+  }, [token, isAuthenticated, refreshAuth]);
 
-  // Sync on visibility change (when user returns to tab)
+  // Refresh on visibility change (when user returns to tab)
+  // NOTE: Cookie is httpOnly and managed by server, no client-side sync needed
   React.useEffect(() => {
     if (!token || !isAuthenticated) return;
 
     const handleVisibilityChange = (): void => {
       if (document.visibilityState === "visible") {
-        syncCookie();
         // Only refresh if we still have auth state
         const currentState = useAdminAuth.getState();
         if (currentState.token && currentState.isAuthenticated) {
@@ -61,7 +64,7 @@ export function AuthSync(): JSX.Element {
             console.error("[AuthSync] Visibility change refresh error:", error);
             // Don't logout on refresh errors - might be transient
           });
-          console.log("[AuthSync] Synced on visibility change");
+          console.log("[AuthSync] Refreshed on visibility change");
         }
       }
     };
@@ -70,7 +73,7 @@ export function AuthSync(): JSX.Element {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [token, isAuthenticated, syncCookie, refreshAuth]);
+  }, [token, isAuthenticated, refreshAuth]);
 
   return <></>; // This is a utility component with no UI
 }

@@ -2,10 +2,17 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Viewing inventory requires manager role or higher
+  const auth = await authenticateAndAuthorize(request, 'manager');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Manager role required to view inventory.' }, { status: 403 });
+  }
   try {
     if (!prisma) {
       return apiError("Database not available", 500);
@@ -18,8 +25,28 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
             id: true,
             name: true,
             slug: true,
+            price: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+            images: {
+              where: {
+                isPrimary: true,
+              },
+              take: 1,
+              select: {
+                url: true,
+              },
+            },
           },
         },
+      },
+      where: {
+        isActive: true,
       },
       orderBy: {
         product: {
@@ -28,11 +55,26 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       },
     });
 
+    // Transform to table format
+    const tableVariants = variants.map(v => ({
+      id: v.id,
+      productId: v.product.id,
+      productName: v.product.name,
+      category: v.product.category?.name || 'Uncategorized',
+      sku: v.sku,
+      size: v.size,
+      stock: v.stock,
+      lowStockThreshold: v.lowStockThreshold,
+      price: v.price || v.product.price || 0,
+      imageUrl: v.product.images[0]?.url,
+    }));
+
     return apiSuccess(
       {
-        variants,
+        variants: tableVariants,
         count: variants.length,
-        lowStock: variants.filter(v => v.stock < 10).length,
+        lowStock: variants.filter(v => v.stock > 0 && v.stock <= v.lowStockThreshold).length,
+        outOfStock: variants.filter(v => v.stock === 0).length,
       },
       "Inventory fetched successfully"
     );

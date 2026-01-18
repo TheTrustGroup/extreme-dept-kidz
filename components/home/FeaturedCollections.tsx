@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
-import { H2 } from "@/components/ui/typography";
+import { H2, H3 } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 
 interface Collection {
@@ -38,16 +38,28 @@ const collections: Collection[] = [
 
 export function FeaturedCollections(): JSX.Element {
   return (
-    <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
+    <section 
+      // Design System: XLarge section spacing - 48px mobile, 80px tablet, 128px desktop
+      className="py-12 md:py-20 lg:py-32 bg-cream-50"
+      aria-labelledby="collections-heading"
+    >
       <Container size="lg">
-        <div className="space-y-8 xs:space-y-10 sm:space-y-12 md:space-y-14 lg:space-y-16">
+        {/* Design System: Large spacing between header and content - 32px mobile, 48px desktop */}
+        <div className="space-y-8 lg:space-y-12">
           {/* Section Title */}
           <div className="text-center">
-            <H2 className="text-charcoal-900 text-2xl xs:text-3xl sm:text-4xl">Collections</H2>
+            <H2 id="collections-heading" className="text-charcoal-900">
+              Collections
+            </H2>
           </div>
 
           {/* Collections Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-5 sm:gap-6 md:gap-8 lg:gap-10">
+          <div 
+            // Design System: Grid gaps - 16px mobile, 20px tablet, 24px desktop, 32px large desktop
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8"
+            role="list"
+            aria-label="Featured collections"
+          >
             {collections.map((collection, index) => (
               <CollectionCard
                 key={collection.id}
@@ -79,11 +91,17 @@ function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element
         delay: index * 0.08,
         ease: "easeInOut",
       }}
+      role="listitem"
     >
-      <Link href={collection.href} className="block group">
+      <Link 
+        href={collection.href} 
+        className="block group focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-xl"
+        aria-label={`View ${collection.name} collection`}
+      >
         <m.div
           className={cn(
             "relative overflow-hidden rounded-xl",
+            // Design System: Shadow levels (Tier 2)
             "bg-cream-100 shadow-sm",
             "aspect-[4/5] md:aspect-[3/4]",
             "transition-all duration-300"
@@ -98,13 +116,18 @@ function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element
                 src={collection.image}
                 loading="lazy"
                 quality={85}
-                alt={collection.name}
+                alt={`${collection.name} collection - ${collection.name} products`}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 30vw"
+                aria-hidden="false"
               />
             ) : (
-              <div className="w-full h-full bg-cream-200" />
+              <div 
+                className="w-full h-full bg-cream-200" 
+                aria-label={`${collection.name} collection placeholder`}
+                role="img"
+              />
             )}
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/20 to-transparent" />
@@ -112,9 +135,9 @@ function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element
 
           {/* Collection Name Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-semibold text-cream-50 tracking-tight">
+            <H3 className="text-cream-50">
               {collection.name}
-            </h3>
+            </H3>
           </div>
 
           {/* Hover Shadow Effect */}

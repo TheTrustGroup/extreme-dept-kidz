@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { authenticateRequest } from "@/lib/auth/middleware";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { apiSuccess, apiError, apiNotFound, apiUnauthorized } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 
@@ -13,12 +13,14 @@ export const dynamic = "force-dynamic";
  * Accepts bulk updates for a product's sizes.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // RBAC: Syncing inventory requires manager role or higher
+  const auth = await authenticateAndAuthorize(request, 'manager');
+  if (auth.error) return auth.error;
+  if (!auth.authorized) {
+    return NextResponse.json({ error: 'Insufficient permissions. Manager role required to sync inventory.' }, { status: 403 });
+  }
+
   try {
-    // Authenticate admin user
-    const authResult = await authenticateRequest(request);
-    if (authResult.error || !authResult.user) {
-      return authResult.error || apiUnauthorized("Admin authentication required");
-    }
 
     if (!prisma) {
       return apiError("Database not available", 500);

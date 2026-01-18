@@ -74,12 +74,19 @@ export default function AdminLoginPage(): JSX.Element {
       console.log('[LoginPage] Login result:', success);
       
       if (success) {
-        console.log('[LoginPage] Login successful, redirecting...');
-        // Small delay to ensure cookie is set before navigation
+        console.log('[LoginPage] Login successful, preparing redirect...');
+        
+        // CRITICAL: Wait longer to ensure:
+        // 1. Server cookie is fully set (httpOnly cookie from server response)
+        // 2. Zustand state is persisted to localStorage
+        // 3. Browser has processed the Set-Cookie header
+        // Use window.location instead of router.push for a full page reload
+        // This ensures middleware can read the cookie properly
         setTimeout(() => {
-          router.push("/admin");
-          router.refresh(); // Force refresh to update auth state
-        }, 300);
+          console.log('[LoginPage] Redirecting to admin dashboard...');
+          // Use window.location for full page reload to ensure cookie is available
+          window.location.href = "/admin";
+        }, 500);
       } else {
         console.log('[LoginPage] Login failed - invalid credentials');
         setError("Invalid email or password. Please try again.");
@@ -205,6 +212,7 @@ export default function AdminLoginPage(): JSX.Element {
               </label>
               <button
                 type="button"
+                onClick={() => router.push('/admin/forgot-password')}
                 className="text-sm text-navy-900 hover:text-navy-700 font-medium transition-colors"
               >
                 Forgot password?

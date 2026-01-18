@@ -35,8 +35,9 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
 
   // Check authentication on mount only (not on every route change)
   React.useEffect(() => {
-    // Don't check auth on login page
-    if (pathname === "/admin/login") {
+    // Don't check auth on public pages (login, forgot-password, reset-password)
+    const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
+    if (publicRoutes.includes(pathname)) {
       setCheckingAuth(false);
       setHasCheckedAuth(false);
       return;
@@ -49,12 +50,14 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
     }
 
     // If we have a token and user from persisted state, trust it initially
+    // This handles the case where user just logged in and is being redirected
     if (token && isAuthenticated && user && !hasCheckedAuth) {
-      // Do a background check without blocking UI
+      // For fresh logins, give more time for cookie to be available
+      // The cookie is set by server (httpOnly) and might not be immediately available
       setCheckingAuth(false);
       setHasCheckedAuth(true);
       
-      // Verify in background (non-blocking) with delay to avoid race conditions
+      // Verify in background with longer delay for post-login scenarios
       setTimeout(() => {
         checkAuth().then((authenticated) => {
           if (!authenticated) {
@@ -63,6 +66,20 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
             if (!currentState.isAuthenticated || !currentState.user || !currentState.token) {
               console.warn('[AdminLayout] Auth check failed, redirecting to login');
               router.push("/admin/login");
+            } else {
+              // If we have state but checkAuth failed, might be transient error
+              // Try once more after a short delay
+              setTimeout(() => {
+                checkAuth().then((retryAuth) => {
+                  if (!retryAuth) {
+                    const finalState = useAdminAuth.getState();
+                    if (!finalState.isAuthenticated || !finalState.user || !finalState.token) {
+                      console.warn('[AdminLayout] Retry auth check failed, redirecting to login');
+                      router.push("/admin/login");
+                    }
+                  }
+                });
+              }, 1000);
             }
           }
         }).catch((error) => {
@@ -73,7 +90,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
             router.push("/admin/login");
           }
         });
-      }, 1000); // Increased delay to let AuthSync initialize properly
+      }, 1500); // Increased delay to ensure cookie is available after login redirect
       return;
     }
 
@@ -103,8 +120,9 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount, not on pathname changes
 
-  // Don't render layout on login page
-  if (pathname === "/admin/login") {
+  // Don't render layout on public pages (login, forgot-password, reset-password)
+  const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
+  if (publicRoutes.includes(pathname)) {
     return <>{children}</>;
   }
 

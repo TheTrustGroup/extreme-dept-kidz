@@ -51,6 +51,7 @@ export function HeroSection(): JSX.Element {
       style={{
         isolation: "isolate",
       }}
+      aria-label="Hero section"
     >
       {/* Hero Video with Parallax */}
       <m.div
@@ -86,6 +87,7 @@ export function HeroSection(): JSX.Element {
             onLoadedData={() => setIsLoaded(true)}
             onCanPlay={() => setIsLoaded(true)}
             onLoadedMetadata={() => setIsLoaded(true)}
+            aria-label="Hero background video showcasing Extreme Dept Kidz collection"
           >
             <source src="/Hero Video Extreme.MOV" type="video/quicktime" />
             <source src="/Hero Video Extreme.MOV" type="video/mp4" />
@@ -155,11 +157,11 @@ export function HeroSection(): JSX.Element {
                 "text-sm sm:text-base md:text-lg",
                 "px-6 sm:px-7 md:px-8 lg:px-10",
                 "py-5 sm:py-5.5 md:py-6 lg:py-7",
-                "shadow-2xl"
+                "shadow-2xl min-h-[44px]"
               )}
               asChild
             >
-              <Link href="/collections/boys">SHOP BOYS</Link>
+              <Link href="/collections/boys" aria-label="Shop boys collection">SHOP BOYS</Link>
             </Button>
             <Button
               variant="secondary"
@@ -172,11 +174,11 @@ export function HeroSection(): JSX.Element {
                 "text-sm sm:text-base md:text-lg",
                 "px-6 sm:px-7 md:px-8 lg:px-10",
                 "py-5 sm:py-5.5 md:py-6 lg:py-7",
-                "shadow-2xl backdrop-blur-sm"
+                "shadow-2xl backdrop-blur-sm min-h-[44px]"
               )}
               asChild
             >
-              <Link href="/collections/new-arrivals">NEW ARRIVALS</Link>
+              <Link href="/collections/new-arrivals" aria-label="View new arrivals">NEW ARRIVALS</Link>
             </Button>
           </m.div>
           </div>
@@ -192,6 +194,7 @@ export function HeroSection(): JSX.Element {
         style={{
           filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8))",
         }}
+        aria-hidden="true"
       >
         <m.div
           className="w-6 h-10 border-2 border-cream-50 rounded-full flex items-start justify-center p-2 backdrop-blur-sm"
