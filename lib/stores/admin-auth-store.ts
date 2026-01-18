@@ -5,7 +5,6 @@
  */
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 export type AdminRole = "super_admin" | "admin" | "manager" | "viewer";
 
@@ -82,8 +81,7 @@ let lastAuthCheck = 0;
 const AUTH_CHECK_INTERVAL = 30000; // 30 seconds minimum between checks
 
 export const useAdminAuth = create<AdminAuthState>()(
-  persist(
-    (set, get) => ({
+  (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
@@ -92,20 +90,13 @@ export const useAdminAuth = create<AdminAuthState>()(
         try {
           console.log('[Auth] Starting login for:', email);
           
-          // Clear any existing invalid cookies and localStorage first
+          // Clear any existing invalid cookies (middleware handles auth)
           if (typeof window !== 'undefined') {
             // Clear cookie
             document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             document.cookie = 'admin-token=; path=/; domain=' + window.location.hostname + '; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             
-            // Clear localStorage auth data
-            try {
-              localStorage.removeItem('admin-auth-storage');
-            } catch (e) {
-              console.warn('[Auth] Could not clear localStorage:', e);
-            }
-            
-            // Clear any stale state
+            // Clear any stale state (no localStorage - cookie is source of truth)
             set({
               user: null,
               token: null,
@@ -194,13 +185,9 @@ export const useAdminAuth = create<AdminAuthState>()(
             isAuthenticated: true,
           });
 
-          // NOTE: Cookie is set by server (httpOnly), so we don't need to set it client-side
-          // The server sets the cookie in the response, which is automatically included in subsequent requests
-          // We only sync non-httpOnly cookies if needed, but admin-token is httpOnly for security
+          // NOTE: Cookie is set by server (httpOnly) - this is the ONLY source of truth
+          // No localStorage - middleware validates cookie on every request
           console.log('[Auth] ✅ Auth state set. Cookie is set by server (httpOnly).');
-          
-          // Wait a moment to ensure state is persisted to localStorage
-          await new Promise(resolve => setTimeout(resolve, 200));
 
           // Reset auth check timer on successful login
           lastAuthCheck = Date.now();
@@ -236,9 +223,11 @@ export const useAdminAuth = create<AdminAuthState>()(
         });
         lastAuthCheck = 0;
         
-        // CRITICAL: Clear cookie from client side too
+        // CRITICAL: Clear cookie from client side
+        // Middleware will redirect to /admin/login on next request
         if (typeof window !== 'undefined') {
           document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          // Do NOT redirect here - let middleware handle it
           window.location.href = '/admin/login';
         }
       },
@@ -251,18 +240,14 @@ export const useAdminAuth = create<AdminAuthState>()(
           return;
         }
 
-        // Ensure cookie is synced
-        if (typeof window !== 'undefined') {
-          const isProduction = process.env.NODE_ENV === 'production';
-          const maxAge = 60 * 60 * 24 * 7; // 7 days
-          document.cookie = `admin-token=${token}; path=/; max-age=${maxAge}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
-        }
+        // NOTE: Cookie is httpOnly and managed by server - cannot be set client-side
+        // Just verify auth via API - cookie is automatically included
 
         try {
           const response = await fetch("/api/admin/auth/me", {
-            credentials: 'include',
+            credentials: 'include', // Cookie automatically included
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${token}`, // Fallback if cookie not ready
             },
             cache: 'no-store',
           });
@@ -282,8 +267,8 @@ export const useAdminAuth = create<AdminAuthState>()(
               token: token,
             });
           } else {
-            // Auth failed, clear state
-            get().logout();
+            // Auth failed, clear state (middleware will handle redirect)
+            set({ user: null, token: null, isAuthenticated: false });
           }
         } catch (error) {
           console.error("Auth refresh error:", error);
@@ -406,22 +391,5 @@ export const useAdminAuth = create<AdminAuthState>()(
         const userPermissions = PERMISSIONS[user.role] || [];
         return userPermissions.includes(permission);
       },
-    }),
-    {
-      name: "admin-auth-storage",
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        isAuthenticated: state.isAuthenticated,
-      }),
-      onRehydrateStorage: () => (state) => {
-        // NOTE: Cookie is httpOnly and managed by server
-        // On hydration, we just restore the state from localStorage
-        // The cookie is automatically included in API requests by the browser
-        if (state?.token && typeof window !== 'undefined') {
-          console.log('[Auth] State rehydrated from localStorage');
-        }
-      },
-    }
-  )
+    })
 );
