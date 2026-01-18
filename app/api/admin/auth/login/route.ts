@@ -243,16 +243,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Create response with token in both JSON and cookie
     // Note: Must match the format expected by admin-auth-store.ts
-    const response = NextResponse.json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-    });
+    let response: NextResponse;
+    try {
+      response = NextResponse.json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name || 'Admin User', // Fallback if name is null
+          role: user.role,
+        },
+      });
+      logger.log('[Login] ✅ Response JSON created successfully');
+    } catch (jsonError) {
+      logger.error('[Login] ❌ Failed to create JSON response:', jsonError);
+      throw new Error(`Failed to create response: ${jsonError instanceof Error ? jsonError.message : 'Unknown error'}`);
+    }
     
     // CRITICAL: Add cache-busting headers to prevent any caching
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -271,16 +278,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Set cookie for middleware authentication
     // CRITICAL: Cookie must be set correctly for authentication to work
-    const isProduction = process.env.NODE_ENV === 'production';
-    response.cookies.set('admin-token', token, {
-      httpOnly: true, // Prevents XSS attacks
-      secure: isProduction, // HTTPS only in production
-      sameSite: 'lax', // Works for same-site requests, allows top-level navigation
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/', // Available site-wide
-    });
-    
-    logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: lax)`);
+    try {
+      const isProduction = process.env.NODE_ENV === 'production';
+      response.cookies.set('admin-token', token, {
+        httpOnly: true, // Prevents XSS attacks
+        secure: isProduction, // HTTPS only in production
+        sameSite: 'lax', // Works for same-site requests, allows top-level navigation
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/', // Available site-wide
+      });
+      logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: lax)`);
+    } catch (cookieError) {
+      logger.error('[Login] ❌ Failed to set cookie:', cookieError);
+      // Don't fail login if cookie setting fails - token is still in response body
+      logger.warn('[Login] ⚠️ Cookie not set, but token is in response body');
+    }
 
     // Log successful login (non-blocking - don't fail login if this fails)
     try {
