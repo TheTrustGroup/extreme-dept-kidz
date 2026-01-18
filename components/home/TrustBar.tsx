@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Truck, RefreshCw, Shield, Lock } from "lucide-react";
+import { RefreshCw, Shield, Lock } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { cn } from "@/lib/utils";
 
 /**
  * TrustBar Component
@@ -18,7 +17,7 @@ interface TrustItemProps {
 
 function TrustItem({ icon, text }: TrustItemProps): JSX.Element {
   return (
-    <div className="flex items-center gap-2 sm:gap-3">
+    <div className="flex items-center gap-2.5 sm:gap-3">
       <div className="flex-shrink-0 text-forest-600">
         {icon}
       </div>
@@ -32,15 +31,11 @@ function TrustItem({ icon, text }: TrustItemProps): JSX.Element {
 export function TrustBar(): JSX.Element {
   return (
     <section
-      className="bg-cream-100 border-y border-cream-200 py-4"
+      className="bg-cream-100 border-y border-cream-200 py-4 sm:py-5"
       aria-label="Trust signals and value propositions"
     >
       <Container>
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8">
-          <TrustItem
-            icon={<Truck className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />}
-            text="Free Shipping Over ₵800"
-          />
+        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-10 md:gap-12 lg:gap-16">
           <TrustItem
             icon={<RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />}
             text="30-Day Returns"

@@ -164,6 +164,23 @@ export function HeroSection(): JSX.Element {
               <Link href="/collections/boys" aria-label="Shop boys collection">SHOP BOYS</Link>
             </Button>
             <Button
+              variant="primary"
+              size="lg"
+              className={cn(
+                "w-full sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
+                "bg-cream-50 text-charcoal-900",
+                "hover:bg-cream-100 hover:shadow-xl",
+                "transition-all duration-300",
+                "text-sm sm:text-base md:text-lg",
+                "px-6 sm:px-7 md:px-8 lg:px-10",
+                "py-5 sm:py-5.5 md:py-6 lg:py-7",
+                "shadow-2xl min-h-[44px]"
+              )}
+              asChild
+            >
+              <Link href="/collections/girls" aria-label="Shop girls collection">SHOP GIRLS</Link>
+            </Button>
+            <Button
               variant="secondary"
               size="lg"
               className={cn(
