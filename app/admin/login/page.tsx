@@ -25,6 +25,16 @@ export default function AdminLoginPage(): JSX.Element {
 
   const router = useRouter();
   const { login } = useAdminAuth();
+  
+  // Debug: Check if login function is available
+  React.useEffect(() => {
+    if (!login) {
+      console.error('[LoginPage] ⚠️ Login function is not available from useAdminAuth hook');
+      setError("Login system error. Please refresh the page.");
+    } else {
+      console.log('[LoginPage] ✅ Login function available');
+    }
+  }, [login]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
