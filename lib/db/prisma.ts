@@ -36,13 +36,33 @@ function getPrismaClient(): PrismaClientType | null {
     
     // Create new instance
     // Prisma reads DATABASE_URL from environment automatically
-    // Note: For connection poolers (Supabase, PgBouncer), ensure DATABASE_URL includes ?pgbouncer=true
+    // Note: For connection poolers (Supabase, PgBouncer), we need to add ?pgbouncer=true
     // This prevents "prepared statement already exists" errors (42P05)
+    const databaseUrl = process.env.DATABASE_URL || '';
+    const isUsingPooler = databaseUrl.includes('pooler.supabase.com');
+    
+    // Ensure pgbouncer=true is in the connection string when using pooler
+    let finalDatabaseUrl = databaseUrl;
+    if (isUsingPooler && !databaseUrl.includes('pgbouncer=true')) {
+      // Add pgbouncer=true to the connection string
+      finalDatabaseUrl = databaseUrl.includes('?')
+        ? `${databaseUrl}&pgbouncer=true`
+        : `${databaseUrl}?pgbouncer=true`;
+    }
+    
     const client = new PrismaClient({
       log:
         process.env.NODE_ENV === "development"
           ? ["error", "warn"]
           : ["error"],
+      // Override DATABASE_URL if we modified it for pooler
+      ...(isUsingPooler && finalDatabaseUrl !== databaseUrl && {
+        datasources: {
+          db: {
+            url: finalDatabaseUrl,
+          },
+        },
+      }),
     });
 
     // Store in global for development hot-reload
