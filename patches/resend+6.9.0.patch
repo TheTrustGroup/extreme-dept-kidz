@@ -1,0 +1,20 @@
+diff --git a/node_modules/resend/dist/index.d.mts b/node_modules/resend/dist/index.d.mts
+index 0000000..1111111 100644
+--- a/node_modules/resend/dist/index.d.mts
++++ b/node_modules/resend/dist/index.d.mts
+@@ -217,7 +217,7 @@ export interface CreateEmailOptions {
+    * @link https://resend.com/docs/api-reference/emails/send-email#body-parameters
+    */
+-  react: void 0;
++  react?: React.ReactElement | string;
+   /**
+    * The HTML version of the message.
+    *
+@@ -404,7 +404,7 @@ export interface CreateBroadcastOptions {
+    * @link https://resend.com/docs/api-reference/broadcasts/create#body-parameters
+    */
+-  react: void 0;
++  react?: React.ReactElement | string;
+   /**
+    * The HTML version of the message.
+    *
