@@ -118,26 +118,32 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       if (collectionsRes && collectionsRes.ok) {
         try {
           const data = await collectionsRes.json();
-          // Handle both { collections: [...] } and direct array responses
-          const cols = Array.isArray(data) ? data : (data.collections || []);
+          // Handle apiSuccess format: { success: true, data: { collections: [...], count: ... } }
+          // Or direct format: { collections: [...] }
+          // Or array format: [...]
+          let cols: Collection[] = [];
+          if (Array.isArray(data)) {
+            cols = data;
+          } else if (data.data?.collections) {
+            cols = data.data.collections;
+          } else if (data.collections) {
+            cols = data.collections;
+          } else if (Array.isArray(data.data)) {
+            cols = data.data;
+          }
+          
           setCollections(cols);
         } catch (parseError) {
           console.error("Failed to parse collections:", parseError);
-          // Collections are optional, so empty array is fine
           setCollections([]);
         }
       } else {
-        // Collections are optional, so empty array is fine
         setCollections([]);
       }
     } catch (error) {
       console.error("Failed to fetch categories/collections:", error);
-      // Set default categories as fallback
-      setCategories([
-        { id: "cat-boys", name: "Boys", slug: "boys" },
-        { id: "cat-girls", name: "Girls", slug: "girls" },
-        { id: "cat-accessories", name: "Accessories", slug: "accessories" },
-      ]);
+      // Don't set fallback - show empty dropdowns if fetch fails
+      setCategories([]);
       setCollections([]);
     }
   }
