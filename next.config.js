@@ -6,6 +6,12 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   reactStrictMode: true,
   
+  // TypeScript configuration
+  typescript: {
+    // Ignore type errors in node_modules (resend has a type error)
+    ignoreBuildErrors: false,
+  },
+  
   // Image Optimization
   images: {
     remotePatterns: [
@@ -44,6 +50,12 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+  },
+  
+  // TypeScript configuration
+  typescript: {
+    // Ignore build errors from dependencies (resend has type issues)
+    ignoreBuildErrors: false,
   },
   
   // Compiler Options
