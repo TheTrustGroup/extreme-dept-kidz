@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { m } from "framer-motion";
 import { Plus, Search, Filter, Edit, Trash2, Copy, Package } from "lucide-react";
 import { getProducts } from "@/lib/admin-api";
@@ -10,6 +11,8 @@ import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -19,29 +22,39 @@ import type { Product } from "@/types";
  * List, search, filter, and manage all products.
  */
 export default function ProductsPage(): JSX.Element {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [search, setSearch] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [totalPages, setTotalPages] = React.useState(1);
   const [selectedProducts, setSelectedProducts] = React.useState<Set<string>>(new Set());
+  const [deleteConfirm, setDeleteConfirm] = React.useState<{ id: string; name: string } | null>(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = React.useState<boolean>(false);
+  const [deleting, setDeleting] = React.useState(false);
+
+  const loadProducts = React.useCallback(async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const data = await getProducts({ search, page, limit: 50 });
+      setProducts(data.products);
+      setTotalPages(data.totalPages);
+    } catch (error) {
+      console.error("Failed to load products:", error);
+      showToast({
+        type: "error",
+        title: "Failed to Load Products",
+        message: "Could not fetch products. Please refresh the page.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [search, page, showToast]);
 
   React.useEffect(() => {
-    async function loadProducts(): Promise<void> {
-      setLoading(true);
-      try {
-        const data = await getProducts({ search, page, limit: 50 });
-        setProducts(data.products);
-        setTotalPages(data.totalPages);
-      } catch (error) {
-        console.error("Failed to load products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadProducts();
-  }, [search, page]);
+  }, [loadProducts]);
 
   const toggleSelect = (productId: string): void => {
     setSelectedProducts((prev) => {
@@ -61,6 +74,231 @@ export default function ProductsPage(): JSX.Element {
     } else {
       setSelectedProducts(new Set(products.map((p) => p.id)));
     }
+  };
+
+  // Handle individual product delete
+  const handleDelete = (id: string, name: string): void => {
+    setDeleteConfirm({ id, name });
+  };
+
+  // Handle bulk delete
+  const handleBulkDelete = (): void => {
+    if (selectedProducts.size === 0) return;
+    setBulkDeleteConfirm(true);
+  };
+
+  // Confirm individual delete
+  const confirmDelete = async (): Promise<void> => {
+    if (!deleteConfirm) return;
+
+    const { id, name } = deleteConfirm;
+    setDeleteConfirm(null);
+    setDeleting(true);
+
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        showToast({
+          type: "success",
+          title: "Product Deleted",
+          message: `${name} has been deleted successfully`,
+        });
+        // Refresh product list
+        await loadProducts();
+        // Clear selection if deleted product was selected
+        setSelectedProducts((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      } else {
+        const data = await response.json().catch(() => ({}));
+        showToast({
+          type: "error",
+          title: "Delete Failed",
+          message: data.error || data.message || "Failed to delete product. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      showToast({
+        type: "error",
+        title: "Delete Failed",
+        message: "An error occurred while deleting the product. Please try again.",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Confirm bulk delete
+  const confirmBulkDelete = async (): Promise<void> => {
+    if (selectedProducts.size === 0) {
+      setBulkDeleteConfirm(false);
+      return;
+    }
+
+    setBulkDeleteConfirm(false);
+    setDeleting(true);
+
+    const productIds = Array.from(selectedProducts);
+    const productNames = products
+      .filter((p) => productIds.includes(p.id))
+      .map((p) => p.name);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Delete products one by one
+    for (const id of productIds) {
+      try {
+        const response = await fetch(`/api/admin/products/${id}`, {
+          method: "DELETE",
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch (error) {
+        console.error(`Failed to delete product ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    // Show result toast
+    if (successCount > 0 && failCount === 0) {
+      showToast({
+        type: "success",
+        title: "Products Deleted",
+        message: `${successCount} product${successCount !== 1 ? 's' : ''} deleted successfully`,
+      });
+    } else if (successCount > 0 && failCount > 0) {
+      showToast({
+        type: "warning",
+        title: "Partial Success",
+        message: `${successCount} deleted, ${failCount} failed`,
+      });
+    } else {
+      showToast({
+        type: "error",
+        title: "Delete Failed",
+        message: `Failed to delete ${failCount} product${failCount !== 1 ? 's' : ''}`,
+      });
+    }
+
+    // Refresh product list
+    await loadProducts();
+    // Clear selection
+    setSelectedProducts(new Set());
+    setDeleting(false);
+  };
+
+  // Handle change status (bulk)
+  const handleChangeStatus = async (newStatus: boolean): Promise<void> => {
+    if (selectedProducts.size === 0) return;
+
+    setDeleting(true);
+    const productIds = Array.from(selectedProducts);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of productIds) {
+      try {
+        const product = products.find((p) => p.id === id);
+        if (!product) continue;
+
+        const response = await fetch(`/api/admin/products/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            inStock: newStatus,
+          }),
+        });
+
+        if (response.ok) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch (error) {
+        console.error(`Failed to update product ${id}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      showToast({
+        type: "success",
+        title: "Status Updated",
+        message: `${successCount} product${successCount !== 1 ? 's' : ''} status updated`,
+      });
+      await loadProducts();
+    }
+
+    if (failCount > 0) {
+      showToast({
+        type: "error",
+        title: "Update Failed",
+        message: `Failed to update ${failCount} product${failCount !== 1 ? 's' : ''}`,
+      });
+    }
+
+    setSelectedProducts(new Set());
+    setDeleting(false);
+  };
+
+  // Handle export
+  const handleExport = (): void => {
+    if (selectedProducts.size === 0) {
+      showToast({
+        type: "info",
+        title: "No Products Selected",
+        message: "Please select products to export",
+      });
+      return;
+    }
+
+    const productsToExport = products.filter((p) => selectedProducts.has(p.id));
+    const csv = [
+      ["Name", "SKU", "Price", "Category", "Stock", "Status"].join(","),
+      ...productsToExport.map((p) => {
+        const totalStock = p.sizes.reduce((sum, size) => sum + (size.quantity || 0), 0);
+        return [
+          `"${p.name}"`,
+          p.sku || "",
+          formatPrice(p.price),
+          p.category.name,
+          totalStock.toString(),
+          p.inStock ? "Active" : "Out of Stock",
+        ].join(",");
+      }),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `products-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    showToast({
+      type: "success",
+      title: "Export Started",
+      message: `${selectedProducts.size} product${selectedProducts.size !== 1 ? 's' : ''} exported`,
+    });
   };
 
   return (
@@ -114,13 +352,37 @@ export default function ProductsPage(): JSX.Element {
             </span>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" className="shadow-sm hover:shadow-md transition-all">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="shadow-sm hover:shadow-md transition-all"
+              onClick={() => {
+                const allInStock = Array.from(selectedProducts).every(id => {
+                  const product = products.find(p => p.id === id);
+                  return product?.inStock;
+                });
+                handleChangeStatus(!allInStock);
+              }}
+              disabled={deleting}
+            >
               Change Status
             </Button>
-            <Button variant="secondary" size="sm" className="shadow-sm hover:shadow-md transition-all">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="shadow-sm hover:shadow-md transition-all"
+              onClick={handleExport}
+              disabled={deleting}
+            >
               Export
             </Button>
-            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all"
+              onClick={handleBulkDelete}
+              disabled={deleting}
+            >
               Delete
             </Button>
           </div>
@@ -270,6 +532,8 @@ export default function ProductsPage(): JSX.Element {
                             size="sm" 
                             className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all"
                             title="Delete"
+                            onClick={() => handleDelete(product.id, product.name)}
+                            disabled={deleting}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -312,6 +576,29 @@ export default function ProductsPage(): JSX.Element {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialogs */}
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={bulkDeleteConfirm}
+        title="Delete Multiple Products"
+        message={`Are you sure you want to delete ${selectedProducts.size} product${selectedProducts.size !== 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmText="Delete All"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmBulkDelete}
+        onCancel={() => setBulkDeleteConfirm(false)}
+      />
     </div>
   );
 }
