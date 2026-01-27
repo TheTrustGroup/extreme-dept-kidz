@@ -351,8 +351,6 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
           "Content-Type": "application/json",
         },
         credentials: 'include', // Include cookies for authentication
-        },
-        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
