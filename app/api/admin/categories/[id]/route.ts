@@ -5,6 +5,7 @@ import { updateCategorySchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -81,9 +82,18 @@ export async function PUT(
       return apiNotFound("Category");
     }
 
+    // Type-safe data preparation for Prisma
+    const updateData: Prisma.CategoryUpdateInput = {
+      ...(validation.data.name !== undefined && { name: validation.data.name }),
+      ...(validation.data.slug !== undefined && { slug: validation.data.slug }),
+      ...(validation.data.description !== undefined && { description: validation.data.description }),
+      ...(validation.data.image !== undefined && { image: validation.data.image }),
+      ...(validation.data.isActive !== undefined && { isActive: validation.data.isActive }),
+    };
+
     const category = await prisma.category.update({
       where: { id },
-      data: validation.data,
+      data: updateData,
     });
 
     // Log activity

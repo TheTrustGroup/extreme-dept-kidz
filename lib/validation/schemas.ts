@@ -44,7 +44,13 @@ export const createCategorySchema = z.object({
   description: (data.description === '' || !data.description) ? undefined : data.description,
 }));
 
-export const updateCategorySchema = createCategorySchema.partial();
+export const updateCategorySchema = createCategorySchema.partial().transform(data => ({
+  ...data,
+  // Convert empty strings to undefined for optional fields
+  slug: (data.slug === '' || !data.slug) ? undefined : data.slug,
+  image: (data.image === '' || !data.image) ? undefined : data.image,
+  description: (data.description === '' || !data.description) ? undefined : data.description,
+}));
 
 // Collection schemas
 export const createCollectionSchema = z.object({
