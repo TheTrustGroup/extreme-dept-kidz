@@ -131,10 +131,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
     
     let bundlePrice = Math.round(bundlePriceValue * 100); // Convert to cents
-    if (validatedData.bundleDiscount && validatedData.bundleDiscount > 0) {
-      const totalPrice = products.reduce((sum, p) => sum + p.price, 0);
-      const discountAmount = Math.round(totalPrice * (validatedData.bundleDiscount / 100));
-      bundlePrice = totalPrice - discountAmount;
+    if (validatedData.bundleDiscount !== undefined && validatedData.bundleDiscount !== null) {
+      const bundleDiscountValue = typeof validatedData.bundleDiscount === 'number' 
+        ? validatedData.bundleDiscount 
+        : parseFloat(String(validatedData.bundleDiscount));
+      if (!isNaN(bundleDiscountValue) && bundleDiscountValue > 0 && bundleDiscountValue <= 100) {
+        const totalPrice = products.reduce((sum, p) => sum + p.price, 0);
+        const discountAmount = Math.round(totalPrice * (bundleDiscountValue / 100));
+        bundlePrice = totalPrice - discountAmount;
+      }
     }
 
     // Create complete look

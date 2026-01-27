@@ -59,9 +59,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     // Transform to match frontend format
-    const transformedLooks = looks.map(look => {
-      const products = look.products.map(p => p.product);
-      const totalPrice = products.reduce((sum, p) => sum + p.price, 0);
+    const transformedLooks = looks.map((look: any) => {
+      const products = look.products.map((p: any) => p.product);
+      const totalPrice = products.reduce((sum: number, p: any) => sum + p.price, 0);
       const bundlePrice = look.bundlePrice;
       const savings = totalPrice - bundlePrice;
 
@@ -78,13 +78,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         featured: look.featured,
         tags: look.tags,
         ageRange: look.ageRange,
-        products: look.products.map(p => ({
+        products: look.products.map((p: any) => ({
           productId: p.productId,
           product: p.product,
           required: p.isRequired,
           isOptional: !p.isRequired,
         })),
-        items: look.products.map(p => ({
+        items: look.products.map((p: any) => ({
           productId: p.productId,
           product: p.product,
           required: p.isRequired,

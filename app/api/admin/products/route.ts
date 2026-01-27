@@ -141,9 +141,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const price = Math.round(priceValue * 100);
 
     // Normalize originalPrice
-    const originalPrice = validatedData.originalPrice
-      ? Math.round(validatedData.originalPrice * 100)
-      : null;
+    let originalPrice: number | null = null;
+    if (validatedData.originalPrice !== undefined && validatedData.originalPrice !== null) {
+      const originalPriceValue = typeof validatedData.originalPrice === 'number' 
+        ? validatedData.originalPrice 
+        : parseFloat(String(validatedData.originalPrice));
+      if (!isNaN(originalPriceValue) && originalPriceValue > 0) {
+        originalPrice = Math.round(originalPriceValue * 100);
+      }
+    }
 
     // Generate slug if not provided
     const slug = validatedData.slug || String(validatedData.name || 'product').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
