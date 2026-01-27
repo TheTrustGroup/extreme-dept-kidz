@@ -21,7 +21,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
-    const products = await prisma.product.findMany({
+    const prismaProducts = await prisma.product.findMany({
       include: {
         category: true,
         images: {
@@ -39,6 +39,36 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         createdAt: 'desc',
       },
     });
+
+    // Transform Prisma products to Product type format (variants -> sizes)
+    const products = prismaProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price,
+      originalPrice: p.originalPrice ?? undefined,
+      sku: p.sku ?? undefined,
+      inStock: p.inStock,
+      images: p.images.map((img) => ({
+        url: img.url,
+        alt: img.alt ?? undefined,
+        isPrimary: img.isPrimary,
+      })),
+      sizes: p.variants.map((v) => ({
+        size: v.size,
+        inStock: v.stock > 0,
+        quantity: v.stock,
+      })),
+      category: {
+        id: p.category.id,
+        name: p.category.name,
+        slug: p.category.slug,
+      },
+      tags: p.tags.map((t) => t.name),
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+    }));
 
     return apiSuccess(
       {

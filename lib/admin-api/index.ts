@@ -91,35 +91,59 @@ export async function getProducts(params?: {
   limit?: number;
 }): Promise<ProductsResponse> {
   try {
-    // Use database abstraction layer (with automatic fallback to mock)
-    let products = await getAllProducts();
-
-    // Apply search
+    // Call the API endpoint instead of using database abstraction layer directly
+    // This works in both client and server contexts
+    const searchParams = new URLSearchParams();
     if (params?.search) {
-      const searchLower = params.search.toLowerCase();
-      products = products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchLower) ||
-          p.description.toLowerCase().includes(searchLower) ||
-          p.sku?.toLowerCase().includes(searchLower)
-      );
+      searchParams.set('search', params.search);
+    }
+    if (params?.page) {
+      searchParams.set('page', params.page.toString());
+    }
+    if (params?.limit) {
+      searchParams.set('limit', params.limit.toString());
     }
 
-    // Apply filters (simplified)
-    if (params?.filters) {
-      // Filter logic here
+    const url = `/api/admin/products${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response = await fetch(url, {
+      credentials: 'include', // Include cookies for authentication
+      cache: 'no-store', // Always fetch fresh data
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      console.error('[Admin API] Failed to fetch products:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+      });
+      throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
     }
 
+    const data = await response.json();
+    
+    // Handle apiSuccess format
+    const products = data.data?.products || data.products || [];
+    const total = data.data?.count || products.length || 0;
     const page = params?.page || 1;
     const limit = params?.limit || 50;
-    const start = (page - 1) * limit;
-    const end = start + limit;
+    const totalPages = Math.ceil(total / limit);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Admin API] Products fetched:', {
+        count: products.length,
+        total,
+        page,
+        totalPages,
+        firstProduct: products[0]?.name || 'none',
+      });
+    }
 
     return {
-      products: products.slice(start, end),
-      total: products.length,
+      products: Array.isArray(products) ? products : [],
+      total,
       page,
-      totalPages: Math.ceil(products.length / limit),
+      totalPages,
     };
   } catch (error) {
     console.error('Failed to get products:', error);
