@@ -137,7 +137,9 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
     if (!productId) return;
 
     try {
-      const response = await fetch(`/api/admin/products/${productId}`);
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        credentials: 'include', // Include cookies for authentication
+      });
       if (response.ok) {
         const product = await response.json();
         setFormData({

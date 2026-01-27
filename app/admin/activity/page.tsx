@@ -71,7 +71,9 @@ export default function ActivityLogPage(): JSX.Element {
       params.set('limit', pagination.limit.toString());
       params.set('offset', pagination.offset.toString());
 
-      const response = await fetch(`/api/admin/activity?${params.toString()}`);
+      const response = await fetch(`/api/admin/activity?${params.toString()}`, {
+        credentials: 'include', // Include cookies for authentication
+      });
       const data: { success: boolean; data: ActivityLogsResponse } = await response.json();
 
       if (data.success && data.data) {
@@ -107,7 +109,9 @@ export default function ActivityLogPage(): JSX.Element {
         if (value) params.set(key, value);
       });
       
-      const response = await fetch(`/api/admin/activity/export?${params.toString()}`);
+      const response = await fetch(`/api/admin/activity/export?${params.toString()}`, {
+        credentials: 'include', // Include cookies for authentication
+      });
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

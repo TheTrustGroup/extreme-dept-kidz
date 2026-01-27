@@ -39,7 +39,9 @@ export default function ResetPasswordPage(): JSX.Element {
       }
 
       try {
-        const response = await fetch(`/api/admin/auth/password-reset/verify?token=${encodeURIComponent(token)}`);
+        const response = await fetch(`/api/admin/auth/password-reset/verify?token=${encodeURIComponent(token)}`, {
+          credentials: 'include', // Include cookies for authentication
+        });
         const data = await response.json();
 
         if (!response.ok || !data.data?.valid) {

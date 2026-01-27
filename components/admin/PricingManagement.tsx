@@ -52,6 +52,7 @@ export function PricingManagement(): JSX.Element {
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           ...products.find((p) => p.id === productId),
           price: editData.price,
