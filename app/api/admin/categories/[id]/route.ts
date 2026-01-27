@@ -83,12 +83,21 @@ export async function PUT(
     }
 
     // Type-safe data preparation for Prisma
+    // validation.data is guaranteed to be the correct type after validation.success check
+    const validatedData = validation.data as {
+      name?: string;
+      slug?: string;
+      description?: string;
+      image?: string;
+      isActive?: boolean;
+    };
+
     const updateData: Prisma.CategoryUpdateInput = {
-      ...(validation.data.name !== undefined && { name: validation.data.name }),
-      ...(validation.data.slug !== undefined && { slug: validation.data.slug }),
-      ...(validation.data.description !== undefined && { description: validation.data.description }),
-      ...(validation.data.image !== undefined && { image: validation.data.image }),
-      ...(validation.data.isActive !== undefined && { isActive: validation.data.isActive }),
+      ...(validatedData.name !== undefined && { name: validatedData.name }),
+      ...(validatedData.slug !== undefined && { slug: validatedData.slug }),
+      ...(validatedData.description !== undefined && { description: validatedData.description }),
+      ...(validatedData.image !== undefined && { image: validatedData.image }),
+      ...(validatedData.isActive !== undefined && { isActive: validatedData.isActive }),
     };
 
     const category = await prisma.category.update({
