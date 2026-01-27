@@ -39,7 +39,18 @@ export function AdminDashboard(): JSX.Element {
             });
           }
         } else {
-          console.error("Failed to fetch stats:", response.status, response.statusText);
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Failed to fetch stats:", response.status, response.statusText, errorData);
+          
+          // If authentication error, redirect to login
+          if (response.status === 401) {
+            const errorMessage = errorData.error || 'Authentication required';
+            if (errorMessage.includes('token') || errorMessage.includes('expired')) {
+              // Token expired or invalid - redirect to login
+              window.location.href = '/admin/login';
+              return;
+            }
+          }
         }
       } catch (error) {
         console.error("Failed to fetch stats:", error);
