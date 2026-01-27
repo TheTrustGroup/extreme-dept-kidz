@@ -29,7 +29,9 @@ export async function GET(
       where: { id },
       include: {
         category: true,
-        images: true,
+        images: {
+          orderBy: { order: 'asc' },
+        },
         variants: true,
         tags: true,
         collections: {
@@ -44,7 +46,13 @@ export async function GET(
       return apiNotFound("Product");
     }
 
-    return apiSuccess(product, "Product fetched successfully");
+    // Transform to include categoryId for form compatibility
+    const productWithCategoryId = {
+      ...product,
+      categoryId: product.categoryId || product.category?.id,
+    };
+
+    return apiSuccess(productWithCategoryId, "Product fetched successfully");
   } catch (error) {
     logger.error("Failed to fetch product:", error);
     return apiError(

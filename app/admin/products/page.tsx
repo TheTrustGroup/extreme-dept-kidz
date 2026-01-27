@@ -13,6 +13,7 @@ import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -302,7 +303,8 @@ export default function ProductsPage(): JSX.Element {
   };
 
   return (
-    <div className="space-y-6">
+    <ErrorBoundary>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -599,6 +601,7 @@ export default function ProductsPage(): JSX.Element {
         onConfirm={confirmBulkDelete}
         onCancel={() => setBulkDeleteConfirm(false)}
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

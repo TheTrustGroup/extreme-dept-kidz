@@ -153,46 +153,84 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
   async function fetchProduct(): Promise<void> {
     if (!productId) return;
 
+    setLoading(true);
     try {
       const response = await fetch(`/api/admin/products/${productId}`, {
         credentials: 'include', // Include cookies for authentication
       });
-      if (response.ok) {
-        const product = await response.json();
-        setFormData({
-          name: product.name || "",
-          slug: product.slug || "",
-          description: product.description || "",
-          price: (product.price / 100).toFixed(2),
-          originalPrice: product.originalPrice
-            ? (product.originalPrice / 100).toFixed(2)
-            : "",
-          sku: product.sku || "",
-          categoryId: product.categoryId || "",
-          images:
-            product.images?.length > 0
-              ? product.images.map((img: { url: string; alt: string; isPrimary: boolean; order: number }) => ({
-                  url: img.url,
-                  alt: img.alt || "",
-                  isPrimary: img.isPrimary,
-                  order: img.order,
-                }))
-              : [{ url: "", alt: "", isPrimary: true, order: 0 }],
-          variants:
-            product.variants?.length > 0
-              ? product.variants.map((v: { size: string; sku: string; stock: number }) => ({
-                  size: v.size,
-                  sku: v.sku,
-                  stock: v.stock,
-                }))
-              : [{ size: "", sku: "", stock: 0 }],
-          tags: product.tags?.map((t: { name: string }) => t.name) || [],
-          collections:
-            product.collections?.map((c: { collectionId: string }) => c.collectionId) || [],
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+        showToast({
+          type: "error",
+          title: "Failed to Load Product",
+          message: errorMessage,
         });
+        setLoading(false);
+        return;
       }
+
+      const responseData = await response.json();
+      
+      // Handle apiSuccess format: { success: true, data: {...} }
+      // Or direct product format: {...}
+      const product = responseData.success !== false && responseData.data 
+        ? responseData.data 
+        : responseData;
+
+      if (!product || !product.id) {
+        showToast({
+          type: "error",
+          title: "Invalid Product Data",
+          message: "The product data received is invalid. Please try again.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      setFormData({
+        name: product.name || "",
+        slug: product.slug || "",
+        description: product.description || "",
+        price: product.price ? (typeof product.price === 'number' ? (product.price / 100).toFixed(2) : product.price) : "",
+        originalPrice: product.originalPrice
+          ? (typeof product.originalPrice === 'number' ? (product.originalPrice / 100).toFixed(2) : product.originalPrice)
+          : "",
+        sku: product.sku || "",
+        categoryId: product.categoryId || product.category?.id || "",
+        images:
+          product.images?.length > 0
+            ? product.images.map((img: { url: string; alt?: string; isPrimary?: boolean; order?: number }) => ({
+                url: img.url,
+                alt: img.alt || "",
+                isPrimary: img.isPrimary ?? false,
+                order: img.order ?? 0,
+              }))
+            : [{ url: "", alt: "", isPrimary: true, order: 0 }],
+        variants:
+          product.variants?.length > 0
+            ? product.variants.map((v: { size: string; sku?: string; stock: number }) => ({
+                size: v.size,
+                sku: v.sku || "",
+                stock: v.stock || 0,
+              }))
+            : [{ size: "", sku: "", stock: 0 }],
+        tags: product.tags?.map((t: { name: string } | string) => typeof t === 'string' ? t : t.name) || [],
+        collections:
+          product.collections?.map((c: { collectionId?: string; collection?: { id: string } }) => 
+            c.collectionId || c.collection?.id || ""
+          ).filter(Boolean) || [],
+      });
     } catch (error) {
       console.error("Failed to fetch product:", error);
+      showToast({
+        type: "error",
+        title: "Failed to Load Product",
+        message: error instanceof Error ? error.message : "An error occurred while loading the product. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   }
 
