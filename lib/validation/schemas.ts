@@ -32,11 +32,17 @@ export const updateProductSchema = createProductSchema.partial();
 // Category schemas
 export const createCategorySchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
-  description: z.string().max(500).optional(),
-  slug: z.string().min(1).max(100).optional(),
-  image: z.string().url().optional(),
+  description: z.string().max(500).optional().or(z.literal('')),
+  slug: z.string().max(100).optional().or(z.literal('')), // Allow empty string for auto-generation
+  image: z.string().url().optional().or(z.literal('')), // Allow empty string
   isActive: z.boolean().default(true),
-});
+}).transform(data => ({
+  ...data,
+  // Convert empty strings to undefined for optional fields
+  slug: (data.slug === '' || !data.slug) ? undefined : data.slug,
+  image: (data.image === '' || !data.image) ? undefined : data.image,
+  description: (data.description === '' || !data.description) ? undefined : data.description,
+}));
 
 export const updateCategorySchema = createCategorySchema.partial();
 

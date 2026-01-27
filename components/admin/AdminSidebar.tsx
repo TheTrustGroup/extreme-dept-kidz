@@ -356,12 +356,14 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
             <button
               onClick={logout}
               className={cn(
-                "w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 text-sm font-medium",
-                "group"
+                "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 text-sm font-medium",
+                "group",
+                !sidebarExpanded && "px-2" // Center icon when collapsed
               )}
               aria-label="Sign out"
+              title="Sign Out"
             >
-              <LogOut className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              <LogOut className="w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
               {sidebarExpanded && <span>Sign Out</span>}
             </button>
           </div>

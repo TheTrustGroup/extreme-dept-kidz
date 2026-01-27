@@ -16,6 +16,15 @@ export default function NewCategoryPage() {
     isActive: true,
   });
 
+  // Ensure slug is sent as empty string or undefined, not null
+  const prepareFormData = () => {
+    return {
+      ...formData,
+      slug: formData.slug || undefined, // Convert empty string to undefined
+      description: formData.description || undefined,
+    };
+  };
+
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -40,7 +49,7 @@ export default function NewCategoryPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Include cookies for authentication
-        body: JSON.stringify(formData),
+        body: JSON.stringify(prepareFormData()),
       });
 
       const data = await response.json();
@@ -48,7 +57,13 @@ export default function NewCategoryPage() {
       if (response.ok) {
         router.push('/admin/categories');
       } else {
-        alert(data.error || 'Failed to create category');
+        // Show detailed validation errors if available
+        if (data.errors && typeof data.errors === 'object') {
+          const errorMessages = Object.values(data.errors).join('\n');
+          alert(`Validation failed:\n${errorMessages}`);
+        } else {
+          alert(data.error || data.message || 'Failed to create category');
+        }
       }
     } catch (error) {
       console.error('Error creating category:', error);
