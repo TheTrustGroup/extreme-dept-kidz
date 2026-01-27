@@ -95,14 +95,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiError("Category not found", 404, `Category with ID "${categoryId}" does not exist`);
     }
 
-    // Normalize images - validated data already has array of URL strings
-    const images = Array.isArray(validatedData.images)
-      ? validatedData.images.map((url: string, index: number) => ({
-          url: url.trim(),
-          alt: `${validatedData.name} - Image ${index + 1}`,
-          isPrimary: index === 0,
-        }))
+    // Normalize images - validated data already has array of URL strings (schema transforms both formats to strings)
+    const imageUrls = Array.isArray(validatedData.images)
+      ? validatedData.images.map((img: string | { url: string; alt?: string; isPrimary?: boolean }) => {
+          return typeof img === 'string' ? img : img.url;
+        })
       : [];
+    
+    const images = imageUrls.map((url: string, index: number) => ({
+      url: String(url).trim(),
+      alt: `${validatedData.name} - Image ${index + 1}`,
+      isPrimary: index === 0,
+    }));
 
     // Normalize sizes/variants - validated data already has correct format
     const sizes = Array.isArray(validatedData.sizes)

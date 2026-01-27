@@ -125,10 +125,15 @@ export async function PUT(
 
     // Handle images update
     if (validatedData.images !== undefined && Array.isArray(validatedData.images)) {
+      // Schema transforms images to array of strings, but TypeScript needs help with type inference
+      const imageUrls = validatedData.images.map((img: string | { url: string; alt?: string; isPrimary?: boolean }) => {
+        return typeof img === 'string' ? img : img.url;
+      });
+      
       updateData.images = {
         deleteMany: {},
-        create: validatedData.images.map((url: string, index: number) => ({
-          url,
+        create: imageUrls.map((url: string, index: number) => ({
+          url: String(url).trim(),
           alt: `${validatedData.name || existing.name} - Image ${index + 1}`,
           isPrimary: index === 0,
           order: index,
