@@ -17,6 +17,7 @@ const failedAttempts = new Map<string, number>();
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // 0. ENVIRONMENT CHECK - Fail fast if critical env vars are missing
+    // Check DATABASE_URL first
     if (!process.env.DATABASE_URL) {
       logger.error('[Login] ❌ DATABASE_URL is not set');
       return apiError(
@@ -27,16 +28,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-      logger.error('[Login] ❌ JWT_SECRET is missing or too short', {
-        hasSecret: !!process.env.JWT_SECRET,
-        length: process.env.JWT_SECRET?.length || 0,
+    // Check JWT_SECRET - CRITICAL for authentication
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      logger.error('[Login] ❌ JWT_SECRET is not set');
+      return apiError(
+        'Authentication configuration error: JWT_SECRET environment variable is not set. Please set JWT_SECRET in your environment variables.',
+        500,
+        'Set JWT_SECRET in Vercel environment variables (must be at least 32 characters).',
+        'MISSING_JWT_SECRET'
+      );
+    }
+    
+    if (jwtSecret.length < 32) {
+      logger.error('[Login] ❌ JWT_SECRET is too short', {
+        length: jwtSecret.length,
+        requiredLength: 32,
+        // Don't log the actual secret, just first/last chars for verification
+        preview: jwtSecret.length > 0 ? `${jwtSecret[0]}...${jwtSecret[jwtSecret.length - 1]}` : 'empty',
       });
       return apiError(
-        'Authentication configuration error. JWT_SECRET environment variable is missing or invalid (must be at least 32 characters).',
+        'Authentication configuration error: JWT_SECRET must be at least 32 characters long.',
         500,
-        'Please check Vercel environment variables and ensure JWT_SECRET is set to a secure value (32+ characters).',
-        'MISSING_JWT_SECRET'
+        `Current JWT_SECRET length: ${jwtSecret.length} (required: 32+). Update JWT_SECRET in Vercel environment variables.`,
+        'INVALID_JWT_SECRET'
       );
     }
 
@@ -70,7 +85,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return response;
     }
 
-    const body = await request.json();
+    // Parse request body with error handling
+    let body: any;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      logger.error('[Login] ❌ Failed to parse request body:', parseError);
+      return apiError(
+        'Invalid request format',
+        400,
+        'Request body must be valid JSON',
+        'INVALID_JSON'
+      );
+    }
 
     // Validate input
     const validation = validate(adminLoginSchema, body);
@@ -320,6 +347,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       message: errorMessage,
       stack: errorStack,
       name: error instanceof Error ? error.name : undefined,
+      type: typeof error,
     });
     
     // Check if it's a known configuration error
@@ -327,14 +355,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       errorMessage.includes('DATABASE_URL') ||
       errorMessage.includes('JWT_SECRET') ||
       errorMessage.includes('Environment variable') ||
-      errorMessage.includes('configuration');
+      errorMessage.includes('configuration') ||
+      errorMessage.includes('Prisma') ||
+      errorMessage.includes('database');
+    
+    // Check for JSON parsing errors
+    const isJsonError = 
+      errorMessage.includes('JSON') ||
+      errorMessage.includes('Unexpected token') ||
+      errorMessage.includes('parse');
+    
+    // In development, always show the actual error
+    // In production, show detailed error for config issues, generic for others
+    const shouldShowDetails = process.env.NODE_ENV === 'development' || isConfigError || isJsonError;
     
     return apiError(
       isConfigError 
         ? errorMessage 
+        : isJsonError
+        ? 'Invalid request format. Please check your input.'
         : 'Login failed. Please try again or contact support if the issue persists.',
       500,
-      process.env.NODE_ENV === 'development' ? errorMessage : (isConfigError ? errorMessage : undefined)
+      shouldShowDetails ? errorMessage : undefined,
+      isConfigError ? 'CONFIG_ERROR' : isJsonError ? 'JSON_ERROR' : 'INTERNAL_ERROR'
     );
   }
 }
