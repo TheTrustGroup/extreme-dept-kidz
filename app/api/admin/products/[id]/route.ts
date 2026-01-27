@@ -145,11 +145,19 @@ export async function PUT(
     if (validatedData.sizes !== undefined && Array.isArray(validatedData.sizes)) {
       updateData.variants = {
         deleteMany: {},
-        create: validatedData.sizes.map((size: { size: string; quantity: number; sku?: string }) => ({
-          size: size.size,
-          stock: size.quantity,
-          sku: size.sku || `${validatedData.sku || existing.sku || 'SKU'}-${size.size}`,
-        })),
+        create: validatedData.sizes.map((size: { size: string; quantity: string | number; sku?: string }) => {
+          // Schema transforms quantity to number, but TypeScript needs help with type inference
+          const quantity = typeof size.quantity === 'number' 
+            ? size.quantity 
+            : parseInt(String(size.quantity), 10);
+          const stock = isNaN(quantity) ? 0 : Math.max(0, quantity);
+          
+          return {
+            size: size.size,
+            stock,
+            sku: size.sku || `${validatedData.sku || existing.sku || 'SKU'}-${size.size}`,
+          };
+        }),
       };
     }
 

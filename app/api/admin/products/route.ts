@@ -108,13 +108,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       isPrimary: index === 0,
     }));
 
-    // Normalize sizes/variants - validated data already has correct format
+    // Normalize sizes/variants - validated data already has correct format (schema transforms quantity to number)
     const sizes = Array.isArray(validatedData.sizes)
-      ? validatedData.sizes.map((size: { size: string; quantity: number; sku?: string }) => ({
-          size: size.size,
-          stock: size.quantity || 0,
-          sku: size.sku || (validatedData.sku ? `${validatedData.sku}-${size.size}` : `SKU-${Date.now()}-${size.size}`),
-        }))
+      ? validatedData.sizes.map((size: { size: string; quantity: string | number; sku?: string }) => {
+          // Schema transforms quantity to number, but TypeScript needs help with type inference
+          const quantity = typeof size.quantity === 'number' 
+            ? size.quantity 
+            : parseInt(String(size.quantity), 10);
+          const stock = isNaN(quantity) ? 0 : Math.max(0, quantity);
+          
+          return {
+            size: size.size,
+            stock,
+            sku: size.sku || (validatedData.sku ? `${validatedData.sku}-${size.size}` : `SKU-${Date.now()}-${size.size}`),
+          };
+        })
       : [];
 
     // Normalize price - convert to cents (validated data has price as number in dollars)
