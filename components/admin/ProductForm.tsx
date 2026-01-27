@@ -85,25 +85,34 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       if (categoriesRes && categoriesRes.ok) {
         try {
           const data = await categoriesRes.json();
-          // Handle both { categories: [...] } and direct array responses
-          const cats = Array.isArray(data) ? data : (data.categories || []);
-          setCategories(cats);
+          // Handle apiSuccess format: { success: true, data: { categories: [...], count: ... } }
+          // Or direct format: { categories: [...] }
+          // Or array format: [...]
+          let cats: Category[] = [];
+          if (Array.isArray(data)) {
+            cats = data;
+          } else if (data.data?.categories) {
+            cats = data.data.categories;
+          } else if (data.categories) {
+            cats = data.categories;
+          } else if (Array.isArray(data.data)) {
+            cats = data.data;
+          }
+          
+          if (cats.length > 0) {
+            setCategories(cats);
+          } else {
+            console.warn("No categories found in response:", data);
+            // Don't set fallback - let user see empty dropdown if no categories exist
+            setCategories([]);
+          }
         } catch (parseError) {
           console.error("Failed to parse categories:", parseError);
-          // Set default categories as fallback
-          setCategories([
-            { id: "cat-boys", name: "Boys", slug: "boys" },
-            { id: "cat-girls", name: "Girls", slug: "girls" },
-            { id: "cat-accessories", name: "Accessories", slug: "accessories" },
-          ]);
+          setCategories([]);
         }
       } else {
-        // Set default categories as fallback
-        setCategories([
-          { id: "cat-boys", name: "Boys", slug: "boys" },
-          { id: "cat-girls", name: "Girls", slug: "girls" },
-          { id: "cat-accessories", name: "Accessories", slug: "accessories" },
-        ]);
+        console.error("Failed to fetch categories:", categoriesRes?.status);
+        setCategories([]);
       }
 
       if (collectionsRes && collectionsRes.ok) {
