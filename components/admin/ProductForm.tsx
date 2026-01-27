@@ -78,8 +78,8 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
   async function fetchCategoriesAndCollections(): Promise<void> {
     try {
       const [categoriesRes, collectionsRes] = await Promise.all([
-        fetch("/api/admin/categories").catch(() => null),
-        fetch("/api/admin/collections").catch(() => null),
+        fetch("/api/admin/categories", { credentials: 'include' }).catch(() => null),
+        fetch("/api/admin/collections", { credentials: 'include' }).catch(() => null),
       ]);
 
       if (categoriesRes && categoriesRes.ok) {
@@ -349,6 +349,8 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
         method,
         headers: { 
           "Content-Type": "application/json",
+        },
+        credentials: 'include', // Include cookies for authentication
         },
         credentials: 'include',
         body: JSON.stringify(payload),

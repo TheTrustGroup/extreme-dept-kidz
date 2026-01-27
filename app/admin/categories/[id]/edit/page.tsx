@@ -25,7 +25,9 @@ export default function EditCategoryPage() {
 
   const fetchCategory = async () => {
     try {
-      const response = await fetch(`/api/admin/categories/${categoryId}`);
+      const response = await fetch(`/api/admin/categories/${categoryId}`, {
+        credentials: 'include', // Include cookies for authentication
+      });
       if (response.ok) {
         const data = await response.json();
         setFormData({
@@ -54,6 +56,7 @@ export default function EditCategoryPage() {
       const response = await fetch(`/api/admin/categories/${categoryId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify(formData),
       });
 
@@ -111,17 +114,16 @@ export default function EditCategoryPage() {
 
         <div>
           <label className="block text-sm font-medium mb-2">
-            Slug *
+            Slug
           </label>
           <input
             type="text"
             value={formData.slug}
             onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
           />
           <p className="text-xs text-gray-500 mt-1">
-            URL-friendly identifier
+            URL-friendly identifier (auto-generated from name if left blank)
           </p>
         </div>
 

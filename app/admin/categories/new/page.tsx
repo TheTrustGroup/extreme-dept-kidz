@@ -39,6 +39,7 @@ export default function NewCategoryPage() {
       const response = await fetch('/api/admin/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify(formData),
       });
 
@@ -87,7 +88,7 @@ export default function NewCategoryPage() {
 
         <div>
           <label className="block text-sm font-medium mb-2">
-            Slug *
+            Slug
           </label>
           <input
             type="text"
@@ -95,10 +96,9 @@ export default function NewCategoryPage() {
             onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="e.g., activewear"
-            required
           />
           <p className="text-xs text-gray-500 mt-1">
-            URL-friendly identifier (auto-generated from name)
+            URL-friendly identifier (auto-generated from name if left blank)
           </p>
         </div>
 

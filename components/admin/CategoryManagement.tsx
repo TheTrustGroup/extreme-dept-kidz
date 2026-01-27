@@ -55,6 +55,7 @@ export function CategoryManagement(): JSX.Element {
     try {
       const response = await fetch(`/api/admin/categories/${id}`, {
         method: "DELETE",
+        credentials: 'include', // Include cookies for authentication
       });
 
       if (response.ok) {
