@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllCategories, createCategory } from "@/lib/db";
+import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createCategorySchema, validate } from "@/lib/validation/schemas";
@@ -17,7 +17,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
   }
   try {
-    const categories = await getAllCategories();
+    if (!prisma) {
+      return apiError("Database not available", 500);
+    }
+
+    const categories = await prisma.category.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
     
     return apiSuccess(
       {
@@ -53,17 +61,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiValidationError(validation.errors);
     }
 
+    if (!prisma) {
+      return apiError("Database not available", 500);
+    }
+
     const { name, description, image, isActive } = validation.data;
 
     // Generate slug if not provided
     const slug = validation.data.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
-    const category = await createCategory({
-      name,
-      slug,
-      description: description || '',
-      image: image || '',
-      isActive: isActive !== undefined ? isActive : true,
+    // Check if slug already exists
+    const existingCategory = await prisma.category.findUnique({
+      where: { slug },
+    });
+
+    if (existingCategory) {
+      return apiError(
+        "Category with this slug already exists",
+        409,
+        `A category with slug "${slug}" already exists. Please use a different slug.`
+      );
+    }
+
+    const category = await prisma.category.create({
+      data: {
+        name,
+        slug,
+        description: description || null,
+        image: image || null,
+        isActive: isActive !== undefined ? isActive : true,
+      },
     });
 
     // Revalidate cache
