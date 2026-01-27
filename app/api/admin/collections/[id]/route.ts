@@ -77,8 +77,15 @@ export async function PUT(
       return apiValidationError(validation.errors);
     }
 
-    // Extract validated data after success check
-    const validatedData = validation.data;
+    // Extract validated data after success check with type assertion
+    const validatedData = validation.data as {
+      name?: string;
+      slug?: string;
+      description?: string;
+      image?: string;
+      bannerImage?: string;
+      isActive?: boolean;
+    };
 
     // Check if collection exists
     const existing = await prisma.collection.findUnique({ where: { id } });
@@ -86,9 +93,19 @@ export async function PUT(
       return apiNotFound("Collection");
     }
 
+    // Build update data object
+    const updateData: Prisma.CollectionUpdateInput = {
+      ...(validatedData.name !== undefined && { name: validatedData.name }),
+      ...(validatedData.slug !== undefined && { slug: validatedData.slug }),
+      ...(validatedData.description !== undefined && { description: validatedData.description }),
+      ...(validatedData.image !== undefined && { image: validatedData.image }),
+      ...(validatedData.bannerImage !== undefined && { bannerImage: validatedData.bannerImage }),
+      ...(validatedData.isActive !== undefined && { isActive: validatedData.isActive }),
+    };
+
     const collection = await prisma.collection.update({
       where: { id },
-      data: validatedData as Prisma.CollectionUpdateInput,
+      data: updateData,
     });
 
     // Revalidate cache
