@@ -75,12 +75,12 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
     if (selectedLook.products && Array.isArray(selectedLook.products)) {
       return selectedLook.products
         .map((p: any) => p.product || getProductById(p.productId))
-        .filter((p): p is Product => p !== undefined);
+        .filter((p: any): p is Product => p !== undefined);
     }
     // Fallback for mock data format
-    return selectedLook.items
+    return (selectedLook as any).items
       ?.map((item: any) => item.product || getProductById(item.productId))
-      .filter((p): p is Product => p !== undefined) || [];
+      .filter((p: any): p is Product => p !== undefined) || [];
   }, [selectedLook]);
 
   // Calculate pricing (hooks must be called before early return)
@@ -212,7 +212,7 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
               transition={{ duration: 0.4, delay: 0.3 }}
               className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6"
             >
-              {lookProducts.map((product, index) => {
+              {lookProducts.map((product: Product, index: number) => {
                 const isCurrentProduct = product.id === currentProduct.id;
                 const primaryImage = product.images?.find((img: any) => img.isPrimary) || product.images?.[0];
                 
@@ -266,9 +266,9 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
                           className="w-full"
                           onClick={() => {
                             const availableSize = product.sizes?.find((s: any) => s.inStock)?.size || 
-                                                  product.variants?.find((v: any) => v.stock > 0)?.size ||
+                                                  (product as any).variants?.find((v: any) => v.stock > 0)?.size ||
                                                   product.sizes?.[0]?.size ||
-                                                  product.variants?.[0]?.size;
+                                                  (product as any).variants?.[0]?.size;
                             if (availableSize) {
                               addItem(product, availableSize);
                               showToast({

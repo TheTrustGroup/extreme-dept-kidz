@@ -30,7 +30,7 @@ export function CompleteTheLookSizeModal({
 }: CompleteTheLookSizeModalProps): JSX.Element {
   const [selectedSizes, setSelectedSizes] = React.useState<Record<string, string>>({});
   const [recommendations] = React.useState<Record<string, string>>(() => {
-    const productsToProcess = look.products || look.items || [];
+    const productsToProcess = look.products || (look as any).items || [];
     const products = productsToProcess
       .map((item: any) => {
         const productId = item.productId || item.product?.id;
@@ -42,7 +42,7 @@ export function CompleteTheLookSizeModal({
 
   // Get all products in the look (handle both API and mock formats)
   const lookProducts = React.useMemo(() => {
-    const productsToProcess = look.products || look.items || [];
+    const productsToProcess = look.products || (look as any).items || [];
     return productsToProcess
       .map((item: any) => {
         const productId = item.productId || item.product?.id;
@@ -67,7 +67,7 @@ export function CompleteTheLookSizeModal({
 
   const handleConfirm = (): void => {
     // Validate all required products have sizes
-    const productsToCheck = look.products || look.items || [];
+    const productsToCheck = look.products || (look as any).items || [];
     const requiredProducts = productsToCheck.filter((p: any) => p.required !== false && p.isRequired !== false);
     const allSizesSelected = requiredProducts.every(
       (item: any) => {
@@ -82,7 +82,7 @@ export function CompleteTheLookSizeModal({
   };
 
   const allSizesSelected = React.useMemo(() => {
-    const productsToCheck = look.products || look.items || [];
+    const productsToCheck = look.products || (look as any).items || [];
     const requiredProducts = productsToCheck.filter((p: any) => p.required !== false && p.isRequired !== false);
     return requiredProducts.every(
       (item: any) => {
@@ -150,8 +150,8 @@ export function CompleteTheLookSizeModal({
                 </div>
 
                 {/* Product Size Selectors */}
-              {lookProducts.map((product, index) => {
-                const productsToCheck = look.products || look.items || [];
+              {lookProducts.map((product: any, index: number) => {
+                const productsToCheck = look.products || (look as any).items || [];
                 const productInLook = productsToCheck.find((p: any) => {
                   const pId = p.productId || p.product?.id;
                   return pId === product.id;
@@ -189,7 +189,7 @@ export function CompleteTheLookSizeModal({
                         <p className="font-sans text-sm text-charcoal-600 mb-2">
                           {formatPrice(product.price)}
                         </p>
-                        {(productInLook?.isOptional === true || productInLook?.required === false || productInLook?.isRequired === false) && (
+                        {((productInLook as any)?.isOptional === true || (productInLook as any)?.required === false || (productInLook as any)?.isRequired === false) && (
                           <span className="inline-block text-xs text-charcoal-500 bg-cream-200 px-2 py-1 rounded">
                             Optional
                           </span>
@@ -245,9 +245,9 @@ export function CompleteTheLookSizeModal({
                   className="flex items-center gap-2"
                 >
                   ADD COMPLETE LOOK TO CART
-                  {(look.bundleDiscount || (look.bundlePrice && look.totalPrice && look.totalPrice > look.bundlePrice)) && (
+                  {(look.bundleDiscount || ((look as any).bundlePrice && look.totalPrice && look.totalPrice > (look as any).bundlePrice)) && (
                     <span className="text-xs opacity-90">
-                      (Save {look.bundleDiscount || (look.totalPrice && look.bundlePrice ? Math.round(((look.totalPrice - look.bundlePrice) / look.totalPrice) * 100) : 0)}%)
+                      (Save {look.bundleDiscount || (look.totalPrice && (look as any).bundlePrice ? Math.round(((look.totalPrice - (look as any).bundlePrice) / look.totalPrice) * 100) : 0)}%)
                     </span>
                   )}
                 </Button>

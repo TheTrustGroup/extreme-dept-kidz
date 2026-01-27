@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Edit, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
+import { useToast } from "@/components/ui/Toast";
 
 interface Product {
   id: string;

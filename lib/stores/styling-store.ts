@@ -43,7 +43,7 @@ export const useStylingStore = create<StylingState>((set, get) => ({
     let addedCount = 0;
     
     // Handle both API format (products array) and mock format (products/items)
-    const productsToAdd = look.products || look.items || [];
+    const productsToAdd = look.products || (look as any).items || [];
     
     productsToAdd.forEach((item: any) => {
       const productId = item.productId || item.product?.id;
