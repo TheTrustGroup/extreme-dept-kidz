@@ -6,6 +6,7 @@ import { logger } from "@/lib/utils/logger";
 import { revalidatePath } from "next/cache";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
