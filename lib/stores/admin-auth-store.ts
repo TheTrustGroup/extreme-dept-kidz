@@ -180,10 +180,9 @@ export const useAdminAuth = create<AdminAuthState>()(
                 success: data.success,
                 hasToken: !!data.token,
                 hasUser: !!data.user,
+                fullResponse: data,
               });
             }
-              fullResponse: data,
-            });
             throw new Error("Invalid login response from server");
           }
           
