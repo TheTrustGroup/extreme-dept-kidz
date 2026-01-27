@@ -19,12 +19,30 @@ interface NewArrivalsSectionProps {
 export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.Element {
   const carouselRef = React.useRef<HTMLDivElement>(null);
   
-  // Use provided products or fallback to mock data with "new" tag
+  // Use provided products or fallback to mock data
+  // Show products with "new" tag first, then fallback to most recent products
   const newArrivals = React.useMemo(() => {
     const sourceProducts = products || mockProducts;
-    return sourceProducts
-      .filter((product) => product.tags?.includes("new"))
-      .slice(0, 8);
+    
+    // First, try to get products with "new" tag
+    const taggedNew = sourceProducts.filter((product) => product.tags?.includes("new"));
+    
+    // If we have products with "new" tag, use those
+    if (taggedNew.length > 0) {
+      return taggedNew.slice(0, 8);
+    }
+    
+    // Otherwise, show the most recent products (sorted by createdAt if available, otherwise by order in array)
+    const sorted = [...sourceProducts].sort((a, b) => {
+      // Sort by createdAt if available (newest first)
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      // Fallback: keep original order (newest products are typically added last)
+      return 0;
+    });
+    
+    return sorted.slice(0, 8);
   }, [products]);
 
   return (

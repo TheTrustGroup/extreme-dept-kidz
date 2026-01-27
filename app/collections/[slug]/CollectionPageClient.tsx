@@ -130,9 +130,19 @@ export function CollectionPageClient({ params, products: serverProducts }: Colle
   }, [filters, sortBy, router]);
 
   // Get and filter products - use server-fetched products or fallback to mock
+  // For category-based collections (boys/girls), use products directly from server
+  // For other collections, use the collection filter function
   const collectionProducts = React.useMemo(() => {
     if (!collection) return [];
     const sourceProducts = serverProducts || mockProducts;
+    
+    // For category-based collections, products are already filtered by category on the server
+    // So we can use them directly
+    if (params.slug === 'boys' || params.slug === 'girls') {
+      return sourceProducts;
+    }
+    
+    // For other collections, use the collection filter
     return getProductsByCollection(sourceProducts, collection.slug);
   }, [collection, params.slug, serverProducts]);
 
