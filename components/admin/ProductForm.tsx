@@ -340,16 +340,25 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       return;
     }
 
+    // Validate sizes - ensure at least one size is provided
+    const validSizes = formData.variants.filter((v) => v.size.trim() !== "");
+    if (validSizes.length === 0) {
+      showToast({
+        type: "error",
+        title: "Validation Error",
+        message: "Please add at least one product size",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       // Convert variants to sizes format expected by API
-      const sizes = formData.variants
-        .filter((v) => v.size.trim() !== "")
-        .map((v) => ({
-          size: v.size,
-          quantity: v.stock,
-        }));
+      const sizes = validSizes.map((v) => ({
+        size: v.size.trim(),
+        quantity: typeof v.stock === 'number' ? v.stock : parseInt(String(v.stock || 0), 10),
+      }));
 
       // Convert images to array of URL strings for validation (API will handle object format)
       const imageUrls = validImages.map((img) => img.url.trim());
@@ -357,18 +366,51 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       // Calculate price in dollars (not cents) for validation - API will convert to cents
       const priceInDollars = parseFloat(formData.price);
 
+      // Ensure sizes array has valid data
+      if (sizes.length === 0) {
+        showToast({
+          type: "error",
+          title: "Validation Error",
+          message: "Please add at least one product size with a valid size name",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Validate each size has valid quantity
+      const validSizesWithQuantity = sizes.filter(s => {
+        const qty = typeof s.quantity === 'number' ? s.quantity : parseInt(String(s.quantity || 0), 10);
+        return !isNaN(qty) && qty >= 0;
+      });
+
+      if (validSizesWithQuantity.length === 0) {
+        showToast({
+          type: "error",
+          title: "Validation Error",
+          message: "Please ensure at least one size has a valid quantity (0 or greater)",
+        });
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         name: formData.name.trim(),
-        slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
+        slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ''),
         description: formData.description.trim(),
         price: priceInDollars, // Send as decimal dollars, API will convert to cents
         originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
         sku: formData.sku.trim() || `SKU-${Date.now()}`,
         categoryId: formData.categoryId, // Send categoryId as string, not object
         images: imageUrls, // Send as array of URL strings for validation
-        sizes,
+        sizes: validSizesWithQuantity.map(s => ({
+          size: s.size.trim(),
+          quantity: typeof s.quantity === 'number' ? s.quantity : parseInt(String(s.quantity || 0), 10),
+        })),
         tags: formData.tags || [],
-        inStock: sizes.some(s => s.quantity > 0),
+        inStock: validSizesWithQuantity.some(s => {
+          const qty = typeof s.quantity === 'number' ? s.quantity : parseInt(String(s.quantity || 0), 10);
+          return qty > 0;
+        }),
       };
 
       const url = productId
@@ -411,12 +453,18 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
                   return `${fieldName}: ${message}`;
                 });
                 errorMessage = formattedErrors.join('\n');
+              } else {
+                errorMessage = 'Validation failed. Please check all required fields.';
               }
+            } else {
+              errorMessage = responseData.details || 'Validation failed. Please check all required fields.';
             }
           } catch (e) {
             // If parsing fails, use the details as-is
             if (typeof responseData.details === 'string') {
-              errorMessage = responseData.details;
+              errorMessage = responseData.details || 'Validation failed. Please check all required fields.';
+            } else {
+              errorMessage = 'Validation failed. Please check all required fields.';
             }
           }
         } else if (responseData.errors && typeof responseData.errors === 'object') {
@@ -427,7 +475,12 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
               return `${fieldName}: ${message}`;
             });
             errorMessage = formattedErrors.join('\n');
+          } else {
+            errorMessage = 'Validation failed. Please check all required fields.';
           }
+        } else if (!errorMessage || errorMessage.includes('Validation failed')) {
+          // If we still don't have a detailed error, provide a helpful default
+          errorMessage = 'Validation failed. Please ensure:\n- Name is provided\n- Description is at least 10 characters\n- Price is greater than 0\n- Category is selected\n- At least one image is uploaded\n- At least one size is added';
         }
         
         if (process.env.NODE_ENV === 'development') {

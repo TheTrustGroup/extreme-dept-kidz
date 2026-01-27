@@ -68,9 +68,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
 
+    // Log request body in development for debugging
+    if (process.env.NODE_ENV === 'development') {
+      logger.log('Product creation request:', {
+        hasName: !!body.name,
+        hasDescription: !!body.description,
+        hasPrice: !!body.price,
+        hasCategoryId: !!body.categoryId,
+        imagesCount: Array.isArray(body.images) ? body.images.length : 0,
+        sizesCount: Array.isArray(body.sizes) ? body.sizes.length : 0,
+        sizes: body.sizes,
+      });
+    }
+
     // Validate input using Zod schema
     const validation = validate(createProductSchema, body);
     if (!validation.success) {
+      if (process.env.NODE_ENV === 'development') {
+        logger.error('Product validation failed:', validation.errors);
+      }
       return apiValidationError(validation.errors);
     }
 
