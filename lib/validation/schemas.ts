@@ -29,28 +29,28 @@ export const createProductSchema = z.object({
 
 export const updateProductSchema = createProductSchema.partial();
 
-// Category schemas
-export const createCategorySchema = z.object({
+// Category schemas - base schema without transform
+const categorySchemaBase = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional().or(z.literal('')),
   slug: z.string().max(100).optional().or(z.literal('')), // Allow empty string for auto-generation
   image: z.string().url().optional().or(z.literal('')), // Allow empty string
   isActive: z.boolean().default(true),
-}).transform(data => ({
-  ...data,
-  // Convert empty strings to undefined for optional fields
-  slug: (data.slug === '' || !data.slug) ? undefined : data.slug,
-  image: (data.image === '' || !data.image) ? undefined : data.image,
-  description: (data.description === '' || !data.description) ? undefined : data.description,
-}));
+});
 
-export const updateCategorySchema = createCategorySchema.partial().transform(data => ({
+// Transform function to convert empty strings to undefined
+const transformEmptyStrings = <T extends { slug?: string; image?: string; description?: string }>(data: T) => ({
   ...data,
   // Convert empty strings to undefined for optional fields
   slug: (data.slug === '' || !data.slug) ? undefined : data.slug,
   image: (data.image === '' || !data.image) ? undefined : data.image,
   description: (data.description === '' || !data.description) ? undefined : data.description,
-}));
+});
+
+export const createCategorySchema = categorySchemaBase.transform(transformEmptyStrings);
+
+// For update, apply partial() BEFORE transform
+export const updateCategorySchema = categorySchemaBase.partial().transform(transformEmptyStrings);
 
 // Collection schemas
 export const createCollectionSchema = z.object({

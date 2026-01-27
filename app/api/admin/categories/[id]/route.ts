@@ -76,9 +76,15 @@ export async function PUT(
       return apiValidationError(validation.errors);
     }
 
-    // After the success check, TypeScript knows validation.data exists
-    // Extract it to a const for type narrowing
-    const validatedData = validation.data;
+    // After the success check, extract with explicit type assertion
+    // The transform on the schema makes TypeScript lose type info, so we assert it
+    const validatedData = validation.data as {
+      name?: string;
+      slug?: string;
+      description?: string;
+      image?: string;
+      isActive?: boolean;
+    };
 
     // Check if category exists
     const existing = await prisma.category.findUnique({ where: { id } });
