@@ -55,7 +55,9 @@ export default function NewCategoryPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Refresh the categories list and redirect
         router.push('/admin/categories');
+        router.refresh(); // Force refresh to show new category
       } else {
         // Show detailed validation errors if available
         if (data.errors && typeof data.errors === 'object') {
