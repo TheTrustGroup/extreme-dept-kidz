@@ -22,7 +22,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
-    const looks = await prisma.completeLook.findMany({
+    const looks = await (prisma as any).completeLook.findMany({
       include: {
         products: {
           include: {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       validatedData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     // Check if slug already exists
-    const existingLook = await prisma.completeLook.findUnique({
+    const existingLook = await (prisma as any).completeLook.findUnique({
       where: { slug },
     });
     if (existingLook) {
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create complete look
-    const completeLook = await prisma.completeLook.create({
+    const completeLook = await (prisma as any).completeLook.create({
       data: {
         name: validatedData.name,
         slug,

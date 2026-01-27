@@ -21,7 +21,7 @@ export async function GET(
     const { id } = await params;
 
     // Try to find by ID first, then by slug
-    const look = await prisma.completeLook.findFirst({
+    const look = await (prisma as any).completeLook.findFirst({
       where: {
         OR: [
           { id },

@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const look = await prisma.completeLook.findUnique({
+    const look = await (prisma as any).completeLook.findUnique({
       where: { id },
       include: {
         products: {
@@ -87,7 +87,7 @@ export async function PUT(
     const validatedData = validation.data;
 
     // Check if look exists
-    const existing = await prisma.completeLook.findUnique({ where: { id } });
+    const existing = await (prisma as any).completeLook.findUnique({ where: { id } });
     if (!existing) {
       return apiNotFound("Complete look");
     }
@@ -144,7 +144,7 @@ export async function PUT(
     }
 
     // Update complete look
-    const look = await prisma.completeLook.update({
+    const look = await (prisma as any).completeLook.update({
       where: { id },
       data: updateData,
       include: {
@@ -216,7 +216,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Check if look exists
-    const existing = await prisma.completeLook.findUnique({ where: { id } });
+    const existing = await (prisma as any).completeLook.findUnique({ where: { id } });
     if (!existing) {
       return apiNotFound("Complete look");
     }
@@ -224,7 +224,7 @@ export async function DELETE(
     // Store look info for logging before deletion
     const lookName = existing.name;
 
-    await prisma.completeLook.delete({
+    await (prisma as any).completeLook.delete({
       where: { id },
     });
 

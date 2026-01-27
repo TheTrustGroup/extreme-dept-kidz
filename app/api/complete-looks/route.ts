@@ -35,7 +35,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       where.featured = true;
     }
 
-    const looks = await prisma.completeLook.findMany({
+    const looks = await (prisma as any).completeLook.findMany({
       where,
       include: {
         products: {
