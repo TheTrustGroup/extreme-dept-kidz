@@ -99,7 +99,14 @@ export async function PUT(
     if (validatedData.slug !== undefined) updateData.slug = validatedData.slug;
     if (validatedData.description !== undefined) updateData.description = validatedData.description;
     if (validatedData.mainImage !== undefined) updateData.mainImage = validatedData.mainImage;
-    if (validatedData.bundlePrice !== undefined) updateData.bundlePrice = Math.round(validatedData.bundlePrice * 100);
+    if (validatedData.bundlePrice !== undefined) {
+      const bundlePrice = typeof validatedData.bundlePrice === 'number' 
+        ? validatedData.bundlePrice 
+        : parseFloat(String(validatedData.bundlePrice));
+      if (!isNaN(bundlePrice)) {
+        updateData.bundlePrice = Math.round(bundlePrice * 100);
+      }
+    }
     if (validatedData.bundleDiscount !== undefined) updateData.bundleDiscount = validatedData.bundleDiscount;
     if (validatedData.featured !== undefined) updateData.featured = validatedData.featured;
     if (validatedData.isActive !== undefined) updateData.isActive = validatedData.isActive;

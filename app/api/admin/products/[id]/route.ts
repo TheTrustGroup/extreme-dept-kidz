@@ -97,9 +97,27 @@ export async function PUT(
     if (validatedData.name !== undefined) updateData.name = validatedData.name;
     if (validatedData.slug !== undefined) updateData.slug = validatedData.slug;
     if (validatedData.description !== undefined) updateData.description = validatedData.description;
-    if (validatedData.price !== undefined) updateData.price = Math.round(validatedData.price * 100);
+    if (validatedData.price !== undefined) {
+      const priceValue = typeof validatedData.price === 'number' 
+        ? validatedData.price 
+        : parseFloat(String(validatedData.price));
+      if (!isNaN(priceValue)) {
+        updateData.price = Math.round(priceValue * 100);
+      }
+    }
     if (validatedData.originalPrice !== undefined) {
-      updateData.originalPrice = validatedData.originalPrice ? Math.round(validatedData.originalPrice * 100) : null;
+      if (validatedData.originalPrice) {
+        const originalPriceValue = typeof validatedData.originalPrice === 'number' 
+          ? validatedData.originalPrice 
+          : parseFloat(String(validatedData.originalPrice));
+        if (!isNaN(originalPriceValue)) {
+          updateData.originalPrice = Math.round(originalPriceValue * 100);
+        } else {
+          updateData.originalPrice = null;
+        }
+      } else {
+        updateData.originalPrice = null;
+      }
     }
     if (validatedData.sku !== undefined) updateData.sku = validatedData.sku;
     if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId;

@@ -118,7 +118,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Calculate bundle price if not provided (sum of products with discount)
-    let bundlePrice = Math.round(validatedData.bundlePrice * 100); // Convert to cents
+    const bundlePriceValue = typeof validatedData.bundlePrice === 'number' 
+      ? validatedData.bundlePrice 
+      : parseFloat(String(validatedData.bundlePrice));
+    
+    if (isNaN(bundlePriceValue) || bundlePriceValue <= 0) {
+      return apiError(
+        "Invalid bundle price",
+        400,
+        "Bundle price must be a positive number"
+      );
+    }
+    
+    let bundlePrice = Math.round(bundlePriceValue * 100); // Convert to cents
     if (validatedData.bundleDiscount && validatedData.bundleDiscount > 0) {
       const totalPrice = products.reduce((sum, p) => sum + p.price, 0);
       const discountAmount = Math.round(totalPrice * (validatedData.bundleDiscount / 100));

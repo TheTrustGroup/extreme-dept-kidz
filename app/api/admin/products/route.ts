@@ -114,7 +114,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : [];
 
     // Normalize price - convert to cents (validated data has price as number in dollars)
-    const price = Math.round(validatedData.price * 100);
+    const priceValue = typeof validatedData.price === 'number' 
+      ? validatedData.price 
+      : parseFloat(String(validatedData.price));
+    
+    if (isNaN(priceValue) || priceValue <= 0) {
+      return apiError(
+        "Invalid price",
+        400,
+        "Price must be a positive number"
+      );
+    }
+    
+    const price = Math.round(priceValue * 100);
 
     // Normalize originalPrice
     const originalPrice = validatedData.originalPrice
