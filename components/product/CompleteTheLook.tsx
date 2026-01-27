@@ -9,6 +9,7 @@ import type { Product } from "@/types";
 import { getCompleteLooksForProduct, getProductById, calculateBundleDiscount } from "@/lib/utils/styling-utils";
 import { useStylingStore } from "@/lib/stores/styling-store";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
+import { useCartStore } from "@/lib/stores/cart-store";
 import { Button } from "@/components/ui/button";
 import { H2 } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
@@ -34,12 +35,33 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
   const { open: openCart } = useCartDrawer();
   const { showToast } = useToast();
   const { setCurrentLook, addCompleteLookToCart } = useStylingStore();
+  const { addItem } = useCartStore();
 
-  // Get complete looks for this product (hooks must be called before early return)
-  const looks = React.useMemo(
-    () => getCompleteLooksForProduct(currentProduct.id),
-    [currentProduct.id]
-  );
+  // Fetch complete looks for this product from API
+  const [looks, setLooks] = React.useState<any[]>([]);
+  const [loadingLooks, setLoadingLooks] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchLooks() {
+      try {
+        const response = await fetch(`/api/complete-looks?productId=${currentProduct.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          const looksList = data.data?.looks || data.looks || [];
+          setLooks(looksList);
+        }
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching complete looks:', error);
+        }
+        // Fallback to mock data if API fails
+        setLooks(getCompleteLooksForProduct(currentProduct.id));
+      } finally {
+        setLoadingLooks(false);
+      }
+    }
+    fetchLooks();
+  }, [currentProduct.id]);
 
   // Get selected look (hooks must be called before early return)
   const selectedLook = React.useMemo(() => {
@@ -49,9 +71,16 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
   // Get all products in the look (hooks must be called before early return)
   const lookProducts = React.useMemo(() => {
     if (!selectedLook) return [];
-    return selectedLook.products
-      .map(({ productId }) => getProductById(productId))
-      .filter((p): p is Product => p !== undefined);
+    // Handle both API format (products array with product object) and mock format
+    if (selectedLook.products && Array.isArray(selectedLook.products)) {
+      return selectedLook.products
+        .map((p: any) => p.product || getProductById(p.productId))
+        .filter((p): p is Product => p !== undefined);
+    }
+    // Fallback for mock data format
+    return selectedLook.items
+      ?.map((item: any) => item.product || getProductById(item.productId))
+      .filter((p): p is Product => p !== undefined) || [];
   }, [selectedLook]);
 
   // Calculate pricing (hooks must be called before early return)
@@ -63,6 +92,16 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
   }, [lookProducts, selectedLook]);
 
   // If no looks available, don't render
+  if (loadingLooks) {
+    return (
+      <section className="py-12 md:py-16 lg:py-20 bg-cream-50 border-t border-cream-200">
+        <Container size="lg">
+          <div className="text-center text-charcoal-600">Loading complete looks...</div>
+        </Container>
+      </section>
+    );
+  }
+
   if (!looks || looks.length === 0 || !selectedLook) {
     return null;
   }
@@ -144,9 +183,9 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
                     <h3 className="font-serif text-2xl md:text-3xl font-bold text-cream-50 mb-1">
                       {selectedLook.name}
                     </h3>
-                    {selectedLook.bundleDiscount && (
+                    {(selectedLook.bundleDiscount || pricing.savings > 0) && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-500 text-cream-50 text-xs font-semibold">
-                        SAVE {selectedLook.bundleDiscount}%
+                        SAVE {selectedLook.bundleDiscount || Math.round((pricing.savings / pricing.subtotal) * 100)}%
                       </span>
                     )}
                   </div>
@@ -175,7 +214,7 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
             >
               {lookProducts.map((product, index) => {
                 const isCurrentProduct = product.id === currentProduct.id;
-                const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+                const primaryImage = product.images?.find((img: any) => img.isPrimary) || product.images?.[0];
                 
                 return (
                   <m.div
@@ -189,33 +228,71 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
                       isCurrentProduct && "ring-2 ring-navy-900 rounded-lg p-1"
                     )}
                   >
-                    <Link
-                      href={`/products/${product.slug}`}
-                      className="block"
-                    >
-                      <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-cream-100 mb-2">
-                        <Image
-                          src={primaryImage.url}
-                          alt={product.name}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        />
-                        {isCurrentProduct && (
-                          <div className="absolute top-2 left-2 bg-navy-900 text-cream-50 text-xs font-semibold px-2 py-1 rounded">
-                            You&apos;re viewing
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="font-sans text-xs md:text-sm text-charcoal-900 font-medium mb-1 line-clamp-2">
-                          {product.name}
-                        </p>
-                        <p className="font-sans text-sm md:text-base text-charcoal-700 font-semibold">
-                          {formatPrice(product.price)}
-                        </p>
-                      </div>
-                    </Link>
+                    <div className="space-y-2">
+                      <Link
+                        href={`/products/${product.slug}`}
+                        className="block"
+                      >
+                        <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-cream-100 mb-2">
+                          {primaryImage && (
+                            <Image
+                              src={primaryImage.url}
+                              alt={product.name}
+                              fill
+                              className="object-cover transition-transform duration-300 group-hover:scale-105"
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            />
+                          )}
+                          {isCurrentProduct && (
+                            <div className="absolute top-2 left-2 bg-navy-900 text-cream-50 text-xs font-semibold px-2 py-1 rounded">
+                              You&apos;re viewing
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <p className="font-sans text-xs md:text-sm text-charcoal-900 font-medium mb-1 line-clamp-2">
+                            {product.name}
+                          </p>
+                          <p className="font-sans text-sm md:text-base text-charcoal-700 font-semibold">
+                            {formatPrice(product.price)}
+                          </p>
+                        </div>
+                      </Link>
+                      {/* Add individual item button */}
+                      {!isCurrentProduct && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => {
+                            const availableSize = product.sizes?.find((s: any) => s.inStock)?.size || 
+                                                  product.variants?.find((v: any) => v.stock > 0)?.size ||
+                                                  product.sizes?.[0]?.size ||
+                                                  product.variants?.[0]?.size;
+                            if (availableSize) {
+                              addItem(product, availableSize);
+                              showToast({
+                                type: "success",
+                                title: "Added to Cart",
+                                message: `${product.name} has been added to your cart`,
+                              });
+                              setTimeout(() => {
+                                openCart();
+                              }, 500);
+                            } else {
+                              showToast({
+                                type: "error",
+                                title: "Cannot Add",
+                                message: "No available sizes for this product",
+                              });
+                            }
+                          }}
+                        >
+                          <ShoppingBag className="w-4 h-4 mr-1" />
+                          Add to Cart
+                        </Button>
+                      )}
+                    </div>
                   </m.div>
                 );
               })}
@@ -237,18 +314,23 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
               </div>
               {pricing.savings > 0 && (
                 <div className="flex items-center justify-between text-sm md:text-base">
-                  <span className="text-green-600 font-medium">Bundle Discount ({selectedLook.bundleDiscount}%):</span>
+                  <span className="text-green-600 font-medium">Bundle Discount ({selectedLook.bundleDiscount || Math.round((pricing.savings / pricing.subtotal) * 100)}%):</span>
                   <span className="text-green-600 font-semibold">
                     -{formatPrice(pricing.savings)}
                   </span>
                 </div>
               )}
               <div className="border-t border-cream-200 pt-4 flex items-center justify-between">
-                <span className="text-charcoal-900 font-serif text-lg md:text-xl font-bold">Total:</span>
+                <span className="text-charcoal-900 font-serif text-lg md:text-xl font-bold">Bundle Total:</span>
                 <span className="text-navy-900 font-serif text-xl md:text-2xl font-bold">
-                  {formatPrice(pricing.total)}
+                  {formatPrice(selectedLook.bundlePrice || pricing.total)}
                 </span>
               </div>
+              {selectedLook.bundlePrice && pricing.subtotal > (selectedLook.bundlePrice || pricing.total) && (
+                <div className="text-xs text-charcoal-500 text-center mt-2">
+                  Individual total: {formatPrice(pricing.subtotal)} • Save {formatPrice(pricing.subtotal - (selectedLook.bundlePrice || pricing.total))}
+                </div>
+              )}
             </m.div>
 
             {/* Action Buttons */}

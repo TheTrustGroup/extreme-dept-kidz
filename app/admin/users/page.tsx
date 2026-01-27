@@ -6,6 +6,7 @@ import { AdminUserForm, type AdminUserFormData } from "@/components/admin/users/
 import { H1 } from "@/components/ui/typography";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function AdminUsersPage(): JSX.Element {
   const [users, setUsers] = React.useState<AdminUser[]>([]);
@@ -13,6 +14,7 @@ export default function AdminUsersPage(): JSX.Element {
   const [showForm, setShowForm] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState<AdminUser | null>(null);
   const [formLoading, setFormLoading] = React.useState(false);
+  const [deleteConfirm, setDeleteConfirm] = React.useState<AdminUser | null>(null);
   const { showToast } = useToast();
   const { user: currentUser } = useAdminAuth();
 
@@ -42,7 +44,9 @@ export default function AdminUsersPage(): JSX.Element {
       const data = await response.json();
       setUsers(data.data?.users || []);
     } catch (error) {
-      console.error("Failed to load users:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to load users:", error);
+      }
       showToast({
         type: "error",
         title: "Error",
@@ -64,9 +68,14 @@ export default function AdminUsersPage(): JSX.Element {
   };
 
   const handleDelete = async (user: AdminUser): Promise<void> => {
-    if (!confirm(`Are you sure you want to deactivate ${user.name}? This action cannot be undone.`)) {
-      return;
-    }
+    setDeleteConfirm(user);
+  };
+
+  const confirmDelete = async (): Promise<void> => {
+    if (!deleteConfirm) return;
+
+    const user = deleteConfirm;
+    setDeleteConfirm(null);
 
     try {
       const response = await fetch(`/api/admin/users/${user.id}`, {
@@ -87,7 +96,9 @@ export default function AdminUsersPage(): JSX.Element {
 
       await loadUsers();
     } catch (error) {
-      console.error("Failed to delete user:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to delete user:", error);
+      }
       showToast({
         type: "error",
         title: "Error",
@@ -122,7 +133,9 @@ export default function AdminUsersPage(): JSX.Element {
 
       await loadUsers();
     } catch (error) {
-      console.error("Failed to update user status:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to update user status:", error);
+      }
       showToast({
         type: "error",
         title: "Error",
@@ -177,7 +190,9 @@ export default function AdminUsersPage(): JSX.Element {
       setEditingUser(null);
       await loadUsers();
     } catch (error) {
-      console.error("Failed to save user:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to save user:", error);
+      }
       showToast({
         type: "error",
         title: "Error",
@@ -219,6 +234,17 @@ export default function AdminUsersPage(): JSX.Element {
         }}
         onSubmit={handleFormSubmit}
         loading={formLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        title="Deactivate User"
+        message={`Are you sure you want to deactivate ${deleteConfirm?.name}? This action cannot be undone.`}
+        confirmText="Deactivate"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
       />
     </div>
   );

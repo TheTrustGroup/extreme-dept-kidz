@@ -88,62 +88,60 @@ export async function PUT(
       return apiNotFound("Product");
     }
 
-    const {
-      name,
-      slug,
-      description,
-      price,
-      compareAtPrice,
-      sku,
-      categoryId,
-      images,
-      sizes,
-      tags,
-    } = validation.data;
+    // Use validated data (after transforms)
+    const validatedData = validation.data;
+
+    // Build update data object with only provided fields
+    const updateData: any = {};
+    
+    if (validatedData.name !== undefined) updateData.name = validatedData.name;
+    if (validatedData.slug !== undefined) updateData.slug = validatedData.slug;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.price !== undefined) updateData.price = Math.round(validatedData.price * 100);
+    if (validatedData.originalPrice !== undefined) {
+      updateData.originalPrice = validatedData.originalPrice ? Math.round(validatedData.originalPrice * 100) : null;
+    }
+    if (validatedData.sku !== undefined) updateData.sku = validatedData.sku;
+    if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId;
+    if (validatedData.inStock !== undefined) updateData.inStock = validatedData.inStock;
+
+    // Handle images update
+    if (validatedData.images !== undefined && Array.isArray(validatedData.images)) {
+      updateData.images = {
+        deleteMany: {},
+        create: validatedData.images.map((url: string, index: number) => ({
+          url,
+          alt: `${validatedData.name || existing.name} - Image ${index + 1}`,
+          isPrimary: index === 0,
+          order: index,
+        })),
+      };
+    }
+
+    // Handle sizes/variants update
+    if (validatedData.sizes !== undefined && Array.isArray(validatedData.sizes)) {
+      updateData.variants = {
+        deleteMany: {},
+        create: validatedData.sizes.map((size: { size: string; quantity: number; sku?: string }) => ({
+          size: size.size,
+          stock: size.quantity,
+          sku: size.sku || `${validatedData.sku || existing.sku || 'SKU'}-${size.size}`,
+        })),
+      };
+    }
+
+    // Handle tags update
+    if (validatedData.tags !== undefined && Array.isArray(validatedData.tags)) {
+      updateData.tags = {
+        deleteMany: {},
+        create: validatedData.tags.map((tag: string) => ({ name: tag.trim() })).filter((tag: { name: string }) => tag.name),
+      };
+    }
 
     // Update product
     const product = await prisma.product.update({
       where: { id },
-      data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
-        ...(description && { description }),
-        ...(price !== undefined && { price: Math.round(price * 100) }),
-        ...(compareAtPrice !== undefined && { 
-          originalPrice: compareAtPrice ? Math.round(compareAtPrice * 100) : null 
-        }),
-        ...(sku && { sku }),
-        ...(categoryId && { categoryId }),
-        // Note: For simplicity, we're replacing all related data
-        // In production, you'd want to handle updates more carefully
-        ...(images && {
-          images: {
-            deleteMany: {},
-            create: images.map((url: string, index: number) => ({
-              url,
-              alt: `${name || existing.name} - Image ${index + 1}`,
-              isPrimary: index === 0,
-              order: index,
-            })),
-          },
-        }),
-        ...(sizes && {
-          variants: {
-            deleteMany: {},
-            create: sizes.map((size: { size: string; quantity: number; sku?: string }) => ({
-              size: size.size,
-              stock: size.quantity,
-              sku: size.sku || `${existing.sku || 'SKU'}-${size.size}`,
-            })),
-          },
-        }),
-        ...(tags && {
-          tags: {
-            deleteMany: {},
-            create: tags.map((tag: string) => ({ name: tag })),
-          },
-        }),
-      },
+      data: updateData,
       include: {
         category: true,
         images: true,
@@ -172,9 +170,9 @@ export async function PUT(
       details: {
         name: product.name,
         changes: {
-          name: name || undefined,
-          price: price !== undefined ? price : undefined,
-          sku: sku || undefined,
+          name: validatedData.name || undefined,
+          price: validatedData.price !== undefined ? validatedData.price : undefined,
+          sku: validatedData.sku || undefined,
         },
       },
     }, requestForLogging);

@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/Toast';
 
 export default function NewCategoryPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -55,21 +57,40 @@ export default function NewCategoryPage() {
       const data = await response.json();
 
       if (response.ok) {
+        showToast({
+          type: "success",
+          title: "Category Created",
+          message: `${formData.name} has been created successfully`,
+        });
         // Refresh the categories list and redirect
         router.push('/admin/categories');
         router.refresh(); // Force refresh to show new category
       } else {
         // Show detailed validation errors if available
         if (data.errors && typeof data.errors === 'object') {
-          const errorMessages = Object.values(data.errors).join('\n');
-          alert(`Validation failed:\n${errorMessages}`);
+          const errorMessages = Object.values(data.errors).join(', ');
+          showToast({
+            type: "error",
+            title: "Validation Failed",
+            message: errorMessages,
+          });
         } else {
-          alert(data.error || data.message || 'Failed to create category');
+          showToast({
+            type: "error",
+            title: "Create Failed",
+            message: data.error || data.message || 'Failed to create category',
+          });
         }
       }
     } catch (error) {
-      console.error('Error creating category:', error);
-      alert('Failed to create category');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating category:', error);
+      }
+      showToast({
+        type: "error",
+        title: "Create Failed",
+        message: 'An error occurred while creating the category',
+      });
     } finally {
       setLoading(false);
     }

@@ -127,15 +127,19 @@ export const useAdminAuth = create<AdminAuthState>()(
             data = await response.json();
           } else {
             const text = await response.text();
-            console.error('[Auth] ❌ Non-JSON response:', text);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('[Auth] ❌ Non-JSON response:', text);
+            }
             throw new Error(`Server returned non-JSON response: ${response.statusText}`);
           }
-          console.log('[Auth] Login response data:', {
-            success: data.success,
-            hasToken: !!data.token,
-            hasUser: !!data.user,
-            userEmail: data.user?.email,
-          });
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Auth] Login response data:', {
+              success: data.success,
+              hasToken: !!data.token,
+              hasUser: !!data.user,
+              userEmail: data.user?.email,
+            });
+          }
 
           if (!response.ok) {
             // Try to get error message from response
@@ -156,12 +160,14 @@ export const useAdminAuth = create<AdminAuthState>()(
               }
             }
             
-            console.error("[Auth] ❌ Login failed:", {
-              status: response.status,
-              statusText: response.statusText,
-              error: errorMessage,
-              fullError: data,
-            });
+            if (process.env.NODE_ENV === 'development') {
+              console.error("[Auth] ❌ Login failed:", {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorMessage,
+                fullError: data,
+              });
+            }
             
             // Throw error with user-friendly message
             throw new Error(errorMessage);
@@ -169,10 +175,13 @@ export const useAdminAuth = create<AdminAuthState>()(
 
           // Verify we have the required data
           if (!data.success || !data.token || !data.user) {
-            console.error("[Auth] ❌ Login response missing required data:", {
-              success: data.success,
-              hasToken: !!data.token,
-              hasUser: !!data.user,
+            if (process.env.NODE_ENV === 'development') {
+              console.error("[Auth] ❌ Login response missing required data:", {
+                success: data.success,
+                hasToken: !!data.token,
+                hasUser: !!data.user,
+              });
+            }
               fullResponse: data,
             });
             throw new Error("Invalid login response from server");

@@ -5,11 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/Toast';
 
 export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
   const categoryId = params.id as string;
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,19 +32,30 @@ export default function EditCategoryPage() {
       });
       if (response.ok) {
         const data = await response.json();
+        const category = data.data || data;
         setFormData({
-          name: data.name || '',
-          slug: data.slug || '',
-          description: data.description || '',
-          isActive: data.isActive !== undefined ? data.isActive : true,
+          name: category.name || '',
+          slug: category.slug || '',
+          description: category.description || '',
+          isActive: category.isActive !== undefined ? category.isActive : true,
         });
       } else {
-        alert('Category not found');
+        showToast({
+          type: "error",
+          title: "Category Not Found",
+          message: "The category you're looking for doesn't exist",
+        });
         router.push('/admin/categories');
       }
     } catch (error) {
-      console.error('Error fetching category:', error);
-      alert('Failed to load category');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching category:', error);
+      }
+      showToast({
+        type: "error",
+        title: "Load Failed",
+        message: "Failed to load category details",
+      });
     } finally {
       setLoading(false);
     }
@@ -63,13 +76,28 @@ export default function EditCategoryPage() {
       const data = await response.json();
 
       if (response.ok) {
+        showToast({
+          type: "success",
+          title: "Category Updated",
+          message: `${formData.name} has been updated successfully`,
+        });
         router.push('/admin/categories');
       } else {
-        alert(data.error || 'Failed to update category');
+        showToast({
+          type: "error",
+          title: "Update Failed",
+          message: data.error || data.message || 'Failed to update category',
+        });
       }
     } catch (error) {
-      console.error('Error updating category:', error);
-      alert('Failed to update category');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating category:', error);
+      }
+      showToast({
+        type: "error",
+        title: "Update Failed",
+        message: "An error occurred while updating the category",
+      });
     } finally {
       setSaving(false);
     }

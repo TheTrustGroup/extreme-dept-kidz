@@ -75,6 +75,7 @@ model Product {
   tags          ProductTag[]
   collections   ProductCollection[]
   orderItems    OrderItem[]
+  completeLooks CompleteLookProduct[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
@@ -311,3 +312,47 @@ model AdminActivityLog {
   @@index([resourceId])
   @@index([createdAt])
 }
+
+// ============================================
+// COMPLETE LOOKS
+// ============================================
+
+model CompleteLook {
+  id            String              @id @default(cuid())
+  name          String
+  slug          String              @unique
+  description   String              @db.Text
+  mainImage     String              // Main image URL
+  bundlePrice   Int                 // Bundle price in cents
+  bundleDiscount Int?               // Discount percentage (e.g., 10 for 10%)
+  featured      Boolean             @default(false)
+  isActive      Boolean             @default(true)
+  ageRange      String?             // e.g., "8-12", "13-16"
+  tags          String[]            // Array of tags
+  metadata      Json?               // Additional metadata
+  products      CompleteLookProduct[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([slug])
+  @@index([featured])
+  @@index([isActive])
+}
+
+model CompleteLookProduct {
+  id            String       @id @default(cuid())
+  completeLookId String
+  completeLook  CompleteLook @relation(fields: [completeLookId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  isRequired    Boolean      @default(true) // Whether this product is required for the look
+  order         Int          @default(0) // Order of products in the look
+  createdAt     DateTime     @default(now())
+
+  @@unique([completeLookId, productId])
+  @@index([completeLookId])
+  @@index([productId])
+}
+
+// Add relation to Product model
+// (This will be added to the Product model)

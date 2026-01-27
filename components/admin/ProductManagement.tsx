@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
+import { useToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Product {
   id: string;
@@ -26,6 +28,8 @@ export function ProductManagement(): JSX.Element {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchProducts();
@@ -53,25 +57,46 @@ export function ProductManagement(): JSX.Element {
     }
   }
 
-  async function handleDelete(id: string): Promise<void> {
-    if (!confirm("Are you sure you want to delete this product?")) {
-      return;
-    }
+  async function handleDelete(id: string, name: string): Promise<void> {
+    setDeleteConfirm({ id, name });
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (!deleteConfirm) return;
+
+    const { id, name } = deleteConfirm;
+    setDeleteConfirm(null);
 
     try {
       const response = await fetch(`/api/admin/products/${id}`, {
         method: "DELETE",
-        credentials: 'include', // Include cookies for authentication
+        credentials: 'include',
       });
 
       if (response.ok) {
         setProducts(products.filter((p) => p.id !== id));
+        showToast({
+          type: "success",
+          title: "Product Deleted",
+          message: `${name} has been deleted successfully`,
+        });
       } else {
-        alert("Failed to delete product");
+        const data = await response.json().catch(() => ({}));
+        showToast({
+          type: "error",
+          title: "Delete Failed",
+          message: data.error || data.message || "Failed to delete product",
+        });
       }
     } catch (error) {
-      console.error("Failed to delete product:", error);
-      alert("Failed to delete product");
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to delete product:", error);
+      }
+      showToast({
+        type: "error",
+        title: "Delete Failed",
+        message: "An error occurred while deleting the product",
+      });
     }
   }
 
@@ -192,7 +217,7 @@ export function ProductManagement(): JSX.Element {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(product.id)}
+                            onClick={() => handleDelete(product.id, product.name)}
                             className="text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -207,6 +232,17 @@ export function ProductManagement(): JSX.Element {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 }

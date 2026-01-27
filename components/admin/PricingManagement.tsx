@@ -14,6 +14,7 @@ interface Product {
 }
 
 export function PricingManagement(): JSX.Element {
+  const { showToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Record<string, { price: number; originalPrice: number | null }>>({});
@@ -75,12 +76,28 @@ export function PricingManagement(): JSX.Element {
         const newEditing = { ...editing };
         delete newEditing[productId];
         setEditing(newEditing);
+        showToast({
+          type: "success",
+          title: "Price Updated",
+          message: "Product price has been updated successfully",
+        });
       } else {
-        alert("Failed to update price");
+        const data = await response.json().catch(() => ({}));
+        showToast({
+          type: "error",
+          title: "Update Failed",
+          message: data.error || data.message || "Failed to update price",
+        });
       }
     } catch (error) {
-      console.error("Failed to update price:", error);
-      alert("Failed to update price");
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to update price:", error);
+      }
+      showToast({
+        type: "error",
+        title: "Update Failed",
+        message: "An error occurred while updating the price",
+      });
     }
   }
 

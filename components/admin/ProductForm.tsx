@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { useToast } from "@/components/ui/Toast";
 
 interface Category {
   id: string;
@@ -51,6 +52,7 @@ interface ProductFormProps {
 
 export function ProductForm({ productId }: ProductFormProps): JSX.Element {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -292,29 +294,49 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
     
     // Validate required fields
     if (!formData.name || formData.name.trim() === "") {
-      alert("Product name is required");
+      showToast({
+        type: "error",
+        title: "Validation Error",
+        message: "Product name is required",
+      });
       return;
     }
     
     if (!formData.description || formData.description.trim() === "") {
-      alert("Product description is required");
+      showToast({
+        type: "error",
+        title: "Validation Error",
+        message: "Product description is required",
+      });
       return;
     }
     
     if (!formData.price || parseFloat(formData.price) <= 0) {
-      alert("Product price must be greater than 0");
+      showToast({
+        type: "error",
+        title: "Validation Error",
+        message: "Product price must be greater than 0",
+      });
       return;
     }
     
     if (!formData.categoryId || formData.categoryId === "") {
-      alert("Please select a category");
+      showToast({
+        type: "error",
+        title: "Validation Error",
+        message: "Please select a category",
+      });
       return;
     }
     
     // Validate images
     const validImages = formData.images.filter((img) => img.url.trim() !== "");
     if (validImages.length === 0) {
-      alert("Please upload at least one product image");
+      showToast({
+        type: "error",
+        title: "Validation Error",
+        message: "Please upload at least one product image",
+      });
       return;
     }
 
@@ -326,34 +348,26 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
         .filter((v) => v.size.trim() !== "")
         .map((v) => ({
           size: v.size,
-          inStock: v.stock > 0,
           quantity: v.stock,
         }));
 
-      // Convert images to expected format
-      const images = validImages.map((img, index) => ({
-        url: img.url.trim(),
-        alt: img.alt || `${formData.name} - Image ${index + 1}`,
-        isPrimary: index === 0,
-      }));
+      // Convert images to array of URL strings for validation (API will handle object format)
+      const imageUrls = validImages.map((img) => img.url.trim());
+
+      // Calculate price in dollars (not cents) for validation - API will convert to cents
+      const priceInDollars = parseFloat(formData.price);
 
       const payload = {
         name: formData.name.trim(),
         slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
         description: formData.description.trim(),
-        price: Math.round(parseFloat(formData.price) * 100), // Convert to cents
-        originalPrice: formData.originalPrice
-          ? Math.round(parseFloat(formData.originalPrice) * 100)
-          : undefined,
+        price: priceInDollars, // Send as decimal dollars, API will convert to cents
+        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
         sku: formData.sku.trim() || `SKU-${Date.now()}`,
-        category: {
-          id: formData.categoryId,
-          name: categories.find(c => c.id === formData.categoryId)?.name || formData.categoryId,
-          slug: categories.find(c => c.id === formData.categoryId)?.slug || formData.categoryId,
-        },
-        images,
+        categoryId: formData.categoryId, // Send categoryId as string, not object
+        images: imageUrls, // Send as array of URL strings for validation
         sizes,
-        tags: formData.tags,
+        tags: formData.tags || [],
         inStock: sizes.some(s => s.quantity > 0),
       };
 
@@ -374,17 +388,68 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       const responseData = await response.json().catch(() => ({}));
 
       if (response.ok && responseData.success !== false) {
+        showToast({
+          type: "success",
+          title: productId ? "Product Updated" : "Product Created",
+          message: `${formData.name} has been ${productId ? 'updated' : 'created'} successfully`,
+        });
         router.push("/admin/products");
         router.refresh();
       } else {
-        const errorMessage = responseData.error || responseData.message || `HTTP ${response.status}: ${response.statusText}`;
-        console.error("Failed to save product:", errorMessage, responseData);
-        alert(`Failed to save product: ${errorMessage}`);
+        // Extract detailed validation errors if available
+        let errorMessage = responseData.error || responseData.message || `HTTP ${response.status}: ${response.statusText}`;
+        
+        // If there are validation errors, format them nicely
+        if (responseData.code === 'VALIDATION_ERROR' && responseData.details) {
+          try {
+            const errors = typeof responseData.details === 'string' ? JSON.parse(responseData.details) : responseData.details;
+            if (errors && typeof errors === 'object') {
+              const errorEntries = Object.entries(errors);
+              if (errorEntries.length > 0) {
+                const formattedErrors = errorEntries.map(([field, message]) => {
+                  const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1');
+                  return `${fieldName}: ${message}`;
+                });
+                errorMessage = formattedErrors.join('\n');
+              }
+            }
+          } catch (e) {
+            // If parsing fails, use the details as-is
+            if (typeof responseData.details === 'string') {
+              errorMessage = responseData.details;
+            }
+          }
+        } else if (responseData.errors && typeof responseData.errors === 'object') {
+          const errorEntries = Object.entries(responseData.errors);
+          if (errorEntries.length > 0) {
+            const formattedErrors = errorEntries.map(([field, message]) => {
+              const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1');
+              return `${fieldName}: ${message}`;
+            });
+            errorMessage = formattedErrors.join('\n');
+          }
+        }
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Failed to save product:", errorMessage, responseData);
+        }
+        showToast({
+          type: "error",
+          title: "Save Failed",
+          message: errorMessage,
+          duration: 5000, // Show longer for validation errors
+        });
       }
     } catch (error) {
-      console.error("Failed to save product:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to save product:", error);
+      }
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      alert(`Failed to save product: ${errorMessage}. Please try again.`);
+      showToast({
+        type: "error",
+        title: "Save Failed",
+        message: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

@@ -42,16 +42,20 @@ export const useStylingStore = create<StylingState>((set, get) => ({
     
     let addedCount = 0;
     
-    look.products.forEach(({ productId, category }) => {
-      // Use customized product if available, otherwise use original
-      const finalProductId = customizedProducts[category] || productId;
-      const product = getProductById(finalProductId);
-      const size = sizes[finalProductId];
+    // Handle both API format (products array) and mock format (products/items)
+    const productsToAdd = look.products || look.items || [];
+    
+    productsToAdd.forEach((item: any) => {
+      const productId = item.productId || item.product?.id;
+      const product = item.product || getProductById(productId);
+      const size = sizes[productId];
       
       if (product && size) {
         // Check if size is available
-        const sizeAvailable = product.sizes.find(
-          s => s.size === size && s.inStock
+        const sizeAvailable = product.sizes?.find(
+          (s: any) => s.size === size && s.inStock
+        ) || product.variants?.find(
+          (v: any) => v.size === size && v.stock > 0
         );
         
         if (sizeAvailable) {

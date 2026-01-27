@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { getProduct, updateProduct, createProduct } from "@/lib/admin-api";
+// Removed admin-api import - using direct fetch calls instead
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -77,28 +77,56 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
     },
   });
 
+  const [categories, setCategories] = React.useState<Array<{ id: string; name: string }>>([]);
+
+  React.useEffect(() => {
+    // Fetch categories
+    async function fetchCategories(): Promise<void> {
+      try {
+        const res = await fetch("/api/admin/categories", { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          const cats = data.data?.categories || data.categories || [];
+          setCategories(cats);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    }
+    fetchCategories();
+  }, []);
+
   React.useEffect(() => {
     if (!isNew && productId) {
       async function loadProduct(): Promise<void> {
         try {
-          const product = await getProduct(productId);
-          if (product) {
-            setValue("name", product.name);
-            setValue("description", product.description);
-            setValue("sku", product.sku || "");
-            setValue("price", product.price / 100); // Convert from cents
-            setValue("compareAtPrice", product.originalPrice ? product.originalPrice / 100 : undefined);
-            setValue("category", product.category.id);
-            setValue("inStock", product.inStock);
-            setValue("images", product.images.map(img => img.url));
-            setValue("sizes", product.sizes.map(size => ({
-              size: size.size,
-              quantity: size.inStock ? 1 : 0,
-            })));
-            setValue("tags", product.tags || []);
+          const res = await fetch(`/api/admin/products/${productId}`, { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            const product = data.data || data;
+            if (product) {
+              setValue("name", product.name);
+              setValue("description", product.description);
+              setValue("sku", product.sku || "");
+              setValue("price", product.price / 100); // Convert from cents
+              setValue("compareAtPrice", product.originalPrice ? product.originalPrice / 100 : undefined);
+              setValue("category", product.category?.id || "");
+              setValue("inStock", product.inStock);
+              setValue("images", product.images?.map((img: any) => img.url) || []);
+              setValue("sizes", product.variants?.map((v: any) => ({
+                size: v.size,
+                quantity: v.stock || 0,
+              })) || []);
+              setValue("tags", product.tags?.map((t: any) => t.name || t) || []);
+            }
           }
         } catch (error) {
           console.error("Failed to load product:", error);
+          addToast({
+            type: "error",
+            title: "Error",
+            message: "Failed to load product. Please try again.",
+          });
         } finally {
           setLoading(false);
         }
@@ -107,7 +135,7 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
     } else {
       setLoading(false);
     }
-  }, [productId, isNew, setValue]);
+  }, [productId, isNew, setValue, addToast]);
 
   const onSubmit = async (data: ProductFormData): Promise<void> => {
     setSaving(true);
@@ -144,47 +172,70 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
         return;
       }
 
-      const productData = {
-        name: data.name,
-        description: data.description,
-        sku: data.sku,
-        price: Math.round(data.price * 100), // Convert to cents
-        originalPrice: data.compareAtPrice ? Math.round(data.compareAtPrice * 100) : undefined,
-        category: {
-          id: data.category,
-          name: data.category,
-          slug: data.category,
-        },
-        inStock: data.inStock,
-        slug: data.name.toLowerCase().replace(/\s+/g, "-"),
-        images: validImages.map((url, index) => ({
-          url: String(url).trim(),
-          alt: `${data.name} - Image ${index + 1}`,
-          isPrimary: index === 0,
-        })),
-        sizes: data.sizes?.map(size => ({
-          size: size.size,
-          inStock: size.quantity > 0,
-        })) || [],
-        tags: data.tags || [],
-      } as Partial<Product>;
+      // Prepare payload matching API schema
+      const sizes = data.sizes?.map(size => ({
+        size: size.size,
+        quantity: size.quantity || 0,
+      })) || [];
 
-      if (isNew) {
-        await createProduct(productData);
+      const payload = {
+        name: data.name.trim(),
+        description: data.description.trim(),
+        sku: data.sku.trim() || `SKU-${Date.now()}`,
+        price: data.price, // Send as decimal dollars, API will convert to cents
+        originalPrice: data.compareAtPrice || undefined,
+        categoryId: data.category, // Send categoryId as string
+        images: validImages, // Send as array of URL strings
+        sizes,
+        tags: data.tags || [],
+        inStock: data.inStock,
+      };
+
+      const url = isNew ? "/api/admin/products" : `/api/admin/products/${productId}`;
+      const method = isNew ? "POST" : "PUT";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+
+      if (response.ok && responseData.success !== false) {
         addToast({
           type: "success",
           title: "Success",
-          message: "Product created successfully!",
+          message: isNew ? "Product created successfully!" : "Product updated successfully!",
         });
+        router.push("/admin/products");
       } else {
-        await updateProduct(productId, productData);
-        addToast({
-          type: "success",
-          title: "Success",
-          message: "Product updated successfully!",
-        });
+        // Handle validation errors
+        let errorMessage = responseData.error || responseData.message || `HTTP ${response.status}: ${response.statusText}`;
+        
+        if (responseData.code === 'VALIDATION_ERROR' && responseData.details) {
+          try {
+            const errors = typeof responseData.details === 'string' ? JSON.parse(responseData.details) : responseData.details;
+            if (errors && typeof errors === 'object') {
+              const errorEntries = Object.entries(errors);
+              if (errorEntries.length > 0) {
+                const formattedErrors = errorEntries.map(([field, message]) => {
+                  const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1');
+                  return `${fieldName}: ${message}`;
+                });
+                errorMessage = formattedErrors.join('\n');
+              }
+            }
+          } catch (e) {
+            if (typeof responseData.details === 'string') {
+              errorMessage = responseData.details;
+            }
+          }
+        }
+
+        throw new Error(errorMessage);
       }
-      router.push("/admin/products");
     } catch (error) {
       console.error("Failed to save product:", error);
       addToast({
@@ -335,9 +386,11 @@ export default function ProductEditPage({ params }: ProductEditPageProps): JSX.E
                   )}
                 >
                   <option value="">Select category</option>
-                  <option value="cat-boys">Boys</option>
-                  <option value="cat-girls">Girls</option>
-                  <option value="cat-accessories">Accessories</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
                 </select>
                 {errors.category && (
                   <p className="text-red-600 text-sm mt-1.5">{errors.category.message}</p>

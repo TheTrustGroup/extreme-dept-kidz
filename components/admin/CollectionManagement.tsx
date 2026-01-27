@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Collection {
   id: string;
@@ -18,6 +20,8 @@ export function CollectionManagement(): JSX.Element {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchCollections();
@@ -45,25 +49,46 @@ export function CollectionManagement(): JSX.Element {
     }
   }
 
-  async function handleDelete(id: string): Promise<void> {
-    if (!confirm("Are you sure you want to delete this collection?")) {
-      return;
-    }
+  async function handleDelete(id: string, name: string): Promise<void> {
+    setDeleteConfirm({ id, name });
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (!deleteConfirm) return;
+
+    const { id, name } = deleteConfirm;
+    setDeleteConfirm(null);
 
     try {
       const response = await fetch(`/api/admin/collections/${id}`, {
         method: "DELETE",
-        credentials: 'include', // Include cookies for authentication
+        credentials: 'include',
       });
 
       if (response.ok) {
         setCollections(collections.filter((c) => c.id !== id));
+        showToast({
+          type: "success",
+          title: "Collection Deleted",
+          message: `${name} has been deleted successfully`,
+        });
       } else {
-        alert("Failed to delete collection");
+        const data = await response.json().catch(() => ({}));
+        showToast({
+          type: "error",
+          title: "Delete Failed",
+          message: data.error || data.message || "Failed to delete collection",
+        });
       }
     } catch (error) {
-      console.error("Failed to delete collection:", error);
-      alert("Failed to delete collection");
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to delete collection:", error);
+      }
+      showToast({
+        type: "error",
+        title: "Delete Failed",
+        message: "An error occurred while deleting the collection",
+      });
     }
   }
 
@@ -175,7 +200,7 @@ export function CollectionManagement(): JSX.Element {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(collection.id)}
+                          onClick={() => handleDelete(collection.id, collection.name)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -189,6 +214,17 @@ export function CollectionManagement(): JSX.Element {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        title="Delete Collection"
+        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 }

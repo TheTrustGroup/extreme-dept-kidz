@@ -119,7 +119,7 @@ export function getCartRecommendations(cartItems: CartItem[]): Product[] {
  */
 export function calculateBundleDiscount(
   products: Product[],
-  look: StyleLook
+  look: StyleLook | any // Allow both StyleLook and API format
 ): {
   subtotal: number;
   discount: number;
@@ -127,6 +127,21 @@ export function calculateBundleDiscount(
   savings: number;
 } {
   const subtotal = products.reduce((sum, p) => sum + p.price, 0);
+  
+  // Handle API format (has bundlePrice) vs mock format (has bundleDiscount %)
+  if (look.bundlePrice !== undefined) {
+    const bundlePrice = typeof look.bundlePrice === 'number' ? look.bundlePrice : parseInt(String(look.bundlePrice));
+    const savings = subtotal - bundlePrice;
+    const discount = savings;
+    return {
+      subtotal,
+      discount,
+      total: bundlePrice,
+      savings,
+    };
+  }
+  
+  // Fallback to percentage-based discount
   const discountPercent = look.bundleDiscount || 0;
   const discount = Math.round(subtotal * (discountPercent / 100));
   const total = subtotal - discount;

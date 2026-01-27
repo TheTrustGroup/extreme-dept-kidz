@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { getAllProducts, createProduct, getDatabaseStatus } from "@/lib/db";
+import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
@@ -17,29 +17,38 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
   }
   try {
-    const products = await getAllProducts();
-    const dbStatus = await getDatabaseStatus();
+    if (!prisma) {
+      return apiError("Database not available", 500);
+    }
+
+    const products = await prisma.product.findMany({
+      include: {
+        category: true,
+        images: {
+          orderBy: { order: 'asc' },
+        },
+        variants: true,
+        tags: true,
+        collections: {
+          include: {
+            collection: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
     return apiSuccess(
       {
         products,
         count: products.length,
-        dbStatus, // Include DB status for admin visibility
       },
       'Products fetched successfully'
     );
   } catch (error) {
     logger.error("❌ GET /api/admin/products error:", error);
-    
-    // Get status even on error
-    const dbStatus = await getDatabaseStatus().catch(() => ({
-      connected: false,
-      type: 'unknown',
-      error: 'Status check failed',
-      mockMode: true,
-      enabled: false,
-    }));
-    
     return apiError(
       "Failed to fetch products",
       500,
@@ -65,89 +74,106 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiValidationError(validation.errors);
     }
 
-    // Normalize category - handle both object and ID formats
-    let category;
-    if (body.category && typeof body.category === 'object') {
-      category = body.category;
-    } else if (body.categoryId) {
-      // Map category ID to category object
-      const categoryMap: Record<string, { id: string; name: string; slug: string }> = {
-        'cat-boys': { id: 'cat-boys', name: 'Boys', slug: 'boys' },
-        'cat-girls': { id: 'cat-girls', name: 'Girls', slug: 'girls' },
-        'cat-accessories': { id: 'cat-accessories', name: 'Accessories', slug: 'accessories' },
-      };
-      category = categoryMap[body.categoryId] || { id: body.categoryId, name: body.categoryId, slug: body.categoryId };
-    } else {
-      category = { id: 'cat-boys', name: 'Boys', slug: 'boys' };
+    if (!prisma) {
+      return apiError("Database not available", 500);
     }
 
-    // Normalize images - handle both array of strings and array of objects
-    let images;
-    if (Array.isArray(body.images)) {
-      images = body.images.map((img: string | { url: string; alt?: string; isPrimary?: boolean }, index: number) => {
-        if (typeof img === 'string') {
-          return { url: img, alt: `${body.name} - Image ${index + 1}`, isPrimary: index === 0 };
-        }
-        return {
-          url: img.url,
-          alt: img.alt || `${body.name} - Image ${index + 1}`,
-          isPrimary: img.isPrimary ?? (index === 0),
-        };
-      }).filter((img: { url: string }) => img.url && img.url.trim() !== '');
-    } else {
-      images = [];
+    // Use validated data (after transforms)
+    const validatedData = validation.data;
+
+    // Get category ID from validated data
+    const categoryId = validatedData.categoryId;
+    if (!categoryId) {
+      return apiError("Category is required", 400, "Please provide a valid category ID");
     }
 
-    // Normalize sizes - handle both variants and sizes formats
-    let sizes;
-    if (Array.isArray(body.sizes)) {
-      sizes = body.sizes.map((size: { size: string; inStock?: boolean; quantity?: number }) => ({
-        size: size.size,
-        inStock: size.inStock ?? (size.quantity ? size.quantity > 0 : true),
-        quantity: size.quantity || (size.inStock ? 1 : 0),
-      }));
-    } else if (Array.isArray(body.variants)) {
-      sizes = body.variants.map((variant: { size: string; stock?: number; sku?: string }) => ({
-        size: variant.size,
-        inStock: (variant.stock ?? 0) > 0,
-        quantity: variant.stock || 0,
-      }));
-    } else {
-      sizes = [];
+    // Verify category exists
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+    if (!category) {
+      return apiError("Category not found", 404, `Category with ID "${categoryId}" does not exist`);
     }
 
-    // Normalize price - handle both cents and decimal formats
-    let price;
-    if (typeof body.price === 'number') {
-      // If price is less than 1000, assume it's in cents already
-      price = body.price < 1000 ? body.price : Math.round(body.price * 100);
-    } else {
-      price = Math.round(parseFloat(String(body.price || 0)) * 100);
-    }
+    // Normalize images - validated data already has array of URL strings
+    const images = Array.isArray(validatedData.images)
+      ? validatedData.images.map((url: string, index: number) => ({
+          url: url.trim(),
+          alt: `${validatedData.name} - Image ${index + 1}`,
+          isPrimary: index === 0,
+        }))
+      : [];
+
+    // Normalize sizes/variants - validated data already has correct format
+    const sizes = Array.isArray(validatedData.sizes)
+      ? validatedData.sizes.map((size: { size: string; quantity: number; sku?: string }) => ({
+          size: size.size,
+          stock: size.quantity || 0,
+          sku: size.sku || (validatedData.sku ? `${validatedData.sku}-${size.size}` : `SKU-${Date.now()}-${size.size}`),
+        }))
+      : [];
+
+    // Normalize price - convert to cents (validated data has price as number in dollars)
+    const price = Math.round(validatedData.price * 100);
 
     // Normalize originalPrice
-    let originalPrice: number | undefined;
-    if (body.originalPrice) {
-      if (typeof body.originalPrice === 'number') {
-        originalPrice = body.originalPrice < 1000 ? body.originalPrice : Math.round(body.originalPrice * 100);
-      } else {
-        originalPrice = Math.round(parseFloat(String(body.originalPrice)) * 100);
-      }
+    const originalPrice = validatedData.originalPrice
+      ? Math.round(validatedData.originalPrice * 100)
+      : null;
+
+    // Generate slug if not provided
+    const slug = validatedData.slug || String(validatedData.name || 'product').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+    // Check if slug already exists
+    const existingProduct = await prisma.product.findUnique({
+      where: { slug },
+    });
+    if (existingProduct) {
+      return apiError(
+        "Product with this slug already exists",
+        409,
+        `A product with slug "${slug}" already exists. Please use a different slug.`
+      );
     }
 
-    // Create product using DB layer (will fallback to mock if DB unavailable)
-    const product = await createProduct({
-      name: String(body.name || '').trim(),
-      description: String(body.description || '').trim(),
-      price,
-      originalPrice,
-      sku: String(body.sku || `SKU-${Date.now()}`).trim(),
-      category,
-      images,
-      sizes,
-      slug: body.slug || String(body.name || 'product').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-      inStock: body.inStock !== undefined ? Boolean(body.inStock) : sizes.some((s: { quantity: number }) => s.quantity > 0),
-      tags: Array.isArray(body.tags) ? body.tags.map((t: unknown) => String(t).trim()).filter((t: string) => t) : [],
+    // Create product using Prisma
+    const product = await prisma.product.create({
+      data: {
+        name: String(validatedData.name || '').trim(),
+        slug,
+        description: String(validatedData.description || '').trim(),
+        price,
+        originalPrice,
+        sku: String(validatedData.sku || `SKU-${Date.now()}`).trim(),
+        categoryId,
+        inStock: validatedData.inStock !== undefined ? Boolean(validatedData.inStock) : sizes.some((s) => s.stock > 0),
+        images: {
+          create: images.map((img: { url: string; alt?: string; isPrimary?: boolean }, index: number) => ({
+            url: img.url,
+            alt: img.alt || `${body.name} - Image ${index + 1}`,
+            isPrimary: img.isPrimary ?? (index === 0),
+            order: index,
+          })),
+        },
+        variants: {
+          create: sizes.map((size: { size: string; stock: number; sku: string }) => ({
+            size: size.size,
+            stock: size.stock,
+            sku: size.sku,
+          })),
+        },
+        tags: {
+          create: Array.isArray(validatedData.tags)
+            ? validatedData.tags.map((tag: string) => ({ name: tag.trim() })).filter((tag: { name: string }) => tag.name)
+            : [],
+        },
+      },
+      include: {
+        category: true,
+        images: true,
+        variants: true,
+        tags: true,
+      },
     });
 
     // Revalidate cache

@@ -9,25 +9,120 @@ import { z } from 'zod';
 export const createProductSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
   description: z.string().min(10, 'Description must be at least 10 characters').max(5000),
-  price: z.number().positive('Price must be positive').max(100000),
-  compareAtPrice: z.number().positive().optional(),
-  category: z.enum(['tops', 'bottoms', 'outerwear', 'shoes', 'accessories']).optional(),
-  categoryId: z.string().uuid().optional(),
+  price: z.union([
+    z.number().positive('Price must be positive').max(1000000), // Allow up to $10,000
+    z.string().transform((val) => {
+      const num = parseFloat(val);
+      if (isNaN(num) || num <= 0) throw new Error('Price must be a positive number');
+      return num;
+    }),
+  ]).pipe(z.number().positive('Price must be positive').max(1000000)),
+  originalPrice: z.union([
+    z.number().positive().optional(),
+    z.string().optional().transform((val) => val ? parseFloat(val) : undefined),
+  ]).optional(),
+  category: z.union([
+    z.enum(['tops', 'bottoms', 'outerwear', 'shoes', 'accessories']),
+    z.object({
+      id: z.string(),
+      name: z.string().optional(),
+      slug: z.string().optional(),
+    }),
+  ]).optional(),
+  categoryId: z.string().min(1, 'Category is required'), // Required, accept any non-empty string
   gender: z.enum(['boys', 'girls', 'unisex']).optional(),
-  images: z.array(z.string().url('Invalid image URL')).min(1, 'At least one image required').max(10),
+  images: z.union([
+    // Array of URL strings (allow relative paths, absolute URLs, and data URLs)
+    z.array(z.string().min(1, 'Image URL cannot be empty').refine(
+      (url) => {
+        // Allow relative paths, absolute URLs, and data URLs
+        return url.startsWith('/') || 
+               url.startsWith('http://') || 
+               url.startsWith('https://') || 
+               url.startsWith('data:') ||
+               url.startsWith('./') ||
+               url.startsWith('../');
+      },
+      { message: 'Image URL must be a valid path or URL' }
+    )).min(1, 'At least one image required').max(10),
+    // Array of image objects
+    z.array(z.object({
+      url: z.string().min(1, 'Image URL cannot be empty'),
+      alt: z.string().optional(),
+      isPrimary: z.boolean().optional(),
+    })).min(1, 'At least one image required').max(10).transform((arr) => arr.map(img => img.url)),
+  ]).pipe(z.array(z.string().min(1, 'Image URL cannot be empty')).min(1, 'At least one image required').max(10)),
   sizes: z.array(z.object({
-    size: z.string().min(1),
-    quantity: z.number().int().min(0),
+    size: z.string().min(1, 'Size is required'),
+    quantity: z.union([
+      z.number().int().min(0),
+      z.string().transform((val) => {
+        const num = parseInt(val, 10);
+        if (isNaN(num) || num < 0) throw new Error('Quantity must be a non-negative integer');
+        return num;
+      }),
+    ]).pipe(z.number().int().min(0)),
     sku: z.string().optional(),
+    inStock: z.boolean().optional(), // Allow but ignore
+    stock: z.union([
+      z.number().optional(),
+      z.string().optional().transform((val) => val ? parseInt(val, 10) : undefined),
+    ]).optional(), // Allow but will use quantity instead
   })).min(1, 'At least one size required'),
-  tags: z.array(z.string()).max(20).optional(),
-  status: z.enum(['active', 'draft', 'archived']).default('draft'),
+  tags: z.union([
+    z.array(z.string()),
+    z.array(z.string()).optional(),
+  ]).optional().default([]),
+  status: z.enum(['active', 'draft', 'archived']).optional(),
   slug: z.string().min(1).max(200).optional(),
   sku: z.string().min(1).max(100).optional(),
-  inStock: z.boolean().default(true),
+  inStock: z.boolean().optional(),
 });
 
-export const updateProductSchema = createProductSchema.partial();
+export const updateProductSchema = createProductSchema.partial().extend({
+  // Allow partial updates - all fields optional
+  name: z.string().min(1, 'Name is required').max(200, 'Name too long').optional(),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(5000).optional(),
+  price: z.union([
+    z.number().positive('Price must be positive').max(1000000),
+    z.string().transform((val) => {
+      const num = parseFloat(val);
+      if (isNaN(num) || num <= 0) throw new Error('Price must be a positive number');
+      return num;
+    }),
+  ]).pipe(z.number().positive('Price must be positive').max(1000000)).optional(),
+  categoryId: z.string().min(1, 'Category is required').optional(),
+  images: z.union([
+    z.array(z.string().min(1, 'Image URL cannot be empty').refine(
+      (url) => {
+        return url.startsWith('/') || 
+               url.startsWith('http://') || 
+               url.startsWith('https://') || 
+               url.startsWith('data:') ||
+               url.startsWith('./') ||
+               url.startsWith('../');
+      },
+      { message: 'Image URL must be a valid path or URL' }
+    )).min(1, 'At least one image required').max(10),
+    z.array(z.object({
+      url: z.string().min(1, 'Image URL cannot be empty'),
+      alt: z.string().optional(),
+      isPrimary: z.boolean().optional(),
+    })).min(1, 'At least one image required').max(10).transform((arr) => arr.map(img => img.url)),
+  ]).pipe(z.array(z.string().min(1, 'Image URL cannot be empty')).min(1, 'At least one image required').max(10)).optional(),
+  sizes: z.array(z.object({
+    size: z.string().min(1, 'Size is required'),
+    quantity: z.union([
+      z.number().int().min(0),
+      z.string().transform((val) => {
+        const num = parseInt(val, 10);
+        if (isNaN(num) || num < 0) throw new Error('Quantity must be a non-negative integer');
+        return num;
+      }),
+    ]).pipe(z.number().int().min(0)),
+    sku: z.string().optional(),
+  })).min(1, 'At least one size required').optional(),
+});
 
 // Category schemas - base schema without transform
 const categorySchemaBase = z.object({
@@ -62,6 +157,41 @@ export const createCollectionSchema = z.object({
 });
 
 export const updateCollectionSchema = createCollectionSchema.partial();
+
+// Complete Look schemas
+export const createCompleteLookSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  slug: z.string().min(1).max(200).optional(),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(2000),
+  mainImage: z.string().min(1, 'Main image is required').refine(
+    (url) => {
+      return url.startsWith('/') || 
+             url.startsWith('http://') || 
+             url.startsWith('https://') || 
+             url.startsWith('data:');
+    },
+    { message: 'Main image must be a valid URL or path' }
+  ),
+  bundlePrice: z.union([
+    z.number().positive('Bundle price must be positive').max(1000000),
+    z.string().transform((val) => {
+      const num = parseFloat(val);
+      if (isNaN(num) || num <= 0) throw new Error('Bundle price must be a positive number');
+      return num;
+    }),
+  ]).pipe(z.number().positive('Bundle price must be positive').max(1000000)),
+  bundleDiscount: z.number().min(0).max(100).optional(),
+  featured: z.boolean().optional().default(false),
+  isActive: z.boolean().optional().default(true),
+  ageRange: z.string().max(50).optional(),
+  tags: z.array(z.string()).max(20).optional().default([]),
+  productIds: z.array(z.string().min(1)).min(2, 'At least 2 products required').max(10, 'Maximum 10 products allowed'),
+  requiredProductIds: z.array(z.string()).optional().default([]), // Products that are required (others optional)
+});
+
+export const updateCompleteLookSchema = createCompleteLookSchema.partial().extend({
+  productIds: z.array(z.string().min(1)).min(2, 'At least 2 products required').max(10, 'Maximum 10 products allowed').optional(),
+});
 
 // Order schemas
 export const createOrderSchema = z.object({

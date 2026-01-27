@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Category {
   id: string;
@@ -18,6 +20,8 @@ export function CategoryManagement(): JSX.Element {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchCategories();
@@ -47,25 +51,46 @@ export function CategoryManagement(): JSX.Element {
     }
   }
 
-  async function handleDelete(id: string): Promise<void> {
-    if (!confirm("Are you sure you want to delete this category?")) {
-      return;
-    }
+  async function handleDelete(id: string, name: string): Promise<void> {
+    setDeleteConfirm({ id, name });
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (!deleteConfirm) return;
+
+    const { id, name } = deleteConfirm;
+    setDeleteConfirm(null);
 
     try {
       const response = await fetch(`/api/admin/categories/${id}`, {
         method: "DELETE",
-        credentials: 'include', // Include cookies for authentication
+        credentials: 'include',
       });
 
       if (response.ok) {
         setCategories(categories.filter((c) => c.id !== id));
+        showToast({
+          type: "success",
+          title: "Category Deleted",
+          message: `${name} has been deleted successfully`,
+        });
       } else {
-        alert("Failed to delete category");
+        const data = await response.json().catch(() => ({}));
+        showToast({
+          type: "error",
+          title: "Delete Failed",
+          message: data.error || data.message || "Failed to delete category",
+        });
       }
     } catch (error) {
-      console.error("Failed to delete category:", error);
-      alert("Failed to delete category");
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Failed to delete category:", error);
+      }
+      showToast({
+        type: "error",
+        title: "Delete Failed",
+        message: "An error occurred while deleting the category",
+      });
     }
   }
 
@@ -177,7 +202,7 @@ export function CategoryManagement(): JSX.Element {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(category.id)}
+                          onClick={() => handleDelete(category.id, category.name)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -191,6 +216,17 @@ export function CategoryManagement(): JSX.Element {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 }

@@ -295,6 +295,11 @@ export const ActivityActions = {
   COLLECTION_UPDATED: 'collection.updated',
   COLLECTION_DELETED: 'collection.deleted',
   
+  // Complete Look actions
+  COMPLETE_LOOK_CREATED: 'complete_look.created',
+  COMPLETE_LOOK_UPDATED: 'complete_look.updated',
+  COMPLETE_LOOK_DELETED: 'complete_look.deleted',
+  
   // Admin user actions
   ADMIN_USER_CREATED: 'admin_user.created',
   ADMIN_USER_UPDATED: 'admin_user.updated',

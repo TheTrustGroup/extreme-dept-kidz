@@ -5,6 +5,7 @@ import Image from "next/image";
 import { X, Upload, MoveLeft, MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/Toast";
 
 interface ImageUploadProps {
   images: string[];
@@ -25,6 +26,7 @@ export function ImageUpload({
   maxImages = 10,
   disabled = false,
 }: ImageUploadProps): JSX.Element {
+  const { showToast } = useToast();
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -33,13 +35,19 @@ export function ImageUpload({
     if (!files || files.length === 0) return;
 
     if (images.length + files.length > maxImages) {
-      alert(`Maximum ${maxImages} images allowed`);
+      showToast({
+        type: "error",
+        title: "Too Many Images",
+        message: `Maximum ${maxImages} images allowed`,
+      });
       return;
     }
 
     // Authentication is handled by httpOnly cookie sent automatically with credentials: 'include'
     // No need to check token in store - middleware validates cookie on server
-    console.log('[ImageUpload] Starting upload - cookie will be sent automatically');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ImageUpload] Starting upload - cookie will be sent automatically');
+    }
 
     setUploading(true);
 
@@ -62,7 +70,9 @@ export function ImageUpload({
         // No token needed - httpOnly cookie is sent automatically with credentials: 'include'
         const headers: HeadersInit = {};
 
-        console.log('[ImageUpload] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)}KB)`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ImageUpload] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)}KB)`);
+        }
         
         let response: Response | null = null;
         let retryCount = 0;
@@ -95,13 +105,17 @@ export function ImageUpload({
             
             // If we've exhausted retries, throw the error
             if (retryCount >= maxRetries) {
-              console.error('[ImageUpload] Network error during upload after retries:', networkError);
+              if (process.env.NODE_ENV === 'development') {
+                console.error('[ImageUpload] Network error during upload after retries:', networkError);
+              }
               throw new Error(`Network error: ${networkError instanceof Error ? networkError.message : 'Failed to connect to server'}`);
             }
             
             // Retry with exponential backoff
             retryCount++;
-            console.warn(`[ImageUpload] Upload attempt ${retryCount} failed, retrying...`);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[ImageUpload] Upload attempt ${retryCount} failed, retrying...`);
+            }
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // 1s, 2s delays
             
             // Cookie is automatically sent with credentials: 'include' - no token refresh needed
@@ -112,7 +126,9 @@ export function ImageUpload({
           throw new Error("Failed to upload: No response received after retries");
         }
 
-        console.log('[ImageUpload] Upload response status:', response.status, response.statusText);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ImageUpload] Upload response status:', response.status, response.statusText);
+        }
         
         // Parse response body - clone first to avoid reading body twice
         const responseClone = response.clone();
@@ -125,7 +141,9 @@ export function ImageUpload({
           } else {
             // Try to parse as JSON even if content-type is not set
             const responseText = await response.text();
-            console.log('[ImageUpload] Response body (text):', responseText.substring(0, 200));
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[ImageUpload] Response body (text):', responseText.substring(0, 200));
+            }
             
             if (!responseText || responseText.trim().length === 0) {
               throw new Error("Server returned empty response");
@@ -134,7 +152,9 @@ export function ImageUpload({
             try {
               responseData = JSON.parse(responseText);
             } catch (parseError) {
-              console.error('[ImageUpload] Failed to parse JSON:', parseError);
+              if (process.env.NODE_ENV === 'development') {
+                console.error('[ImageUpload] Failed to parse JSON:', parseError);
+              }
               // If parsing fails, check if it's an error response
               if (!response.ok) {
                 throw new Error(`Server error: ${response.status} ${response.statusText}`);
@@ -143,7 +163,9 @@ export function ImageUpload({
             }
           }
         } catch (parseError) {
-          console.error('[ImageUpload] Failed to parse response:', parseError);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[ImageUpload] Failed to parse response:', parseError);
+          }
           
           // If response is not OK, try to get error text from clone
           if (!response.ok) {
@@ -163,13 +185,15 @@ export function ImageUpload({
           const errorMessage = responseData?.message || responseData?.error || `Upload failed with status ${response.status}`;
           const errorDetails = responseData?.details || responseData?.diagnostic;
           
-          console.error('[ImageUpload] Upload failed:', {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorMessage,
-            details: errorDetails,
-            fullResponse: responseData,
-          });
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[ImageUpload] Upload failed:', {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorMessage,
+              details: errorDetails,
+              fullResponse: responseData,
+            });
+          }
           
           // Provide specific error messages based on status code
           if (response.status === 401) {
@@ -185,12 +209,16 @@ export function ImageUpload({
           }
         }
         
-        console.log('[ImageUpload] ✅ Upload successful, response:', responseData);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ImageUpload] ✅ Upload successful, response:', responseData);
+        }
 
         // Ensure we get a valid URL string - accept relative paths, absolute URLs, and data URLs
         const url = responseData?.url || responseData?.urls?.[0];
         if (!url) {
-          console.error('[ImageUpload] Invalid response format - no URL field:', responseData);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('[ImageUpload] Invalid response format - no URL field:', responseData);
+          }
           throw new Error("Server returned invalid response format. Expected 'url' field.");
         }
         
@@ -209,12 +237,14 @@ export function ImageUpload({
           urlString.startsWith('./') || // Relative path with ./
           urlString.startsWith('../'); // Relative path with ../
         
-        if (!isValidUrl) {
+        if (!isValidUrl && process.env.NODE_ENV === 'development') {
           console.warn('[ImageUpload] URL format may be invalid:', urlString);
           // Don't throw, just warn - some servers might return non-standard URLs
         }
         
-        console.log('[ImageUpload] ✅ Valid URL received:', urlString);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ImageUpload] ✅ Valid URL received:', urlString);
+        }
         return urlString;
       });
 
@@ -231,16 +261,26 @@ export function ImageUpload({
         // Combine existing images with new ones
         const allUrls = [...images, ...validUrls];
         onChange(allUrls);
-        console.log('[ImageUpload] ✅ Successfully added', validUrls.length, 'image(s)');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ImageUpload] ✅ Successfully added', validUrls.length, 'image(s)');
+        }
       } else {
         // Log warning but don't show error to user - upload may have succeeded but URLs weren't parsed correctly
-        console.warn('[ImageUpload] ⚠️ No valid URLs returned, but upload may have succeeded. URLs received:', urls);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[ImageUpload] ⚠️ No valid URLs returned, but upload may have succeeded. URLs received:', urls);
+        }
         // Don't throw error - just log it
       }
     } catch (error) {
-      console.error("Upload error:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Upload error:", error);
+      }
       const errorMessage = error instanceof Error ? error.message : "Failed to upload images";
-      alert(errorMessage);
+      showToast({
+        type: "error",
+        title: "Upload Failed",
+        message: errorMessage,
+      });
     } finally {
       setUploading(false);
     }
