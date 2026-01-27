@@ -13,7 +13,8 @@ import { getActivityLogs, getActivityLogsCount } from '@/lib/services/admin/acti
 import { apiSuccess, apiError } from '@/lib/utils/api-response';
 import { logger } from '@/lib/utils/logger';
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'; // Always fetch fresh data from database
+export const revalidate = 0; // Never cache activity logs
 
 /**
  * GET /api/admin/activity

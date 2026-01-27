@@ -70,10 +70,19 @@ export default function ActivityLogPage(): JSX.Element {
       
       params.set('limit', pagination.limit.toString());
       params.set('offset', pagination.offset.toString());
+      
+      // Add cache-busting timestamp to ensure fresh data
+      params.set('_t', Date.now().toString());
 
       const response = await fetch(`/api/admin/activity?${params.toString()}`, {
         credentials: 'include', // Include cookies for authentication
+        cache: 'no-store', // Always fetch fresh data
       });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch activity logs: ${response.status} ${response.statusText}`);
+      }
+      
       const data: { success: boolean; data: ActivityLogsResponse } = await response.json();
 
       if (data.success && data.data) {
@@ -81,9 +90,13 @@ export default function ActivityLogPage(): JSX.Element {
         setPagination(data.data.pagination);
       } else {
         console.error('Failed to load activity logs:', data);
+        setLogs([]);
+        setPagination(prev => ({ ...prev, total: 0 }));
       }
     } catch (error) {
       console.error('Error loading activity logs:', error);
+      setLogs([]);
+      setPagination(prev => ({ ...prev, total: 0 }));
     } finally {
       setLoading(false);
     }
@@ -91,6 +104,15 @@ export default function ActivityLogPage(): JSX.Element {
 
   React.useEffect(() => {
     loadLogs();
+  }, [loadLogs]);
+
+  // Auto-refresh every 30 seconds to keep activity log in sync
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      loadLogs();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
   }, [loadLogs]);
 
   const handleFilterChange = (newFilters: typeof filters) => {

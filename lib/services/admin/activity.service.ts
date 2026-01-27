@@ -80,6 +80,12 @@ export async function logActivity(
   data: ActivityLogData,
   request?: NextRequest
 ): Promise<boolean> {
+  // Validate required fields
+  if (!data.adminUserId || !data.action) {
+    logger.warn('[ActivityLog] Missing required fields: adminUserId or action');
+    return false;
+  }
+
   try {
     if (!prisma) {
       logger.warn('[ActivityLog] Prisma client not available');
@@ -101,15 +107,29 @@ export async function logActivity(
       userAgent: data.userAgent || metadata.userAgent || null,
     };
 
-    await prisma.adminActivityLog.create({
-      data: logData,
+    // Use transaction for atomic write
+    await prisma.$transaction(async (tx) => {
+      await tx.adminActivityLog.create({
+        data: logData,
+      });
+    }, {
+      timeout: 5000, // 5 second timeout
     });
 
-    logger.log(`[ActivityLog] Logged action: ${data.action} by user ${data.adminUserId}`);
+    if (process.env.NODE_ENV === 'development') {
+      logger.log(`[ActivityLog] ✅ Logged action: ${data.action} by user ${data.adminUserId} (${data.resource || 'N/A'})`);
+    }
     return true;
   } catch (error) {
     // Don't throw - logging failures shouldn't break the app
-    logger.error('[ActivityLog] Failed to log activity:', error);
+    // But log the error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error(`[ActivityLog] ❌ Failed to log activity: ${data.action} by ${data.adminUserId}`, {
+      error: errorMessage,
+      action: data.action,
+      resource: data.resource,
+      resourceId: data.resourceId,
+    });
     return false;
   }
 }
@@ -137,6 +157,10 @@ export async function getActivityLogs(filters: ActivityLogFilters = {}) {
       limit = 50,
       offset = 0,
     } = filters;
+
+    // Validate limit
+    const validLimit = Math.min(Math.max(1, limit || 50), 100); // Between 1 and 100
+    const validOffset = Math.max(0, offset || 0);
 
     const where: any = {};
 
@@ -181,13 +205,17 @@ export async function getActivityLogs(filters: ActivityLogFilters = {}) {
       orderBy: {
         createdAt: 'desc',
       },
-      take: limit,
-      skip: offset,
+      take: validLimit,
+      skip: validOffset,
     });
 
     return logs;
   } catch (error) {
-    logger.error('[ActivityLog] Failed to get activity logs:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error(`[ActivityLog] Failed to get activity logs: ${errorMessage}`, {
+      filters,
+      error: errorMessage,
+    });
     return [];
   }
 }
