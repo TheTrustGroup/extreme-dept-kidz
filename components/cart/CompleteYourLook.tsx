@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
-import { Sparkles, ShoppingBag } from "lucide-react";
+import { Shirt, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { getCartRecommendations, getLooksForCartItems } from "@/lib/utils/styling-utils";
 import { Button } from "@/components/ui/button";
@@ -69,9 +69,9 @@ export function CompleteYourLook(): JSX.Element | null {
           transition={{ duration: 0.3 }}
           className="flex items-center gap-2"
         >
-          <Sparkles className="w-5 h-5 text-navy-900" />
+          <Shirt className="w-5 h-5 text-navy-900" />
           <H3 className="text-charcoal-900 text-xl md:text-2xl font-serif font-bold">
-            ✨ COMPLETE YOUR LOOK
+            COMPLETE YOUR LOOK
           </H3>
         </m.div>
 

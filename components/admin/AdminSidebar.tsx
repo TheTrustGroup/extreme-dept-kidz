@@ -11,7 +11,8 @@ import {
   Users,
   BarChart3,
   Settings,
-  Sparkles,
+  Shirt,
+  Building2,
   ChevronDown,
   ChevronRight,
   ChevronLeft,
@@ -82,10 +83,10 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
     {
       label: "Complete Looks",
       href: "/admin/looks",
-      icon: Sparkles,
+      icon: Shirt,
       children: [
-        { label: "All Looks", href: "/admin/looks", icon: Sparkles },
-        { label: "Create Look", href: "/admin/looks/new", icon: Sparkles },
+        { label: "All Looks", href: "/admin/looks", icon: Shirt },
+        { label: "Create Look", href: "/admin/looks/new", icon: Shirt },
       ],
     },
     {
@@ -270,7 +271,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
           {sidebarExpanded ? (
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <Sparkles className="w-5 h-5 text-white" />
+                <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white leading-tight">EXTREME</h2>
@@ -280,7 +281,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
           ) : (
             <div className="flex items-center justify-center w-full">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <Sparkles className="w-5 h-5 text-white" />
+                <Building2 className="w-5 h-5 text-white" />
               </div>
             </div>
           )}
@@ -358,9 +359,10 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
                 "w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 text-sm font-medium",
                 "group"
               )}
+              aria-label="Sign out"
             >
               <LogOut className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-              {sidebarExpanded && <span>Logout</span>}
+              {sidebarExpanded && <span>Sign Out</span>}
             </button>
           </div>
         )}

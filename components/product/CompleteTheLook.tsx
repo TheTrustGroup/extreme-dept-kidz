@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
-import { Sparkles, ShoppingBag, Edit3 } from "lucide-react";
+import { Shirt, ShoppingBag, Edit3 } from "lucide-react";
 import type { Product } from "@/types";
 import { getCompleteLooksForProduct, getProductById, calculateBundleDiscount } from "@/lib/utils/styling-utils";
 import { useStylingStore } from "@/lib/stores/styling-store";
@@ -109,7 +109,7 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
               className="text-center space-y-2"
             >
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Sparkles className="w-5 h-5 text-navy-900" />
+                <Shirt className="w-5 h-5 text-navy-900" />
                 <H2 className="text-charcoal-900 text-2xl md:text-3xl lg:text-4xl font-serif font-bold">
                   COMPLETE THE LOOK
                 </H2>

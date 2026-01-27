@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { m } from "framer-motion";
-import { Plus, Sparkles, Edit, Trash2 } from "lucide-react";
+import { Plus, Shirt, Edit, Trash2 } from "lucide-react";
 import { getLooks } from "@/lib/admin-api";
 import { calculateBundleDiscount, getProductById } from "@/lib/utils/styling-utils";
 import { formatPrice } from "@/lib/utils";
@@ -60,7 +60,7 @@ export default function LooksPage(): JSX.Element {
         </div>
       ) : looks.length === 0 ? (
         <div className="bg-cream-50 rounded-xl border border-cream-200 p-12 text-center">
-          <Sparkles className="w-12 h-12 text-charcoal-400 mx-auto mb-4" />
+          <Shirt className="w-12 h-12 text-charcoal-400 mx-auto mb-4" />
           <p className="text-charcoal-600 mb-4">No complete looks yet</p>
           <Button variant="primary" asChild>
             <Link href="/admin/looks/new">Create Your First Look</Link>
