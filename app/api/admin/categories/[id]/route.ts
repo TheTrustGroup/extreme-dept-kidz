@@ -76,6 +76,10 @@ export async function PUT(
       return apiValidationError(validation.errors);
     }
 
+    // After the success check, TypeScript knows validation.data exists
+    // Extract it to a const for type narrowing
+    const validatedData = validation.data;
+
     // Check if category exists
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) {
@@ -83,15 +87,6 @@ export async function PUT(
     }
 
     // Type-safe data preparation for Prisma
-    // validation.data is guaranteed to be the correct type after validation.success check
-    const validatedData = validation.data as {
-      name?: string;
-      slug?: string;
-      description?: string;
-      image?: string;
-      isActive?: boolean;
-    };
-
     const updateData: Prisma.CategoryUpdateInput = {
       ...(validatedData.name !== undefined && { name: validatedData.name }),
       ...(validatedData.slug !== undefined && { slug: validatedData.slug }),
@@ -113,7 +108,7 @@ export async function PUT(
       resourceId: id,
       details: {
         name: category.name,
-        changes: validation.data,
+        changes: validatedData,
       },
     }, request);
 

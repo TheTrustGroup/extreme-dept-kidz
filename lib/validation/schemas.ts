@@ -112,11 +112,21 @@ export const imageUploadSchema = z.object({
   ),
 });
 
+// Validation result types for better type narrowing
+export type ValidationSuccess<T> = { success: true; data: T };
+export type ValidationFailure = { success: false; errors: Record<string, string> };
+export type ValidationResult<T> = ValidationSuccess<T> | ValidationFailure;
+
+// Type guard function for better type narrowing
+export function isValid<T>(result: ValidationResult<T>): result is ValidationSuccess<T> {
+  return result.success === true;
+}
+
 // Helper to validate and return errors
 export function validate<T>(
   schema: z.ZodSchema<T>,
   data: unknown
-): { success: true; data: T } | { success: false; errors: Record<string, string> } {
+): ValidationResult<T> {
   try {
     const validated = schema.parse(data);
     return { success: true, data: validated };

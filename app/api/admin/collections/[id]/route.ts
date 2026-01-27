@@ -76,6 +76,9 @@ export async function PUT(
       return apiValidationError(validation.errors);
     }
 
+    // Extract validated data after success check
+    const validatedData = validation.data;
+
     // Check if collection exists
     const existing = await prisma.collection.findUnique({ where: { id } });
     if (!existing) {
@@ -84,7 +87,7 @@ export async function PUT(
 
     const collection = await prisma.collection.update({
       where: { id },
-      data: validation.data,
+      data: validatedData as Prisma.CollectionUpdateInput,
     });
 
     // Revalidate cache
@@ -104,7 +107,7 @@ export async function PUT(
       resourceId: id,
       details: {
         name: collection.name,
-        changes: validation.data,
+        changes: validatedData,
       },
     }, request);
 
