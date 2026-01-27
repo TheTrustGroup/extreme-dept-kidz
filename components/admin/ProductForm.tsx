@@ -427,6 +427,39 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
         body: JSON.stringify(payload),
       });
 
+      // Handle authentication errors (401) - token expired or invalid
+      if (response.status === 401) {
+        const responseData = await response.json().catch(() => ({}));
+        const errorMessage = responseData.error || responseData.message || 'Invalid or expired token';
+        
+        // Check if it's specifically a token expiration issue
+        const isTokenExpired = errorMessage.toLowerCase().includes('expired') || 
+                              errorMessage.toLowerCase().includes('invalid') ||
+                              errorMessage.toLowerCase().includes('token');
+        
+        showToast({
+          type: "error",
+          title: isTokenExpired ? "Session Expired" : "Authentication Required",
+          message: isTokenExpired 
+            ? "Your session has expired. Please log in again to continue." 
+            : "Authentication required. Please log in to continue.",
+        });
+        
+        // Clear any stored auth state
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('admin-token');
+          localStorage.removeItem('admin-user');
+        }
+        
+        // Redirect to login after a short delay to show the message
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 2000);
+        
+        setLoading(false);
+        return;
+      }
+
       const responseData = await response.json().catch(() => ({}));
 
       if (response.ok && responseData.success !== false) {
