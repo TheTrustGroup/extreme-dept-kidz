@@ -4,7 +4,12 @@
 
 if [ -f "node_modules/resend/dist/index.d.mts" ]; then
   echo "Patching resend type definitions..."
-  sed -i '' 's/react: void 0;/react?: React.ReactElement | string;/g' node_modules/resend/dist/index.d.mts
+  # Cross-platform sed: macOS uses -i '', Linux uses -i
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' 's/react: void 0;/react?: React.ReactElement | string;/g' node_modules/resend/dist/index.d.mts
+  else
+    sed -i 's/react: void 0;/react?: React.ReactElement | string;/g' node_modules/resend/dist/index.d.mts
+  fi
   echo "✓ Resend type definitions patched"
 else
   echo "⚠ Resend type definitions not found, skipping patch"
