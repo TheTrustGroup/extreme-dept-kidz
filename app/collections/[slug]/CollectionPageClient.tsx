@@ -25,11 +25,13 @@ import {
   sortProducts,
   getProductsByCollection,
 } from "@/lib/utils/filter-products";
+import type { Product } from "@/types";
 
 interface CollectionPageClientProps {
   params: {
     slug: string;
   };
+  products?: Product[];
 }
 
 /**
@@ -37,7 +39,7 @@ interface CollectionPageClientProps {
  * 
  * Displays products for a specific collection with filtering and sorting.
  */
-export function CollectionPageClient({ params }: CollectionPageClientProps): JSX.Element {
+export function CollectionPageClient({ params, products: serverProducts }: CollectionPageClientProps): JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
@@ -127,11 +129,12 @@ export function CollectionPageClient({ params }: CollectionPageClientProps): JSX
     router.replace(newUrl, { scroll: false });
   }, [filters, sortBy, router]);
 
-  // Get and filter products
+  // Get and filter products - use server-fetched products or fallback to mock
   const collectionProducts = React.useMemo(() => {
     if (!collection) return [];
-    return getProductsByCollection(mockProducts, collection.slug);
-  }, [collection, params.slug]);
+    const sourceProducts = serverProducts || mockProducts;
+    return getProductsByCollection(sourceProducts, collection.slug);
+  }, [collection, params.slug, serverProducts]);
 
   const filteredProducts = React.useMemo(() => {
     return filterProducts(collectionProducts, filters);

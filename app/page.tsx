@@ -1,40 +1,44 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { generateWebsiteSchema, generateOrganizationSchema } from "@/lib/seo/structured-data";
+import { getAllProducts } from "@/lib/db";
+import type { Product } from "@/types";
 
 // Dynamically import home sections for code splitting and performance
-const HeroSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.HeroSection })), {
+const HeroSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.HeroSection })), {
   loading: () => <div className="min-h-screen bg-cream-50" />,
   ssr: true, // Hero is above fold, load immediately
 });
 
-const TrustBar = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.TrustBar })), {
+const TrustBar = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.TrustBar })), {
   ssr: true, // Trust signals are important for first-time visitors
 });
 
-const NewArrivalsSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })), {
+const NewArrivalsSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })), {
   ssr: false, // Below fold, can lazy load
 });
 
-const ShopByStyleSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
+const ShopByStyleSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
   ssr: false,
 });
 
-const FeaturedCollections = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })), {
+const FeaturedCollections = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })), {
   ssr: false,
 });
 
-const EditorialSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.EditorialSection })), {
+const EditorialSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.EditorialSection })), {
   ssr: false,
 });
 
-const GirlsCollectionSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })), {
+const GirlsCollectionSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })), {
   ssr: false,
 });
 
-const StyleGuideSection = dynamic(() => import("@/components/home").then((mod) => ({ default: mod.StyleGuideSection })), {
+const StyleGuideSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.StyleGuideSection })), {
   ssr: false,
 });
+
+export const dynamic = 'force-dynamic'; // Always fetch fresh products on homepage
 
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
@@ -76,9 +80,18 @@ export const metadata: Metadata = {
  * - ShopByCategory: 2x2 category grid
  * - EditorialSection: Split-screen lifestyle editorial
  */
-export default function Home() {
+export default async function Home() {
   const websiteSchema = generateWebsiteSchema();
   const organizationSchema = generateOrganizationSchema();
+
+  // Fetch products from database to display on homepage
+  let products: Product[] = [];
+  try {
+    products = await getAllProducts();
+  } catch (error) {
+    console.error('Failed to fetch products for homepage:', error);
+    // Continue with empty array - components will use mock data as fallback
+  }
 
   return (
     <>
@@ -98,7 +111,7 @@ export default function Home() {
         <TrustBar />
 
         {/* New Arrivals Section - Boys Focused */}
-        <NewArrivalsSection />
+        <NewArrivalsSection products={products} />
 
         {/* Shop by Style Section - Boys Categories */}
         <ShopByStyleSection />
@@ -110,7 +123,7 @@ export default function Home() {
         <EditorialSection />
 
         {/* Girls Collection Section - Secondary, Smaller */}
-        <GirlsCollectionSection />
+        <GirlsCollectionSection products={products} />
 
         {/* Style Guide Section - Featured Complete Looks */}
         <StyleGuideSection />

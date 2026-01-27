@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductPageClient } from "./ProductPageClient";
-import { mockProducts } from "@/lib/mock-data";
+import { getProductBySlug } from "@/lib/db";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 import type { Product } from "@/types";
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
-/**
- * Get product by slug
- */
-function getProductBySlug(slug: string): Product | undefined {
-  return mockProducts.find((product) => product.slug === slug);
-}
+export const dynamic = 'force-dynamic'; // Always fetch fresh product data
 
 /**
  * Generate metadata for product page
@@ -24,7 +19,8 @@ function getProductBySlug(slug: string): Product | undefined {
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const product = getProductBySlug(params.slug);
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -74,8 +70,9 @@ export async function generateMetadata({
  * 
  * Premium product page with gallery, info, and related products.
  */
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = getProductBySlug(params.slug);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();

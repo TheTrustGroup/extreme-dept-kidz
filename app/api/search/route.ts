@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mockProducts } from '@/lib/mock-data';
+import { getAllProducts } from '@/lib/db';
 import { apiSuccess, apiError } from '@/lib/utils/api-response';
 import { logger } from '@/lib/utils/logger';
 
@@ -17,8 +17,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch products from database
+    const products = await getAllProducts();
+
     // Search in product name, description, tags, and category
-    const results = mockProducts
+    const results = products
       .filter((product) => {
         const searchableText = [
           product.name,

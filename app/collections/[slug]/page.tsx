@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { CollectionPageClient } from "./CollectionPageClient";
 import { mockCollections } from "@/lib/mock-data";
+import { getAllProducts, getProductsByCategory } from "@/lib/db";
+import type { Product } from "@/types";
 
 interface CollectionPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
+
+export const dynamic = 'force-dynamic'; // Always fetch fresh products
 
 /**
  * Generate metadata for collection page
@@ -14,8 +18,9 @@ interface CollectionPageProps {
 export async function generateMetadata({
   params,
 }: CollectionPageProps): Promise<Metadata> {
+  const { slug } = await params;
   // Check if it's a real collection or a category-based collection
-  const collection = mockCollections.find((c) => c.slug === params.slug);
+  const collection = mockCollections.find((c) => c.slug === slug);
   const categoryMap: Record<string, { name: string; description: string }> = {
     "boys": {
       name: "Boys Collection",
@@ -27,7 +32,7 @@ export async function generateMetadata({
     },
   };
 
-  const categoryInfo = categoryMap[params.slug];
+  const categoryInfo = categoryMap[slug];
   const collectionName = collection?.name || categoryInfo?.name;
   const collectionDescription = collection?.description || categoryInfo?.description;
 
@@ -47,12 +52,12 @@ export async function generateMetadata({
       "kids fashion collection",
     ],
     alternates: {
-      canonical: `https://extremedeptkidz.com/collections/${params.slug}`,
+      canonical: `https://extremedeptkidz.com/collections/${slug}`,
     },
     openGraph: {
       title: `${collectionName} | Extreme Dept Kidz`,
       description: collectionDescription || `Shop ${collectionName} at Extreme Dept Kidz.`,
-      url: `https://extremedeptkidz.com/collections/${params.slug}`,
+      url: `https://extremedeptkidz.com/collections/${slug}`,
       images: collection?.image
         ? [
             {
@@ -79,6 +84,23 @@ export async function generateMetadata({
  * 
  * Displays products for a specific collection with filtering and sorting.
  */
-export default function CollectionPage({ params }: CollectionPageProps): JSX.Element {
-  return <CollectionPageClient params={params} />;
+export default async function CollectionPage({ params }: CollectionPageProps): Promise<JSX.Element> {
+  const { slug } = await params;
+  
+  // Fetch products from database
+  let products: Product[] = [];
+  try {
+    // If it's a category-based collection (boys, girls), fetch by category
+    if (slug === 'boys' || slug === 'girls') {
+      products = await getProductsByCategory(slug);
+    } else {
+      // For other collections, fetch all products and filter client-side
+      products = await getAllProducts();
+    }
+  } catch (error) {
+    console.error('Failed to fetch products for collection:', error);
+    // Continue with empty array - client component will handle gracefully
+  }
+
+  return <CollectionPageClient params={{ slug }} products={products} />;
 }

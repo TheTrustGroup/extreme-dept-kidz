@@ -222,11 +222,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Revalidate cache
+    // Revalidate cache to ensure product appears immediately
     try {
       revalidatePath('/products');
       revalidatePath('/collections');
+      // Revalidate specific collection pages based on category
+      if (product.category?.slug) {
+        revalidatePath(`/collections/${product.category.slug}`);
+      }
       revalidatePath('/admin/products');
+      revalidatePath('/api/products');
+      revalidatePath(`/products/${product.slug}`);
+      revalidatePath('/');
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails

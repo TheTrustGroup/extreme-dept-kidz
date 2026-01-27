@@ -183,9 +183,15 @@ export async function PUT(
 
     // Revalidate cache to show updated product immediately
     try {
-      revalidatePath(`/products/${id}`);
+      revalidatePath(`/products/${product.slug}`);
       revalidatePath('/products');
       revalidatePath('/collections');
+      // Revalidate specific collection pages based on category
+      if (product.category?.slug) {
+        revalidatePath(`/collections/${product.category.slug}`);
+      }
+      revalidatePath('/admin/products');
+      revalidatePath('/api/products');
       revalidatePath('/');
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
