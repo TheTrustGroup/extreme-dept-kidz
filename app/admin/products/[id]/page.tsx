@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,24 +33,17 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
-interface ProductEditPageProps {
-  params: Promise<{ id: string }>;
-}
-
 /**
  * Product Edit/Create Page
  * 
  * Form for creating or editing products.
  */
-export default function ProductEditPage({ params }: ProductEditPageProps): JSX.Element {
+export default function ProductEditPage(): JSX.Element {
   const router = useRouter();
+  const params = useParams();
   const { addToast } = useToast();
-  const [productId, setProductId] = React.useState<string>("");
+  const productId = (params?.id as string) || "";
   const isNew = productId === "new";
-  
-  React.useEffect(() => {
-    params.then(({ id }) => setProductId(id));
-  }, [params]);
   const [loading, setLoading] = React.useState(!isNew);
   const [saving, setSaving] = React.useState(false);
 
