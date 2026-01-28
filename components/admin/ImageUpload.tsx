@@ -437,20 +437,27 @@ export function ImageUpload({
             e.preventDefault();
             e.stopPropagation();
             
-            const files = e.target.files;
+            const fileInput = e.target as HTMLInputElement;
+            const files = fileInput.files;
+            
             if (files && files.length > 0) {
-              // Create a copy of the FileList since it might be cleared
+              // CRITICAL: Convert FileList to Array immediately before resetting input
+              // Some browsers clear the FileList when input.value is reset
               const filesArray = Array.from(files);
               
-              // Reset the input value immediately to allow selecting the same file again
-              // But do it after we've captured the files
-              if (e.target) {
-                e.target.value = '';
-              }
+              // Reset the input value to allow selecting the same file again
+              fileInput.value = '';
+              
+              // Create a new FileList-like object from the array
+              // handleFileSelect expects FileList, but we'll convert it internally
+              // For now, pass the array directly by creating a DataTransfer object
+              const dataTransfer = new DataTransfer();
+              filesArray.forEach(file => dataTransfer.items.add(file));
+              const fileList = dataTransfer.files;
               
               // Process files asynchronously
               try {
-                await handleFileSelect(files);
+                await handleFileSelect(fileList);
               } catch (error) {
                 // Error is already handled in handleFileSelect
                 if (process.env.NODE_ENV === 'development') {
