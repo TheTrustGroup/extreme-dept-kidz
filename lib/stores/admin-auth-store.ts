@@ -336,23 +336,25 @@ export const useAdminAuth = create<AdminAuthState>()(
           // Otherwise, continue to verify (but update timestamp)
         }
 
-        if (!token) {
-          console.warn('[Auth] No token available, clearing auth state');
-          set({ isAuthenticated: false, user: null });
-          return false;
-        }
-
+        // CRITICAL: Even if no token in store, try to fetch user from cookie
+        // This handles page refresh where cookie exists but store is empty
         try {
           lastAuthCheck = now;
           
-          // Cookie is httpOnly and managed by server, no need to sync client-side
-          // It's automatically included in requests by the browser
+          // Cookie is httpOnly and managed by server, automatically included in requests
+          // We can use the cookie even if we don't have token in store
+          const headers: HeadersInit = {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+          };
+          
+          // Only add Authorization header if we have a token in store
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
           
           const response = await fetch("/api/admin/auth/me", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            credentials: 'include', // Include cookies
+            headers,
+            credentials: 'include', // Include cookies (this is the key!)
             cache: 'no-store', // Prevent caching
           });
 
@@ -376,8 +378,8 @@ export const useAdminAuth = create<AdminAuthState>()(
           }
 
           const data = await response.json();
-          // Handle both apiSuccess format (data.user) and direct format (user)
-          const userData = data.data?.user || data.user;
+          // Handle both apiSuccess format (data.data.user or data.user) and direct format (user)
+          const userData = data.data?.user || data.data?.data?.user || data.user;
           if (!userData) {
             console.error("[Auth] ❌ No user data in response:", data);
             set({ isAuthenticated: false, user: null, token: null });
@@ -385,11 +387,15 @@ export const useAdminAuth = create<AdminAuthState>()(
             return false;
           }
           
+          // Extract token from response if available, otherwise keep existing token
+          // The token might be in the cookie, so we don't need to store it
+          const responseToken = data.data?.token || data.token || token;
+          
           // Update state with fresh user data
           set({
             user: userData,
             isAuthenticated: true,
-            token: token, // Preserve token
+            token: responseToken || 'cookie', // Use 'cookie' as placeholder if no token in response
           });
           
           // Cookie is httpOnly and managed by server, automatically included in requests

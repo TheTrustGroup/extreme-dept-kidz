@@ -25,13 +25,13 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [checkingAuth, setCheckingAuth] = React.useState(true);
   const pathname = usePathname();
+  const { checkAuth, user } = useAdminAuth();
 
   // Enable keyboard shortcuts (must be called unconditionally)
   useAdminKeyboards();
 
-  // CRITICAL: Middleware is the ONLY source of auth protection
-  // If middleware allowed this request, the cookie is valid - trust it
-  // Do NOT perform any auth checks or redirects here
+  // CRITICAL: Initialize user state on mount
+  // Middleware validates the cookie, but we need to fetch user info for UI
   React.useEffect(() => {
     // Don't check auth on public pages (login, forgot-password, reset-password)
     const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
@@ -40,10 +40,21 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       return;
     }
 
-    // Middleware already validated the cookie - just set checking to false
-    // No auth checks, no redirects - middleware handles everything
-    setCheckingAuth(false);
-  }, [pathname]);
+    // Initialize user state from cookie (middleware already validated it)
+    // This ensures the sign out button and user menu show up
+    checkAuth()
+      .then((authenticated) => {
+        if (!authenticated) {
+          console.warn("[AdminLayout] Auth check failed, but middleware allowed access");
+        }
+        setCheckingAuth(false);
+      })
+      .catch((error) => {
+        console.error("[AdminLayout] Auth check error:", error);
+        // Don't block rendering - middleware already validated cookie
+        setCheckingAuth(false);
+      });
+  }, [pathname, checkAuth]);
 
   // Don't render layout on public pages (login, forgot-password, reset-password)
   const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];

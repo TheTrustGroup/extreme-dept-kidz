@@ -28,18 +28,52 @@ export function CategoryManagement(): JSX.Element {
     fetchCategories();
   }, []);
 
+  // Refresh categories after successful creation (handled by parent or via event)
+  useEffect(() => {
+    const handleCategoryCreated = () => {
+      fetchCategories();
+    };
+    
+    // Listen for custom event when category is created
+    window.addEventListener('category-created', handleCategoryCreated);
+    return () => {
+      window.removeEventListener('category-created', handleCategoryCreated);
+    };
+  }, []);
+
   async function fetchCategories(): Promise<void> {
     try {
       const response = await fetch("/api/admin/categories", {
         credentials: 'include',
+        cache: 'no-store', // Prevent caching
       });
       if (response.ok) {
         const data = await response.json();
-        // Handle both apiSuccess format (data.categories) and direct array format
-        const categories = data.data?.categories || data.categories || (Array.isArray(data) ? data : []);
+        // Handle apiSuccess format: { success: true, data: { categories: [...], count: ... } }
+        // Or direct format: { categories: [...] }
+        // Or array format: [...]
+        let categories: Category[] = [];
+        
+        if (data.success && data.data) {
+          // apiSuccess format
+          categories = Array.isArray(data.data.categories) 
+            ? data.data.categories 
+            : Array.isArray(data.data) 
+              ? data.data 
+              : [];
+        } else if (Array.isArray(data.categories)) {
+          categories = data.categories;
+        } else if (Array.isArray(data)) {
+          categories = data;
+        } else if (Array.isArray(data.data)) {
+          categories = data.data;
+        }
+        
+        console.log(`[CategoryManagement] Fetched ${categories.length} categories:`, categories.map(c => c.name));
         setCategories(categories);
       } else {
-        console.error("Failed to fetch categories:", response.status, response.statusText);
+        const errorText = await response.text().catch(() => '');
+        console.error("Failed to fetch categories:", response.status, response.statusText, errorText);
         // Set empty array on error to prevent crashes
         setCategories([]);
       }
@@ -66,10 +100,12 @@ export function CategoryManagement(): JSX.Element {
       const response = await fetch(`/api/admin/categories/${id}`, {
         method: "DELETE",
         credentials: 'include',
+        cache: 'no-store',
       });
 
       if (response.ok) {
-        setCategories(categories.filter((c) => c.id !== id));
+        // Refresh categories list to ensure we have latest data
+        await fetchCategories();
         showToast({
           type: "success",
           title: "Category Deleted",

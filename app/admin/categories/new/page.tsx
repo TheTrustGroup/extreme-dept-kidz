@@ -62,6 +62,10 @@ export default function NewCategoryPage() {
           title: "Category Created",
           message: `${formData.name} has been created successfully`,
         });
+        // Dispatch event to refresh categories list
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('category-created'));
+        }
         // Refresh the categories list and redirect
         router.push('/admin/categories');
         router.refresh(); // Force refresh to show new category

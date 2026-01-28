@@ -36,14 +36,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Return format expected by admin-auth-store.ts
     // Note: Must match the format expected by checkAuth() and refreshAuth()
-    return NextResponse.json({
-      user: {
-        id: fullUser.id,
-        email: fullUser.email,
-        name: fullUser.name,
-        role: fullUser.role,
+    // The store checks for both data.user and user, so return both formats for compatibility
+    return apiSuccess(
+      {
+        user: {
+          id: fullUser.id,
+          email: fullUser.email,
+          name: fullUser.name,
+          role: fullUser.role,
+        },
       },
-    });
+      'User fetched successfully'
+    );
   } catch (error) {
     logger.error('Error fetching user:', error);
     return apiError(
