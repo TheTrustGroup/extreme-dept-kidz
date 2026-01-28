@@ -20,9 +20,9 @@ interface TrustItemProps {
 function TrustItem({ icon, text }: TrustItemProps): JSX.Element {
   const { theme } = useTheme();
   return (
-    <div className="flex items-center gap-2.5 sm:gap-3">
+    <div className="flex items-center gap-[var(--space-3)] sm:gap-[var(--space-3)]">
       <div className={cn(
-        "flex-shrink-0 transition-colors duration-300",
+        "flex-shrink-0 transition-colors duration-300 flex items-center",
         theme === "dark" ? "text-accent-primary" : "text-forest-600"
       )}>
         {icon}
@@ -42,7 +42,8 @@ export function TrustBar(): JSX.Element {
   return (
     <section
       className={cn(
-        "backdrop-blur-sm border-y py-4 sm:py-5 shadow-sm transition-colors duration-300",
+        "backdrop-blur-sm border-y shadow-sm transition-colors duration-300",
+        "py-[var(--space-4)] sm:py-[var(--space-5)]",
         theme === "dark"
           ? "bg-dark-surface border-dark-border-glass"
           : "bg-cream-100/90 border-cream-200/70"
@@ -50,7 +51,7 @@ export function TrustBar(): JSX.Element {
       aria-label="Trust signals and value propositions"
     >
       <Container>
-        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-10 md:gap-12 lg:gap-16">
+        <div className="flex flex-wrap items-center justify-center gap-[var(--space-8)] sm:gap-[var(--space-10)] md:gap-[var(--space-12)] lg:gap-[var(--space-13)]">
           <TrustItem
             icon={<RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />}
             text="30-Day Returns"

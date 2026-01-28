@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 export function EditorialSection(): JSX.Element {
   return (
     <section 
-      // Design System: XLarge section spacing - 48px mobile, 80px tablet, 128px desktop
-      className="py-12 md:py-20 lg:py-32 bg-cream-50"
+      // Design System: Consistent spacing using 8px base scale
+      className="section bg-cream-50"
       aria-labelledby="editorial-heading"
     >
       <Container size="lg">
@@ -35,13 +35,13 @@ export function EditorialSection(): JSX.Element {
 
           {/* Text Side - 40% */}
           <m.div
-            className="lg:col-span-2 bg-cream-50 flex items-center p-6 xs:p-7 sm:p-8 md:p-10 lg:p-14 xl:p-16 2xl:p-20"
+            className="lg:col-span-2 bg-cream-50 flex items-center p-[var(--space-6)] sm:p-[var(--space-7)] md:p-[var(--space-8)] lg:p-[var(--space-10)] xl:p-[var(--space-13)]"
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.4, ease: "easeInOut", delay: 0.1 }}
           >
-            <div className="max-w-lg space-y-6 md:space-y-8">
+            <div className="max-w-lg space-y-[var(--space-6)] md:space-y-[var(--space-8)]">
               {/* Eyebrow Text */}
               <Caption className="text-charcoal-600 uppercase tracking-wider">
                 THE COLLECTION
@@ -56,7 +56,7 @@ export function EditorialSection(): JSX.Element {
               </H2>
 
               {/* Body Paragraph */}
-              <div className="space-y-4">
+              <div className="space-y-[var(--space-4)]">
                 <Body className="text-charcoal-700">
                   From the playground to the city streets, every piece is crafted for the modern boy who moves with confidence.
                 </Body>
@@ -67,7 +67,7 @@ export function EditorialSection(): JSX.Element {
 
               {/* CTA Link */}
               <m.div
-                className="pt-4"
+                className="pt-[var(--space-4)]"
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -80,7 +80,7 @@ export function EditorialSection(): JSX.Element {
                     "text-charcoal-900 hover:text-navy-900",
                     "transition-colors duration-300",
                     "group relative min-h-[44px]",
-                    "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-2"
+                    "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-[var(--space-2)]"
                   )}
                   aria-label="Explore the boys collection"
                 >
@@ -89,7 +89,7 @@ export function EditorialSection(): JSX.Element {
                     <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-navy-900 transition-all duration-300 group-hover:w-full" />
                   </span>
                   <svg
-                    className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
+                    className="ml-[var(--space-2)] w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

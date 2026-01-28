@@ -40,17 +40,17 @@ export function Footer(): JSX.Element {
       )} 
       role="contentinfo"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Section */}
-        <div className="py-16 md:py-20 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+      <div className="container max-w-7xl mx-auto">
+        {/* Top Section - Using spacing scale */}
+        <div className="py-[var(--space-12)] md:py-[var(--space-13)] lg:py-[var(--space-13)]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-[var(--space-12)] lg:gap-[var(--space-13)]">
             {/* Brand Section */}
             <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
-              className="space-y-6"
+              className="space-y-[var(--space-6)]"
             >
               <div className="flex items-center">
                 <Link href="/" className="flex items-center">
@@ -61,10 +61,7 @@ export function Footer(): JSX.Element {
                     height={720}
                     className={cn(
                       "h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]",
-                      "transition-opacity duration-300",
-                      theme === "dark"
-                        ? "brightness-0 invert opacity-90" // Invert logo for dark mode visibility
-                        : ""
+                      "transition-opacity duration-300"
                     )}
                     priority={false}
                     sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
@@ -79,8 +76,8 @@ export function Footer(): JSX.Element {
               )}>
                 Elevated style for young legends. Premium streetwear and luxury essentials for the modern boy.
               </p>
-              {/* Social Icons */}
-              <div className="flex items-center space-x-4 pt-2">
+              {/* Social Icons - Consistent spacing */}
+              <div className="flex items-center gap-[var(--space-4)] pt-[var(--space-2)]">
                 <SocialIcon 
                   href="https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl" 
                   icon={Instagram} 
@@ -105,7 +102,7 @@ export function Footer(): JSX.Element {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="space-y-4"
+              className="space-y-[var(--space-4)]"
             >
               <h3 className={cn(
                 "font-serif text-2xl font-bold transition-colors duration-300",
@@ -121,7 +118,7 @@ export function Footer(): JSX.Element {
               )}>
                 Sign up for exclusive drops, style tips, and early access to new collections.
               </p>
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="space-y-[var(--space-3)]">
                 <div className="relative flex items-center">
                   <input
                     type="email"
@@ -184,8 +181,15 @@ export function Footer(): JSX.Element {
             </m.div>
           </div>
 
-          {/* Navigation Columns */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 lg:gap-12 mt-16 lg:mt-20 pt-16 lg:pt-20 border-t border-cream-200/10">
+          {/* Navigation Columns - Consistent spacing using 8px base scale */}
+          <div className={cn(
+            "grid grid-cols-2 sm:grid-cols-4",
+            "gap-[var(--space-8)] lg:gap-[var(--space-12)]",
+            "mt-[var(--space-12)] lg:mt-[var(--space-13)]",
+            "pt-[var(--space-12)] lg:pt-[var(--space-13)]",
+            "border-t transition-colors duration-300",
+            theme === "dark" ? "border-dark-border-glass" : "border-cream-200/10"
+          )}>
             {/* SHOP */}
             <m.nav
               initial={{ opacity: 0, y: 20 }}
@@ -202,7 +206,7 @@ export function Footer(): JSX.Element {
               )}>
                 SHOP
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-[var(--space-3)]">
                 <FooterNavLink href="/collections/boys">Boys</FooterNavLink>
                 <FooterNavLink href="/collections/girls">Girls</FooterNavLink>
                 <FooterNavLink href="/collections/new-arrivals">New Arrivals</FooterNavLink>
@@ -228,7 +232,7 @@ export function Footer(): JSX.Element {
               )}>
                 CUSTOMER CARE
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-[var(--space-3)]">
                 <FooterNavLink href="#">Shipping Info</FooterNavLink>
                 <FooterNavLink href="#">Returns & Exchange</FooterNavLink>
                 <FooterNavLink href="#">Size Guide</FooterNavLink>
@@ -255,7 +259,7 @@ export function Footer(): JSX.Element {
               )}>
                 COMPANY
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-[var(--space-3)]">
                 <FooterNavLink href="/about">About Us</FooterNavLink>
                 <FooterNavLink href="/about">Our Story</FooterNavLink>
                 <FooterNavLink href="#">Careers</FooterNavLink>
@@ -281,7 +285,7 @@ export function Footer(): JSX.Element {
               )}>
                 CONNECT
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-[var(--space-3)]">
                 <FooterNavLink 
                   href="https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl" 
                   icon={Instagram}
@@ -311,17 +315,17 @@ export function Footer(): JSX.Element {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar - Consistent spacing */}
         <div className={cn(
-          "border-t py-6 transition-colors duration-300",
+          "border-t py-[var(--space-6)] transition-colors duration-300",
           theme === "dark"
             ? "bg-dark-bg-primary border-dark-border-glass"
             : "bg-[#0f0f0f] border-cream-200/10"
         )}>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            {/* Left: Copyright */}
+          <div className="container max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-[var(--space-4)]">
+            {/* Left: Copyright - Consistent spacing */}
             <div className={cn(
-              "flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm transition-colors duration-300",
+              "flex flex-col sm:flex-row items-center gap-[var(--space-2)] sm:gap-[var(--space-4)] text-sm transition-colors duration-300",
               theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
             )}>
               <span>© {new Date().getFullYear()} <span className={cn(
@@ -332,20 +336,26 @@ export function Footer(): JSX.Element {
               <span className="italic">Made with precision & care</span>
             </div>
 
-            {/* Center: Legal Links */}
+            {/* Center: Legal Links - Consistent spacing */}
             <nav className={cn(
-              "flex items-center gap-4 text-sm transition-colors duration-300",
+              "flex items-center gap-[var(--space-4)] text-sm transition-colors duration-300",
               theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
             )} aria-label="Legal links">
               <FooterNavLink href="#" className="text-sm">Privacy Policy</FooterNavLink>
-              <span className="text-cream-200/30">|</span>
+              <span className={cn(
+                "transition-colors duration-300",
+                theme === "dark" ? "text-dark-text-muted" : "text-cream-200/30"
+              )}>|</span>
               <FooterNavLink href="#" className="text-sm">Terms of Service</FooterNavLink>
-              <span className="text-cream-200/30">|</span>
+              <span className={cn(
+                "transition-colors duration-300",
+                theme === "dark" ? "text-dark-text-muted" : "text-cream-200/30"
+              )}>|</span>
               <FooterNavLink href="#" className="text-sm">Accessibility</FooterNavLink>
             </nav>
 
-            {/* Right: Payment Icons */}
-            <div className="flex items-center gap-2">
+            {/* Right: Payment Icons - Consistent spacing */}
+            <div className="flex items-center gap-[var(--space-2)]">
               <PaymentIcon name="visa" />
               <PaymentIcon name="mastercard" />
               <PaymentIcon name="amex" />

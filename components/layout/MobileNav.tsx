@@ -7,6 +7,8 @@ import { AnimatePresence } from "framer-motion";
 import { X, User, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -29,6 +31,7 @@ export function MobileNav({
   cartItemCount = 0,
 }: MobileNavProps) {
   const { open: openCart } = useCartDrawer();
+  const { theme } = useTheme();
   const drawerRef = React.useRef<HTMLDivElement>(null);
   const previousFocusRef = React.useRef<HTMLElement | null>(null);
 
@@ -105,7 +108,12 @@ export function MobileNav({
         <>
           {/* Backdrop with blur and dark overlay */}
           <m.div
-            className="fixed inset-0 bg-charcoal-900/40 backdrop-blur-md z-40"
+            className={cn(
+              "fixed inset-0 backdrop-blur-md z-40 transition-colors duration-300",
+              theme === "dark"
+                ? "bg-dark-bg-primary/60"
+                : "bg-charcoal-900/40"
+            )}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -117,7 +125,12 @@ export function MobileNav({
           {/* Drawer */}
           <m.div
             ref={drawerRef}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-cream-50 shadow-2xl z-50 focus:outline-none"
+            className={cn(
+              "fixed top-0 right-0 bottom-0 w-full max-w-md shadow-2xl z-50 focus:outline-none transition-colors duration-300",
+              theme === "dark"
+                ? "bg-dark-bg-primary"
+                : "bg-cream-50"
+            )}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -133,12 +146,25 @@ export function MobileNav({
           >
             <div className="flex flex-col h-full">
               {/* Header with close button */}
-              <div className="flex items-center justify-between p-6 border-b border-cream-200">
-                <span className="font-serif text-xl font-bold text-charcoal-900">
+              <div className={cn(
+                "flex items-center justify-between p-[var(--space-6)] border-b transition-colors duration-300",
+                theme === "dark"
+                  ? "border-dark-border-glass"
+                  : "border-cream-200"
+              )}>
+                <span className={cn(
+                  "font-serif text-xl font-bold transition-colors duration-300",
+                  theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                )}>
                   Menu
                 </span>
                 <button
-                  className="p-2 text-charcoal-900 hover:text-navy-900 transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
+                  className={cn(
+                    "p-[var(--space-2)] rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
+                    theme === "dark"
+                      ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
+                      : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
+                  )}
                   onClick={onClose}
                   aria-label="Close menu"
                 >
@@ -147,8 +173,8 @@ export function MobileNav({
               </div>
 
               {/* Navigation Links */}
-              <nav className="flex-1 px-6 py-12 overflow-y-auto">
-                <ul className="space-y-8">
+              <nav className="flex-1 px-[var(--space-6)] py-[var(--space-12)] overflow-y-auto">
+                <ul className="space-y-[var(--space-8)]">
                   {navLinks.map((link, index) => (
                     <m.li
                       key={link.label}
@@ -163,10 +189,17 @@ export function MobileNav({
                       <Link
                         href={link.href}
                         className={cn(
-                          "block font-serif text-2xl font-semibold transition-colors duration-300 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg px-2 -mx-2",
-                          link.isEmphasized
-                            ? "text-navy-900 font-bold"
-                            : "text-charcoal-900 hover:text-navy-900"
+                          "block font-serif text-2xl font-semibold transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)]",
+                          theme === "dark"
+                            ? link.isEmphasized
+                              ? "text-accent-primary font-bold"
+                              : "text-dark-text-primary hover:text-accent-primary"
+                            : link.isEmphasized
+                              ? "text-navy-900 font-bold"
+                              : "text-charcoal-900 hover:text-navy-900",
+                          theme === "dark"
+                            ? "focus:ring-accent-primary"
+                            : "focus:ring-navy-500"
                         )}
                         onClick={onClose}
                       >
@@ -178,10 +211,20 @@ export function MobileNav({
               </nav>
 
               {/* Footer Actions */}
-              <div className="p-6 border-t border-cream-200 space-y-3">
+              <div className={cn(
+                "p-[var(--space-6)] border-t transition-colors duration-300 space-y-[var(--space-3)]",
+                theme === "dark"
+                  ? "border-dark-border-glass"
+                  : "border-cream-200"
+              )}>
                 <Link
                   href="/account"
-                  className="flex items-center gap-4 font-sans text-lg font-medium text-charcoal-900 hover:text-navy-900 transition-colors duration-300 w-full focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg px-2 -mx-2 py-2"
+                  className={cn(
+                    "flex items-center gap-[var(--space-4)] font-sans text-lg font-medium transition-colors duration-300 w-full focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] py-[var(--space-2)]",
+                    theme === "dark"
+                      ? "text-dark-text-primary hover:text-accent-primary focus:ring-accent-primary"
+                      : "text-charcoal-900 hover:text-navy-900 focus:ring-navy-500"
+                  )}
                   onClick={onClose}
                 >
                   <User className="w-5 h-5" aria-hidden="true" />
@@ -192,17 +235,59 @@ export function MobileNav({
                     onClose();
                     openCart();
                   }}
-                  className="flex items-center gap-4 font-sans text-lg font-medium text-charcoal-900 hover:text-navy-900 transition-colors duration-300 w-full text-left focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg px-2 -mx-2 py-2"
+                  className={cn(
+                    "flex items-center gap-[var(--space-4)] font-sans text-lg font-medium transition-colors duration-300 w-full text-left focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] py-[var(--space-2)]",
+                    theme === "dark"
+                      ? "text-dark-text-primary hover:text-accent-primary focus:ring-accent-primary"
+                      : "text-charcoal-900 hover:text-navy-900 focus:ring-navy-500"
+                  )}
                   aria-label={`View shopping cart with ${cartItemCount} items`}
                 >
                   <ShoppingBag className="w-5 h-5" aria-hidden="true" />
                   Cart
                   {cartItemCount > 0 && (
-                    <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-navy-900 text-xs font-medium text-cream-50">
+                    <span className={cn(
+                      "ml-auto flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium transition-colors duration-300",
+                      theme === "dark"
+                        ? "bg-accent-primary text-dark-bg-primary"
+                        : "bg-navy-900 text-cream-50"
+                    )}>
                       {cartItemCount > 9 ? "9+" : cartItemCount}
                     </span>
                   )}
                 </button>
+                
+                {/* Theme Toggle - Bottom of menu with glassmorphism styling */}
+                <m.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: navLinks.length * 0.08 + 0.2,
+                    duration: 0.3,
+                    ease: "easeOut",
+                  }}
+                  className={cn(
+                    "flex items-center justify-between pt-[var(--space-4)] border-t transition-colors duration-300",
+                    theme === "dark"
+                      ? "border-dark-border-glass"
+                      : "border-cream-200"
+                  )}
+                >
+                  <span className={cn(
+                    "font-sans text-base font-medium transition-colors duration-300",
+                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                  )}>
+                    Theme
+                  </span>
+                  <div className={cn(
+                    "glass p-[var(--space-2)] rounded-lg transition-all duration-300",
+                    theme === "dark"
+                      ? "bg-dark-surface/50 backdrop-blur-md border-dark-border-glass"
+                      : "bg-cream-100/80 backdrop-blur-sm border-cream-200/50"
+                  )}>
+                    <ThemeToggle size="sm" />
+                  </div>
+                </m.div>
               </div>
             </div>
           </m.div>

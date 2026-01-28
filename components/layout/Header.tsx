@@ -79,10 +79,11 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
       >
         <div className="h-full max-w-7xl mx-auto">
           <div className="h-full flex items-center">
-            {/* Logo - Left Aligned with Consistent Padding */}
+            {/* Logo - Left Aligned with Consistent Padding (8px base scale) */}
             <m.div
               className={cn(
-                "flex-shrink-0 flex items-center h-full pl-4 sm:pl-4 md:pl-5 lg:pl-7",
+                "flex-shrink-0 flex items-center h-full",
+                "pl-[var(--space-4)] sm:pl-[var(--space-4)] md:pl-[var(--space-5)] lg:pl-[var(--space-7)]",
                 isScrolled && "opacity-95"
               )}
               whileHover={{ scale: 1.01 }}
@@ -109,8 +110,8 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
               </Link>
             </m.div>
 
-            {/* Desktop Navigation - Centered between Logo and Actions */}
-            <nav id="main-navigation" className="hidden lg:flex items-center justify-center flex-1 gap-8 2xl:gap-10" aria-label="Main navigation">
+            {/* Desktop Navigation - Centered between Logo and Actions (8px base scale) */}
+            <nav id="main-navigation" className="hidden lg:flex items-center justify-center flex-1 gap-[var(--space-8)] 2xl:gap-[var(--space-10)]" aria-label="Main navigation">
               {navLinks.map((link) => (
                 <div
                   key={link.label}
@@ -128,10 +129,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
               ))}
             </nav>
 
-            {/* Right Side Actions - Right Aligned with Consistent Padding */}
-            <div className="flex items-center justify-center space-x-3 sm:space-x-3 md:space-x-4 lg:space-x-5 flex-shrink-0 ml-auto pr-4 sm:pr-4 md:pr-5 lg:pr-6">
+            {/* Right Side Actions - Right Aligned with Consistent Padding (8px base scale) */}
+            <div className="flex items-center justify-center flex-shrink-0 ml-auto gap-[var(--space-3)] sm:gap-[var(--space-3)] md:gap-[var(--space-4)] lg:gap-[var(--space-5)] pr-[var(--space-4)] sm:pr-[var(--space-4)] md:pr-[var(--space-5)] lg:pr-[var(--space-6)]">
               {/* Desktop Icons */}
-              <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
+              <div className="hidden md:flex items-center gap-[var(--space-3)] lg:gap-[var(--space-4)]">
                 <ThemeToggle size="sm" />
                 <IconButton 
                   aria-label="Search" 
@@ -143,7 +144,8 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                 <Link 
                   href="/account" 
                   className={cn(
-                    "relative p-2.5 min-h-[44px] min-w-[44px] transition-colors duration-300",
+                    "relative min-h-[44px] min-w-[44px] transition-colors duration-300",
+                    "p-[var(--space-2)]",
                     "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
                     "flex items-center justify-center",
                     theme === "dark"
@@ -218,7 +220,7 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
       <m.span
         className={cn(
           "font-sans text-xs font-semibold uppercase tracking-wider",
-          "px-3 py-2 rounded-lg -mx-1 block",
+          "px-[var(--space-3)] py-[var(--space-2)] rounded-lg block",
           "transition-colors duration-300 ease-out",
           "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
           theme === "dark"
@@ -236,7 +238,7 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
         {children}
         <span
           className={cn(
-            "absolute bottom-1.5 left-2 right-2 h-[2px] rounded-full transition-all duration-300 ease-out origin-center",
+            "absolute bottom-[var(--space-2)] left-[var(--space-2)] right-[var(--space-2)] h-[2px] rounded-full transition-all duration-300 ease-out origin-center",
             theme === "dark"
               ? isEmphasized
                 ? "bg-accent-primary scale-x-100"
@@ -263,7 +265,8 @@ function IconButton({ className, children, ...props }: IconButtonProps): JSX.Ele
     <button
       type="button"
       className={cn(
-        "relative p-2.5 min-h-[44px] min-w-[44px] rounded-lg",
+        "relative min-h-[44px] min-w-[44px] rounded-lg",
+        "p-[var(--space-2)]",
         "hover:scale-105 active:scale-95",
         "transition-all duration-300 ease-out",
         "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",

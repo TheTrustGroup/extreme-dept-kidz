@@ -51,10 +51,10 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
       aria-labelledby="new-arrivals-heading"
     >
       <Container size="lg">
-        {/* Design System: 32px mobile, 48px desktop spacing between header and content */}
-        <div className="space-y-8 lg:space-y-12">
+        {/* Design System: Consistent spacing using 8px base scale */}
+        <div className="space-y-[var(--space-8)] lg:space-y-[var(--space-12)]">
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--space-4)] sm:gap-[var(--space-6)]">
             <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -93,8 +93,8 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
             {/* Desktop: Horizontal Scroll */}
             <div 
               ref={carouselRef}
-              // Design System: Grid gaps - 24px desktop for horizontal scroll
-              className="hidden lg:flex overflow-x-auto scrollbar-hide pb-6 -mx-4 px-4 gap-6"
+              // Design System: Consistent spacing using 8px base scale
+              className="hidden lg:flex overflow-x-auto scrollbar-hide pb-[var(--space-6)] -mx-[var(--space-4)] px-[var(--space-4)] gap-[var(--space-6)]"
               role="list"
               aria-label="New arrivals carousel"
               style={{
@@ -129,8 +129,8 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
 
             {/* Mobile/Tablet: Grid - Touch-friendly spacing */}
             <div 
-              // Design System: Grid gaps - 16px mobile, 20px tablet, 24px desktop
-              className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5 md:gap-6"
+              // Design System: Consistent spacing using 8px base scale
+              className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[var(--space-4)] sm:gap-[var(--space-5)] md:gap-[var(--space-6)]"
               role="list"
               aria-label="New arrivals grid"
             >
@@ -158,7 +158,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
           </div>
 
           {/* Mobile View All Button - Touch-friendly */}
-          <div className="lg:hidden text-center pt-4">
+          <div className="lg:hidden text-center pt-[var(--space-4)]">
             <Button 
               variant="secondary" 
               size="md" 

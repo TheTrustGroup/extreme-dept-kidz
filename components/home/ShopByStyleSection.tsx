@@ -46,13 +46,13 @@ const styleCategories: StyleCategory[] = [
 export function ShopByStyleSection(): JSX.Element {
   return (
     <section 
-      // Design System: 48px mobile, 64px tablet, 96px desktop section spacing
-      className="py-12 md:py-16 lg:py-24 bg-cream-50"
+      // Design System: Consistent spacing using 8px base scale
+      className="section bg-cream-50"
       aria-labelledby="shop-by-style-heading"
     >
       <Container size="lg">
-        {/* Design System: 32px mobile, 48px desktop spacing */}
-        <div className="space-y-8 lg:space-y-12">
+        {/* Design System: Consistent spacing using 8px base scale */}
+        <div className="space-y-[var(--space-8)] lg:space-y-[var(--space-12)]">
           {/* Section Title */}
           <m.div
             className="text-center"
@@ -67,15 +67,15 @@ export function ShopByStyleSection(): JSX.Element {
             >
               Shop by Style
             </H2>
-            <Body className="mt-4 sm:mt-6 text-charcoal-600">
+            <Body className="mt-[var(--space-4)] sm:mt-[var(--space-6)] text-charcoal-600">
               Curated collections for the modern boy
             </Body>
           </m.div>
 
-          {/* Categories Grid - 2x2 Desktop, Stack Mobile - Touch-friendly spacing */}
+          {/* Categories Grid - 2x2 Desktop, Stack Mobile - Consistent spacing */}
           <div 
-            // Design System: Grid gaps - 16px mobile, 20px tablet, 24px desktop, 32px large desktop
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8"
+            // Design System: Consistent spacing using 8px base scale
+            className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-4)] sm:gap-[var(--space-5)] md:gap-[var(--space-6)] lg:gap-[var(--space-8)]"
             role="list"
             aria-label="Style categories"
           >
@@ -157,8 +157,8 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
             />
           </div>
 
-          {/* Category Name Overlay - Touch-friendly padding */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8">
+          {/* Category Name Overlay - Consistent spacing */}
+          <div className="absolute bottom-0 left-0 right-0 p-[var(--space-4)] sm:p-[var(--space-6)] md:p-[var(--space-8)]">
             <m.div
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}

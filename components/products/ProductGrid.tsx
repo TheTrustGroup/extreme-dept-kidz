@@ -63,12 +63,12 @@ export function ProductGrid({
       className={cn(
         "grid",
         getGridCols(columns),
-        // Generous spacing – premium, breathable layout
-        "gap-5", // 20px mobile
-        "sm:gap-6", // 24px small
-        "md:gap-6", // 24px tablet
-        "lg:gap-7", // 28px desktop
-        "xl:gap-8", // 32px large desktop
+        // Consistent spacing using 8px base scale
+        "gap-[var(--space-5)]", // 20px mobile
+        "sm:gap-[var(--space-6)]", // 24px small
+        "md:gap-[var(--space-6)]", // 24px tablet
+        "lg:gap-[var(--space-7)]", // 32px desktop
+        "xl:gap-[var(--space-8)]", // 40px large desktop
         className
       )}
     >
@@ -90,12 +90,13 @@ export function ProductGrid({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.03 }}
               // Prevent layout shift by maintaining consistent structure
-              className="w-full"
+              className="w-full h-full flex"
             >
               <ProductCard 
                 product={product} 
                 priority={isAboveFold}
                 fetchPriority={isAboveFold ? "auto" : "low"}
+                className="w-full h-full flex flex-col"
               />
             </m.div>
           );

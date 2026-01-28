@@ -72,15 +72,15 @@ export function StyleGuideSection(): JSX.Element {
       aria-labelledby="style-guide-heading"
     >
       <Container size="lg">
-        {/* Design System: Large spacing between header and content - 32px mobile, 48px desktop */}
-        <div className="space-y-8 lg:space-y-12">
+        {/* Design System: Consistent spacing using 8px base scale */}
+        <div className="space-y-[var(--space-8)] lg:space-y-[var(--space-12)]">
           {/* Section Header */}
           <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
-            className="text-center space-y-3 sm:space-y-4"
+            className="text-center space-y-[var(--space-3)] sm:space-y-[var(--space-4)]"
           >
             <H2 
               id="style-guide-heading"
@@ -95,8 +95,8 @@ export function StyleGuideSection(): JSX.Element {
 
           {/* Looks Grid */}
           <div 
-            // Design System: Grid gaps - 24px mobile, 32px tablet, 32px desktop
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-8"
+            // Design System: Consistent spacing using 8px base scale
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-6)] md:gap-[var(--space-8)] lg:gap-[var(--space-8)]"
             role="list"
             aria-label="Featured style guide looks"
           >

@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Performance: Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 :root {
   /* CSS Custom Properties for Design Tokens */
   --color-cream-50: #fefdfb;
@@ -290,7 +301,20 @@
     border-color var(--transition-base),
     color var(--transition-base),
     transform var(--transition-smooth),
-    box-shadow var(--transition-smooth);
+    box-shadow var(--transition-smooth),
+    opacity var(--transition-base);
+}
+
+/* Performance: Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 html {
@@ -298,21 +322,23 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Performance: Optimize font rendering */
+  font-feature-settings: "kern" 1;
+  font-kerning: normal;
 }
 
-/* Initialize reveal animations on page load */
-@media (prefers-reduced-motion: no-preference) {
-  .reveal {
-    opacity: 0;
-    transform: translateY(16px);
-    transition: all 800ms var(--ease-natural);
-  }
-
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+body {
+  /* Prevent layout shift */
+  min-height: 100vh;
+  /* Smooth font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Performance: GPU acceleration for transforms */
+  transform: translateZ(0);
+  will-change: scroll-position;
 }
+
+/* Initialize reveal animations on page load - Consolidated with optimized version below */
 
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
@@ -425,9 +451,7 @@ video {
 }
 
 /* Smooth scrolling for all elements */
-* {
-  scroll-behavior: smooth;
-}
+/* Smooth scrolling - already handled above */
 
 /* Custom scrollbar styling for luxury feel */
 ::-webkit-scrollbar {
@@ -500,11 +524,16 @@ textarea:focus-visible {
 .glass-panel {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color var(--duration-card-hover) var(--ease-premium),
+              border-color var(--duration-card-hover) var(--ease-premium),
+              box-shadow var(--duration-card-hover) var(--ease-premium);
+  will-change: background-color, border-color, box-shadow;
   /* Light theme (primary) */
   background: var(--glass-bg-light);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
+  /* Performance: GPU acceleration */
+  transform: translateZ(0);
 }
 
 [data-theme="dark"] .glass-panel,
@@ -517,11 +546,16 @@ textarea:focus-visible {
 .glass-panel-strong {
   backdrop-filter: blur(var(--glass-blur-strong));
   -webkit-backdrop-filter: blur(var(--glass-blur-strong));
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color var(--duration-card-hover) var(--ease-premium),
+              border-color var(--duration-card-hover) var(--ease-premium),
+              box-shadow var(--duration-card-hover) var(--ease-premium);
+  will-change: background-color, border-color, box-shadow;
   /* Light theme (primary) */
   background: var(--glass-bg-strong);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-elevated);
+  /* Performance: GPU acceleration */
+  transform: translateZ(0);
 }
 
 [data-theme="dark"] .glass-panel-strong,
@@ -534,11 +568,16 @@ textarea:focus-visible {
 .glass-card {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color var(--duration-card-hover) var(--ease-premium),
+              border-color var(--duration-card-hover) var(--ease-premium),
+              box-shadow var(--duration-card-hover) var(--ease-premium);
+  will-change: background-color, border-color, box-shadow;
   /* Light theme (primary) */
   background: rgba(254, 253, 251, 0.85);
   border: 1px solid rgba(250, 247, 237, 0.8);
   box-shadow: 0 4px 24px rgba(26, 26, 26, 0.06);
+  /* Performance: GPU acceleration */
+  transform: translateZ(0);
 }
 
 [data-theme="dark"] .glass-card,
@@ -548,16 +587,21 @@ textarea:focus-visible {
   box-shadow: var(--shadow-soft);
 }
 
-/* Enhanced glass utility class with saturation */
+/* Enhanced glass utility class with saturation - Optimized */
 .glass {
   backdrop-filter: blur(var(--glass-blur-md)) saturate(140%);
   -webkit-backdrop-filter: blur(var(--glass-blur-md)) saturate(140%);
   border-radius: var(--radius-lg);
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color var(--duration-card-hover) var(--ease-premium),
+              border-color var(--duration-card-hover) var(--ease-premium),
+              box-shadow var(--duration-card-hover) var(--ease-premium);
+  will-change: background-color, border-color, box-shadow;
   /* Light theme (primary) */
   background: var(--glass-bg-light);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
+  /* Performance: GPU acceleration */
+  transform: translateZ(0);
 }
 
 [data-theme="dark"] .glass,
@@ -588,9 +632,12 @@ textarea:focus-visible {
   margin-top: var(--space-6);
 }
 
-/* Button utility class with premium interactions */
+/* Button utility class with premium interactions - Refined */
 .btn {
   transform: translateY(0);
+  will-change: transform, box-shadow;
+  transition: transform var(--duration-button-hover) var(--ease-premium),
+              box-shadow var(--duration-button-hover) var(--ease-premium);
 }
 
 .btn:hover {
@@ -600,13 +647,22 @@ textarea:focus-visible {
 
 .btn:active {
   transform: translateY(0) scale(0.99);
+  transition-duration: var(--duration-button-active);
 }
 
-/* Reveal animation utility for scroll-triggered animations */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transform: none !important;
+  }
+}
+
+/* Reveal animation utility for scroll-triggered animations - Optimized */
 .reveal {
   opacity: 0;
   transform: translateY(16px);
-  transition: all 800ms var(--ease-natural);
+  transition: opacity var(--duration-scroll-fade) var(--ease-natural),
+              transform var(--duration-scroll-fade) var(--ease-natural);
+  will-change: opacity, transform;
 }
 
 .reveal.visible {
@@ -614,17 +670,29 @@ textarea:focus-visible {
   transform: translateY(0);
 }
 
-/* Product card utility class with premium hover effects */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Product card utility class with premium hover effects - Optimized */
 .product-card {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-xl);
   backdrop-filter: blur(var(--glass-blur-md));
   -webkit-backdrop-filter: blur(var(--glass-blur-md));
-  transition: all 500ms var(--ease-natural);
+  transition: transform var(--duration-card-hover) var(--ease-natural),
+              box-shadow var(--duration-card-hover) var(--ease-natural),
+              background-color var(--duration-card-hover) var(--ease-natural);
+  will-change: transform, box-shadow;
   /* Light theme (primary) */
   background: var(--glass-bg-light);
   box-shadow: var(--glass-shadow);
+  /* Prevent layout shift */
+  contain: layout style paint;
 }
 
 [data-theme="dark"] .product-card,
@@ -651,11 +719,20 @@ textarea:focus-visible {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 600ms var(--ease-natural);
+  transition: transform var(--duration-image-swap) var(--ease-natural);
+  will-change: transform;
+  /* Prevent layout shift */
+  aspect-ratio: 3/4;
 }
 
 .product-card:hover .product-image img {
   transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-image img {
+    transform: none !important;
+  }
 }
 
 .product-title {
@@ -677,12 +754,16 @@ textarea:focus-visible {
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   opacity: 0;
-  transition: all 500ms var(--ease-natural);
+  transition: opacity var(--duration-quick-add) var(--ease-natural),
+              transform var(--duration-quick-add) var(--ease-natural);
+  will-change: opacity, transform;
+  pointer-events: none;
 }
 
 .product-card:hover .product-actions {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 .header {
@@ -691,10 +772,15 @@ textarea:focus-visible {
   z-index: 1000;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color var(--duration-nav-hover) var(--ease-premium),
+              border-color var(--duration-nav-hover) var(--ease-premium),
+              box-shadow var(--duration-nav-hover) var(--ease-premium);
+  will-change: background-color, border-color;
   /* Default: Light theme (primary) */
   background: rgba(254, 253, 251, 0.88);
   border-bottom: 1px solid rgba(250, 247, 237, 0.5);
+  /* Performance: GPU acceleration */
+  transform: translateZ(0);
 }
 
 /* Dark theme override */
@@ -737,9 +823,34 @@ textarea:focus-visible {
 }
 
 /* Performance: Touch optimization for mobile */
+/* Mobile optimizations */
 * {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+/* Performance: Optimize images */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* Prevent layout shift */
+  max-width: 100%;
+  height: auto;
+}
+
+/* Performance: Optimize video */
+video {
+  object-fit: cover;
+  /* Prevent layout shift */
+  max-width: 100%;
+  height: auto;
+}
+
+/* Performance: Content visibility for off-screen content */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal:not(.visible) {
+    content-visibility: auto;
+  }
 }
 
 /* Enhanced interactive feedback */
@@ -752,24 +863,8 @@ input[type="submit"] {
   -webkit-user-select: none;
 }
 
-/* Smooth transitions for interactive elements */
-a, button, input, select, textarea {
-  transition-property: color, background-color, border-color, transform, box-shadow;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-}
-
-/* Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* Smooth transitions for interactive elements - Consolidated with global transitions */
+/* Note: Global transitions are handled in the * selector above */
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {

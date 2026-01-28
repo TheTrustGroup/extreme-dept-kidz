@@ -74,13 +74,13 @@ export const ProductCard = React.memo(function ProductCard({
     >
       <m.article
         className={cn(
-          "product-card w-full flex flex-col",
+          "product-card w-full flex flex-col h-full",
           "group-hover:border-cream-300/80"
         )}
         aria-label={product.name}
       >
-        {/* Image Container */}
-        <div className="product-image relative aspect-square overflow-hidden">
+        {/* Image Container - Fixed aspect ratio prevents layout shift */}
+        <div className="product-image relative aspect-square overflow-hidden flex-shrink-0">
           {/* Primary Image */}
           <Image
             src={primaryImage.url}
@@ -226,10 +226,10 @@ export const ProductCard = React.memo(function ProductCard({
 
           {/* Size Guide (Design System: Tier 2 - Reduce hesitation) */}
           {product.sizes && product.sizes.length > 0 && (
-            <div className="pt-2 border-t border-cream-200">
+            <div className="pt-[var(--space-2)] border-t border-cream-200">
               <div className="flex items-center justify-between">
                 <span className="font-sans text-xs text-charcoal-600">Available Sizes:</span>
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-[var(--space-2)] flex-wrap">
                   {product.sizes.slice(0, 4).map((sizeItem) => (
                     <span
                       key={sizeItem.size}

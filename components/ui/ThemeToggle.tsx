@@ -61,8 +61,8 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
       className={cn(
         "relative rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
         isDark
-          ? "bg-dark-surface border-dark-border-glass"
-          : "bg-cream-200 border-cream-300",
+          ? "bg-dark-surface border-dark-border-glass focus:ring-accent-primary focus:ring-offset-dark-bg-primary"
+          : "bg-cream-200 border-cream-300 focus:ring-navy-500 focus:ring-offset-cream-50",
         containerClasses[size],
         className
       )}
@@ -72,6 +72,7 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
       aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
       aria-pressed={isDark}
       title={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      type="button"
     >
       {/* Toggle Track */}
       <motion.div

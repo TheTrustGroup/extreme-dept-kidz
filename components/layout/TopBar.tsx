@@ -14,14 +14,14 @@ export function TopBar(): JSX.Element {
         ? "bg-dark-bg-secondary text-dark-text-secondary border-dark-border-glass shadow-dark-soft"
         : "bg-charcoal-900/95 text-cream-50 border-charcoal-800/50 shadow-glass"
     )}>
-      <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-full flex items-center justify-between gap-4">
-          {/* Left Side - Navigation Links */}
-          <div className="flex items-center gap-4 sm:gap-6 lg:gap-6">
+      <div className="container h-full max-w-7xl mx-auto">
+        <div className="h-full flex items-center justify-between gap-[var(--space-4)]">
+          {/* Left Side - Navigation Links - Consistent spacing */}
+          <div className="flex items-center gap-[var(--space-4)] sm:gap-[var(--space-6)] lg:gap-[var(--space-6)]">
             <Link
               href="/contact"
               className={cn(
-                "flex items-center gap-1.5 transition-colors duration-200",
+                "flex items-center gap-[var(--space-2)] transition-colors duration-200",
                 "focus:outline-none focus:ring-2 focus:ring-offset-2 rounded",
                 theme === "dark"
                   ? "hover:text-dark-text-primary focus:ring-accent-primary focus:ring-offset-dark-bg-primary"
@@ -35,7 +35,7 @@ export function TopBar(): JSX.Element {
             <Link
               href="#"
               className={cn(
-                "hidden sm:flex items-center gap-1.5 transition-colors duration-200",
+                "hidden sm:flex items-center gap-[var(--space-2)] transition-colors duration-200",
                 "focus:outline-none focus:ring-2 focus:ring-offset-2 rounded",
                 theme === "dark"
                   ? "hover:text-dark-text-primary focus:ring-accent-primary focus:ring-offset-dark-bg-primary"

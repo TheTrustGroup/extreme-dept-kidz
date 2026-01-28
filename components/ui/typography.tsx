@@ -15,10 +15,10 @@ export const Typography = React.forwardRef<HTMLElement, TypographyProps>(
     const Component = as || getDefaultElement(variant);
 
     const variants = {
-      h1: "font-serif text-display-2xl font-bold text-charcoal-900 tracking-tight",
-      h2: "font-serif text-display-xl font-semibold text-charcoal-900 tracking-tight",
-      h3: "font-serif text-display-lg font-semibold text-charcoal-900 tracking-tight",
-      h4: "font-serif text-display-md font-medium text-charcoal-800 tracking-tight",
+      h1: "font-serif text-display-2xl font-bold text-charcoal-900 tracking-tight leading-tight",
+      h2: "font-serif text-display-xl font-semibold text-charcoal-900 tracking-tight leading-tight",
+      h3: "font-serif text-display-lg font-semibold text-charcoal-900 tracking-tight leading-snug",
+      h4: "font-serif text-display-md font-medium text-charcoal-800 tracking-tight leading-snug",
       body: "font-sans text-base text-charcoal-700 leading-relaxed",
       caption:
         "font-sans text-sm text-charcoal-600 leading-normal uppercase tracking-wider",
@@ -66,7 +66,7 @@ export const H1 = React.forwardRef<
   <h1
     ref={ref}
     className={cn(
-      "font-serif text-display-2xl font-bold tracking-tight text-charcoal-900",
+      "font-serif text-display-2xl font-bold tracking-tight leading-tight text-charcoal-900",
       className
     )}
     {...props}
@@ -81,7 +81,7 @@ export const H2 = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "font-serif text-display-xl font-semibold tracking-tight text-charcoal-900",
+      "font-serif text-display-xl font-semibold tracking-tight leading-tight text-charcoal-900",
       className
     )}
     {...props}
@@ -96,7 +96,7 @@ export const H3 = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-serif text-display-lg font-semibold tracking-tight text-charcoal-900",
+      "font-serif text-display-lg font-semibold tracking-tight leading-snug text-charcoal-900",
       className
     )}
     {...props}
@@ -111,7 +111,7 @@ export const H4 = React.forwardRef<
   <h4
     ref={ref}
     className={cn(
-      "font-serif text-display-md font-medium tracking-tight text-charcoal-800",
+      "font-serif text-display-md font-medium tracking-tight leading-snug text-charcoal-800",
       className
     )}
     {...props}

@@ -44,51 +44,54 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       "font-sans font-semibold uppercase tracking-wide",
       // Shape
       "rounded-lg",
-      // Micro-interactions: smooth scale + color (300ms)
-      "transition-all duration-300 ease-out",
+      // Premium micro-interactions: smooth scale + color with refined timing
+      "transition-all duration-[var(--duration-button-hover)] ease-[var(--ease-premium)]",
       // Focus & Accessibility
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      "focus-visible:duration-[var(--duration-button-focus)]",
       // Touch targets (minimum 44px for mobile)
       "min-h-[44px] touch-manipulation",
       // Disabled state
-      "disabled:pointer-events-none"
+      "disabled:pointer-events-none disabled:cursor-not-allowed",
+      // Performance: GPU acceleration
+      "will-change-transform"
     );
 
-    // Variant styles (Design System: Button Styles)
+    // Variant styles (Design System: Button Styles) - Premium polished interactions
     const variants = {
       primary: cn(
         "bg-navy-900 text-cream-50",
-        "hover:bg-navy-800 hover:scale-[1.02] hover:shadow-navy",
-        "transition-all duration-normal ease-in-out",
-        "active:bg-navy-950 active:scale-[0.98] active:transition-all active:duration-100",
-        // Focus ring
-        "focus-visible:ring-navy-500",
+        "hover:bg-navy-800 hover:scale-[1.02] hover:shadow-lg hover:shadow-navy-900/20",
+        "active:bg-navy-950 active:scale-[0.98] active:shadow-md",
+        "active:transition-all active:duration-[var(--duration-button-active)]",
+        // Focus ring - premium styling
+        "focus-visible:ring-navy-500 focus-visible:ring-offset-cream-50",
         // Disabled state (Design System: Charcoal 200 bg, Charcoal 400 text, 0.5 opacity)
-        "disabled:bg-charcoal-200 disabled:text-charcoal-400 disabled:opacity-50"
+        "disabled:bg-charcoal-200 disabled:text-charcoal-400 disabled:opacity-50 disabled:cursor-not-allowed"
       ),
       secondary: cn(
         // Default state (Design System: Transparent with Navy 900 border)
         "bg-transparent border-2 border-navy-900 text-navy-900",
         // Hover state (Design System: Navy 900 bg, Cream 50 text)
-        "hover:bg-navy-900 hover:text-cream-50 hover:scale-[1.02]",
-        // Active state
-        "active:scale-[0.98] active:transition-all active:duration-100",
+        "hover:bg-navy-900 hover:text-cream-50 hover:scale-[1.02] hover:shadow-lg hover:shadow-navy-900/20",
+        // Active state - refined timing
+        "active:scale-[0.98] active:transition-all active:duration-[var(--duration-button-active)]",
         // Focus ring
-        "focus-visible:ring-navy-500",
+        "focus-visible:ring-navy-500 focus-visible:ring-offset-cream-50",
         // Disabled state
-        "disabled:border-charcoal-200 disabled:text-charcoal-400 disabled:opacity-50"
+        "disabled:border-charcoal-200 disabled:text-charcoal-400 disabled:opacity-50 disabled:cursor-not-allowed"
       ),
       ghost: cn(
         // Default state (Design System: Transparent, Charcoal 900 text)
         "bg-transparent text-charcoal-900",
-        // Hover state (Design System: Cream 200 background)
-        "hover:bg-cream-200 hover:text-charcoal-900",
-        // Active state
-        "active:bg-cream-300 active:scale-[0.98] active:transition-all active:duration-100",
+        // Hover state (Design System: Cream 200 background) - refined
+        "hover:bg-cream-200/80 hover:text-charcoal-900",
+        // Active state - refined timing
+        "active:bg-cream-300 active:scale-[0.98] active:transition-all active:duration-[var(--duration-button-active)]",
         // Focus ring
-        "focus-visible:ring-charcoal-500",
+        "focus-visible:ring-charcoal-500 focus-visible:ring-offset-cream-50",
         // Disabled state
-        "disabled:text-charcoal-400 disabled:opacity-50"
+        "disabled:text-charcoal-400 disabled:opacity-50 disabled:cursor-not-allowed"
       ),
     };
 
