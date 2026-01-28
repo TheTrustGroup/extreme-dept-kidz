@@ -97,7 +97,7 @@ export const ProductCard = React.memo(function ProductCard({
             )}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 280px"
             loading={priority ? "eager" : "lazy"}
-            quality={85}
+            quality={priority ? 90 : 75}
             fetchPriority={fetchPriority}
             // Performance: Add blur placeholder to prevent layout shift
             placeholder="blur"
@@ -127,27 +127,6 @@ export const ProductCard = React.memo(function ProductCard({
               // Hidden but loaded to reserve space
               style={{ position: "absolute" }}
             />
-          )}
-
-          {/* Quick Add to Cart Button - Product Actions */}
-          {product.inStock && (
-            <div className="product-actions">
-              <m.button
-                onClick={handleQuickAdd}
-                className={cn(
-                  "btn w-full flex items-center justify-center gap-2",
-                  "h-12 min-h-[48px] px-4 py-3",
-                  "bg-navy-900 text-cream-50 rounded-lg",
-                  "font-sans text-sm font-semibold uppercase tracking-wide",
-                  "hover:bg-navy-800 shadow-navy",
-                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
-                )}
-                aria-label={`Quick add ${product.name} to cart`}
-              >
-                <ShoppingBag className="w-4 h-4" aria-hidden="true" />
-                <span>Add to Cart</span>
-              </m.button>
-            </div>
           )}
 
           {/* Badges (Design System: Top-left, 12px offset, 8px gap) */}
@@ -202,7 +181,51 @@ export const ProductCard = React.memo(function ProductCard({
               </span>
             </div>
           )}
+
+          {/* Quick Add to Cart Button - Desktop hover overlay */}
+          {product.inStock && (
+            <div className="product-actions hidden lg:block">
+              <m.button
+                onClick={handleQuickAdd}
+                className={cn(
+                  "btn w-full flex items-center justify-center gap-2",
+                  "h-12 min-h-[48px] px-4 py-3",
+                  "bg-navy-900 text-cream-50 rounded-lg",
+                  "font-sans text-sm font-semibold uppercase tracking-wide",
+                  "hover:bg-navy-800 shadow-navy",
+                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
+                )}
+                aria-label={`Quick add ${product.name} to cart`}
+              >
+                <ShoppingBag className="w-4 h-4" aria-hidden="true" />
+                <span>Add to Cart</span>
+              </m.button>
+            </div>
+          )}
         </div>
+
+        {/* Quick Add to Cart Button - Mobile: Always visible below image */}
+        {product.inStock && (
+          <div className="px-[var(--space-5)] pb-[var(--space-3)] lg:hidden">
+            <m.button
+              onClick={handleQuickAdd}
+              className={cn(
+                "w-full flex items-center justify-center gap-2",
+                "h-11 min-h-[44px] px-4 py-2.5",
+                "bg-navy-900 text-cream-50 rounded-lg",
+                "font-sans text-sm font-semibold uppercase tracking-wide",
+                "hover:bg-navy-800 active:bg-navy-700",
+                "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
+                "transition-colors duration-200",
+                "touch-manipulation"
+              )}
+              aria-label={`Quick add ${product.name} to cart`}
+            >
+              <ShoppingBag className="w-4 h-4" aria-hidden="true" />
+              <span>Add to Cart</span>
+            </m.button>
+          </div>
+        )}
 
         {/* Product Info - Using spacing scale - Flex grow to fill space for equal heights */}
         <div className="p-[var(--space-5)] space-y-[var(--space-3)] flex-grow flex flex-col justify-between">

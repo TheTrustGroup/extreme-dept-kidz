@@ -808,6 +808,7 @@ textarea:focus-visible {
   color: var(--accent-secondary);
 }
 
+/* Product Actions - Desktop hover overlay, Mobile: hidden (button shown below image) */
 .product-actions {
   position: absolute;
   bottom: var(--space-6);
@@ -818,12 +819,51 @@ textarea:focus-visible {
               transform var(--duration-quick-add) var(--ease-natural);
   will-change: opacity, transform;
   pointer-events: none;
+  width: calc(100% - var(--space-6) * 2);
+  max-width: 280px;
 }
 
-.product-card:hover .product-actions {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  pointer-events: auto;
+@media (min-width: 1024px) {
+  .product-card:hover .product-actions {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+}
+
+/* Reduce animations on mobile for better performance */
+@media (max-width: 1023px) {
+  .product-card {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  }
+  
+  .product-card:hover {
+    transform: none; /* Disable hover lift on mobile */
+  }
+  
+  .product-image img {
+    transition: opacity 0.2s ease-out;
+  }
+  
+  /* Reduce motion for better performance */
+  * {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+  
+  /* Optimize image rendering */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    will-change: auto;
+  }
+  
+  /* Reduce backdrop-filter on mobile for performance */
+  .glass-panel,
+  .glass-panel-strong,
+  .glass-card {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 .header {
