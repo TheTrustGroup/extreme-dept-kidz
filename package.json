@@ -28,6 +28,8 @@
     "fix-admin": "tsx scripts/fix-admin-user.ts",
     "test-db": "tsx scripts/test-database.ts",
     "audit-ecommerce": "tsx scripts/ecommerce-audit.ts",
+    "inspect": "tsx scripts/inspect-database.ts",
+    "fix-visibility": "tsx scripts/fix-product-visibility.ts",
     "fix-all": "tsx scripts/master-fix-all.ts",
     "test-db:legacy": "tsx scripts/test-database-connection.ts",
     "quality-check": "node scripts/quality-check.js",

@@ -474,9 +474,10 @@ export async function getProductsByCategory(category: string): Promise<Product[]
         throw new Error('Prisma not available - using mock data');
       }
       
-      // Try to find category by slug or ID first
+      // Try to find category by slug or ID; only use active categories for display
       const categoryRecord = await prisma.category.findFirst({
         where: {
+          isActive: true,
           OR: [
             { slug: category },
             { id: category },
