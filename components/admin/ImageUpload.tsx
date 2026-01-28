@@ -31,7 +31,7 @@ export function ImageUpload({
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (files: FileList | null): Promise<void> => {
+  const handleFileSelect = async (files: FileList | File[] | null): Promise<void> => {
     if (!files || files.length === 0) return;
 
     if (images.length + files.length > maxImages) {
@@ -448,16 +448,10 @@ export function ImageUpload({
               // Reset the input value to allow selecting the same file again
               fileInput.value = '';
               
-              // Create a new FileList-like object from the array
-              // handleFileSelect expects FileList, but we'll convert it internally
-              // For now, pass the array directly by creating a DataTransfer object
-              const dataTransfer = new DataTransfer();
-              filesArray.forEach(file => dataTransfer.items.add(file));
-              const fileList = dataTransfer.files;
-              
-              // Process files asynchronously
+              // Process files asynchronously - pass array directly
+              // handleFileSelect now accepts both FileList and File[]
               try {
-                await handleFileSelect(fileList);
+                await handleFileSelect(filesArray);
               } catch (error) {
                 // Error is already handled in handleFileSelect
                 if (process.env.NODE_ENV === 'development') {
