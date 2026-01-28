@@ -85,7 +85,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "Collections", url: "/collections" },
-    { name: product.category.name, url: `/categories/${product.category.slug}` },
+    { name: product.category.name, url: `/collections/${product.category.slug}` },
     { name: product.name, url: `/products/${product.slug}` },
   ]);
 

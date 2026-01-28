@@ -21,6 +21,8 @@ export const CACHE_TAGS = {
   collections: "collections",
   collection: (slug: string) => `collection-${slug}`,
   homepage: "homepage",
+  completeLooks: "complete-looks",
+  completeLookProduct: (productId: string) => `complete-looks-product-${productId}`,
 } as const;
 
 /**

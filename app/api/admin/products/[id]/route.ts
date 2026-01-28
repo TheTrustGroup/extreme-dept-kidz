@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
-import { revalidateCategoryChange, revalidateAllCollectionPages } from "@/lib/utils/cache-revalidation";
+import { revalidateCategoryChange, revalidateAllCollectionPages, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
@@ -203,6 +203,17 @@ export async function PUT(
       // Use efficient tag-based revalidation
       revalidateProduct(product.slug, product.id);
       
+      // CRITICAL FIX: Revalidate complete-looks cache when products are updated
+      // This ensures "Complete The Look" sections update immediately
+      revalidateTag(CACHE_TAGS.completeLooks);
+      if (product.id) {
+        revalidateTag(CACHE_TAGS.completeLookProduct(product.id));
+      }
+      // Also revalidate for old product ID if it changed
+      if (existingProduct?.id && existingProduct.id !== product.id) {
+        revalidateTag(CACHE_TAGS.completeLookProduct(existingProduct.id));
+      }
+      
       // Revalidate admin pages
       revalidatePath('/admin/products');
       revalidatePath('/api/products');
@@ -283,9 +294,18 @@ export async function DELETE(
 
     // Revalidate cache after deletion
     try {
+      // CRITICAL FIX: Revalidate complete-looks cache when products are deleted
+      revalidateTag(CACHE_TAGS.completeLooks);
+      revalidateTag(CACHE_TAGS.completeLookProduct(id));
+      
+      // Revalidate product and collection pages
       revalidatePath('/products');
       revalidatePath('/collections');
       revalidatePath('/');
+      revalidatePath('/admin/products');
+      
+      // Also revalidate all collection pages
+      await revalidateAllCollectionPages();
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails

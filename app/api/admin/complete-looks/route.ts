@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createCompleteLookSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
@@ -178,11 +179,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Revalidate cache
+    // CRITICAL FIX: Revalidate cache with tags for efficient invalidation
     try {
+      // Revalidate complete-looks tags
+      revalidateTag(CACHE_TAGS.completeLooks);
+      
+      // Revalidate paths
       revalidatePath('/admin/looks');
       revalidatePath('/looks');
       revalidatePath('/style-guide');
+      revalidatePath('/api/complete-looks');
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
     }

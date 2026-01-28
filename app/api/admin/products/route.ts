@@ -273,6 +273,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Revalidate product-specific tags
       revalidateProduct(product.slug, product.id);
       
+      // CRITICAL FIX: Revalidate complete-looks cache when products are created/updated
+      // This ensures "Complete The Look" sections update immediately
+      revalidateTag(CACHE_TAGS.completeLooks);
+      revalidateTag(CACHE_TAGS.completeLookProduct(product.id));
+      
       // CRITICAL: Revalidate the specific category's collection page
       if (categorySlug) {
         revalidateCollectionPage(categorySlug);

@@ -33,7 +33,7 @@ export function ProductPageClient({ product }: ProductPageClientProps): JSX.Elem
     { label: "Collections", href: "/collections" },
     {
       label: product.category.name,
-      href: `/categories/${product.category.slug}`,
+      href: `/collections/${product.category.slug}`,
     },
     { label: product.name },
   ];

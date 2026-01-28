@@ -3,7 +3,10 @@ import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 
+// CRITICAL FIX: Allow ISR caching for better performance
+// This route can be cached since complete looks don't change frequently
 export const dynamic = "force-dynamic";
+export const revalidate = 60; // Revalidate every 60 seconds
 
 /**
  * GET /api/complete-looks
@@ -92,19 +95,53 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       };
     });
 
+    // CRITICAL FIX: Add CDN cache headers for performance
     return apiSuccess(
       {
         looks: transformedLooks,
         count: transformedLooks.length,
       },
-      'Complete looks fetched successfully'
+      'Complete looks fetched successfully',
+      undefined,
+      {
+        cache: 60, // Cache for 60 seconds
+        tags: ['complete-looks', productId ? `complete-looks-product-${productId}` : 'complete-looks-all'],
+      }
     );
   } catch (error) {
     logger.error("❌ GET /api/complete-looks error:", error);
-    return apiError(
-      "Failed to fetch complete looks",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
+    
+    // CRITICAL FIX: Better error handling with detailed logging
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    // Get search params again for logging (they're in scope here)
+    const { searchParams: errorSearchParams } = new URL(request.url);
+    const errorProductId = errorSearchParams.get('productId');
+    const errorFeatured = errorSearchParams.get('featured') === 'true';
+    
+    // Log detailed error info in development
+    if (process.env.NODE_ENV === 'development') {
+      logger.error("Complete looks query error details:", {
+        productId: errorProductId,
+        featured: errorFeatured,
+        error: errorMessage,
+        stack: errorStack,
+      });
+    }
+    
+    // CRITICAL FIX: Return empty array instead of error to prevent frontend crashes
+    // This allows the page to render even if complete looks fail to load
+    return apiSuccess(
+      {
+        looks: [],
+        count: 0,
+      },
+      'Complete looks fetched successfully (empty due to error)',
+      undefined,
+      {
+        cache: 60, // Still cache the error response to prevent repeated failures
+      }
     );
   }
 }

@@ -44,18 +44,42 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
   React.useEffect(() => {
     async function fetchLooks() {
       try {
-        const response = await fetch(`/api/complete-looks?productId=${currentProduct.id}`);
+        // CRITICAL FIX: Add cache control and error handling
+        const response = await fetch(`/api/complete-looks?productId=${currentProduct.id}`, {
+          // Performance: Use cache for better performance
+          cache: 'default',
+          // Add timeout to prevent hanging requests
+          signal: AbortSignal.timeout(10000), // 10 second timeout
+        });
+        
         if (response.ok) {
           const data = await response.json();
-          const looksList = data.data?.looks || data.looks || [];
+          // CRITICAL FIX: Handle various response formats
+          const looksList = data.data?.looks || data.looks || data.data?.data?.looks || [];
           setLooks(looksList);
+        } else {
+          // CRITICAL FIX: Handle non-OK responses gracefully
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`Complete looks API returned ${response.status} for product ${currentProduct.id}`);
+          }
+          // Fallback to empty array instead of mock data for production
+          setLooks([]);
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
+        // CRITICAL FIX: Better error handling
+        if (error instanceof Error && error.name === 'AbortError') {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Complete looks request timed out');
+          }
+        } else if (process.env.NODE_ENV === 'development') {
           console.error('Error fetching complete looks:', error);
         }
-        // Fallback to mock data if API fails
-        setLooks(getCompleteLooksForProduct(currentProduct.id));
+        // CRITICAL FIX: Fallback to empty array in production, mock data only in development
+        if (process.env.NODE_ENV === 'development') {
+          setLooks(getCompleteLooksForProduct(currentProduct.id));
+        } else {
+          setLooks([]);
+        }
       } finally {
         setLoadingLooks(false);
       }
