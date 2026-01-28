@@ -18,13 +18,15 @@ Your `.env.local` file only works for **local development**. In production (Verc
 
 #### **DATABASE_URL** (Required)
 ```
-postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?pgbouncer=true
+postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
-**Important:** 
+**⚠️ CRITICAL - Port 6543 (Transaction Mode) Required:**
+- **Port 6543** = Transaction mode (for serverless/Vercel) ✅ **USE THIS**
+- **Port 5432** = Session mode (limited connections, causes "MaxClientsInSessionMode" errors) ❌ **DON'T USE**
 - Use the **pooler** connection (not direct)
 - Include `?pgbouncer=true` at the end
-- This prevents "prepared statement already exists" errors
+- This prevents "prepared statement already exists" errors and connection pool exhaustion
 
 #### **JWT_SECRET** (Required)
 ```
@@ -76,13 +78,22 @@ Should show:
 1. Wrong DATABASE_URL format
 2. Database credentials expired
 3. Missing `?pgbouncer=true` parameter
+4. Using wrong port (5432 instead of 6543)
 
 **Fix:** 
 - Verify DATABASE_URL includes `?pgbouncer=true`
+- **Use port 6543 (Transaction mode), NOT 5432 (Session mode)**
 - Check Supabase dashboard for updated credentials
 
 ### Issue: "Prepared statement already exists" (42P05)
 **Fix:** Add `?pgbouncer=true` to DATABASE_URL
+
+### Issue: "MaxClientsInSessionMode: max clients reached"
+**Cause:** Using port 5432 (Session mode) instead of 6543 (Transaction mode)
+**Fix:** 
+- Change port from `:5432` to `:6543` in DATABASE_URL
+- Session mode only allows 1-2 connections per serverless function
+- Transaction mode allows many more connections (required for Vercel)
 
 ## Your Current Setup
 
@@ -90,7 +101,7 @@ Based on your `.env.local`:
 
 **DATABASE_URL:**
 ```
-postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?pgbouncer=true
+postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
 **JWT_SECRET:**
