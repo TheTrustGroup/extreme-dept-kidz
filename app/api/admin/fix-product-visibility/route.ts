@@ -103,9 +103,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       where: { categoryId: girlsCategory.id },
     });
 
+    // Revalidate boys, girls, and every category slug so all collection pages refresh
     try {
+      const categories = await prisma.category.findMany({
+        where: { isActive: true },
+        select: { slug: true },
+      });
       revalidatePath("/collections/boys");
       revalidatePath("/collections/girls");
+      for (const c of categories) {
+        if (c.slug && c.slug !== "boys" && c.slug !== "girls") {
+          revalidatePath(`/collections/${c.slug}`);
+        }
+      }
       revalidatePath("/collections");
       revalidatePath("/");
     } catch (e) {
