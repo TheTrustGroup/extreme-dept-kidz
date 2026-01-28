@@ -16,7 +16,6 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
-  LogOut,
   Menu,
   X,
   FileText,
@@ -45,7 +44,7 @@ interface AdminSidebarProps {
  */
 export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Element {
   const pathname = usePathname();
-  const { user, logout } = useAdminAuth();
+  const { user } = useAdminAuth();
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = React.useState(false);
   
@@ -330,11 +329,11 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
           {navItems.map((item) => renderNavItem(item))}
         </nav>
 
-        {/* User Section */}
+        {/* User Section - Removed logout button, keeping only user info */}
         {user && (
           <div className="border-t border-[rgba(255,255,255,0.1)] p-4">
             <div className={cn(
-              "flex items-center gap-3 mb-3 transition-opacity duration-300",
+              "flex items-center gap-3 transition-opacity duration-300",
               sidebarExpanded ? "opacity-100" : "opacity-0"
             )}>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
@@ -353,27 +352,6 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
                 </div>
               )}
             </div>
-            <button
-              onClick={async () => {
-                try {
-                  await logout();
-                } catch (error) {
-                  console.error("Logout error:", error);
-                  // Force redirect even if logout fails
-                  window.location.replace('/admin/login');
-                }
-              }}
-              className={cn(
-                "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 text-sm font-medium",
-                "group",
-                !sidebarExpanded && "px-2" // Center icon when collapsed
-              )}
-              aria-label="Sign out"
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
-              {sidebarExpanded && <span>Sign Out</span>}
-            </button>
           </div>
         )}
       </m.aside>
