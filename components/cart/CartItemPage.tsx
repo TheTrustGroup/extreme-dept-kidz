@@ -61,14 +61,14 @@ export function CartItemPage({ item }: CartItemPageProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       className={cn(
-        "flex flex-col sm:flex-row gap-6 p-6 rounded-lg border border-cream-200 bg-cream-50",
+        "flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 rounded-xl border border-cream-200 bg-cream-50 glass-panel",
         removingItemId === item.id && "border-navy-900 bg-navy-50"
       )}
     >
       {/* Product Image */}
       <Link
         href={`/products/${item.product.slug}`}
-        className="relative w-full sm:w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-cream-100"
+        className="relative w-full sm:w-32 h-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden bg-cream-100"
       >
         <Image
           src={primaryImage.url}

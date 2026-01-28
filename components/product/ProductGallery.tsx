@@ -102,7 +102,7 @@ export function ProductGallery({
     <>
       <div className={cn("flex flex-col lg:flex-row gap-3 xs:gap-4 sm:gap-5 lg:gap-6", className)}>
         {/* Main Image - Glass Panel */}
-        <div className="relative lg:w-full aspect-square lg:aspect-auto lg:h-[600px] xl:h-[700px] glass-panel rounded-xl overflow-hidden group">
+        <div className="relative lg:w-full aspect-square lg:aspect-auto lg:h-[600px] xl:h-[700px] glass-panel rounded-xl overflow-hidden group" style={{ contain: "layout style paint" }}>
           <m.div
             key={selectedIndex}
             initial={{ opacity: 0, x: 20 }}

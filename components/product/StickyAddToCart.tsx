@@ -3,26 +3,29 @@
 import * as React from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Check, Plus, Minus, ShoppingBag } from "lucide-react";
-import type { Product, ProductSize } from "@/types";
+import type { Product } from "@/types";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
+import { useProductPurchase } from "@/lib/hooks/use-product-purchase";
 import { Button } from "@/components/ui/button";
 import { cn, formatPrice } from "@/lib/utils";
 
 interface StickyAddToCartProps {
   product: Product;
   className?: string;
+  purchaseState?: ReturnType<typeof useProductPurchase>;
 }
 
 /**
  * StickyAddToCart Component
  * 
  * Premium sticky add-to-cart bar with glassmorphism, price display,
- * size selector, and quantity controls. Appears on scroll.
+ * size selector, and quantity controls.
+ * 
+ * Mobile: Always visible at bottom (primary purchase UI)
+ * Desktop: Appears on scroll after 400px
  */
-export function StickyAddToCart({ product, className }: StickyAddToCartProps) {
-  const [selectedSize, setSelectedSize] = React.useState<ProductSize | null>(null);
-  const [quantity, setQuantity] = React.useState(1);
+export function StickyAddToCart({ product, className, purchaseState }: StickyAddToCartProps) {
   const [isVisible, setIsVisible] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
@@ -31,35 +34,45 @@ export function StickyAddToCart({ product, className }: StickyAddToCartProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const { open: openCart } = useCartDrawer();
 
-  const availableSizes = product.sizes.filter((size) => size.inStock);
+  // Use shared purchase state if provided, otherwise create local state
+  const localPurchaseState = useProductPurchase(product);
+  const {
+    selectedSize,
+    quantity,
+    availableSizes,
+    handleSizeSelect,
+    handleQuantityChange,
+  } = purchaseState || localPurchaseState;
+
   const isOnSale = product.originalPrice && product.originalPrice > product.price;
 
-  // Set initial selected size
-  React.useEffect(() => {
-    if (availableSizes.length > 0 && !selectedSize) {
-      setSelectedSize(availableSizes[0]);
-    }
-  }, [availableSizes, selectedSize]);
-
-  // Show/hide sticky bar on scroll
+  // Show/hide sticky bar on scroll (desktop only)
+  // Mobile: Always visible
   React.useEffect(() => {
     const handleScroll = () => {
+      // On mobile (< 1024px), always show
+      if (window.innerWidth < 1024) {
+        setIsVisible(true);
+        return;
+      }
+      
+      // On desktop, show after scrolling 400px
       const scrollY = window.scrollY;
-      const threshold = 400; // Show after scrolling 400px
+      const threshold = 400;
       setIsVisible(scrollY > threshold);
     };
 
+    // Initial check
+    handleScroll();
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, []);
-
-  const handleSizeSelect = (size: ProductSize) => {
-    setSelectedSize(size);
-  };
-
-  const handleQuantityChange = (delta: number) => {
-    setQuantity((prev) => Math.max(1, Math.min(prev + delta, 10)));
-  };
 
   const handleAddToCart = async () => {
     if (!selectedSize || !product.inStock) return;
@@ -106,23 +119,143 @@ export function StickyAddToCart({ product, className }: StickyAddToCartProps) {
           exit={{ y: 100, opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
           className={cn(
-            "fixed bottom-0 left-0 right-0 z-40",
+            "fixed bottom-0 left-0 right-0 z-[45]",
             "glass-panel-strong border-t border-cream-200/60",
             "shadow-glass-xl",
+            // Mobile: Add bottom safe area padding for iOS
+            "pb-safe lg:pb-0",
             className
           )}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+            {/* Mobile Layout: Stacked */}
+            <div className="lg:hidden space-y-3">
+              {/* Top Row: Price & Size */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-baseline gap-2 flex-shrink-0">
+                  <span className="font-serif text-lg font-semibold text-charcoal-900">
+                    {formatPrice(product.price)}
+                  </span>
+                  {isOnSale && product.originalPrice && (
+                    <span className="font-sans text-xs text-charcoal-500 line-through">
+                      {formatPrice(product.originalPrice)}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Size Selector - Compact */}
+                {availableSizes.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {availableSizes.slice(0, 5).map((size) => {
+                      const isSelected = selectedSize?.size === size.size;
+                      return (
+                        <m.button
+                          key={size.size}
+                          onClick={() => handleSizeSelect(size)}
+                          className={cn(
+                            "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 min-w-[36px]",
+                            "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-1",
+                            isSelected
+                              ? "bg-navy-900 text-cream-50 shadow-glass"
+                              : "bg-cream-100 text-charcoal-900 hover:bg-cream-200 border border-cream-200"
+                          )}
+                          whileTap={{ scale: 0.95 }}
+                          aria-label={`Select size ${size.size}`}
+                        >
+                          {size.size}
+                        </m.button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Row: Quantity & Add to Cart */}
+              <div className="flex items-center gap-3">
+                {/* Quantity Selector */}
+                <div className="flex items-center gap-2 border border-cream-200 rounded-lg p-1 bg-cream-50/50 flex-shrink-0">
+                  <m.button
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                    className={cn(
+                      "p-1.5 rounded transition-colors duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center",
+                      "hover:bg-cream-200 disabled:opacity-50 disabled:cursor-not-allowed",
+                      "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-1"
+                    )}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-4 h-4 text-charcoal-900" />
+                  </m.button>
+                  <span className="font-sans text-sm font-semibold text-charcoal-900 min-w-[2rem] text-center">
+                    {quantity}
+                  </span>
+                  <m.button
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={quantity >= 10}
+                    className={cn(
+                      "p-1.5 rounded transition-colors duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center",
+                      "hover:bg-cream-200 disabled:opacity-50 disabled:cursor-not-allowed",
+                      "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-1"
+                    )}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-4 h-4 text-charcoal-900" />
+                  </m.button>
+                </div>
+
+                {/* Add to Cart Button - Full Width */}
+                <m.div
+                  initial={false}
+                  animate={{ scale: showSuccess ? 0.95 : 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1"
+                >
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={handleAddToCart}
+                    disabled={!canAddToCart || isAddingToCart}
+                    loading={isAddingToCart}
+                    loadingText="Adding..."
+                    className={cn(
+                      "w-full min-h-[48px] py-3 text-base font-semibold uppercase tracking-wide",
+                      "transition-all duration-300",
+                      showSuccess && "bg-sage-600 hover:bg-sage-700"
+                    )}
+                  >
+                    {showSuccess ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Check className="w-4 h-4" />
+                        Added!
+                      </span>
+                    ) : !product.inStock ? (
+                      "Unavailable"
+                    ) : !selectedSize ? (
+                      "Select Size"
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        <ShoppingBag className="w-4 h-4" />
+                        Add to Cart
+                      </span>
+                    )}
+                  </Button>
+                </m.div>
+              </div>
+            </div>
+
+            {/* Desktop Layout: Horizontal */}
+            <div className="hidden lg:flex items-center justify-between gap-6">
               {/* Product Info & Price */}
-              <div className="flex-1 flex items-center gap-4 sm:gap-6 min-w-0">
-                <div className="flex-shrink-0 hidden sm:block">
+              <div className="flex-1 flex items-center gap-6 min-w-0">
+                <div className="flex-shrink-0">
                   <h3 className="font-serif text-lg font-semibold text-charcoal-900 line-clamp-1">
                     {product.name}
                   </h3>
                 </div>
-                <div className="flex items-baseline gap-2 sm:gap-3 flex-shrink-0">
-                  <span className="font-serif text-xl sm:text-2xl font-semibold text-charcoal-900">
+                <div className="flex items-baseline gap-3 flex-shrink-0">
+                  <span className="font-serif text-2xl font-semibold text-charcoal-900">
                     {formatPrice(product.price)}
                   </span>
                   {isOnSale && product.originalPrice && (
@@ -137,7 +270,7 @@ export function StickyAddToCart({ product, className }: StickyAddToCartProps) {
               <div className="flex items-center gap-3 flex-wrap">
                 {availableSizes.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-charcoal-600 uppercase tracking-wider hidden sm:inline">
+                    <span className="text-xs font-semibold text-charcoal-600 uppercase tracking-wider">
                       Size:
                     </span>
                     <div className="flex items-center gap-1.5">
@@ -213,7 +346,7 @@ export function StickyAddToCart({ product, className }: StickyAddToCartProps) {
                     loading={isAddingToCart}
                     loadingText="Adding..."
                     className={cn(
-                      "min-w-[140px] sm:min-w-[160px]",
+                      "min-w-[160px]",
                       "transition-all duration-300",
                       showSuccess && "bg-sage-600 hover:bg-sage-700"
                     )}

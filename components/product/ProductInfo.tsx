@@ -6,6 +6,7 @@ import { Check, Plus, Minus, ChevronDown, Star, Heart, Share2, CheckCircle } fro
 import type { Product, ProductSize } from "@/types";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
+import { useProductPurchase } from "@/lib/hooks/use-product-purchase";
 import { Button } from "@/components/ui/button";
 import { H1, H3, Body } from "@/components/ui/typography";
 import { cn, formatPrice } from "@/lib/utils";
@@ -13,6 +14,7 @@ import { cn, formatPrice } from "@/lib/utils";
 interface ProductInfoProps {
   product: Product;
   className?: string;
+  purchaseState?: ReturnType<typeof useProductPurchase>;
 }
 
 /**
@@ -20,12 +22,11 @@ interface ProductInfoProps {
  * 
  * Premium product information section with size selection,
  * quantity selector, and add to cart functionality.
+ * 
+ * On mobile: Purchase controls (size, quantity, add to cart) are hidden
+ * and handled by StickyAddToCart component for better UX.
  */
-export function ProductInfo({ product, className }: ProductInfoProps): JSX.Element {
-  const [selectedSize, setSelectedSize] = React.useState<ProductSize | null>(
-    null
-  );
-  const [quantity, setQuantity] = React.useState(1);
+export function ProductInfo({ product, className, purchaseState }: ProductInfoProps): JSX.Element {
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
   const [expandedDetails, setExpandedDetails] = React.useState<string | null>(
@@ -36,28 +37,18 @@ export function ProductInfo({ product, className }: ProductInfoProps): JSX.Eleme
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const { open: openCart } = useCartDrawer();
 
-  // Get available sizes
-  const availableSizes = product.sizes.filter((size) => size.inStock);
+  // Use shared purchase state if provided, otherwise create local state (for backward compatibility)
+  const localPurchaseState = useProductPurchase(product);
+  const {
+    selectedSize,
+    quantity,
+    availableSizes,
+    handleSizeSelect,
+    handleQuantityChange,
+  } = purchaseState || localPurchaseState;
 
   // Check if product is on sale
   const isOnSale = product.originalPrice && product.originalPrice > product.price;
-
-  // Set initial selected size to first available
-  React.useEffect(() => {
-    if (availableSizes.length > 0 && !selectedSize) {
-      setSelectedSize(availableSizes[0]);
-    }
-  }, [availableSizes, selectedSize]);
-
-  // Handle size selection
-  const handleSizeSelect = (size: ProductSize) => {
-    setSelectedSize(size);
-  };
-
-  // Handle quantity change
-  const handleQuantityChange = (delta: number) => {
-    setQuantity((prev) => Math.max(1, Math.min(prev + delta, 10)));
-  };
 
   // Handle add to cart
   const handleAddToCart = async () => {
@@ -114,21 +105,21 @@ export function ProductInfo({ product, className }: ProductInfoProps): JSX.Eleme
   const canAddToCart = selectedSize && product.inStock;
 
   return (
-    <div className={cn("space-y-6 md:space-y-8", className)}>
+    <div className={cn("space-y-4 sm:space-y-6 md:space-y-8", className)}>
       {/* Product Name with Actions - Glass Panel */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="glass-panel rounded-xl p-6 space-y-4"
+        className="glass-panel rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <H1 className="text-charcoal-900 mb-2 text-2xl md:text-3xl lg:text-4xl line-clamp-2">
+            <H1 className="text-charcoal-900 mb-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl line-clamp-2">
               {product.name}
             </H1>
             {product.category && (
-              <Body className="text-sm text-charcoal-500 uppercase tracking-wider">
+              <Body className="text-xs sm:text-sm text-charcoal-500 uppercase tracking-wider">
                 {product.category.name}
               </Body>
             )}
@@ -154,17 +145,17 @@ export function ProductInfo({ product, className }: ProductInfoProps): JSX.Eleme
         </div>
 
         {/* Price - Glass Panel */}
-        <div className="flex items-baseline gap-3 pt-2 border-t border-cream-200/60">
-          <span className="font-serif text-3xl md:text-4xl font-semibold text-charcoal-900">
+        <div className="flex items-baseline gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-cream-200/60 flex-wrap">
+          <span className="font-serif text-2xl sm:text-3xl md:text-4xl font-semibold text-charcoal-900">
             {formatPrice(product.price)}
           </span>
           {isOnSale && product.originalPrice && (
-            <span className="font-sans text-lg text-charcoal-500 line-through">
+            <span className="font-sans text-base sm:text-lg text-charcoal-500 line-through">
               {formatPrice(product.originalPrice)}
             </span>
           )}
           {isOnSale && (
-            <span className="px-3 py-1 bg-honey-100 text-honey-600 text-xs font-semibold uppercase rounded-full border border-honey-200">
+            <span className="px-2.5 sm:px-3 py-1 bg-honey-100 text-honey-600 text-xs font-semibold uppercase rounded-full border border-honey-200">
               Sale
             </span>
           )}
@@ -176,7 +167,7 @@ export function ProductInfo({ product, className }: ProductInfoProps): JSX.Eleme
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-        className="glass-panel rounded-xl p-6"
+        className="glass-panel rounded-xl p-4 sm:p-6"
       >
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-1">
@@ -199,18 +190,18 @@ export function ProductInfo({ product, className }: ProductInfoProps): JSX.Eleme
 
         {/* Description */}
         {product.description && (
-          <Body className="text-base text-charcoal-700 leading-relaxed mt-4 pt-4 border-t border-cream-200/60">
+          <Body className="text-sm sm:text-base text-charcoal-700 leading-relaxed mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-cream-200/60">
             {product.description}
           </Body>
         )}
       </motion.div>
 
-      {/* Size Selector - Glass Panel */}
+      {/* Size Selector - Glass Panel - Desktop Only */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
-        className="glass-panel rounded-xl p-6 space-y-4"
+        className="hidden lg:block glass-panel rounded-xl p-6 space-y-4"
       >
         <div className="flex items-center justify-between">
           <label className="font-serif text-sm font-semibold text-charcoal-900 uppercase tracking-wider">
@@ -262,12 +253,12 @@ export function ProductInfo({ product, className }: ProductInfoProps): JSX.Eleme
         )}
       </motion.div>
 
-      {/* Quantity Selector - Glass Panel */}
+      {/* Quantity Selector - Glass Panel - Desktop Only */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
-        className="glass-panel rounded-xl p-6"
+        className="hidden lg:block glass-panel rounded-xl p-6"
       >
         <label className="font-serif text-sm font-semibold text-charcoal-900 uppercase tracking-wider block mb-4">
           Quantity
@@ -309,12 +300,12 @@ export function ProductInfo({ product, className }: ProductInfoProps): JSX.Eleme
         </div>
       </motion.div>
 
-      {/* Add to Cart & Buy Now Buttons - Glass Panel */}
+      {/* Add to Cart & Buy Now Buttons - Glass Panel - Desktop Only */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
-        className="glass-panel rounded-xl p-6 space-y-3"
+        className="hidden lg:block glass-panel rounded-xl p-6 space-y-3"
       >
         <motion.div
           initial={false}

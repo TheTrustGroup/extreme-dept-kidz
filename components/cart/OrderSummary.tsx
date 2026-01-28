@@ -26,7 +26,7 @@ export function OrderSummary({ className }: OrderSummaryProps): JSX.Element {
   return (
     <div
       className={cn(
-        "bg-cream-50 rounded-lg border border-cream-200 p-6 space-y-6",
+        "bg-cream-50 rounded-xl border border-cream-200 p-4 sm:p-6 space-y-4 sm:space-y-6 glass-panel",
         className
       )}
     >
