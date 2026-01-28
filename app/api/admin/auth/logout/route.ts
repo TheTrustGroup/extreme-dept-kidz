@@ -29,12 +29,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   
   // ALWAYS clear the admin-token cookie, regardless of authentication status
   // Clear cookie with multiple path variations to ensure it's removed
+  // CRITICAL: Set maxAge to 0 and expires to past date to ensure browser deletes it
+  const pastDate = new Date(0).toUTCString();
+  
+  // Clear cookie for root path
   response.cookies.set('admin-token', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 0, // Expire immediately
+    expires: new Date(0), // Past date
     path: '/',
+  });
+
+  // Also clear for /admin path
+  response.cookies.set('admin-token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    expires: new Date(0),
+    path: '/admin',
   });
 
   // Also clear with domain if in production
@@ -46,11 +61,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         secure: true,
         sameSite: 'lax',
         maxAge: 0,
+        expires: new Date(0),
         path: '/',
         domain: `.${domain}`,
       });
     }
   }
+  
+  console.log('[Logout] Cookie cleared in response headers');
 
   // Log logout activity (if user was authenticated)
   if (user) {

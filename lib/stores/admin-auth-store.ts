@@ -223,7 +223,7 @@ export const useAdminAuth = create<AdminAuthState>()(
         });
         lastAuthCheck = 0;
         
-        // Clear cookie from client side immediately
+        // Clear cookie from client side immediately (even though it's httpOnly, try anyway)
         if (typeof window !== 'undefined') {
           // Clear cookie with multiple variations to ensure it's removed
           const hostname = window.location.hostname;
@@ -242,7 +242,7 @@ export const useAdminAuth = create<AdminAuthState>()(
           console.log("[Auth] Cleared cookies from client side");
         }
         
-        // Clear cookie via API - wait for it to complete
+        // Clear cookie via API - CRITICAL: Wait for response to ensure cookie is cleared
         try {
           const response = await fetch("/api/admin/auth/logout", {
             method: "POST",
@@ -254,7 +254,10 @@ export const useAdminAuth = create<AdminAuthState>()(
           });
           
           if (response.ok) {
-            console.log("[Auth] Logout API call successful");
+            console.log("[Auth] Logout API call successful - cookie should be cleared");
+            // The response includes Set-Cookie header to clear the cookie
+            // We need to wait a bit for the browser to process it
+            await new Promise(resolve => setTimeout(resolve, 200));
           } else {
             console.warn("[Auth] Logout API returned non-OK status:", response.status);
           }
@@ -263,14 +266,13 @@ export const useAdminAuth = create<AdminAuthState>()(
           console.error("[Auth] Logout API call failed:", error);
         }
         
-        // Small delay to ensure cookie clearing completes
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Always redirect to login page
+        // CRITICAL: Redirect to login with a query parameter to force logout
+        // This ensures middleware doesn't redirect back to /admin
         if (typeof window !== 'undefined') {
-          console.log("[Auth] Redirecting to login page");
+          console.log("[Auth] Redirecting to login page with logout parameter");
           // Use replace to prevent back button from going to admin pages
-          window.location.replace('/admin/login');
+          // Add timestamp to prevent caching and ensure fresh page load
+          window.location.replace(`/admin/login?logout=true&t=${Date.now()}`);
         }
       },
 
