@@ -314,4 +314,18 @@ So for this product, **the database is correct** and it is included in `getProdu
 
 ---
 
+## Why admin-created categories (e.g. Premium Kidswear) didn't show on the site
+
+Two things were going on:
+
+1. **The /collections index used hardcoded "mock" data.**  
+   The "Our Collections" grid came from `mockCollections` (New Arrivals, Street Essentials, Premium Basics), not from Admin → Categories. So Premium Kidswear (and any category you created in admin) never appeared as a card there.  
+   **Fix (done):** The collections index page now loads **active categories** from the database via `getAllCategories()`. Every active admin category (Boys, Girls, Premium Kidswear, etc.) appears as a card and links to `/collections/[slug]`.
+
+2. **New categories have 0 products until you assign them.**  
+   Creating a category does not move or assign products. Your 1 product stayed in Boys. Premium Kidswear had 0 products, so `/collections/premium-kidswear` would show an empty list even if you opened it directly.  
+   **Fix:** In Admin → Products, edit each product you want in Premium Kidswear and set **Category** to "Premium Kidswear," or create new products with that category.
+
+---
+
 **Summary:** For “product has price and inStock but doesn’t show,” the first place to look is **category**: correct `categoryId` for the “boys” category and that category `isActive = true`. Then ensure **variants** (at least one, ideally active and in stock) and **images** (at least one valid `url`). RLS applies only if you read these tables from the browser with the Supabase anon/authenticated client; your server-rendered collections use Prisma and `DATABASE_URL`, so RLS is usually not involved there.
