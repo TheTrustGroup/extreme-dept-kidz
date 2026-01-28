@@ -57,9 +57,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
       <m.header
         className={cn(
           "fixed top-8 left-0 right-0 z-50",
+          "transition-shadow duration-300 ease-out",
           isScrolled
-            ? "bg-cream-50/95 backdrop-blur-lg border-b border-cream-200/30 shadow-sm"
-            : "bg-cream-50/95 backdrop-blur-md"
+            ? "bg-cream-50/88 backdrop-blur-xl border-b border-cream-200/50 shadow-glass-lg"
+            : "bg-cream-50/82 backdrop-blur-lg border-b border-cream-200/30"
         )}
         initial={false}
         animate={{
@@ -100,7 +101,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
             </m.div>
 
             {/* Desktop Navigation - Centered between Logo and Actions */}
-            <nav id="main-navigation" className="hidden lg:flex items-center justify-center flex-1 space-x-7 2xl:space-x-8" aria-label="Main navigation">
+            <nav id="main-navigation" className="hidden lg:flex items-center justify-center flex-1 gap-8 2xl:gap-10" aria-label="Main navigation">
               {navLinks.map((link) => (
                 <div
                   key={link.label}
@@ -187,28 +188,27 @@ interface NavLinkProps {
 
 function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.Element {
   return (
-    <Link href={href} className="relative inline-block">
+    <Link href={href} className="relative inline-block group/nav">
       <m.span
         className={cn(
           "font-sans text-xs font-semibold uppercase tracking-wider",
+          "px-3 py-2 rounded-lg -mx-1 block",
           isEmphasized
             ? "text-navy-900 font-bold"
-            : "text-charcoal-700 hover:text-charcoal-900",
-          "transition-colors duration-300",
-          "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded px-2 py-1 block"
+            : "text-charcoal-700 group-hover/nav:text-charcoal-900 group-hover/nav:bg-cream-200/50",
+          "transition-colors duration-300 ease-out",
+          "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg"
         )}
-        whileHover={{ y: -0.5 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
+        whileHover={{ y: -1 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         {children}
-        <m.span
+        <span
           className={cn(
-            "absolute bottom-[-6px] left-0 right-0 h-[2px]",
-            isEmphasized ? "bg-navy-900" : "bg-navy-900"
+            "absolute bottom-1.5 left-2 right-2 h-[2px] rounded-full transition-all duration-300 ease-out origin-center",
+            isEmphasized ? "bg-navy-900 scale-x-100" : "bg-navy-900 scale-x-0 group-hover/nav:scale-x-100"
           )}
-          initial={{ width: 0, x: "50%" }}
-          whileHover={{ width: "100%", x: 0 }}
-          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           aria-hidden="true"
         />
       </m.span>
@@ -224,8 +224,12 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 function IconButton({ className, children, ...props }: IconButtonProps): JSX.Element {
   return (
     <button
+      type="button"
       className={cn(
-        "relative p-2.5 min-h-[44px] min-w-[44px] text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100/50 transition-colors duration-300",
+        "relative p-2.5 min-h-[44px] min-w-[44px] rounded-lg",
+        "text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/60",
+        "hover:scale-105 active:scale-95",
+        "transition-all duration-300 ease-out",
         "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
         className
       )}

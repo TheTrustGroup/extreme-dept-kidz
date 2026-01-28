@@ -71,6 +71,28 @@ const config: Config = {
           900: "#194229",
           950: "#0c2416",
         },
+        // Premium warm accents – honey (badges, highlights), blush (trust), sage (success)
+        honey: {
+          50: "#fefaf3",
+          100: "#fdf3e3",
+          200: "#f9e6c8",
+          300: "#f0d4a8",
+          400: "#e0b87a",
+          500: "#c9a227",
+          600: "#a8841f",
+        },
+        blush: {
+          50: "#fdf8f6",
+          100: "#f9ede8",
+          200: "#f0ddd5",
+          300: "#e4c9be",
+        },
+        sage: {
+          50: "#f4f7f4",
+          100: "#e6ede6",
+          500: "#5a7d5a",
+          600: "#4a6b4a",
+        },
       },
       spacing: {
         // Luxury spacing scale - generous and elegant
@@ -85,16 +107,24 @@ const config: Config = {
         "50": "12.5rem", // 200px
       },
       fontSize: {
-        // Large display sizes for luxury typography
+        // Premium type scale – caption to display (see docs/DESIGN_SYSTEM_PALETTE_TYPOGRAPHY.md)
+        "caption": ["0.75rem", { lineHeight: "1.4", letterSpacing: "0.02em" }],
+        "small": ["0.875rem", { lineHeight: "1.5", letterSpacing: "0.01em" }],
+        "lead": ["1.125rem", { lineHeight: "1.55", letterSpacing: "0" }],
+        "h4": ["1.25rem", { lineHeight: "1.4", letterSpacing: "-0.01em" }],
+        "h3": ["1.5rem", { lineHeight: "1.35", letterSpacing: "-0.01em" }],
+        "h2": ["1.875rem", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
+        "h1": ["2.25rem", { lineHeight: "1.25", letterSpacing: "-0.02em" }],
+        // Display sizes for hero and section titles
         "display-2xl": [
           "4.5rem",
-          { lineHeight: "1.1", letterSpacing: "-0.02em" },
+          { lineHeight: "1.08", letterSpacing: "-0.02em" },
         ],
         "display-xl": [
           "3.75rem",
           { lineHeight: "1.1", letterSpacing: "-0.02em" },
         ],
-        "display-lg": ["3rem", { lineHeight: "1.2", letterSpacing: "-0.01em" }],
+        "display-lg": ["3rem", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
         "display-md": [
           "2.25rem",
           { lineHeight: "1.3", letterSpacing: "-0.01em" },
@@ -112,6 +142,10 @@ const config: Config = {
         'lg': '0 8px 24px rgba(0, 0, 0, 0.12)',
         'xl': '0 12px 40px rgba(0, 0, 0, 0.15)',
         'navy': '0 4px 12px rgba(16, 42, 67, 0.3)',
+        // Glassmorphism: soft, layered depth
+        'glass': '0 8px 32px rgba(26, 26, 26, 0.08)',
+        'glass-lg': '0 12px 40px rgba(26, 26, 26, 0.12)',
+        'glass-xl': '0 16px 48px rgba(26, 26, 26, 0.14)',
       },
       transitionDuration: {
         // Design System: Animation timing (Tier 2)

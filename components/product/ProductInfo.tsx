@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { m, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Check, Plus, Minus, ChevronDown, Star, Heart, Share2, CheckCircle } from "lucide-react";
 import type { Product, ProductSize } from "@/types";
 import { useCartStore } from "@/lib/stores/cart-store";
@@ -21,7 +21,7 @@ interface ProductInfoProps {
  * Premium product information section with size selection,
  * quantity selector, and add to cart functionality.
  */
-export function ProductInfo({ product, className }: ProductInfoProps) {
+export function ProductInfo({ product, className }: ProductInfoProps): JSX.Element {
   const [selectedSize, setSelectedSize] = React.useState<ProductSize | null>(
     null
   );
@@ -115,93 +115,103 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
 
   return (
     <div className={cn("space-y-6 md:space-y-8", className)}>
-      {/* Breadcrumb */}
-      <div className="text-sm text-charcoal-500">
-        <span className="hover:text-charcoal-900 transition-colors">Home</span>
-        <span className="mx-2">/</span>
-        <span className="hover:text-charcoal-900 transition-colors">Boys</span>
-        <span className="mx-2">/</span>
-        <span className="hover:text-charcoal-900 transition-colors">{product.category?.name || "Product"}</span>
-        <span className="mx-2">/</span>
-        <span className="text-charcoal-900 font-medium">{product.name}</span>
-      </div>
+      {/* Product Name with Actions - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="glass-panel rounded-xl p-6 space-y-4"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <H1 className="text-charcoal-900 mb-2 text-2xl md:text-3xl lg:text-4xl line-clamp-2">
+              {product.name}
+            </H1>
+            {product.category && (
+              <Body className="text-sm text-charcoal-500 uppercase tracking-wider">
+                {product.category.name}
+              </Body>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+              <motion.button
+                className="p-2.5 rounded-lg glass-card hover:bg-cream-100/80 transition-all duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Add to wishlist"
+              >
+                <Heart className="w-5 h-5 text-charcoal-700" />
+              </motion.button>
+              <motion.button
+                className="p-2.5 rounded-lg glass-card hover:bg-cream-100/80 transition-all duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Share product"
+              >
+                <Share2 className="w-5 h-5 text-charcoal-700" />
+              </motion.button>
+          </div>
+        </div>
 
-      {/* Product Name with Actions */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <H1 className="text-charcoal-900 mb-2 text-2xl md:text-3xl lg:text-4xl">{product.name}</H1>
-          {product.category && (
-            <Body className="text-sm text-charcoal-500 uppercase tracking-wider">
-              {product.category.name}
-            </Body>
+        {/* Price - Glass Panel */}
+        <div className="flex items-baseline gap-3 pt-2 border-t border-cream-200/60">
+          <span className="font-serif text-3xl md:text-4xl font-semibold text-charcoal-900">
+            {formatPrice(product.price)}
+          </span>
+          {isOnSale && product.originalPrice && (
+            <span className="font-sans text-lg text-charcoal-500 line-through">
+              {formatPrice(product.originalPrice)}
+            </span>
+          )}
+          {isOnSale && (
+            <span className="px-3 py-1 bg-honey-100 text-honey-600 text-xs font-semibold uppercase rounded-full border border-honey-200">
+              Sale
+            </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <m.button
-            className="p-2 rounded-lg border border-cream-200 hover:bg-cream-100 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Add to wishlist"
-          >
-            <Heart className="w-5 h-5 text-charcoal-700" />
-          </m.button>
-          <m.button
-            className="p-2 rounded-lg border border-cream-200 hover:bg-cream-100 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Share product"
-          >
-            <Share2 className="w-5 h-5 text-charcoal-700" />
-          </m.button>
-        </div>
-      </div>
+      </motion.div>
 
-      {/* Price */}
-      <div className="flex items-baseline gap-3">
-        <span className="font-serif text-3xl md:text-4xl font-semibold text-charcoal-900">
-          {formatPrice(product.price)}
-        </span>
-        {isOnSale && product.originalPrice && (
-          <span className="font-sans text-lg text-charcoal-500 line-through">
-            {formatPrice(product.originalPrice)}
+      {/* Reviews & Rating - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+        className="glass-panel rounded-xl p-6"
+      >
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                className={cn(
+                  "w-5 h-5 transition-transform duration-200",
+                  star <= 4 ? "fill-honey-400 text-honey-400" : "text-cream-300"
+                )}
+              />
+            ))}
+          </div>
+          <span className="text-sm text-charcoal-600 font-semibold">4.8</span>
+          <span className="text-sm text-charcoal-500">(127 reviews)</span>
+          <span className="px-3 py-1 bg-blush-100 text-blush-700 text-xs font-semibold rounded-full border border-blush-200">
+            Bestseller
           </span>
-        )}
-        {isOnSale && (
-          <span className="px-2 py-1 bg-navy-900 text-cream-50 text-xs font-semibold uppercase rounded">
-            Sale
-          </span>
-        )}
-      </div>
-
-      {/* Reviews & Rating */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              className={cn(
-                "w-5 h-5",
-                star <= 4 ? "fill-yellow-400 text-yellow-400" : "text-cream-300"
-              )}
-            />
-          ))}
         </div>
-        <span className="text-sm text-charcoal-600 font-medium">4.8</span>
-        <span className="text-sm text-charcoal-500">(127 reviews)</span>
-        <span className="px-2 py-1 bg-forest-50 text-forest-700 text-xs font-semibold rounded">
-          Bestseller
-        </span>
-      </div>
 
-      {/* Description */}
-      {product.description && (
-        <Body className="text-lg text-charcoal-700 leading-relaxed">
-          {product.description}
-        </Body>
-      )}
+        {/* Description */}
+        {product.description && (
+          <Body className="text-base text-charcoal-700 leading-relaxed mt-4 pt-4 border-t border-cream-200/60">
+            {product.description}
+          </Body>
+        )}
+      </motion.div>
 
-      {/* Size Selector */}
-      <div className="space-y-4">
+      {/* Size Selector - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+        className="glass-panel rounded-xl p-6 space-y-4"
+      >
         <div className="flex items-center justify-between">
           <label className="font-serif text-sm font-semibold text-charcoal-900 uppercase tracking-wider">
             Size
@@ -218,27 +228,30 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
             const isAvailable = size.inStock;
 
             return (
-              <button
+              <motion.button
                 key={size.size}
                 onClick={() => isAvailable && handleSizeSelect(size)}
                 disabled={!isAvailable}
                 className={cn(
-                  "relative px-4 py-3 rounded-lg border-2 transition-all duration-200",
+                  "relative px-4 py-3 rounded-lg border-2 transition-all duration-300",
                   "font-sans text-sm font-medium",
                   "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
                   isSelected
-                    ? "border-charcoal-900 bg-charcoal-900 text-cream-50"
+                    ? "border-navy-900 bg-navy-900 text-cream-50 shadow-glass"
                     : isAvailable
-                      ? "border-cream-200 text-charcoal-900 hover:border-charcoal-400 hover:bg-cream-50"
+                      ? "border-cream-200 text-charcoal-900 hover:border-navy-600 hover:bg-cream-100 hover:shadow-glass"
                       : "border-cream-200 text-charcoal-400 bg-cream-50 cursor-not-allowed opacity-50"
                 )}
+                whileHover={isAvailable ? { scale: 1.05, y: -2 } : {}}
+                whileTap={isAvailable ? { scale: 0.95 } : {}}
+                transition={{ duration: 0.2, ease: "easeOut" }}
                 aria-label={`Size ${size.size}${!isAvailable ? " - Out of stock" : ""}`}
               >
                 {size.size}
                 {!isAvailable && (
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-charcoal-400 rounded-full" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-charcoal-400 rounded-full" />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -247,49 +260,63 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
             This product is currently out of stock in all sizes.
           </Body>
         )}
-      </div>
+      </motion.div>
 
-      {/* Quantity Selector */}
-      <div className="space-y-4">
-        <label className="font-serif text-sm font-semibold text-charcoal-900 uppercase tracking-wider block">
+      {/* Quantity Selector - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
+        className="glass-panel rounded-xl p-6"
+      >
+        <label className="font-serif text-sm font-semibold text-charcoal-900 uppercase tracking-wider block mb-4">
           Quantity
         </label>
         <div className="flex items-center gap-4">
-          <button
+          <motion.button
             onClick={() => handleQuantityChange(-1)}
             disabled={quantity <= 1}
             className={cn(
-              "p-2 rounded-lg border border-cream-200",
-              "hover:bg-cream-100 transition-colors duration-200",
+              "p-2.5 rounded-lg glass-card",
+              "hover:bg-cream-200/80 transition-all duration-300",
               "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
+            whileHover={{ scale: quantity > 1 ? 1.1 : 1 }}
+            whileTap={{ scale: quantity > 1 ? 0.9 : 1 }}
             aria-label="Decrease quantity"
           >
             <Minus className="w-4 h-4 text-charcoal-900" />
-          </button>
+          </motion.button>
           <span className="font-sans text-lg font-semibold text-charcoal-900 min-w-[3rem] text-center">
             {quantity}
           </span>
-          <button
+          <motion.button
             onClick={() => handleQuantityChange(1)}
             disabled={quantity >= 10}
             className={cn(
-              "p-2 rounded-lg border border-cream-200",
-              "hover:bg-cream-100 transition-colors duration-200",
+              "p-2.5 rounded-lg glass-card",
+              "hover:bg-cream-200/80 transition-all duration-300",
               "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
+            whileHover={{ scale: quantity < 10 ? 1.1 : 1 }}
+            whileTap={{ scale: quantity < 10 ? 0.9 : 1 }}
             aria-label="Increase quantity"
           >
             <Plus className="w-4 h-4 text-charcoal-900" />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Add to Cart & Buy Now Buttons */}
-      <div className="space-y-3">
-        <m.div
+      {/* Add to Cart & Buy Now Buttons - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
+        className="glass-panel rounded-xl p-6 space-y-3"
+      >
+        <motion.div
           initial={false}
           animate={{
             scale: showSuccess ? 0.95 : 1,
@@ -306,8 +333,8 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
             className={cn(
               "w-full py-6 text-lg font-semibold uppercase tracking-wide",
               "disabled:opacity-50 disabled:cursor-not-allowed",
-              "transition-all duration-200",
-              showSuccess && "bg-forest-600 hover:bg-forest-700"
+              "transition-all duration-300",
+              showSuccess && "bg-sage-600 hover:bg-sage-700"
             )}
           >
             {showSuccess ? (
@@ -321,7 +348,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
                 ? "Please Select a Size"
                 : "Add to Cart"}
           </Button>
-        </m.div>
+        </motion.div>
         
         <Button
           variant="secondary"
@@ -329,10 +356,10 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
           disabled={!canAddToCart}
           className={cn(
             "w-full py-6 text-lg font-semibold uppercase tracking-wide",
-            "border-2 border-charcoal-900 text-charcoal-900",
-            "hover:bg-charcoal-900 hover:text-cream-50",
+            "border-2 border-navy-900 text-navy-900",
+            "hover:bg-navy-900 hover:text-cream-50 hover:shadow-glass-lg",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            "transition-all duration-200"
+            "transition-all duration-300"
           )}
         >
           Buy Now
@@ -341,7 +368,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
         {/* Success Feedback */}
         <AnimatePresence>
           {showSuccess && (
-            <m.div
+            <motion.div
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -351,7 +378,7 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
               }}
               className="flex items-center gap-2 p-4 bg-forest-50 border border-forest-200 rounded-lg"
             >
-              <m.div
+              <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{
@@ -361,33 +388,43 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
                 }}
               >
                 <Check className="w-5 h-5 text-forest-600 flex-shrink-0" />
-              </m.div>
+              </motion.div>
               <Body className="text-sm text-forest-700 font-medium">
                 Item added to your cart
               </Body>
-            </m.div>
+            </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
-      {/* Trust Indicators */}
-      <div className="space-y-2 border-t border-cream-200 pt-6">
-        <div className="flex items-center gap-2 text-sm text-charcoal-600">
-          <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
+      {/* Trust Indicators - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.5 }}
+        className="glass-panel rounded-xl p-6 space-y-3"
+      >
+        <div className="flex items-center gap-3 text-sm text-charcoal-600">
+          <CheckCircle className="w-5 h-5 text-sage-600 flex-shrink-0" />
           <span>Free shipping on orders over ₵800</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-charcoal-600">
-          <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
+        <div className="flex items-center gap-3 text-sm text-charcoal-600">
+          <CheckCircle className="w-5 h-5 text-sage-600 flex-shrink-0" />
           <span>Free returns within 30 days</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-charcoal-600">
-          <CheckCircle className="w-4 h-4 text-forest-600 flex-shrink-0" />
+        <div className="flex items-center gap-3 text-sm text-charcoal-600">
+          <CheckCircle className="w-5 h-5 text-sage-600 flex-shrink-0" />
           <span>Secure checkout guaranteed</span>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Product Details Accordion */}
-      <div className="space-y-2 border-t border-cream-200 pt-6">
+      {/* Product Details Accordion - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.6 }}
+        className="glass-panel rounded-xl p-6 space-y-2"
+      >
         <DetailSection
           title="Product Details"
           content="Premium cotton blend bomber with embroidered details. A modern classic for the style-conscious boy. Built for adventure, designed for style."
@@ -412,10 +449,16 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
           isExpanded={expandedDetails === "shipping"}
           onToggle={() => toggleDetails("shipping")}
         />
-      </div>
+      </motion.div>
 
-      {/* Trust Badges */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-cream-200">
+      {/* Trust Badges - Glass Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut", delay: 0.7 }}
+        className="glass-panel rounded-xl p-6"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <TrustBadge
           icon="🚚"
           title="Free Shipping"
@@ -431,7 +474,8 @@ export function ProductInfo({ product, className }: ProductInfoProps) {
           title="Secure Checkout"
           description="SSL encrypted"
         />
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -455,7 +499,7 @@ function DetailSection({
 }: DetailSectionProps): JSX.Element {
   return (
     <div className="border-b border-cream-200 last:border-b-0">
-      <m.button
+      <motion.button
         onClick={onToggle}
         className="w-full flex items-center justify-between py-4 text-left focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-lg px-2 -mx-2 hover:bg-cream-50 transition-colors duration-200"
         aria-expanded={isExpanded}
@@ -463,16 +507,16 @@ function DetailSection({
         transition={{ duration: 0.2 }}
       >
         <H3 className="text-base font-semibold text-charcoal-900">{title}</H3>
-        <m.div
+        <motion.div
           animate={{ rotate: isExpanded ? 180 : 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           <ChevronDown className="w-5 h-5 text-charcoal-500" />
-        </m.div>
-      </m.button>
+        </motion.div>
+      </motion.button>
       <AnimatePresence>
         {isExpanded && (
-          <m.div
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -482,7 +526,7 @@ function DetailSection({
             <Body className="text-sm text-charcoal-600 pb-4 leading-relaxed pl-2">
               {content}
             </Body>
-          </m.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

@@ -63,12 +63,12 @@ export function ProductGrid({
       className={cn(
         "grid",
         getGridCols(columns),
-        // Design System: 16px mobile, 20px tablet, 24px desktop (8px base unit)
-        "gap-4", // 16px mobile - touch-friendly spacing
-        "sm:gap-5", // 20px small mobile
+        // Generous spacing – premium, breathable layout
+        "gap-5", // 20px mobile
+        "sm:gap-6", // 24px small
         "md:gap-6", // 24px tablet
-        "lg:gap-6", // 24px desktop (Design System standard)
-        "xl:gap-6", // 24px large desktop
+        "lg:gap-7", // 28px desktop
+        "xl:gap-8", // 32px large desktop
         className
       )}
     >

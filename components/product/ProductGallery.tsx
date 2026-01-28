@@ -101,14 +101,17 @@ export function ProductGallery({
   return (
     <>
       <div className={cn("flex flex-col lg:flex-row gap-3 xs:gap-4 sm:gap-5 lg:gap-6", className)}>
-        {/* Main Image */}
-        <div className="relative lg:w-full aspect-square lg:aspect-auto lg:h-[600px] xl:h-[700px] bg-cream-100 rounded-lg overflow-hidden group">
+        {/* Main Image - Glass Panel */}
+        <div className="relative lg:w-full aspect-square lg:aspect-auto lg:h-[600px] xl:h-[700px] glass-panel rounded-xl overflow-hidden group">
           <m.div
             key={selectedIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ 
+              duration: 0.3, 
+              ease: [0.25, 0.46, 0.45, 0.94] // Premium easing
+            }}
             className="relative w-full h-full"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -128,28 +131,37 @@ export function ProductGallery({
             {/* Navigation Arrows (Desktop) */}
             {images.length > 1 && (
               <>
-                <button
+                <m.button
                   onClick={handlePrevious}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-cream-50/90 hover:bg-cream-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden lg:flex items-center justify-center"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 glass-card rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hidden lg:flex items-center justify-center backdrop-blur-md"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-5 h-5 text-charcoal-900" />
-                </button>
-                <button
+                </m.button>
+                <m.button
                   onClick={handleNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-cream-50/90 hover:bg-cream-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden lg:flex items-center justify-center"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 glass-card rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hidden lg:flex items-center justify-center backdrop-blur-md"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-5 h-5 text-charcoal-900" />
-                </button>
+                </m.button>
               </>
             )}
 
-            {/* Image Counter (Mobile) */}
+            {/* Image Counter (Mobile) - Glass */}
             {images.length > 1 && (
-              <div className="absolute bottom-4 right-4 lg:hidden px-3 py-1.5 bg-charcoal-900/70 text-cream-50 rounded-full text-xs font-medium">
+              <m.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="absolute bottom-4 right-4 lg:hidden px-3 py-1.5 bg-charcoal-900/80 backdrop-blur-md text-cream-50 rounded-full text-xs font-medium shadow-glass"
+              >
                 {selectedIndex + 1} / {images.length}
-              </div>
+              </m.div>
             )}
           </m.div>
         </div>
@@ -164,14 +176,15 @@ export function ProductGallery({
                   onClick={() => setSelectedIndex(index)}
                   className={cn(
                     "relative flex-shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-lg overflow-hidden",
-                    "border-2 transition-all duration-200",
+                    "border-2 transition-all duration-300",
                     "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
                     selectedIndex === index
-                      ? "border-charcoal-900 ring-2 ring-charcoal-900/20"
-                      : "border-cream-200 hover:border-charcoal-400"
+                      ? "border-navy-900 ring-2 ring-navy-900/30 shadow-glass"
+                      : "border-cream-200 hover:border-navy-600 hover:shadow-glass"
                   )}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.08, y: -2 }}
                   whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                   aria-label={`View image ${index + 1}`}
                 >
                   <Image

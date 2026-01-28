@@ -84,6 +84,143 @@
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Glassmorphism design tokens */
+  --glass-bg-light: rgba(254, 253, 251, 0.72);
+  --glass-bg-strong: rgba(254, 253, 251, 0.88);
+  --glass-border: rgba(250, 247, 237, 0.6);
+  --glass-shadow: 0 8px 32px rgba(26, 26, 26, 0.08);
+  --glass-shadow-elevated: 0 12px 40px rgba(26, 26, 26, 0.12);
+  --glass-blur: 12px;
+  --glass-blur-strong: 20px;
+
+  /* Warm accent – soft pastels for emotional appeal */
+  --accent-blush: rgba(196, 176, 136, 0.15);
+  --accent-warm: rgba(138, 120, 86, 0.12);
+
+  /* Premium warm accents – honey, blush, sage (see docs/DESIGN_SYSTEM_PALETTE_TYPOGRAPHY.md) */
+  --color-honey-50: #fefaf3;
+  --color-honey-100: #fdf3e3;
+  --color-honey-200: #f9e6c8;
+  --color-honey-300: #f0d4a8;
+  --color-honey-400: #e0b87a;
+  --color-honey-500: #c9a227;
+  --color-honey-600: #a8841f;
+
+  --color-blush-50: #fdf8f6;
+  --color-blush-100: #f9ede8;
+  --color-blush-200: #f0ddd5;
+  --color-blush-300: #e4c9be;
+
+  --color-sage-50: #f4f7f4;
+  --color-sage-100: #e6ede6;
+  --color-sage-500: #5a7d5a;
+  --color-sage-600: #4a6b4a;
+
+  /* Typography system – font families (map to layout-loaded vars) */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* Type scale – size / line-height / letter-spacing */
+  --text-caption: 0.75rem;
+  --text-caption-lh: 1.4;
+  --text-caption-ls: 0.02em;
+
+  --text-small: 0.875rem;
+  --text-small-lh: 1.5;
+  --text-small-ls: 0.01em;
+
+  --text-body: 1rem;
+  --text-body-lh: 1.6;
+  --text-body-ls: 0;
+
+  --text-lead: 1.125rem;
+  --text-lead-lh: 1.55;
+  --text-lead-ls: 0;
+
+  --text-h4: 1.25rem;
+  --text-h4-lh: 1.4;
+  --text-h4-ls: -0.01em;
+
+  --text-h3: 1.5rem;
+  --text-h3-lh: 1.35;
+  --text-h3-ls: -0.01em;
+
+  --text-h2: 1.875rem;
+  --text-h2-lh: 1.3;
+  --text-h2-ls: -0.01em;
+
+  --text-h1: 2.25rem;
+  --text-h1-lh: 1.25;
+  --text-h1-ls: -0.02em;
+
+  --text-display-sm: 3rem;
+  --text-display-sm-lh: 1.2;
+  --text-display-sm-ls: -0.02em;
+
+  --text-display: 3.75rem;
+  --text-display-lh: 1.1;
+  --text-display-ls: -0.02em;
+
+  --text-display-lg: 4.5rem;
+  --text-display-lg-lh: 1.08;
+  --text-display-lg-ls: -0.02em;
+
+  /* Font weights – semantic */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Micro-interactions – timing and easing (see docs/MICRO_INTERACTIONS_SPEC.md) */
+  /* Button timings */
+  --duration-button-hover: 200ms;
+  --duration-button-active: 100ms;
+  --duration-button-focus: 150ms;
+  
+  /* Card timings */
+  --duration-card-hover: 300ms;
+  --duration-image-swap: 200ms;
+  --duration-badge-mount: 400ms;
+  --duration-quick-add: 300ms;
+  
+  /* Nav timings */
+  --duration-nav-hover: 300ms;
+  --duration-menu-open: 250ms;
+  --duration-menu-close: 200ms;
+  --duration-search-overlay: 250ms;
+  
+  /* Cart & drawer timings */
+  --duration-cart-drawer: 350ms;
+  --duration-toast-mount: 300ms;
+  --duration-toast-unmount: 250ms;
+  
+  /* Form timings */
+  --duration-input-focus: 150ms;
+  --duration-input-error: 200ms;
+  --duration-checkbox-toggle: 200ms;
+  
+  /* Scroll animations */
+  --duration-scroll-fade: 500ms;
+  
+  /* Easing curves – premium, refined motion */
+  --ease-premium: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-active: cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: ease-out;
+}
+
+/* Micro-interaction keyframes */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 * {
@@ -253,6 +390,37 @@ textarea:focus-visible {
 ::selection {
   background-color: var(--color-navy-200);
   color: var(--color-navy-900);
+}
+
+/* Glassmorphism utility classes */
+.glass-panel {
+  background: var(--glass-bg-light);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-panel-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-elevated);
+}
+
+.glass-card {
+  background: rgba(254, 253, 251, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(250, 247, 237, 0.8);
+  box-shadow: 0 4px 24px rgba(26, 26, 26, 0.06);
+}
+
+/* Micro-interaction: smooth feedback duration */
+.micro-interaction {
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-in-out);
 }
 
 /* Performance: GPU acceleration for animations */

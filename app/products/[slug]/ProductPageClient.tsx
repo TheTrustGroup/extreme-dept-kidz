@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
+import { StickyAddToCart } from "@/components/product/StickyAddToCart";
 import { CompleteTheLook } from "@/components/product/CompleteTheLook";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { Reviews } from "@/components/product/Reviews";
@@ -70,6 +71,9 @@ export function ProductPageClient({ product }: ProductPageClientProps): JSX.Elem
         allProducts={mockProducts}
         limit={4}
       />
+
+      {/* Sticky Add to Cart Bar */}
+      <StickyAddToCart product={product} />
     </>
   );
 }

@@ -44,8 +44,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       "font-sans font-semibold uppercase tracking-wide",
       // Shape
       "rounded-lg",
-      // Transitions (Motion Guidelines: 200ms hover, 100ms active)
-      "transition-all duration-200 ease-in-out",
+      // Micro-interactions: smooth scale + color (300ms)
+      "transition-all duration-300 ease-out",
       // Focus & Accessibility
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       // Touch targets (minimum 44px for mobile)
@@ -130,7 +130,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading && (
           <Loader2 
-            className="w-4 h-4 mr-2 animate-spin" 
+            className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" 
             aria-hidden="true"
             aria-label="Loading"
           />

@@ -31,7 +31,7 @@ function TrustItem({ icon, text }: TrustItemProps): JSX.Element {
 export function TrustBar(): JSX.Element {
   return (
     <section
-      className="bg-cream-100 border-y border-cream-200 py-4 sm:py-5"
+      className="bg-cream-100/90 backdrop-blur-sm border-y border-cream-200/70 py-4 sm:py-5 shadow-sm"
       aria-label="Trust signals and value propositions"
     >
       <Container>

@@ -24,25 +24,26 @@ export function HeroSection(): JSX.Element {
 
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
-  // Fade-in animation variants – content visible by default for fast perceived load
+  // Fade-in animation variants – smooth, staggered reveal on load
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        duration: 0.5,
-        ease: "easeOut",
-        staggerChildren: 0.12,
+        duration: 0.6,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        staggerChildren: 0.14,
+        delayChildren: 0.08,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 24 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.4, ease: "easeOut" },
+      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
     },
   };
 
@@ -93,8 +94,15 @@ export function HeroSection(): JSX.Element {
             <source src={HERO_VIDEO_SRC} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          {/* Dark overlay for text visibility */}
-          <div className="absolute inset-0 bg-gradient-to-b from-charcoal-900/70 via-charcoal-900/60 to-charcoal-900/75" />
+          {/* Soft gradient overlay – premium, breathable depth */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(26,26,26,0.55) 0%, rgba(26,26,26,0.35) 40%, rgba(26,26,26,0.45) 100%)",
+            }}
+            aria-hidden="true"
+          />
         </div>
       </m.div>
 
@@ -102,43 +110,45 @@ export function HeroSection(): JSX.Element {
       <m.div
         className="relative z-10 w-full flex items-center justify-center"
         variants={containerVariants}
-        initial="visible"
+        initial="hidden"
         animate="visible"
         style={{
           minHeight: "100vh",
         }}
       >
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
-          <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-7 md:space-y-8 lg:space-y-10">
-          {/* Headline */}
+          <div className="max-w-4xl mx-auto text-center space-y-5 sm:space-y-6 md:space-y-7 lg:space-y-8">
+          {/* Key message – Premium Streetwear for Young Legends */}
           <m.h1
             className={cn(
               "font-serif font-bold text-cream-50",
               "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl",
-              "leading-[1.1] tracking-tight",
+              "leading-[1.08] tracking-tight",
               "drop-shadow-2xl"
             )}
             variants={itemVariants}
             style={{
-              textShadow: "0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6)",
+              textShadow:
+                "0 4px 20px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4)",
             }}
           >
-            ELEVATED STYLE FOR YOUNG LEGENDS
+            Premium Streetwear for Young Legends
           </m.h1>
 
-          {/* Subheadline */}
+          {/* Supporting line – elegant, refined */}
           <m.p
             className={cn(
-              "font-sans text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl",
-              "text-cream-100 leading-relaxed max-w-3xl mx-auto",
-              "drop-shadow-xl"
+              "font-serif font-medium text-cream-100/95",
+              "text-lg sm:text-xl md:text-2xl lg:text-3xl",
+              "leading-snug tracking-tight max-w-2xl mx-auto",
+              "drop-shadow-lg"
             )}
             variants={itemVariants}
             style={{
-              textShadow: "0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.5)",
+              textShadow: "0 2px 12px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.4)",
             }}
           >
-            Premium streetwear and luxury essentials for the modern boy. Built for adventure, designed for style.
+            Elevated style for the modern boy. Built for adventure, designed for life.
           </m.p>
 
           {/* CTA Buttons */}
@@ -151,13 +161,13 @@ export function HeroSection(): JSX.Element {
               size="lg"
               className={cn(
                 "w-full sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
-                "bg-cream-50 text-charcoal-900",
-                "hover:bg-cream-100 hover:shadow-xl",
-                "transition-all duration-300",
+                "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
+                "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
+                "active:scale-[0.98] transition-all duration-300 ease-out",
                 "text-sm sm:text-base md:text-lg",
                 "px-6 sm:px-7 md:px-8 lg:px-10",
                 "py-5 sm:py-5.5 md:py-6 lg:py-7",
-                "shadow-2xl min-h-[44px]"
+                "shadow-glass min-h-[44px] border border-cream-200/50"
               )}
               asChild
             >
@@ -168,13 +178,13 @@ export function HeroSection(): JSX.Element {
               size="lg"
               className={cn(
                 "w-full sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
-                "bg-cream-50 text-charcoal-900",
-                "hover:bg-cream-100 hover:shadow-xl",
-                "transition-all duration-300",
+                "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
+                "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
+                "active:scale-[0.98] transition-all duration-300 ease-out",
                 "text-sm sm:text-base md:text-lg",
                 "px-6 sm:px-7 md:px-8 lg:px-10",
                 "py-5 sm:py-5.5 md:py-6 lg:py-7",
-                "shadow-2xl min-h-[44px]"
+                "shadow-glass min-h-[44px] border border-cream-200/50"
               )}
               asChild
             >
@@ -185,13 +195,13 @@ export function HeroSection(): JSX.Element {
               size="lg"
               className={cn(
                 "w-full sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
-                "bg-transparent border-2 border-cream-50 text-cream-50",
-                "hover:bg-cream-50 hover:text-charcoal-900 hover:border-cream-50",
-                "transition-all duration-300",
+                "bg-cream-50/10 border-2 border-cream-50 text-cream-50 backdrop-blur-md",
+                "hover:bg-cream-50 hover:text-charcoal-900 hover:border-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
+                "active:scale-[0.98] transition-all duration-300 ease-out",
                 "text-sm sm:text-base md:text-lg",
                 "px-6 sm:px-7 md:px-8 lg:px-10",
                 "py-5 sm:py-5.5 md:py-6 lg:py-7",
-                "shadow-2xl backdrop-blur-sm min-h-[44px]"
+                "min-h-[44px]"
               )}
               asChild
             >
@@ -214,7 +224,7 @@ export function HeroSection(): JSX.Element {
         aria-hidden="true"
       >
         <m.div
-          className="w-6 h-10 border-2 border-cream-50 rounded-full flex items-start justify-center p-2 backdrop-blur-sm"
+          className="w-6 h-10 border-2 border-cream-50/90 rounded-full flex items-start justify-center p-2 bg-charcoal-900/20 backdrop-blur-md"
           animate={{ y: [0, 8, 0] }}
           transition={{
             duration: 1.5,

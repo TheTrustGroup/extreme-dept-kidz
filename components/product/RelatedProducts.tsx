@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { m } from "framer-motion";
 import type { Product } from "@/types";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import { Container } from "@/components/ui/container";
@@ -59,10 +60,16 @@ export function RelatedProducts({
   return (
     <section className="py-16 md:py-24 bg-cream-50">
       <Container size="lg">
-        <div className="space-y-12">
-          <H2 className="text-charcoal-900 text-center">You May Also Like</H2>
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="space-y-12"
+        >
+          <H2 className="text-charcoal-900 text-center font-serif">You May Also Like</H2>
           <ProductGrid products={relatedProducts} columns={4} />
-        </div>
+        </m.div>
       </Container>
     </section>
   );

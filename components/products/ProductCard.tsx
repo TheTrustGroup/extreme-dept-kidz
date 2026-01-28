@@ -63,7 +63,7 @@ export const ProductCard = React.memo(function ProductCard({
     <Link
       href={`/products/${product.slug}`}
       className={cn(
-        "group block focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2 rounded-lg",
+        "group block focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2 rounded-xl",
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
@@ -74,18 +74,18 @@ export const ProductCard = React.memo(function ProductCard({
     >
       <m.article
         className={cn(
-          "relative overflow-hidden rounded-lg bg-cream-50 w-full",
-          "shadow-sm",
-          "group-hover:shadow-lg",
-          "transition-all duration-normal ease-in-out",
-          "flex flex-col"
+          "relative overflow-hidden rounded-xl w-full flex flex-col",
+          "bg-cream-50/90 backdrop-blur-sm border border-cream-200/60",
+          "shadow-glass group-hover:shadow-glass-lg",
+          "transition-all duration-300 ease-out",
+          "group-hover:border-cream-300/80"
         )}
-        whileHover={{ scale: 1.02, y: -4 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+        whileHover={{ scale: 1.02, y: -6 }}
+        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         aria-label={product.name}
       >
-        {/* Image Container (Design System: 280×280px, 8px top radius, cream-100 bg) */}
-        <div className="relative aspect-square overflow-hidden bg-cream-100 rounded-t-lg">
+        {/* Image Container (Design System: 280×280px, rounded top, cream-100 bg) */}
+        <div className="relative aspect-square overflow-hidden bg-cream-100 rounded-t-xl">
           {/* Primary Image */}
           <Image
             src={primaryImage.url}
@@ -140,20 +140,12 @@ export const ProductCard = React.memo(function ProductCard({
                 onClick={handleQuickAdd}
                 className={cn(
                   "w-full flex items-center justify-center gap-2",
-                  // Design System: 48px height, Navy 900 bg, Cream 50 text
                   "h-12 min-h-[48px] px-4 py-3",
-                  "bg-navy-900 text-cream-50",
-                  "rounded-lg",
-                  // Typography (Design System: Inter, 14px, Semibold, Uppercase, 0.5px letter-spacing)
+                  "bg-navy-900 text-cream-50 rounded-lg",
                   "font-sans text-sm font-semibold uppercase tracking-wide",
-                  // Hover state
-                  "hover:bg-navy-800",
-                  // Design System: Colored shadow (Tier 2)
-                  "shadow-navy",
-                  // Design System: Animation timing (Tier 2)
-                  "transition-colors duration-fast",
-                  // Focus
-                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
+                  "hover:bg-navy-800 hover:shadow-glass-lg hover:scale-[1.02]",
+                  "active:scale-[0.98] transition-all duration-300 ease-out",
+                  "shadow-navy focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
                 )}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -219,8 +211,8 @@ export const ProductCard = React.memo(function ProductCard({
           )}
         </div>
 
-        {/* Product Info (Design System: 16px padding, 8px gap) */}
-        <div className="p-4 space-y-2">
+        {/* Product Info (Design System: 16px padding, 8px gap) – generous whitespace */}
+        <div className="p-5 space-y-2.5">
           {/* Product Name (Design System: H4 - Playfair Display, 18px desktop/16px mobile, Medium, 1.4 line-height) */}
           <h3
             className={cn(
