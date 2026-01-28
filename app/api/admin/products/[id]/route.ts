@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
+import { revalidateCategoryChange, revalidateAllCollectionPages } from "@/lib/utils/cache-revalidation";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
@@ -177,6 +178,12 @@ export async function PUT(
       };
     }
 
+    // Get existing product to check if category changed
+    const existingProduct = await prisma.product.findUnique({
+      where: { id },
+      include: { category: true },
+    });
+
     // Update product
     const product = await prisma.product.update({
       where: { id },
@@ -191,16 +198,20 @@ export async function PUT(
 
     // Revalidate cache to show updated product immediately
     try {
+      // Revalidate product-specific pages
       revalidatePath(`/products/${product.slug}`);
       revalidatePath('/products');
-      revalidatePath('/collections');
-      // Revalidate specific collection pages based on category
-      if (product.category?.slug) {
-        revalidatePath(`/collections/${product.category.slug}`);
-      }
       revalidatePath('/admin/products');
       revalidatePath('/api/products');
-      revalidatePath('/');
+      
+      // Revalidate collection pages (handles category changes automatically)
+      await revalidateCategoryChange(
+        existingProduct?.category?.slug,
+        product.category?.slug
+      );
+      
+      // Also ensure all collection pages are fresh
+      await revalidateAllCollectionPages();
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails

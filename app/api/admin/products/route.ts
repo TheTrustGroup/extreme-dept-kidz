@@ -6,6 +6,7 @@ import { createProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import { revalidateAllCollectionPages } from "@/lib/utils/cache-revalidation";
 
 export const dynamic = "force-dynamic";
 
@@ -254,16 +255,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Revalidate cache to ensure product appears immediately
     try {
+      // Revalidate product-specific pages
+      revalidatePath(`/products/${product.slug}`);
       revalidatePath('/products');
-      revalidatePath('/collections');
-      // Revalidate specific collection pages based on category
-      if (product.category?.slug) {
-        revalidatePath(`/collections/${product.category.slug}`);
-      }
       revalidatePath('/admin/products');
       revalidatePath('/api/products');
-      revalidatePath(`/products/${product.slug}`);
-      revalidatePath('/');
+      
+      // Revalidate all collection pages to ensure product appears in its category
+      await revalidateAllCollectionPages();
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails

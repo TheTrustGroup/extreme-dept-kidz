@@ -63,10 +63,20 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     const category = categories.find((c) => c.slug === slug && c.isActive);
     let products: Product[] = productsByCategory;
 
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[CollectionPage] Loading collection: ${slug}`);
+      console.log(`[CollectionPage] Category found:`, category ? `${category.name} (${category.slug})` : 'none');
+      console.log(`[CollectionPage] Products from getProductsByCategory:`, productsByCategory.length);
+    }
+
     if (products.length === 0 && !category) {
       try {
         const all = await getAllProducts();
         products = getProductsByCollection(all, slug);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[CollectionPage] Fallback products from getProductsByCollection:`, products.length);
+        }
       } catch (fallbackError) {
         console.error(`[CollectionPage] Error fetching fallback products for ${slug}:`, fallbackError);
         // Continue with empty products array
