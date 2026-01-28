@@ -21,11 +21,8 @@ html {
 }
 
 /* Performance: Optimize scroll performance */
-* {
-  /* Performance: Use GPU acceleration for transforms */
-  transform: translateZ(0);
-  will-change: auto;
-}
+/* CRITICAL FIX: Removed universal transform: translateZ(0) - causes stacking context bugs and performance issues */
+/* Apply GPU acceleration selectively to animated elements only */
 
 /* Performance: Optimize animations to use GPU */
 [data-animate],
@@ -770,7 +767,9 @@ textarea:focus-visible {
 /* Product card utility class with premium hover effects - Optimized */
 .product-card {
   position: relative;
-  overflow: hidden;
+  /* CRITICAL FIX: Changed overflow: hidden to overflow: visible for image container
+     Only apply overflow: hidden to image container itself, not parent */
+  overflow: visible;
   border-radius: var(--radius-xl);
   backdrop-filter: blur(var(--glass-blur-md));
   -webkit-backdrop-filter: blur(var(--glass-blur-md));
@@ -783,6 +782,15 @@ textarea:focus-visible {
   box-shadow: var(--glass-shadow);
   /* Prevent layout shift */
   contain: layout style paint;
+  /* CRITICAL FIX: Ensure products are always visible */
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* CRITICAL FIX: Ensure proper height to prevent collapse - use intrinsic sizing */
+  min-height: 0; /* Allow flex shrinking but ensure content determines height */
+  display: flex;
+  flex-direction: column;
+  /* Ensure proper stacking context */
+  isolation: isolate;
 }
 
 [data-theme="dark"] .product-card,
@@ -875,16 +883,12 @@ textarea:focus-visible {
     transition: opacity 0.2s ease-out;
   }
   
-  /* Reduce motion for better performance */
-  * {
-    animation-duration: 0.2s !important;
-    transition-duration: 0.2s !important;
-  }
+  /* CRITICAL FIX: Removed universal animation override - too broad, causes performance issues */
+  /* Apply reduced motion selectively to specific elements only */
   
-  /* Optimize image rendering */
+  /* CRITICAL FIX: Optimize image rendering - remove will-change: auto (redundant) */
   img {
     image-rendering: -webkit-optimize-contrast;
-    will-change: auto;
   }
   
   /* Reduce backdrop-filter on mobile for performance */

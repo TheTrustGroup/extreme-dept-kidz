@@ -86,11 +86,17 @@ export function ProductGrid({
         "xl:gap-[var(--space-8)]", // 40px large desktop
         // Performance: Grid optimization
         "items-stretch",
+        // CRITICAL FIX: Ensure grid has proper layout flow
+        "auto-rows-max",
         className
       )}
       style={{
         // Performance: Prevent layout shift
         contain: "layout style paint",
+        // CRITICAL FIX: Ensure grid container has proper height
+        minHeight: 0,
+        // Prevent stacking context issues
+        isolation: "isolate"
       }}
     >
       {isLoading || products.length === 0 ? (
@@ -102,6 +108,8 @@ export function ProductGrid({
       ) : (
         // Product cards with stagger animation
         // SSR-safe: Deterministic rendering order based on products array
+        // CRITICAL FIX: Products start visible (opacity: 1) to prevent invisible but clickable bug
+        // Animation only applies subtle fade-in for above-fold items, below-fold are instant
         products.map((product, index) => {
           // Performance: First 4 cards are above fold - prioritize loading
           const isAboveFold = index < 4;
@@ -109,11 +117,23 @@ export function ProductGrid({
           return (
             <m.div
               key={product.id}
-              initial={{ opacity: 0, y: 20 }}
+              // CRITICAL FIX: Start with opacity: 1 to prevent invisible products
+              // Only animate if above fold, otherwise instant render
+              initial={isAboveFold ? { opacity: 0.8, y: 10 } : { opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.03 }}
+              transition={{ 
+                duration: isAboveFold ? 0.2 : 0, 
+                delay: isAboveFold ? index * 0.02 : 0,
+                ease: "easeOut"
+              }}
               // Prevent layout shift by maintaining consistent structure
               className="w-full h-full flex"
+              style={{
+                // Ensure products are always visible, even during animation
+                minHeight: 0,
+                // Prevent stacking context issues
+                isolation: "isolate"
+              }}
             >
               <ProductCard 
                 product={product} 

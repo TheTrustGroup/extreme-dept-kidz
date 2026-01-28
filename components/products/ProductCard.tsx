@@ -79,11 +79,18 @@ export const ProductCard = React.memo(function ProductCard({
         )}
         aria-label={product.name}
         style={{
+          // CRITICAL FIX: Ensure proper height to prevent collapse
           minHeight: 0, // Allow flex shrinking
+          // Ensure visibility - prevent invisible but clickable bug
+          opacity: 1,
+          visibility: "visible",
+          // Prevent stacking context issues
+          isolation: "isolate"
         }}
       >
         {/* Image Container - Fixed aspect ratio prevents layout shift */}
-        <div className="product-image relative aspect-square overflow-hidden flex-shrink-0" style={{ minHeight: 0 }}>
+        {/* CRITICAL FIX: Apply overflow: hidden here, not on parent card, and ensure proper isolation */}
+        <div className="product-image relative aspect-square overflow-hidden flex-shrink-0" style={{ minHeight: 0, isolation: "isolate" }}>
           {/* Primary Image */}
           <Image
             src={primaryImage.url}

@@ -125,11 +125,13 @@ export function CollectionPageClient({
     }
 
     const queryString = params.toString();
-    const newUrl = queryString
-      ? `${window.location.pathname}?${queryString}`
-      : window.location.pathname;
-
-    router.replace(newUrl, { scroll: false });
+    // CRITICAL FIX: SSR-safe - window is only accessed in useEffect (client-side only)
+    if (typeof window !== "undefined") {
+      const newUrl = queryString
+        ? `${window.location.pathname}?${queryString}`
+        : window.location.pathname;
+      router.replace(newUrl, { scroll: false });
+    }
   }, [filters, sortBy, router]);
 
   // Use client-side products state (can be refreshed)
@@ -308,7 +310,8 @@ export function CollectionPageClient({
           />
 
           {/* Products Section */}
-          <div className="flex-1 min-w-0">
+          {/* CRITICAL FIX: Ensure proper layout flow and visibility */}
+          <div className="flex-1 min-w-0" style={{ minHeight: 0, isolation: "isolate" }}>
             {/* Toolbar */}
             <ProductToolbar
               resultCount={sortedProducts.length}
@@ -328,12 +331,19 @@ export function CollectionPageClient({
             />
 
             {/* Product Grid with Animation */}
+            {/* CRITICAL FIX: Start visible to prevent invisible but clickable bug */}
             <m.div
               key={`${sortedProducts.length}-${sortBy}`}
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0 }}
               className="mt-6 xs:mt-7 sm:mt-8"
+              style={{
+                // Ensure container is always visible
+                opacity: 1,
+                visibility: "visible",
+                minHeight: 0
+              }}
             >
               <ProductGrid
                 products={sortedProducts}
