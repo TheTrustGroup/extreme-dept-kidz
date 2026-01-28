@@ -149,13 +149,13 @@ export function MobileNav({
             <div className="flex flex-col h-full">
               {/* Header with close button */}
               <div className={cn(
-                "flex items-center justify-between p-[var(--space-6)] border-b transition-colors duration-300",
+                "flex items-center justify-between p-[var(--space-4)] sm:p-[var(--space-5)] border-b transition-colors duration-300 flex-shrink-0",
                 theme === "dark"
                   ? "border-dark-border-glass"
                   : "border-cream-200"
               )}>
                 <span className={cn(
-                  "font-serif text-xl font-bold transition-colors duration-300",
+                  "font-serif text-lg sm:text-xl font-bold transition-colors duration-300",
                   theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
                 )}>
                   Menu
@@ -170,20 +170,93 @@ export function MobileNav({
                   onClick={onClose}
                   aria-label="Close menu"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
 
-              {/* Navigation Links */}
-              <nav className="flex-1 px-[var(--space-6)] py-[var(--space-12)] overflow-y-auto">
-                <ul className="space-y-[var(--space-8)]">
+              {/* Quick Actions - Account, Cart, Theme - Always visible at top */}
+              <div className={cn(
+                "px-[var(--space-4)] sm:px-[var(--space-5)] py-[var(--space-3)] border-b transition-colors duration-300 flex-shrink-0",
+                theme === "dark"
+                  ? "border-dark-border-glass"
+                  : "border-cream-200"
+              )}>
+                <div className="grid grid-cols-3 gap-[var(--space-2)]">
+                  {/* Account */}
+                  <Link
+                    href="/account"
+                    className={cn(
+                      "flex flex-col items-center gap-[var(--space-1)] p-[var(--space-2)] rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
+                      theme === "dark"
+                        ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
+                        : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
+                    )}
+                    onClick={onClose}
+                  >
+                    <User className="w-5 h-5" aria-hidden="true" />
+                    <span className="font-sans text-xs font-medium">Account</span>
+                  </Link>
+                  
+                  {/* Cart */}
+                  <button
+                    onClick={() => {
+                      onClose();
+                      openCart();
+                    }}
+                    className={cn(
+                      "flex flex-col items-center gap-[var(--space-1)] p-[var(--space-2)] rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 relative",
+                      theme === "dark"
+                        ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
+                        : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
+                    )}
+                    aria-label={`View shopping cart with ${cartItemCount} items`}
+                  >
+                    <div className="relative">
+                      <ShoppingBag className="w-5 h-5" aria-hidden="true" />
+                      {cartItemCount > 0 && (
+                        <span className={cn(
+                          "absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-medium transition-colors duration-300",
+                          theme === "dark"
+                            ? "bg-accent-primary text-dark-bg-primary"
+                            : "bg-navy-900 text-cream-50"
+                        )}>
+                          {cartItemCount > 9 ? "9+" : cartItemCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-sans text-xs font-medium">Cart</span>
+                  </button>
+                  
+                  {/* Theme Toggle */}
+                  <div className="flex flex-col items-center gap-[var(--space-1)]">
+                    <div className={cn(
+                      "glass p-[var(--space-2)] rounded-lg transition-all duration-300",
+                      theme === "dark"
+                        ? "bg-dark-surface/50 backdrop-blur-md border-dark-border-glass"
+                        : "bg-cream-100/80 backdrop-blur-sm border-cream-200/50"
+                    )}>
+                      <ThemeToggle size="sm" />
+                    </div>
+                    <span className={cn(
+                      "font-sans text-xs font-medium transition-colors duration-300",
+                      theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                    )}>
+                      Theme
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation Links - Scrollable section */}
+              <nav className="flex-1 overflow-y-auto px-[var(--space-4)] sm:px-[var(--space-5)] py-[var(--space-4)] sm:py-[var(--space-5)] min-h-0">
+                <ul className="space-y-[var(--space-4)] sm:space-y-[var(--space-5)]">
                   {navLinks.map((link, index) => (
                     <m.li
                       key={link.label}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{
-                        delay: index * 0.08,
+                        delay: index * 0.06,
                         duration: 0.3,
                         ease: "easeOut",
                       }}
@@ -191,7 +264,7 @@ export function MobileNav({
                       <Link
                         href={link.href}
                         className={cn(
-                          "block font-serif text-2xl font-semibold transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)]",
+                          "block font-serif text-xl sm:text-2xl font-semibold transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)]",
                           theme === "dark"
                             ? link.isEmphasized
                               ? "text-accent-primary font-bold"
@@ -211,86 +284,6 @@ export function MobileNav({
                   ))}
                 </ul>
               </nav>
-
-              {/* Footer Actions */}
-              <div className={cn(
-                "p-[var(--space-6)] border-t transition-colors duration-300 space-y-[var(--space-3)]",
-                theme === "dark"
-                  ? "border-dark-border-glass"
-                  : "border-cream-200"
-              )}>
-                <Link
-                  href="/account"
-                  className={cn(
-                    "flex items-center gap-[var(--space-4)] font-sans text-lg font-medium transition-colors duration-300 w-full focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] py-[var(--space-2)]",
-                    theme === "dark"
-                      ? "text-dark-text-primary hover:text-accent-primary focus:ring-accent-primary"
-                      : "text-charcoal-900 hover:text-navy-900 focus:ring-navy-500"
-                  )}
-                  onClick={onClose}
-                >
-                  <User className="w-5 h-5" aria-hidden="true" />
-                  Account
-                </Link>
-                <button
-                  onClick={() => {
-                    onClose();
-                    openCart();
-                  }}
-                  className={cn(
-                    "flex items-center gap-[var(--space-4)] font-sans text-lg font-medium transition-colors duration-300 w-full text-left focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] py-[var(--space-2)]",
-                    theme === "dark"
-                      ? "text-dark-text-primary hover:text-accent-primary focus:ring-accent-primary"
-                      : "text-charcoal-900 hover:text-navy-900 focus:ring-navy-500"
-                  )}
-                  aria-label={`View shopping cart with ${cartItemCount} items`}
-                >
-                  <ShoppingBag className="w-5 h-5" aria-hidden="true" />
-                  Cart
-                  {cartItemCount > 0 && (
-                    <span className={cn(
-                      "ml-auto flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium transition-colors duration-300",
-                      theme === "dark"
-                        ? "bg-accent-primary text-dark-bg-primary"
-                        : "bg-navy-900 text-cream-50"
-                    )}>
-                      {cartItemCount > 9 ? "9+" : cartItemCount}
-                    </span>
-                  )}
-                </button>
-                
-                {/* Theme Toggle - Bottom of menu with glassmorphism styling */}
-                <m.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: navLinks.length * 0.08 + 0.2,
-                    duration: 0.3,
-                    ease: "easeOut",
-                  }}
-                  className={cn(
-                    "flex items-center justify-between pt-[var(--space-4)] border-t transition-colors duration-300",
-                    theme === "dark"
-                      ? "border-dark-border-glass"
-                      : "border-cream-200"
-                  )}
-                >
-                  <span className={cn(
-                    "font-sans text-base font-medium transition-colors duration-300",
-                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                  )}>
-                    Theme
-                  </span>
-                  <div className={cn(
-                    "glass p-[var(--space-2)] rounded-lg transition-all duration-300",
-                    theme === "dark"
-                      ? "bg-dark-surface/50 backdrop-blur-md border-dark-border-glass"
-                      : "bg-cream-100/80 backdrop-blur-sm border-cream-200/50"
-                  )}>
-                    <ThemeToggle size="sm" />
-                  </div>
-                </m.div>
-              </div>
             </div>
           </m.div>
         </>

@@ -135,15 +135,21 @@ export function CollectionPageClient({
   const collectionProducts = React.useMemo(() => serverProducts, [serverProducts]);
 
   const filteredProducts = React.useMemo(() => {
-    const result = filterProducts(collectionProducts, filters);
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[CollectionPage] Filtered products:`, {
-        before: collectionProducts.length,
-        after: result.length,
-        filters,
-      });
+    try {
+      const result = filterProducts(collectionProducts, filters);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[CollectionPage] Filtered products:`, {
+          before: collectionProducts.length,
+          after: result.length,
+          filters,
+        });
+      }
+      return result;
+    } catch (error) {
+      console.error('[CollectionPage] Error filtering products:', error);
+      // Return empty array on filter error
+      return [];
     }
-    return result;
   }, [collectionProducts, filters]);
 
   const sortedProducts = React.useMemo(() => {

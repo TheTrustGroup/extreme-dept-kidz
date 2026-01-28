@@ -16,29 +16,34 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: CollectionPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const categories = await getAllCategories();
-  const category = categories.find((c) => c.slug === slug && c.isActive);
+  try {
+    const { slug } = await params;
+    const categories = await getAllCategories();
+    const category = categories.find((c) => c.slug === slug && c.isActive);
 
-  if (!category) {
-    return { title: "Collection Not Found | Extreme Dept Kidz" };
-  }
+    if (!category) {
+      return { title: `${slug.charAt(0).toUpperCase() + slug.slice(1)} | Extreme Dept Kidz` };
+    }
 
-  const name = category.name;
-  const description = category.description ?? `Shop ${name} at Extreme Dept Kidz.`;
+    const name = category.name;
+    const description = category.description ?? `Shop ${name} at Extreme Dept Kidz.`;
 
-  return {
-    title: `${name} | Extreme Dept Kidz`,
-    description,
-    keywords: [name, "luxury kids fashion", "premium children's clothing", "kids fashion collection"],
-    alternates: { canonical: `https://extremedeptkidz.com/collections/${slug}` },
-    openGraph: {
+    return {
       title: `${name} | Extreme Dept Kidz`,
       description,
-      url: `https://extremedeptkidz.com/collections/${slug}`,
-      images: [{ url: "https://extremedeptkidz.com/og-image.jpg", width: 1200, height: 630, alt: name }],
-    },
-  };
+      keywords: [name, "luxury kids fashion", "premium children's clothing", "kids fashion collection"],
+      alternates: { canonical: `https://extremedeptkidz.com/collections/${slug}` },
+      openGraph: {
+        title: `${name} | Extreme Dept Kidz`,
+        description,
+        url: `https://extremedeptkidz.com/collections/${slug}`,
+        images: [{ url: "https://extremedeptkidz.com/og-image.jpg", width: 1200, height: 630, alt: name }],
+      },
+    };
+  } catch (error) {
+    console.error(`[generateMetadata] Error generating metadata:`, error);
+    return { title: "Collection | Extreme Dept Kidz" };
+  }
 }
 
 /**
@@ -49,28 +54,47 @@ export async function generateMetadata({
 export default async function CollectionPage({ params }: CollectionPageProps): Promise<JSX.Element> {
   const { slug } = await params;
 
-  const [categories, productsByCategory] = await Promise.all([
-    getAllCategories(),
-    getProductsByCategory(slug),
-  ]);
+  try {
+    const [categories, productsByCategory] = await Promise.all([
+      getAllCategories(),
+      getProductsByCategory(slug),
+    ]);
 
-  const category = categories.find((c) => c.slug === slug && c.isActive);
-  let products: Product[] = productsByCategory;
+    const category = categories.find((c) => c.slug === slug && c.isActive);
+    let products: Product[] = productsByCategory;
 
-  if (products.length === 0 && !category) {
-    const all = await getAllProducts();
-    products = getProductsByCollection(all, slug);
+    if (products.length === 0 && !category) {
+      try {
+        const all = await getAllProducts();
+        products = getProductsByCollection(all, slug);
+      } catch (fallbackError) {
+        console.error(`[CollectionPage] Error fetching fallback products for ${slug}:`, fallbackError);
+        // Continue with empty products array
+        products = [];
+      }
+    }
+
+    const collectionInfo = category
+      ? { name: category.name, description: category.description ?? undefined }
+      : undefined;
+
+    return (
+      <CollectionPageClient
+        params={{ slug }}
+        products={products}
+        collectionInfo={collectionInfo}
+      />
+    );
+  } catch (error) {
+    console.error(`[CollectionPage] Error loading collection ${slug}:`, error);
+    
+    // Return error state with empty products
+    return (
+      <CollectionPageClient
+        params={{ slug }}
+        products={[]}
+        collectionInfo={undefined}
+      />
+    );
   }
-
-  const collectionInfo = category
-    ? { name: category.name, description: category.description ?? undefined }
-    : undefined;
-
-  return (
-    <CollectionPageClient
-      params={{ slug }}
-      products={products}
-      collectionInfo={collectionInfo}
-    />
-  );
 }
