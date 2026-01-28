@@ -36,7 +36,7 @@ async function main() {
     process.exit(1);
   }
 
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL ?? '';
   const match = url.match(/@([^/]+)/);
   const host = match ? match[1] : 'unknown';
   const projectMatch = url.match(/postgres\.([^.]+)/);
