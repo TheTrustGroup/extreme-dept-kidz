@@ -148,9 +148,15 @@ export function CollectionPageClient({ params, products: serverProducts }: Colle
   const collectionProducts = React.useMemo(() => {
     if (!collection) return [];
     // Server already filtered by category for this slug — use those products so new categories show immediately
-    if (serverProducts && serverProducts.length >= 0) {
+    // Check if serverProducts is defined (even if empty array) - that means server responded
+    if (serverProducts !== undefined) {
+      // Server sent products (could be empty array if no products in category)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[CollectionPage] Server products for ${params.slug}:`, serverProducts.length);
+      }
       return serverProducts;
     }
+    // Fallback to mock if server didn't send products (shouldn't happen in production)
     const sourceProducts = mockProducts;
     if (params.slug === "boys" || params.slug === "girls") {
       return sourceProducts;
@@ -159,7 +165,15 @@ export function CollectionPageClient({ params, products: serverProducts }: Colle
   }, [collection, params.slug, serverProducts]);
 
   const filteredProducts = React.useMemo(() => {
-    return filterProducts(collectionProducts, filters);
+    const result = filterProducts(collectionProducts, filters);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[CollectionPage] Filtered products:`, {
+        before: collectionProducts.length,
+        after: result.length,
+        filters,
+      });
+    }
+    return result;
   }, [collectionProducts, filters]);
 
   const sortedProducts = React.useMemo(() => {

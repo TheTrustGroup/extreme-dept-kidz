@@ -93,9 +93,18 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
   let products: Product[] = [];
   try {
     products = await getProductsByCategory(slug);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[CollectionPage] getProductsByCategory('${slug}') returned:`, products.length, 'products');
+      if (products.length > 0) {
+        console.log('  First product:', products[0]?.name, 'category:', products[0]?.category?.name);
+      }
+    }
     if (products.length === 0) {
       const all = await getAllProducts();
       products = getProductsByCollection(all, slug);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[CollectionPage] Fallback getProductsByCollection('${slug}') returned:`, products.length, 'products');
+      }
     }
   } catch (error) {
     console.error('Failed to fetch products for collection:', error);
