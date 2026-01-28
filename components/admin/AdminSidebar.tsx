@@ -50,7 +50,35 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = React.useState(false);
   const [isDesktop, setIsDesktop] = React.useState(false);
+  const [pendingOrdersCount, setPendingOrdersCount] = React.useState<number | null>(null);
   
+  // Fetch pending orders count for badge
+  React.useEffect(() => {
+    const fetchPendingOrdersCount = async (): Promise<void> => {
+      try {
+        const response = await fetch('/api/admin/orders', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const orders = data.data?.orders || data.orders || [];
+          const pendingCount = orders.filter((order: { status: string }) => order.status === 'PENDING').length;
+          setPendingOrdersCount(pendingCount > 0 ? pendingCount : null);
+        }
+      } catch (error) {
+        console.error('[AdminSidebar] Failed to fetch pending orders count:', error);
+        // Fail silently - don't break the UI
+      }
+    };
+
+    if (user) {
+      fetchPendingOrdersCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchPendingOrdersCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
   // Responsive breakpoint detection - Desktop: 1024px+, Tablet: 768px-1023px, Mobile: <768px
   React.useEffect(() => {
     const checkScreenSize = (): void => {
@@ -104,7 +132,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       label: "Orders",
       href: "/admin/orders",
       icon: ShoppingBag,
-      badge: 12, // Pending orders count
+      badge: pendingOrdersCount ?? undefined, // Pending orders count - only show if > 0
       children: [
         { label: "All Orders", href: "/admin/orders", icon: ShoppingBag },
         { label: "Pending", href: "/admin/orders?status=pending", icon: ShoppingBag },

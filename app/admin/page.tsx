@@ -48,7 +48,7 @@ function MetricCard({ title, value, change, trend, icon: Icon }: MetricCardProps
           {Math.abs(change)}%
         </div>
       </div>
-      <AdminH3 className="text-3xl mb-1">{value}</AdminH3>
+      <AdminH3 className="text-2xl sm:text-3xl mb-1">{value}</AdminH3>
       <AdminBodySmall className="text-charcoal-600 font-medium">{title}</AdminBodySmall>
     </m.div>
   );
@@ -152,7 +152,7 @@ export default function AdminDashboardPage(): JSX.Element {
         className="admin-card-strong admin-section-md mb-[var(--admin-space-5)] sm:mb-[var(--admin-space-7)]"
       >
         <div className="admin-flex-md items-center justify-between mb-[var(--admin-space-4)] sm:mb-[var(--admin-space-5)] flex-wrap gap-[var(--admin-space-2)]">
-          <AdminH2 className="text-xl">Revenue Over Time</AdminH2>
+          <AdminH2 className="text-lg sm:text-xl">Revenue Over Time</AdminH2>
           <div className="admin-flex-sm">
             <button className="px-[var(--admin-space-3)] py-1.5 text-xs font-medium text-charcoal-700 bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-all duration-200 border border-cream-200/50 hover:border-cream-300/70 shadow-sm hover:shadow-md">
               Day

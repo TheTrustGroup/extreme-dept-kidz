@@ -7,6 +7,7 @@ import { m } from "framer-motion";
 import { Menu as MenuIcon, Search, Bell, ChevronDown, LogOut } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { DatabaseStatus } from "@/components/admin/DatabaseStatus";
+import { AdminSearchModal } from "@/components/admin/AdminSearchModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminBody, AdminBodySmall, AdminCaption } from "@/components/admin/AdminTypography";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,47 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   const { user, logout, isAuthenticated } = useAdminAuth();
   const [showUserMenu, setShowUserMenu] = React.useState(false);
   const [showNotifications, setShowNotifications] = React.useState(false);
+  const [showSearch, setShowSearch] = React.useState(false);
+  const [notificationCount, setNotificationCount] = React.useState<number | null>(null);
+
+  // Fetch notification count (pending orders)
+  React.useEffect(() => {
+    const fetchNotificationCount = async (): Promise<void> => {
+      try {
+        const response = await fetch('/api/admin/orders?status=PENDING&limit=1', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const count = data.data?.total || data.total || 0;
+          setNotificationCount(count > 0 ? count : null);
+        }
+      } catch (error) {
+        console.error('[AdminHeader] Failed to fetch notification count:', error);
+        // Fail silently - don't break the UI
+      }
+    };
+
+    if (user || isAuthenticated) {
+      fetchNotificationCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchNotificationCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user, isAuthenticated]);
+
+  // Keyboard shortcut for search (Cmd/Ctrl + K)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Generate breadcrumb from pathname
   const breadcrumbs = React.useMemo(() => {
@@ -59,7 +101,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   return (
     <header className="admin-header-glass sticky top-0 z-30">
       {/* Database Status Banner - Wrapped in error boundary */}
-      <div className="admin-section-sm px-[var(--admin-space-4)] lg:px-[var(--admin-space-6)] border-b border-cream-200">
+      <div className="admin-section-sm px-[var(--admin-space-4)] lg:px-[var(--admin-space-6)] border-b border-cream-200/50 bg-white/30 backdrop-blur-sm">
         <React.Suspense fallback={null}>
           <DatabaseStatusWrapper />
         </React.Suspense>
@@ -101,9 +143,8 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
           {/* Search */}
           <button
             className="hidden md:flex items-center admin-flex-sm px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-2)] bg-white/60 backdrop-blur-sm rounded-lg text-charcoal-600 hover:bg-white/80 transition-all duration-200 border border-cream-200/50 hover:border-cream-300/70 active:scale-[0.98] shadow-sm hover:shadow-md flex-shrink-0"
-            onClick={() => {
-              // TODO: Open search modal
-            }}
+            onClick={() => setShowSearch(true)}
+            aria-label="Search"
           >
             <Search className="w-4 h-4 flex-shrink-0" />
             <AdminBodySmall className="text-charcoal-500 hidden lg:inline">Search...</AdminBodySmall>
@@ -117,10 +158,16 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-[var(--admin-space-2)] text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-all duration-200 relative active:scale-95"
-              aria-label="Notifications"
+              aria-label={`Notifications${notificationCount ? ` (${notificationCount} new)` : ''}`}
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
+              {notificationCount !== null && notificationCount > 0 ? (
+                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-white">
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </span>
+              ) : (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white opacity-50" />
+              )}
             </button>
 
             {showNotifications && (
@@ -249,6 +296,9 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
           )}
         </div>
       </div>
+
+      {/* Search Modal */}
+      <AdminSearchModal isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </header>
   );
 }

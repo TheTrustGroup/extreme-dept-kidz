@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Playfair_Display, Inter } from "next/font/google";
-import { Header, Footer } from "@/components/layout";
+import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
+import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
 import { LazyFloatingCartButton } from "@/components/layout/LazyFloatingCartButton";
 import { Providers } from "@/components/providers";
@@ -188,7 +189,7 @@ export default function RootLayout({
           <SkipLinks />
           <Providers>
             <Suspense fallback={<PageLoader />}>
-              <Header cartItemCount={0} />
+              <ConditionalHeader cartItemCount={0} />
             </Suspense>
             <main id="main-content" className="flex-1" role="main">
               <Suspense fallback={<PageLoader />}>
@@ -196,7 +197,7 @@ export default function RootLayout({
               </Suspense>
             </main>
             <Suspense fallback={null}>
-              <Footer />
+              <ConditionalFooter />
             </Suspense>
             {/* CRITICAL: Partial hydration for non-critical components */}
             {/* These components hydrate after page is interactive to improve FCP/LCP */}

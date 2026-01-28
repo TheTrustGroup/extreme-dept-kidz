@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { X } from "lucide-react";
 import { api } from "@/lib/utils/api-client";
 
 interface DatabaseStatus {
@@ -21,12 +22,34 @@ export function DatabaseStatus(): JSX.Element | null {
   const [status, setStatus] = React.useState<DatabaseStatus | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [isDismissed, setIsDismissed] = React.useState(false);
+  const [shouldAutoHide, setShouldAutoHide] = React.useState(true);
 
   React.useEffect(() => {
     checkStatus();
     const interval = setInterval(checkStatus, 30000); // Check every 30s
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-hide banner after 5 seconds if connected successfully
+  React.useEffect(() => {
+    if (status?.connected && !status.mockMode && shouldAutoHide && !isDismissed) {
+      const timer = setTimeout(() => {
+        setIsDismissed(true);
+      }, 5000); // Auto-hide after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [status, shouldAutoHide, isDismissed]);
+
+  // Reset dismissed state when status changes (e.g., disconnection)
+  React.useEffect(() => {
+    if (!status?.connected || status.mockMode) {
+      setIsDismissed(false);
+      setShouldAutoHide(false); // Don't auto-hide errors or mock mode
+    } else {
+      setShouldAutoHide(true); // Auto-hide successful connections
+    }
+  }, [status]);
 
   const checkStatus = async (): Promise<void> => {
     try {
@@ -88,6 +111,11 @@ export function DatabaseStatus(): JSX.Element | null {
     return null; // Fail silently to not break the UI
   }
 
+  // Don't render if dismissed (only for successful connections)
+  if (isDismissed && status.connected && !status.mockMode) {
+    return null;
+  }
+
   const statusConfig = status.mockMode
     ? {
         bg: "bg-yellow-50",
@@ -114,16 +142,33 @@ export function DatabaseStatus(): JSX.Element | null {
 
   return (
     <div
-      className={`admin-flex-sm items-center px-[var(--admin-space-4)] py-[var(--admin-space-2)] rounded-lg text-sm ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border`}
+      className={`admin-flex-sm items-center justify-between px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg text-xs sm:text-sm ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border backdrop-blur-sm transition-all duration-200`}
+      style={{
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+      }}
     >
-      <div
-        className={`w-2 h-2 rounded-full flex-shrink-0 ${statusConfig.dot} ${
-          status.connected && !status.mockMode ? "animate-pulse" : ""
-        }`}
-      />
-      <span className="font-medium">{statusConfig.label}</span>
-      {status.error && (
-        <span className="text-xs opacity-75">({status.error})</span>
+      <div className="admin-flex-sm items-center">
+        <div
+          className={`w-2 h-2 rounded-full flex-shrink-0 ${statusConfig.dot} ${
+            status.connected && !status.mockMode ? "animate-pulse" : ""
+          }`}
+          style={{ minWidth: '8px', minHeight: '8px' }}
+        />
+        <span className="font-medium ml-[var(--admin-space-2)]">{statusConfig.label}</span>
+        {status.error && (
+          <span className="text-xs opacity-75 ml-[var(--admin-space-1)]">({status.error})</span>
+        )}
+      </div>
+      {/* Dismiss button - only show for successful connections */}
+      {status.connected && !status.mockMode && (
+        <button
+          onClick={() => setIsDismissed(true)}
+          className="ml-[var(--admin-space-2)] p-[var(--admin-space-1)] hover:bg-black/5 rounded transition-colors duration-200 flex-shrink-0"
+          aria-label="Dismiss status banner"
+          title="Dismiss"
+        >
+          <X className="w-3 h-3 sm:w-4 sm:h-4" />
+        </button>
       )}
     </div>
   );
