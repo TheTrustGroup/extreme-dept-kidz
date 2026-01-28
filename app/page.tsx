@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
 import { generateWebsiteSchema, generateOrganizationSchema } from "@/lib/seo/structured-data";
 import { getAllProducts } from "@/lib/db";
@@ -122,23 +123,38 @@ export default async function Home() {
         {/* Trust Bar - Prominent trust signals for first-time visitors */}
         <TrustBar />
 
-        {/* New Arrivals Section - Boys Focused */}
-        <NewArrivalsSection products={products} />
+        {/* CRITICAL FIX: Wrap below-fold sections in Suspense for streaming SSR */}
+        {/* This allows progressive rendering - LCP elements render first, rest streams in */}
+        
+        {/* New Arrivals Section - Boys Focused (Above fold, critical) */}
+        <Suspense fallback={<div className="h-96" />}>
+          <NewArrivalsSection products={products} />
+        </Suspense>
 
-        {/* Shop by Style Section - Boys Categories */}
-        <ShopByStyleSection />
+        {/* Shop by Style Section - Boys Categories (Above fold) */}
+        <Suspense fallback={<div className="h-96" />}>
+          <ShopByStyleSection />
+        </Suspense>
 
-        {/* Featured Collections Section */}
-        <FeaturedCollections />
+        {/* Featured Collections Section (Below fold - can stream) */}
+        <Suspense fallback={<div className="h-96" />}>
+          <FeaturedCollections />
+        </Suspense>
 
-        {/* Editorial Lifestyle Section - "The EXTREME DEPT Boy" */}
-        <EditorialSection />
+        {/* Editorial Lifestyle Section - "The EXTREME DEPT Boy" (Below fold - can stream) */}
+        <Suspense fallback={<div className="h-96" />}>
+          <EditorialSection />
+        </Suspense>
 
-        {/* Girls Collection Section - Secondary, Smaller */}
-        <GirlsCollectionSection products={products} />
+        {/* Girls Collection Section - Secondary, Smaller (Below fold - can stream) */}
+        <Suspense fallback={<div className="h-96" />}>
+          <GirlsCollectionSection products={products} />
+        </Suspense>
 
-        {/* Style Guide Section - Featured Complete Looks */}
-        <StyleGuideSection />
+        {/* Style Guide Section - Featured Complete Looks (Below fold - can stream) */}
+        <Suspense fallback={<div className="h-96" />}>
+          <StyleGuideSection />
+        </Suspense>
       </div>
     </>
   );

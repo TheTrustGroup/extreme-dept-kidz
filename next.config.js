@@ -193,6 +193,15 @@ const nextConfig = {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
+          // CRITICAL FIX: Add edge caching headers for CDN optimization
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Vercel-CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
         ],
       },
       {

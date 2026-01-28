@@ -3,30 +3,35 @@ import { Suspense } from "react";
 import { Playfair_Display, Inter } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
-import { FloatingCartButton } from "@/components/layout/FloatingCartButton";
+import { LazyFloatingCartButton } from "@/components/layout/LazyFloatingCartButton";
 import { Providers } from "@/components/providers";
 import { SkipLinks } from "@/components/a11y/SkipLinks";
-import { WebVitals } from "./web-vitals";
+import { LazyWebVitals } from "./LazyWebVitals";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 
+// CRITICAL FIX: Optimize font loading to prevent blocking render
+// display: "swap" prevents FOIT (Flash of Invisible Text)
+// preload: true ensures fonts load early but don't block
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
-  display: "swap",
+  display: "swap", // Show fallback immediately, swap when font loads
   weight: ["400", "500", "600", "700"],
-  preload: true,
-  fallback: ["Georgia", "serif"],
+  preload: true, // Preload critical font
+  fallback: ["Georgia", "serif"], // System fallback for instant text display
+  adjustFontFallback: true, // Optimize fallback font metrics
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap",
+  display: "swap", // Show fallback immediately, swap when font loads
   weight: ["300", "400", "500", "600", "700"],
-  preload: true,
-  fallback: ["system-ui", "arial"],
+  preload: true, // Preload critical font
+  fallback: ["system-ui", "arial"], // System fallback for instant text display
+  adjustFontFallback: true, // Optimize fallback font metrics
 });
 
 export const metadata: Metadata = {
@@ -186,9 +191,15 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <Footer />
             </Suspense>
-            <CartDrawerWrapper />
-            <FloatingCartButton />
-            <WebVitals />
+            {/* CRITICAL FIX: Lazy hydrate non-critical components to improve FCP/LCP */}
+            {/* These components don't need to block initial render */}
+            <Suspense fallback={null}>
+              <CartDrawerWrapper />
+            </Suspense>
+            {/* FloatingCartButton: Defer hydration until after page is interactive */}
+            <LazyFloatingCartButton />
+            {/* WebVitals: Load after page is interactive to avoid blocking */}
+            <LazyWebVitals />
           </Providers>
         </ErrorBoundary>
       </body>
