@@ -75,23 +75,51 @@ export default function EditCategoryPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success !== false) {
         showToast({
           type: "success",
           title: "Category Updated",
           message: `${formData.name} has been updated successfully`,
         });
+        // Dispatch event to refresh categories list
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('category-created'));
+        }
         router.push('/admin/categories');
+        router.refresh();
       } else {
-        const msg = data.error || data.message || 'Failed to update category';
-        const isAuthError = response.status === 401 || /token|expired|auth/i.test(String(msg));
+        // Extract error message from response
+        let errorMessage = 'Failed to update category';
+        if (data.error) {
+          errorMessage = data.error;
+        } else if (data.message) {
+          errorMessage = data.message;
+        } else if (data.errors && typeof data.errors === 'object') {
+          // Handle validation errors
+          const errorMessages = Object.values(data.errors).flat();
+          errorMessage = errorMessages.join(', ');
+        }
+        
+        const isAuthError = response.status === 401 || response.status === 403 || /token|expired|auth|permission/i.test(String(errorMessage));
+        const isValidationError = response.status === 400 || response.status === 422;
+        
         showToast({
           type: "error",
-          title: isAuthError ? "Session expired" : "Update Failed",
-          message: isAuthError ? "Please log in again and try again." : msg,
+          title: isAuthError ? "Session expired" : isValidationError ? "Validation Failed" : "Update Failed",
+          message: isAuthError ? "Please log in again and try again." : errorMessage,
         });
+        
         if (isAuthError) {
           router.push('/admin/login');
+        }
+        
+        // Log error in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Category update failed:', {
+            status: response.status,
+            error: errorMessage,
+            fullResponse: data,
+          });
         }
       }
     } catch (error) {

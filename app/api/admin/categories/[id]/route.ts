@@ -72,9 +72,25 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    // Log request in development for debugging
+    if (process.env.NODE_ENV === 'development') {
+      logger.log('Category update request:', {
+        id,
+        body: {
+          hasName: !!body.name,
+          hasSlug: !!body.slug,
+          hasDescription: !!body.description,
+          isActive: body.isActive,
+        },
+      });
+    }
+
     // Validate input
     const validation = validate(updateCategorySchema, body);
     if (!validation.success) {
+      if (process.env.NODE_ENV === 'development') {
+        logger.error('Category validation failed:', validation.errors);
+      }
       return apiValidationError(validation.errors);
     }
 
@@ -94,19 +110,80 @@ export async function PUT(
       return apiNotFound("Category");
     }
 
+    // Check slug uniqueness if slug is being updated
+    if (validatedData.slug && validatedData.slug !== existing.slug) {
+      const slugExists = await prisma.category.findUnique({
+        where: { slug: validatedData.slug },
+      });
+      if (slugExists) {
+        return apiError(
+          "Category with this slug already exists",
+          409,
+          `A category with slug "${validatedData.slug}" already exists. Please use a different slug.`
+        );
+      }
+    }
+
+    // Generate slug from name if slug is empty and name is provided
+    let finalSlug = validatedData.slug;
+    if (!finalSlug && validatedData.name) {
+      finalSlug = validatedData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+      // Check if generated slug already exists (excluding current category)
+      const generatedSlugExists = await prisma.category.findFirst({
+        where: {
+          slug: finalSlug,
+          id: { not: id },
+        },
+      });
+      if (generatedSlugExists) {
+        // Append timestamp to make it unique
+        finalSlug = `${finalSlug}-${Date.now()}`;
+      }
+    }
+
     // Type-safe data preparation for Prisma
     const updateData: Prisma.CategoryUpdateInput = {
       ...(validatedData.name !== undefined && { name: validatedData.name }),
-      ...(validatedData.slug !== undefined && { slug: validatedData.slug }),
-      ...(validatedData.description !== undefined && { description: validatedData.description }),
-      ...(validatedData.image !== undefined && { image: validatedData.image }),
+      ...(finalSlug !== undefined && { slug: finalSlug }),
+      ...(validatedData.description !== undefined && { description: validatedData.description || null }),
+      ...(validatedData.image !== undefined && { image: validatedData.image || null }),
       ...(validatedData.isActive !== undefined && { isActive: validatedData.isActive }),
     };
 
-    const category = await prisma.category.update({
-      where: { id },
-      data: updateData,
-    });
+    // Log update data in development
+    if (process.env.NODE_ENV === 'development') {
+      logger.log('Updating category with data:', updateData);
+    }
+
+    let category;
+    try {
+      category = await prisma.category.update({
+        where: { id },
+        data: updateData,
+      });
+    } catch (prismaError) {
+      // Handle Prisma-specific errors
+      if (prismaError instanceof Error) {
+        // Check for unique constraint violation
+        if (prismaError.message.includes('Unique constraint') || prismaError.message.includes('duplicate key')) {
+          return apiError(
+            "Category with this slug already exists",
+            409,
+            "A category with this slug already exists. Please use a different slug."
+          );
+        }
+        // Check for foreign key constraint
+        if (prismaError.message.includes('Foreign key constraint')) {
+          return apiError(
+            "Cannot update category: constraint violation",
+            400,
+            prismaError.message
+          );
+        }
+      }
+      // Re-throw if not a handled error
+      throw prismaError;
+    }
 
     // Revalidate so /collections/[slug] reflects changes
     try {
@@ -148,9 +225,36 @@ export async function PUT(
     return apiSuccess(category, "Category updated successfully");
   } catch (error) {
     logger.error("Failed to update category:", error);
+    
+    // Provide more detailed error messages
+    let errorMessage = "Failed to update category";
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Handle specific error types
+      if (error.message.includes('Unique constraint') || error.message.includes('duplicate key')) {
+        statusCode = 409;
+        errorMessage = "A category with this slug already exists. Please use a different slug.";
+      } else if (error.message.includes('Foreign key constraint')) {
+        statusCode = 400;
+        errorMessage = "Cannot update category due to database constraints.";
+      } else if (error.message.includes('Record to update not found')) {
+        statusCode = 404;
+        errorMessage = "Category not found.";
+      }
+      
+      // Log full error in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Category Update] Full error:', error);
+        console.error('[Category Update] Error stack:', error.stack);
+      }
+    }
+    
     return apiError(
-      "Failed to update category",
-      500,
+      errorMessage,
+      statusCode,
       error instanceof Error ? error.message : "Unknown error"
     );
   }
