@@ -27,13 +27,13 @@ const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
       full: "max-w-full", // Full width
     };
 
-    // Base styles (Design System: Padding 16px mobile, 24px tablet, 32px desktop)
+    // Base styles - Using spacing scale
     const baseStyles = cn(
       "mx-auto w-full",
-      // Padding (Design System: 16px mobile, 24px tablet, 32px desktop)
-      "px-4", // 16px mobile
-      "md:px-6", // 24px tablet
-      "lg:px-8" // 32px desktop
+      // Padding using spacing scale
+      "px-[var(--space-4)]", // 16px mobile
+      "md:px-[var(--space-6)]", // 24px tablet
+      "lg:px-[var(--space-7)]" // 32px desktop
     );
 
     return (

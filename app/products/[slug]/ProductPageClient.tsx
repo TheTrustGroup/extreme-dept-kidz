@@ -34,7 +34,7 @@ export function ProductPageClient({ product }: ProductPageClientProps): JSX.Elem
 
   return (
     <>
-      <div className="min-h-screen bg-cream-50 pt-20 md:pt-24 pb-16">
+      <div className="min-h-screen bg-dark-bg-primary [data-theme='light']:bg-cream-50 pt-20 md:pt-24 pb-16 transition-colors duration-300">
         <Container size="lg">
           {/* Breadcrumb */}
           <div className="mb-8">

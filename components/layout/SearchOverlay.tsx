@@ -109,11 +109,11 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps): JSX.Elem
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-full max-w-2xl">
-              <div className="bg-cream-50 rounded-lg shadow-2xl p-6">
+              <div className="glass p-[var(--space-6)]">
                 <div className="flex items-center space-x-4 mb-6">
                   <Search className="w-6 h-6 text-charcoal-400" />
                   <input

@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import { m } from "framer-motion";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import type { Product } from "@/types";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import { Container } from "@/components/ui/container";
 import { H2 } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
 
 interface RelatedProductsProps {
   currentProduct: Product;
@@ -23,6 +25,7 @@ export function RelatedProducts({
   allProducts,
   limit = 4,
 }: RelatedProductsProps) {
+  const { theme } = useTheme();
   const relatedProducts = React.useMemo(() => {
     // Filter out current product
     const filtered = allProducts.filter((p) => p.id !== currentProduct.id);
@@ -58,7 +61,7 @@ export function RelatedProducts({
   }
 
   return (
-    <section className="py-16 md:py-24 bg-cream-50">
+    <section className="py-16 md:py-24 bg-dark-bg-primary [data-theme='light']:bg-cream-50 transition-colors duration-300">
       <Container size="lg">
         <m.div
           initial={{ opacity: 0, y: 20 }}
@@ -67,7 +70,12 @@ export function RelatedProducts({
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="space-y-12"
         >
-          <H2 className="text-charcoal-900 text-center font-serif">You May Also Like</H2>
+          <H2 className={cn(
+            "text-center font-serif transition-colors duration-300",
+            theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+          )}>
+            You May Also Like
+          </H2>
           <ProductGrid products={relatedProducts} columns={4} />
         </m.div>
       </Container>

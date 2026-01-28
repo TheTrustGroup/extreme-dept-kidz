@@ -68,7 +68,8 @@ export function ConfirmDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onCancel}
-            className="fixed inset-0 bg-black/50 z-[9998]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
+            transition={{ duration: 0.2 }}
           />
           {/* Dialog */}
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
@@ -76,10 +77,11 @@ export function ConfirmDialog({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                "bg-white rounded-xl shadow-xl max-w-md w-full p-6 pointer-events-auto",
-                "border border-gray-200"
+                "glass max-w-md w-full p-[var(--space-6)] pointer-events-auto",
+                "border-radius: var(--radius-lg)"
               )}
             >
               <div className="flex items-start gap-4">

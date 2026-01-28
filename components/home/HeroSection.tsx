@@ -116,8 +116,8 @@ export function HeroSection(): JSX.Element {
           minHeight: "100vh",
         }}
       >
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
-          <div className="max-w-4xl mx-auto text-center space-y-5 sm:space-y-6 md:space-y-7 lg:space-y-8">
+        <div className="container">
+          <div className="max-w-4xl mx-auto text-center stack">
           {/* Key message – Premium Streetwear for Young Legends */}
           <m.h1
             className={cn(
@@ -153,7 +153,7 @@ export function HeroSection(): JSX.Element {
 
           {/* CTA Buttons */}
           <m.div
-            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 pt-2 sm:pt-4"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-[var(--space-3)] sm:gap-[var(--space-4)] md:gap-[var(--space-5)] pt-[var(--space-2)] sm:pt-[var(--space-4)]"
             variants={itemVariants}
           >
             <Button

@@ -47,8 +47,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
 
   return (
     <section 
-      // Design System: Section spacing - Small (48px mobile), Medium (64px tablet), Large (96px desktop)
-      className="py-12 md:py-16 lg:py-24 bg-cream-50"
+      className="section reveal bg-cream-50 [data-theme='dark']:bg-dark-bg-primary"
       aria-labelledby="new-arrivals-heading"
     >
       <Container size="lg">

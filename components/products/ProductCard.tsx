@@ -63,7 +63,7 @@ export const ProductCard = React.memo(function ProductCard({
     <Link
       href={`/products/${product.slug}`}
       className={cn(
-        "group block focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2 rounded-xl",
+        "group block focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2",
         className
       )}
       onMouseEnter={() => setIsHovered(true)}
@@ -74,18 +74,13 @@ export const ProductCard = React.memo(function ProductCard({
     >
       <m.article
         className={cn(
-          "relative overflow-hidden rounded-xl w-full flex flex-col",
-          "bg-cream-50/90 backdrop-blur-sm border border-cream-200/60",
-          "shadow-glass group-hover:shadow-glass-lg",
-          "transition-all duration-300 ease-out",
+          "product-card w-full flex flex-col",
           "group-hover:border-cream-300/80"
         )}
-        whileHover={{ scale: 1.02, y: -6 }}
-        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         aria-label={product.name}
       >
-        {/* Image Container (Design System: 280×280px, rounded top, cream-100 bg) */}
-        <div className="relative aspect-square overflow-hidden bg-cream-100 rounded-t-xl">
+        {/* Image Container */}
+        <div className="product-image relative aspect-square overflow-hidden">
           {/* Primary Image */}
           <Image
             src={primaryImage.url}
@@ -128,33 +123,25 @@ export const ProductCard = React.memo(function ProductCard({
             />
           )}
 
-          {/* Quick Add to Cart Button (Design System: Bottom, 48px height, visible on hover) */}
+          {/* Quick Add to Cart Button - Product Actions */}
           {product.inStock && (
-            <m.div
-              className="absolute bottom-0 left-0 right-0 z-10 px-3 pb-3"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 8 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
+            <div className="product-actions">
               <m.button
                 onClick={handleQuickAdd}
                 className={cn(
-                  "w-full flex items-center justify-center gap-2",
+                  "btn w-full flex items-center justify-center gap-2",
                   "h-12 min-h-[48px] px-4 py-3",
                   "bg-navy-900 text-cream-50 rounded-lg",
                   "font-sans text-sm font-semibold uppercase tracking-wide",
-                  "hover:bg-navy-800 hover:shadow-glass-lg hover:scale-[1.02]",
-                  "active:scale-[0.98] transition-all duration-300 ease-out",
-                  "shadow-navy focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
+                  "hover:bg-navy-800 shadow-navy",
+                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
                 )}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 aria-label={`Quick add ${product.name} to cart`}
               >
                 <ShoppingBag className="w-4 h-4" aria-hidden="true" />
                 <span>Add to Cart</span>
               </m.button>
-            </m.div>
+            </div>
           )}
 
           {/* Badges (Design System: Top-left, 12px offset, 8px gap) */}
@@ -211,26 +198,20 @@ export const ProductCard = React.memo(function ProductCard({
           )}
         </div>
 
-        {/* Product Info (Design System: 16px padding, 8px gap) – generous whitespace */}
-        <div className="p-5 space-y-2.5">
-          {/* Product Name (Design System: H4 - Playfair Display, 18px desktop/16px mobile, Medium, 1.4 line-height) */}
-          <h3
-            className={cn(
-              "font-serif font-medium text-charcoal-900 line-clamp-2",
-              "text-base md:text-lg", // 16px mobile, 18px desktop
-              "leading-[1.4]"
-            )}
-          >
+        {/* Product Info - Using spacing scale */}
+        <div className="p-[var(--space-5)] space-y-[var(--space-3)]">
+          {/* Product Name */}
+          <h3 className="product-title line-clamp-2">
             {product.name}
           </h3>
 
-          {/* Price Section (Design System: Horizontal flex, 8px gap) */}
-          <div className="flex items-baseline gap-2">
-            {/* Current Price (Design System: Inter, 20px desktop/18px mobile, Bold) */}
-            <span className="font-sans text-lg md:text-xl font-bold text-charcoal-900">
+          {/* Price Section */}
+          <div className="flex items-baseline gap-[var(--space-2)]">
+            {/* Current Price */}
+            <span className="product-price">
               {formatPrice(product.price)}
             </span>
-            {/* Original Price (Design System: Inter, 14px, Regular, line-through, Charcoal 500) */}
+            {/* Original Price */}
             {isOnSale && product.originalPrice && (
               <span className="font-sans text-sm font-normal text-charcoal-500 line-through">
                 {formatPrice(product.originalPrice)}

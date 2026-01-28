@@ -5,6 +5,8 @@ import { CartProvider } from "./CartProvider";
 import { CartDrawerProvider } from "@/lib/hooks/use-cart-drawer";
 import { LazyMotionProvider } from "./LazyMotion";
 import { ToastProvider } from "@/components/ui/Toast";
+import { ThemeProvider } from "./ThemeProvider";
+import { RevealProvider } from "./RevealProvider";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -12,17 +14,21 @@ interface ProvidersProps {
 
 /**
  * Providers component wrapper for global state management
- * Add context providers here as needed (e.g., ThemeProvider, etc.)
+ * ThemeProvider wraps everything to enable theme switching
  */
 export function Providers({ children }: ProvidersProps): JSX.Element {
   return (
-    <LazyMotionProvider>
-      <ToastProvider>
-        <CartProvider>
-          <CartDrawerProvider>{children}</CartDrawerProvider>
-        </CartProvider>
-      </ToastProvider>
-    </LazyMotionProvider>
+    <ThemeProvider>
+      <RevealProvider>
+        <LazyMotionProvider>
+          <ToastProvider>
+            <CartProvider>
+              <CartDrawerProvider>{children}</CartDrawerProvider>
+            </CartProvider>
+          </ToastProvider>
+        </LazyMotionProvider>
+      </RevealProvider>
+    </ThemeProvider>
   );
 }
 

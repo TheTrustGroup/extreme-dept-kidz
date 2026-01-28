@@ -68,8 +68,7 @@ export function StyleGuideSection(): JSX.Element {
 
   return (
     <section 
-      // Design System: XLarge section spacing - 48px mobile, 80px tablet, 128px desktop
-      className="py-12 md:py-20 lg:py-32 bg-cream-50"
+      className="section reveal bg-cream-50 [data-theme='dark']:bg-dark-bg-primary"
       aria-labelledby="style-guide-heading"
     >
       <Container size="lg">

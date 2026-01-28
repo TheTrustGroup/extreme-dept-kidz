@@ -106,7 +106,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${inter.variable}`} data-theme="dark">
       <head>
         {/* Font preconnect for faster font loading - Next.js handles this automatically */}
         {/* Image CDN preconnect */}

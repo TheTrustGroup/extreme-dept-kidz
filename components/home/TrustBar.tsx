@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { RefreshCw, Shield, Lock } from "lucide-react";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { Container } from "@/components/ui/container";
+import { cn } from "@/lib/utils";
 
 /**
  * TrustBar Component
@@ -16,12 +18,19 @@ interface TrustItemProps {
 }
 
 function TrustItem({ icon, text }: TrustItemProps): JSX.Element {
+  const { theme } = useTheme();
   return (
     <div className="flex items-center gap-2.5 sm:gap-3">
-      <div className="flex-shrink-0 text-forest-600">
+      <div className={cn(
+        "flex-shrink-0 transition-colors duration-300",
+        theme === "dark" ? "text-accent-primary" : "text-forest-600"
+      )}>
         {icon}
       </div>
-      <span className="font-sans text-xs sm:text-sm font-medium text-charcoal-900 whitespace-nowrap">
+      <span className={cn(
+        "font-sans text-xs sm:text-sm font-medium whitespace-nowrap transition-colors duration-300",
+        theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+      )}>
         {text}
       </span>
     </div>
@@ -29,9 +38,15 @@ function TrustItem({ icon, text }: TrustItemProps): JSX.Element {
 }
 
 export function TrustBar(): JSX.Element {
+  const { theme } = useTheme();
   return (
     <section
-      className="bg-cream-100/90 backdrop-blur-sm border-y border-cream-200/70 py-4 sm:py-5 shadow-sm"
+      className={cn(
+        "backdrop-blur-sm border-y py-4 sm:py-5 shadow-sm transition-colors duration-300",
+        theme === "dark"
+          ? "bg-dark-surface border-dark-border-glass"
+          : "bg-cream-100/90 border-cream-200/70"
+      )}
       aria-label="Trust signals and value propositions"
     >
       <Container>

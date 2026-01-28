@@ -93,6 +93,30 @@ const config: Config = {
           500: "#5a7d5a",
           600: "#4a6b4a",
         },
+        // Dark Theme System - Premium dark palette with orange accents
+        dark: {
+          bg: {
+            primary: "#0b0f1a",
+            secondary: "#0f1629",
+          },
+          surface: {
+            DEFAULT: "rgba(255, 255, 255, 0.08)",
+            strong: "rgba(255, 255, 255, 0.12)",
+          },
+          border: {
+            glass: "rgba(255, 255, 255, 0.18)",
+          },
+          text: {
+            primary: "#ffffff",
+            secondary: "rgba(255, 255, 255, 0.7)",
+            muted: "rgba(255, 255, 255, 0.45)",
+          },
+        },
+        accent: {
+          primary: "#ff7a18",
+          secondary: "#ffd36b",
+          soft: "rgba(255, 122, 24, 0.15)",
+        },
       },
       spacing: {
         // Luxury spacing scale - generous and elegant
@@ -146,18 +170,43 @@ const config: Config = {
         'glass': '0 8px 32px rgba(26, 26, 26, 0.08)',
         'glass-lg': '0 12px 40px rgba(26, 26, 26, 0.12)',
         'glass-xl': '0 16px 48px rgba(26, 26, 26, 0.14)',
+        // Dark theme shadows
+        'dark-soft': '0 6px 24px rgba(0, 0, 0, 0.25)',
+        'dark-medium': '0 10px 40px rgba(0, 0, 0, 0.35)',
+        'dark-strong': '0 18px 70px rgba(0, 0, 0, 0.45)',
+      },
+      backdropBlur: {
+        xs: '6px',
+        sm: '12px',
+        md: '18px',
+        lg: '28px',
+      },
+      borderRadius: {
+        xs: '6px',
+        sm: '10px',
+        md: '16px',
+        lg: '22px',
+        xl: '30px',
       },
       transitionDuration: {
         // Design System: Animation timing (Tier 2)
         'fast': '150ms',
         'normal': '300ms',
         'slow': '500ms',
+        // Dark theme transitions
+        'transition-fast': '120ms',
+        'transition-base': '220ms',
+        'transition-smooth': '400ms',
       },
       transitionTimingFunction: {
         // Design System: Easing functions
         'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
         'out': 'cubic-bezier(0, 0, 0.2, 1)',
         'in': 'cubic-bezier(0.4, 0, 1, 1)',
+        // Dark theme easing
+        'transition-fast': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'transition-base': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'transition-smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       animation: {
         // Smooth animation presets

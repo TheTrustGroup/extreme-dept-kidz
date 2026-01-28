@@ -10,6 +10,8 @@ import { MobileNav } from "./MobileNav";
 import { MegaMenu } from "./MegaMenu";
 import { TopBar } from "./TopBar";
 import { SearchOverlay } from "./SearchOverlay";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { useCartStore } from "@/lib/stores/cart-store";
 
@@ -18,6 +20,7 @@ interface HeaderProps {
 }
 
 export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): JSX.Element {
+  const { theme } = useTheme();
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
@@ -56,11 +59,11 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
       <TopBar />
       <m.header
         className={cn(
-          "fixed top-8 left-0 right-0 z-50",
-          "transition-shadow duration-300 ease-out",
-          isScrolled
-            ? "bg-cream-50/88 backdrop-blur-xl border-b border-cream-200/50 shadow-glass-lg"
-            : "bg-cream-50/82 backdrop-blur-lg border-b border-cream-200/30"
+          "header",
+          "fixed top-0 left-0 right-0 z-[1000]",
+          theme === "dark"
+            ? ""
+            : "bg-cream-50/88 backdrop-blur-xl border-b border-cream-200/50"
         )}
         initial={false}
         animate={{
@@ -123,6 +126,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
             <div className="flex items-center justify-center space-x-3 sm:space-x-3 md:space-x-4 lg:space-x-5 flex-shrink-0 ml-auto pr-4 sm:pr-4 md:pr-5 lg:pr-6">
               {/* Desktop Icons */}
               <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
+                <ThemeToggle size="sm" />
                 <IconButton 
                   aria-label="Search" 
                   onClick={() => setIsSearchOpen(true)}
@@ -130,7 +134,17 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                 >
                   <Search className="w-5 h-5" />
                 </IconButton>
-                <Link href="/account" className="relative p-2.5 min-h-[44px] min-w-[44px] text-charcoal-700 hover:text-charcoal-900 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg flex items-center justify-center">
+                <Link 
+                  href="/account" 
+                  className={cn(
+                    "relative p-2.5 min-h-[44px] min-w-[44px] transition-colors duration-300",
+                    "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
+                    "flex items-center justify-center",
+                    theme === "dark"
+                      ? "text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-surface"
+                      : "text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/60"
+                  )}
+                >
                   <User className="w-5 h-5" aria-label="Account" />
                 </Link>
                 <IconButton
@@ -141,7 +155,12 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                   <ShoppingBag className="w-5 h-5" />
                   {cartItemCount > 0 && (
                     <m.span
-                      className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-navy-900 text-xs font-medium text-cream-50"
+                      className={cn(
+                        "absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium",
+                        theme === "dark"
+                          ? "bg-accent-primary text-dark-bg-primary"
+                          : "bg-navy-900 text-cream-50"
+                      )}
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500 }}
@@ -187,17 +206,22 @@ interface NavLinkProps {
 }
 
 function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.Element {
+  const { theme } = useTheme();
   return (
     <Link href={href} className="relative inline-block group/nav">
       <m.span
         className={cn(
           "font-sans text-xs font-semibold uppercase tracking-wider",
           "px-3 py-2 rounded-lg -mx-1 block",
-          isEmphasized
-            ? "text-navy-900 font-bold"
-            : "text-charcoal-700 group-hover/nav:text-charcoal-900 group-hover/nav:bg-cream-200/50",
           "transition-colors duration-300 ease-out",
-          "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg"
+          "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
+          theme === "dark"
+            ? isEmphasized
+              ? "text-accent-primary font-bold"
+              : "text-dark-text-secondary group-hover/nav:text-dark-text-primary group-hover/nav:bg-dark-surface"
+            : isEmphasized
+              ? "text-navy-900 font-bold"
+              : "text-charcoal-700 group-hover/nav:text-charcoal-900 group-hover/nav:bg-cream-200/50"
         )}
         whileHover={{ y: -1 }}
         whileTap={{ scale: 0.98 }}
@@ -207,7 +231,13 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
         <span
           className={cn(
             "absolute bottom-1.5 left-2 right-2 h-[2px] rounded-full transition-all duration-300 ease-out origin-center",
-            isEmphasized ? "bg-navy-900 scale-x-100" : "bg-navy-900 scale-x-0 group-hover/nav:scale-x-100"
+            theme === "dark"
+              ? isEmphasized
+                ? "bg-accent-primary scale-x-100"
+                : "bg-accent-primary scale-x-0 group-hover/nav:scale-x-100"
+              : isEmphasized
+                ? "bg-navy-900 scale-x-100"
+                : "bg-navy-900 scale-x-0 group-hover/nav:scale-x-100"
           )}
           aria-hidden="true"
         />
@@ -222,15 +252,18 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 }
 
 function IconButton({ className, children, ...props }: IconButtonProps): JSX.Element {
+  const { theme } = useTheme();
   return (
     <button
       type="button"
       className={cn(
         "relative p-2.5 min-h-[44px] min-w-[44px] rounded-lg",
-        "text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/60",
         "hover:scale-105 active:scale-95",
         "transition-all duration-300 ease-out",
         "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
+        theme === "dark"
+          ? "text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-surface"
+          : "text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/60",
         className
       )}
       {...props}
