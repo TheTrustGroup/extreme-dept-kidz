@@ -95,12 +95,17 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
               ref={carouselRef}
               // Design System: Consistent spacing using 8px base scale
               className="hidden lg:flex overflow-x-auto scrollbar-hide pb-[var(--space-6)] -mx-[var(--space-4)] px-[var(--space-4)] gap-[var(--space-6)]"
-              role="list"
-              aria-label="New arrivals carousel"
+              data-scroll-container
               style={{
+                WebkitOverflowScrolling: 'touch',
+                transform: 'translateZ(0)',
+                willChange: 'scroll-position',
+                contain: 'layout style paint',
                 scrollbarWidth: 'thin',
                 scrollbarColor: 'rgba(61, 61, 61, 0.3) transparent',
               }}
+              role="list"
+              aria-label="New arrivals carousel"
             >
               {newArrivals.length > 0 ? (
                 newArrivals.map((product, index) => (

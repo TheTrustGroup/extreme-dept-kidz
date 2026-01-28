@@ -38,20 +38,31 @@ export function apiSuccess<T>(
   metadata?: Record<string, any>,
   options?: {
     cache?: 'no-store' | 'force-cache' | number; // number = seconds to cache
+    staleWhileRevalidate?: number; // Stale-while-revalidate window in seconds
     tags?: string[]; // Revalidation tags
   }
 ): NextResponse<ApiSuccessResponse<T>> {
   const headers = new Headers();
   
-  // Performance: Set cache headers for ISR
-  if (options?.tags && options.tags.length > 0) {
-    headers.set('Cache-Control', `public, s-maxage=60, stale-while-revalidate=300`);
-    headers.set('CDN-Cache-Control', `public, s-maxage=60`);
-    headers.set('Vercel-CDN-Cache-Control', `public, s-maxage=60`);
-  } else if (options?.cache === 'no-store') {
+  // Performance: Set cache headers for ISR with stale-while-revalidate
+  if (options?.cache === 'no-store') {
     headers.set('Cache-Control', 'no-store');
+  } else if (options?.cache === 'force-cache') {
+    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (typeof options?.cache === 'number') {
-    headers.set('Cache-Control', `public, s-maxage=${options.cache}, stale-while-revalidate=${options.cache * 5}`);
+    // CRITICAL: Stale-while-revalidate for enterprise performance
+    // Default: 5x cache duration for stale window (e.g., 60s cache = 300s stale)
+    const staleWindow = options.staleWhileRevalidate || options.cache * 5;
+    const cacheControl = `public, s-maxage=${options.cache}, stale-while-revalidate=${staleWindow}`;
+    
+    headers.set('Cache-Control', cacheControl);
+    headers.set('CDN-Cache-Control', cacheControl);
+    headers.set('Vercel-CDN-Cache-Control', cacheControl);
+  } else if (options?.tags && options.tags.length > 0) {
+    // Default cache with tags: 60s cache, 300s stale
+    headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    headers.set('CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   } else {
     // Default: 60s cache with stale-while-revalidate
     headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');

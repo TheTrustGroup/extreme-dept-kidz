@@ -108,18 +108,18 @@ export function ProductGrid({
       ) : (
         // Product cards with stagger animation
         // SSR-safe: Deterministic rendering order based on products array
-        // CRITICAL FIX: Products start visible (opacity: 1) to prevent invisible but clickable bug
+        // CRITICAL: Products start visible (opacity: 1) to prevent invisible but clickable bug
         // Animation only applies subtle fade-in for above-fold items, below-fold are instant
         products.map((product, index) => {
-          // CRITICAL FIX: Only first 1-2 items should have priority (LCP element only)
+          // CRITICAL: Only first 1-2 items should have priority (LCP element only)
           // Too many priority images cause "preloaded but not used" warnings
           // Most viewports show 1-2 products above fold, so prioritize only those
-          const isAboveFold = index < 2; // Reduced from 4 to 2
+          const isAboveFold = index < 2; // LCP-only priority
           
           return (
             <m.div
               key={product.id}
-              // CRITICAL FIX: Start with opacity: 1 to prevent invisible products
+              // CRITICAL: Start with opacity: 1 to prevent invisible products
               // Only animate if above fold, otherwise instant render
               initial={isAboveFold ? { opacity: 0.8, y: 10 } : { opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}

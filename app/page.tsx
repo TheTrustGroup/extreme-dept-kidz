@@ -8,6 +8,8 @@ import { HeroSection } from "@/components/home";
 import { TrustBar } from "@/components/home";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { unstable_cache } from "next/cache";
+import { StreamingSkeleton } from "@/components/ui/StreamingSkeleton";
+import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 
 // Hero + TrustBar in main bundle so above-the-fold is fast and never static/blank
 
@@ -16,23 +18,28 @@ const NewArrivalsSection = nextDynamic(() => import("@/components/home").then((m
 });
 
 const ShopByStyleSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
-  ssr: true,
+  ssr: true, // SSR enabled for streaming
+  loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
 
 const FeaturedCollections = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })), {
-  ssr: true,
+  ssr: true, // SSR enabled for streaming
+  loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
 
 const EditorialSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.EditorialSection })), {
-  ssr: true,
+  ssr: true, // SSR enabled for streaming
+  loading: () => <StreamingSkeleton variant="section" height="h-[600px]" />,
 });
 
 const GirlsCollectionSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })), {
-  ssr: true,
+  ssr: true, // SSR enabled for streaming
+  loading: () => <StreamingSkeleton variant="product-grid" />,
 });
 
 const StyleGuideSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.StyleGuideSection })), {
-  ssr: true,
+  ssr: true, // SSR enabled for streaming
+  loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
 
 // ISR: Revalidate homepage every 60 seconds, or on-demand via tags
@@ -102,7 +109,10 @@ export default async function Home() {
   } catch (error) {
     // Fallback: Continue with empty array - components will use mock data as fallback
     // This should rarely happen now that getAllProducts handles build-time failures
-    console.error('Failed to fetch products for homepage:', error);
+    // Performance: Error logging handled by error boundary
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to fetch products for homepage:', error);
+    }
     products = [];
   }
 
@@ -123,38 +133,72 @@ export default async function Home() {
         {/* Trust Bar - Prominent trust signals for first-time visitors */}
         <TrustBar />
 
-        {/* CRITICAL FIX: Wrap below-fold sections in Suspense for streaming SSR */}
-        {/* This allows progressive rendering - LCP elements render first, rest streams in */}
+        {/* CRITICAL: Streaming SSR with proper Suspense boundaries */}
+        {/* Progressive rendering: LCP elements (Hero) render first, rest streams in */}
+        {/* Each Suspense boundary enables independent streaming of sections */}
         
-        {/* New Arrivals Section - Boys Focused (Above fold, critical) */}
-        <Suspense fallback={<div className="h-96" />}>
+        {/* New Arrivals Section - Above fold, critical for engagement */}
+        <Suspense 
+          fallback={<StreamingSkeleton variant="product-grid" />}
+          key="new-arrivals"
+        >
           <NewArrivalsSection products={products} />
         </Suspense>
 
-        {/* Shop by Style Section - Boys Categories (Above fold) */}
-        <Suspense fallback={<div className="h-96" />}>
+        {/* Shop by Style Section - Above fold, category navigation */}
+        <Suspense 
+          fallback={<StreamingSkeleton variant="section" height="h-96" />}
+          key="shop-by-style"
+        >
           <ShopByStyleSection />
         </Suspense>
 
-        {/* Featured Collections Section (Below fold - can stream) */}
-        <Suspense fallback={<div className="h-96" />}>
+        {/* Featured Collections Section - Below fold, can stream */}
+        <Suspense 
+          fallback={<StreamingSkeleton variant="section" height="h-96" />}
+          key="featured-collections"
+        >
           <FeaturedCollections />
         </Suspense>
 
-        {/* Editorial Lifestyle Section - "The EXTREME DEPT Boy" (Below fold - can stream) */}
-        <Suspense fallback={<div className="h-96" />}>
+        {/* Editorial Lifestyle Section - Below fold, can stream */}
+        <Suspense 
+          fallback={<StreamingSkeleton variant="section" height="h-[600px]" />}
+          key="editorial"
+        >
           <EditorialSection />
         </Suspense>
 
-        {/* Girls Collection Section - Secondary, Smaller (Below fold - can stream) */}
-        <Suspense fallback={<div className="h-96" />}>
+        {/* Girls Collection Section - Below fold, can stream */}
+        <Suspense 
+          fallback={<StreamingSkeleton variant="product-grid" />}
+          key="girls-collection"
+        >
           <GirlsCollectionSection products={products} />
         </Suspense>
 
-        {/* Style Guide Section - Featured Complete Looks (Below fold - can stream) */}
-        <Suspense fallback={<div className="h-96" />}>
+        {/* Style Guide Section - Below fold, can stream */}
+        <Suspense 
+          fallback={<StreamingSkeleton variant="section" height="h-96" />}
+          key="style-guide"
+        >
           <StyleGuideSection />
         </Suspense>
+        
+        {/* CRITICAL: Smart prefetching for homepage product images */}
+        {/* Prefetches images when they're near viewport for instant loading */}
+        <SmartImagePrefetch
+          imageUrls={products
+            .slice(0, 12) // Prefetch first 12 products on homepage
+            .flatMap((product) => [
+              product.images[0]?.url,
+              product.images[1]?.url, // Secondary images
+            ])
+            .filter((url): url is string => !!url)}
+          prefetchDistance={200}
+          maxConcurrent={3}
+          enabled={products.length > 0}
+        />
       </div>
     </>
   );

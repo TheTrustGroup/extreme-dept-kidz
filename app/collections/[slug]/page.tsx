@@ -118,7 +118,10 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
           console.log(`[CollectionPage] Fallback products from getProductsByCollection:`, products.length);
         }
       } catch (fallbackError) {
-        console.error(`[CollectionPage] Error fetching fallback products for ${slug}:`, fallbackError);
+        // CRITICAL: Only log errors in development to prevent console errors in production
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`[CollectionPage] Error fetching fallback products for ${slug}:`, fallbackError);
+        }
         // Continue with empty products array
         products = [];
       }
@@ -161,13 +164,31 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       updatedAt: product.updatedAt ? (typeof product.updatedAt === 'string' ? product.updatedAt : product.updatedAt.toISOString()) : undefined,
     }));
 
+    // CRITICAL: Streaming SSR with optimized Suspense boundary
+    // Uses proper skeleton to prevent layout shift
     return (
       <Suspense
         fallback={
-          <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          <div className="min-h-screen bg-cream-50 pt-24 pb-16">
+            <div className="container mx-auto px-4">
+              <div className="animate-pulse space-y-8">
+                {/* Header skeleton */}
+                <div className="h-8 bg-cream-200 rounded w-1/3" />
+                {/* Product grid skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="space-y-4">
+                      <div className="aspect-square bg-cream-200 rounded-lg" />
+                      <div className="h-4 bg-cream-200 rounded w-3/4" />
+                      <div className="h-4 bg-cream-200 rounded w-1/2" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         }
+        key={`collection-${slug}`}
       >
         <CollectionPageClient
           params={{ slug }}

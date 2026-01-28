@@ -1,14 +1,12 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
-import { getProductCardBlurPlaceholder } from "@/lib/utils/image-utils";
-import { PRODUCT_CARD_SIZES } from "@/lib/utils/responsive-image";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { WishlistButton } from "@/components/WishlistButton";
 
@@ -76,7 +74,8 @@ export const ProductCard = React.memo(function ProductCard({
       <m.article
         className={cn(
           "product-card w-full flex flex-col h-full",
-          "group-hover:border-cream-300/80"
+          "group-hover:border-cream-300/80",
+          "micro-interaction" // Luxury micro-interactions
         )}
         aria-label={product.name}
         style={{
@@ -88,60 +87,70 @@ export const ProductCard = React.memo(function ProductCard({
           // Prevent stacking context issues
           isolation: "isolate"
         }}
+        whileHover={{ 
+          y: -6,
+          scale: 1.02,
+          transition: { 
+            duration: 0.3, 
+            ease: [0.25, 0.46, 0.45, 0.94] // Premium easing
+          }
+        }}
+        whileTap={{ 
+          scale: 0.98,
+          transition: { 
+            duration: 0.1,
+            ease: [0.4, 0, 1, 1] // Active easing
+          }
+        }}
       >
         {/* Image Container - Fixed aspect ratio prevents layout shift */}
-        {/* CRITICAL FIX: Apply overflow: hidden here, not on parent card, and ensure proper isolation */}
+        {/* CRITICAL: Apply overflow: hidden here, not on parent card, and ensure proper isolation */}
         <div className="product-image relative aspect-square overflow-hidden flex-shrink-0" style={{ minHeight: 0, isolation: "isolate" }}>
-          {/* Primary Image */}
-          <Image
+          {/* Primary Image - Ultra-optimized with IntersectionObserver */}
+          <OptimizedImage
             src={primaryImage.url}
             alt={primaryImage.alt || `${product.name} - ${product.category.name}`}
-            fill
+            variant="product-card"
+            isLCP={priority}
+            useIntersectionObserver={!priority}
+            enablePrefetch={true}
+            quality={priority ? 90 : undefined}
+            blurVariant="product-card"
             className={cn(
               "object-cover",
-              // Design System: Animation timing (Tier 2)
-              "transition-opacity duration-fast ease-in-out",
+              // Luxury: Ultra smooth transitions
+              "transition-opacity duration-[var(--duration-image-swap)] ease-[var(--ease-premium)]",
               isHovered && secondaryImage ? "opacity-0" : "opacity-100"
             )}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 280px"
-            loading={priority ? "eager" : "lazy"}
-            quality={priority ? 90 : 75}
-            fetchPriority={fetchPriority}
-            // Performance: Add blur placeholder to prevent layout shift
-            placeholder="blur"
-            blurDataURL={getProductCardBlurPlaceholder()}
-            // Performance: Decode images asynchronously
-            decoding="async"
+            fill
           />
 
-          {/* Secondary Image (on hover) - Lazy load to prevent unnecessary preloads */}
+          {/* Secondary Image (on hover) - Ultra-lazy loaded with IntersectionObserver */}
           {secondaryImage && (
-            <Image
+            <OptimizedImage
               src={secondaryImage.url}
               alt={secondaryImage.alt || `${product.name} - alternate view - ${product.category.name}`}
-              fill
+              variant="product-card"
+              isLCP={false}
+              useIntersectionObserver={true}
+              enablePrefetch={false}
+              quality={85}
+              blurVariant="product-card"
               className={cn(
                 "object-cover",
-                // Design System: Animation timing (Tier 2)
-                "transition-opacity duration-fast ease-in-out",
+                // Luxury: Ultra smooth transitions
+                "transition-opacity duration-[var(--duration-image-swap)] ease-[var(--ease-premium)]",
                 isHovered ? "opacity-100" : "opacity-0"
               )}
-              sizes={PRODUCT_CARD_SIZES}
-              // CRITICAL FIX: Lazy load secondary images - only load when needed (hover)
-              // Preloading all secondary images causes "preloaded but not used" warnings
-              loading="lazy"
-              quality={85}
-              fetchPriority="low"
-              decoding="async"
-              // Hidden but loaded to reserve space
               style={{ position: "absolute" }}
+              fill
             />
           )}
 
           {/* Badges (Design System: Top-left, 12px offset, 8px gap) */}
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
             {isNew && (
-              <span
+              <m.span
                 className={cn(
                   "inline-flex items-center",
                   // Design System: 6px 12px padding, 24px height, 12px border radius
@@ -151,12 +160,20 @@ export const ProductCard = React.memo(function ProductCard({
                   // Typography (Design System: Inter, 11px, Semibold, Uppercase, 1px letter-spacing)
                   "font-sans text-[11px] font-semibold uppercase tracking-widest"
                 )}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.34, 1.56, 0.64, 1], // Bounce easing for badges
+                  delay: 0.1
+                }}
+                whileHover={{ scale: 1.05 }}
               >
                 NEW
-              </span>
+              </m.span>
             )}
             {isOnSale && (
-              <span
+              <m.span
                 className={cn(
                   "inline-flex items-center",
                   // Design System: 6px 12px padding, 24px height, 12px border radius
@@ -166,9 +183,17 @@ export const ProductCard = React.memo(function ProductCard({
                   // Typography (Design System: Inter, 11px, Semibold, Uppercase, 1px letter-spacing)
                   "font-sans text-[11px] font-semibold uppercase tracking-widest"
                 )}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.34, 1.56, 0.64, 1], // Bounce easing for badges
+                  delay: 0.1
+                }}
+                whileHover={{ scale: 1.05 }}
               >
                 SALE
-              </span>
+              </m.span>
             )}
           </div>
 
@@ -202,9 +227,19 @@ export const ProductCard = React.memo(function ProductCard({
                   "bg-navy-900 text-cream-50 rounded-lg",
                   "font-sans text-sm font-semibold uppercase tracking-wide",
                   "hover:bg-navy-800 shadow-navy",
-                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2"
+                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2",
+                  "transition-all duration-[var(--duration-button-hover)] ease-[var(--ease-premium)]"
                 )}
                 aria-label={`Quick add ${product.name} to cart`}
+                whileHover={{ 
+                  scale: 1.02,
+                  y: -1,
+                  transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
+                }}
+                whileTap={{ 
+                  scale: 0.98,
+                  transition: { duration: 0.1, ease: [0.4, 0, 1, 1] }
+                }}
               >
                 <ShoppingBag className="w-4 h-4" aria-hidden="true" />
                 <span>Add to Cart</span>

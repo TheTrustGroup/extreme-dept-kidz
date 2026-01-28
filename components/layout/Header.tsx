@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { MobileNav } from "./MobileNav";
 import { MegaMenu } from "./MegaMenu";
 import { TopBar } from "./TopBar";
@@ -39,7 +39,8 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
     };
 
     handleResize();
-    window.addEventListener("scroll", handleScroll);
+    // CRITICAL: Use passive listener for better scroll performance
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
     return (): void => {
       window.removeEventListener("scroll", handleScroll);
@@ -90,11 +91,17 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
               transition={{ duration: 0.2 }}
             >
               <Link href="/" className="flex items-center h-full">
-                <Image
+                <OptimizedImage
                   src="/IMG_8640.PNG"
                   alt="EXTREME DEPT KIDZ"
                   width={1080}
                   height={720}
+                  variant="custom"
+                  customSizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
+                  isLCP={false}
+                  useIntersectionObserver={false}
+                  enablePrefetch={false}
+                  quality={90}
                   className={cn(
                     "h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]",
                     "transition-opacity duration-300",
@@ -102,11 +109,6 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                       ? "brightness-0 invert" // Invert logo colors for dark mode visibility
                       : ""
                   )}
-                  priority
-                  quality={90}
-                  sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
-                  decoding="async"
-                  // CRITICAL FIX: Remove redundant fetchPriority - priority already sets it to "high"
                 />
               </Link>
             </m.div>
@@ -227,7 +229,7 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
         className={cn(
           "font-sans text-xs font-semibold uppercase tracking-wider",
           "px-[var(--space-3)] py-[var(--space-2)] rounded-lg block",
-          "transition-colors duration-300 ease-out",
+          "transition-all duration-[var(--duration-nav-hover)] ease-[var(--ease-premium)]",
           "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
           theme === "dark"
             ? isEmphasized
@@ -237,14 +239,20 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
               ? "text-navy-900 font-bold"
               : "text-charcoal-700 group-hover/nav:text-charcoal-900 group-hover/nav:bg-cream-200/50"
         )}
-        whileHover={{ y: -1 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+        whileHover={{ 
+          y: -1,
+          transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+        }}
+        whileTap={{ 
+          scale: 0.98,
+          transition: { duration: 0.1, ease: [0.4, 0, 1, 1] }
+        }}
+        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         {children}
         <span
           className={cn(
-            "absolute bottom-[var(--space-2)] left-[var(--space-2)] right-[var(--space-2)] h-[2px] rounded-full transition-all duration-300 ease-out origin-center",
+            "absolute bottom-[var(--space-2)] left-[var(--space-2)] right-[var(--space-2)] h-[2px] rounded-full transition-all duration-[var(--duration-nav-hover)] ease-[var(--ease-premium)] origin-center",
             theme === "dark"
               ? isEmphasized
                 ? "bg-accent-primary scale-x-100"

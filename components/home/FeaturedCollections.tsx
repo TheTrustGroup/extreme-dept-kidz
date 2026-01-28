@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2, H3 } from "@/components/ui/typography";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { cn } from "@/lib/utils";
 
 interface Collection {
@@ -113,19 +113,19 @@ function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element
           whileHover={{ scale: 1.02, y: -4 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          {/* Image */}
+          {/* Image - Ultra-optimized with IntersectionObserver */}
           <div className="relative w-full h-full">
             {collection.image ? (
-              <Image
+              <OptimizedImage
                 src={collection.image}
-                loading="lazy"
-                quality={85}
                 alt={`${collection.name} collection - ${collection.name} products`}
-                fill
+                variant="gallery"
+                isLCP={false}
+                useIntersectionObserver={true}
+                enablePrefetch={true}
+                quality={85}
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 30vw"
-                decoding="async"
-                aria-hidden="false"
+                fill
               />
             ) : (
               <div 

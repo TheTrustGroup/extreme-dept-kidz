@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { m } from "framer-motion";
 import { ZoomIn } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface ZoomableImageProps {
   src: string;
@@ -57,15 +57,17 @@ export function ZoomableImage({
           transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
         }}
       >
-        <Image
+        <OptimizedImage
           src={src}
           alt={alt}
-          fill
-          className="object-cover"
-          sizes={sizes}
-          priority={priority}
-          loading={loading}
+          variant="product-detail"
+          customSizes={sizes}
+          isLCP={priority}
+          useIntersectionObserver={!priority}
+          enablePrefetch={false}
           quality={quality}
+          className="object-cover"
+          fill
         />
       </m.div>
 

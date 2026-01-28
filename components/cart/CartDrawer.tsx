@@ -148,7 +148,17 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
 
             {/* Cart Content */}
-            <div className="flex-1 overflow-y-auto">
+            {/* CRITICAL: Optimized scroll container with native momentum scrolling */}
+            <div 
+              className="flex-1 overflow-y-auto"
+              data-scroll-container
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                transform: 'translateZ(0)',
+                willChange: 'scroll-position',
+                contain: 'layout style paint',
+              }}
+            >
               {items.length === 0 ? (
                 <EmptyCartState />
               ) : (

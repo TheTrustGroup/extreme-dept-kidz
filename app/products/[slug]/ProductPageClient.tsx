@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import { Container } from "@/components/ui/container";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ProductGallery } from "@/components/product/ProductGallery";
@@ -63,20 +64,26 @@ export function ProductPageClient({ product }: ProductPageClientProps): JSX.Elem
             </div>
           </div>
 
-          {/* Complete The Look Section */}
-          <CompleteTheLook currentProduct={product} />
+          {/* Complete The Look Section - Below fold, can stream */}
+          <Suspense fallback={<div className="h-96 bg-cream-50 animate-pulse" />}>
+            <CompleteTheLook currentProduct={product} />
+          </Suspense>
 
-          {/* Reviews Section */}
-          <Reviews productId={product.id} />
+          {/* Reviews Section - Below fold, can stream */}
+          <Suspense fallback={<div className="h-64 bg-cream-50 animate-pulse" />}>
+            <Reviews productId={product.id} />
+          </Suspense>
         </Container>
       </div>
 
-      {/* Related Products */}
-      <RelatedProducts
-        currentProduct={product}
-        allProducts={mockProducts}
-        limit={4}
-      />
+      {/* Related Products - Below fold, can stream */}
+      <Suspense fallback={<div className="h-96 bg-cream-50 animate-pulse" />}>
+        <RelatedProducts
+          currentProduct={product}
+          allProducts={mockProducts}
+          limit={4}
+        />
+      </Suspense>
 
       {/* Sticky Add to Cart Bar - Mobile: Always visible, Desktop: On scroll */}
       <StickyAddToCart product={product} purchaseState={purchaseState} />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { ProductPageClient } from "./ProductPageClient";
 import { getProductBySlug } from "@/lib/db";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data";
@@ -89,6 +90,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     { name: product.name, url: `/products/${product.slug}` },
   ]);
 
+  // CRITICAL: Streaming SSR - Product page with Suspense boundaries
+  // Below-fold sections (RelatedProducts, Reviews) can stream in
   return (
     <>
       <script
@@ -99,7 +102,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <ProductPageClient product={product} />
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-cream-50 pt-24 pb-16">
+            <div className="container mx-auto px-4">
+              <div className="animate-pulse space-y-8">
+                <div className="h-6 bg-cream-200 rounded w-1/4" />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="aspect-square bg-cream-200 rounded-lg" />
+                  <div className="space-y-4">
+                    <div className="h-8 bg-cream-200 rounded w-3/4" />
+                    <div className="h-4 bg-cream-200 rounded w-full" />
+                    <div className="h-4 bg-cream-200 rounded w-2/3" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        key={`product-${product.slug}`}
+      >
+        <ProductPageClient product={product} />
+      </Suspense>
     </>
   );
 }

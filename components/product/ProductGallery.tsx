@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ProductImage as ProductImageType } from "@/types";
 import { cn } from "@/lib/utils";
 import { ZoomableImage } from "./ZoomableImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface ProductGalleryProps {
   images: ProductImageType[];
@@ -169,7 +169,17 @@ export function ProductGallery({
         {/* Thumbnail Navigation */}
         {images.length > 1 && (
           <div className="lg:w-auto lg:flex-shrink-0">
-            <div className="flex lg:flex-col gap-2 xs:gap-2.5 sm:gap-3 lg:gap-4 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto lg:max-h-[600px] scrollbar-hide pb-2 lg:pb-0">
+            {/* CRITICAL: Optimized scroll container with native momentum scrolling */}
+            <div 
+              className="flex lg:flex-col gap-2 xs:gap-2.5 sm:gap-3 lg:gap-4 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto lg:max-h-[600px] scrollbar-hide pb-2 lg:pb-0"
+              data-scroll-container
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                transform: 'translateZ(0)',
+                willChange: 'scroll-position',
+                contain: 'layout style paint',
+              }}
+            >
               {images.map((image, index) => (
                 <m.button
                   key={index}
@@ -187,14 +197,16 @@ export function ProductGallery({
                   transition={{ duration: 0.2, ease: "easeOut" }}
                   aria-label={`View image ${index + 1}`}
                 >
-                  <Image
+                  <OptimizedImage
                     src={image.url}
                     alt={image.alt || `${productName} - Thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 80px, 96px"
-                    loading="lazy"
+                    variant="thumbnail"
+                    isLCP={false}
+                    useIntersectionObserver={true}
+                    enablePrefetch={false}
                     quality={80}
+                    className="object-cover"
+                    fill
                   />
                 </m.button>
               ))}
@@ -244,13 +256,17 @@ export function ProductGallery({
                     transition={{ duration: 0.3 }}
                     className="relative w-full h-full"
                   >
-                    <Image
+                    <OptimizedImage
                       src={selectedImage.url}
                       alt={selectedImage.alt || `${productName} - Lightbox view`}
-                      fill
-                      className="object-contain"
-                      sizes="90vw"
+                      variant="custom"
+                      customSizes="90vw"
+                      isLCP={false}
+                      useIntersectionObserver={false}
+                      enablePrefetch={false}
                       quality={90}
+                      className="object-contain"
+                      fill
                     />
                   </m.div>
 

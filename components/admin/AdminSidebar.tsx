@@ -325,7 +325,17 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+        {/* CRITICAL: Optimized scroll container with native momentum scrolling */}
+        <nav 
+          className="flex-1 overflow-y-auto px-2 py-2 space-y-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+          data-scroll-container
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            transform: 'translateZ(0)',
+            willChange: 'scroll-position',
+            contain: 'layout style paint',
+          }}
+        >
           {navItems.map((item) => renderNavItem(item))}
         </nav>
 

@@ -60,7 +60,8 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
         } else {
           // CRITICAL FIX: Handle non-OK responses gracefully
           if (process.env.NODE_ENV === 'development') {
-            console.warn(`Complete looks API returned ${response.status} for product ${currentProduct.id}`);
+            // Performance: Removed console.warn for production
+            // console.warn(`Complete looks API returned ${response.status} for product ${currentProduct.id}`);
           }
           // Fallback to empty array instead of mock data for production
           setLooks([]);
@@ -69,7 +70,8 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
         // CRITICAL FIX: Better error handling
         if (error instanceof Error && error.name === 'AbortError') {
           if (process.env.NODE_ENV === 'development') {
-            console.warn('Complete looks request timed out');
+            // Performance: Removed console.warn for production
+            // console.warn('Complete looks request timed out');
           }
         } else if (process.env.NODE_ENV === 'development') {
           console.error('Error fetching complete looks:', error);

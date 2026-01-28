@@ -129,48 +129,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`} data-theme="light" suppressHydrationWarning>
       <head>
-        {/* Performance: Prevent theme FOUC by applying theme before React hydration */}
+        {/* CRITICAL: Prevent theme FOUC - inline script must execute before paint */}
+        {/* Performance: Minimal, synchronous script to prevent layout shift */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme');
-                  if (theme === 'dark' || theme === 'light') {
-                    document.documentElement.setAttribute('data-theme', theme);
-                    document.documentElement.classList.remove('light', 'dark');
-                    document.documentElement.classList.add(theme);
-                  } else {
-                    var systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    var initialTheme = systemPrefersDark ? 'dark' : 'light';
-                    document.documentElement.setAttribute('data-theme', initialTheme);
-                    document.documentElement.classList.remove('light', 'dark');
-                    document.documentElement.classList.add(initialTheme);
-                  }
-                } catch (e) {
-                  // Fallback to light theme
-                  document.documentElement.setAttribute('data-theme', 'light');
-                  document.documentElement.classList.add('light');
-                }
-              })();
-            `,
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);document.documentElement.className=t}else{var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var i=d?'dark':'light';document.documentElement.setAttribute('data-theme',i);document.documentElement.className=i}}catch(e){document.documentElement.setAttribute('data-theme','light');document.documentElement.className='light'}})();`,
           }}
         />
-        {/* Font preconnect for faster font loading - Next.js handles this automatically */}
-        {/* Image CDN preconnect */}
-        <link
-          rel="preconnect"
-          href="https://images.unsplash.com"
-        />
-        <link
-          rel="dns-prefetch"
-          href="https://images.unsplash.com"
-        />
-        {/* Performance: Preload critical resources */}
-        {/* Logo is loaded with priority in Header component, no need for preload here */}
-        {/* Performance: Resource hints */}
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        {/* CRITICAL: Preconnect to font domains for faster font loading */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* CRITICAL: DNS prefetch for external image CDN */}
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        {/* CRITICAL: Preload hero image for LCP optimization (mobile-first) */}
+        {/* Note: Next.js Image component handles optimization, preload is handled by priority prop */}
         
         {/* CRITICAL FIX: Removed icon preloads - icons are small (< 100KB total) and browsers handle them efficiently */}
         {/* Preloading icons causes "preloaded but not used" warnings and wastes bandwidth */}
@@ -226,14 +198,14 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <Footer />
             </Suspense>
-            {/* CRITICAL FIX: Lazy hydrate non-critical components to improve FCP/LCP */}
-            {/* These components don't need to block initial render */}
+            {/* CRITICAL: Partial hydration for non-critical components */}
+            {/* These components hydrate after page is interactive to improve FCP/LCP */}
             <Suspense fallback={null}>
               <CartDrawerWrapper />
             </Suspense>
-            {/* FloatingCartButton: Defer hydration until after page is interactive */}
+            {/* FloatingCartButton: Deferred hydration (100ms delay) */}
             <LazyFloatingCartButton />
-            {/* WebVitals: Load after page is interactive to avoid blocking */}
+            {/* WebVitals: Deferred hydration (requestIdleCallback) */}
             <LazyWebVitals />
           </Providers>
         </ErrorBoundary>

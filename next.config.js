@@ -58,6 +58,8 @@ const nextConfig = {
       "framer-motion",
       "lucide-react",
       "recharts",
+      "date-fns",
+      "zod",
       // Note: @prisma/client removed to ensure proper binary bundling
     ],
     // Enable React Server Components optimizations
@@ -68,17 +70,10 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@prisma/client'],
   },
   
-  // TypeScript configuration
-  typescript: {
-    // Ignore build errors from dependencies (resend@6.7.0 has a known type definition bug)
-    // This only affects the build, runtime is fine
-    ignoreBuildErrors: true,
-  },
-  
-  // Compiler Options
+  // CRITICAL: Compiler Options - Remove console statements in production
   compiler: {
     removeConsole: process.env.NODE_ENV === "production" ? {
-      exclude: ["error", "warn"],
+      exclude: ["error"], // Keep only console.error for error tracking
     } : false,
   },
   
@@ -89,12 +84,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   
-  // TypeScript configuration for Vercel
-  typescript: {
-    ignoreBuildErrors: false,
-  },
-  
-  // Webpack Optimizations
+  // Webpack Optimizations - CRITICAL: Enhanced bundle optimization
   webpack: (config, { isServer, dev }) => {
     // Optimize bundle size
     if (!isServer) {
@@ -103,38 +93,84 @@ const nextConfig = {
         fs: false,
       };
       
-      // Performance: Enhanced tree shaking and code splitting (client-side only)
+      // CRITICAL: Enhanced tree shaking and code splitting (client-side only)
       config.optimization = {
         ...config.optimization,
-        usedExports: true,
-        sideEffects: false,
-        // Performance: Better code splitting (client-side only to avoid server bundle issues)
+        usedExports: true, // Enable tree shaking
+        sideEffects: false, // Mark all modules as side-effect free for better tree shaking
+        // CRITICAL: Route-based chunk splitting for optimal code splitting
         splitChunks: {
           chunks: 'all',
+          minSize: 20000, // Minimum chunk size (20KB)
+          maxSize: 244000, // Maximum chunk size (244KB) - prevents huge chunks
           cacheGroups: {
             default: false,
             vendors: false,
-            // Performance: Separate vendor chunks for better caching
+            // CRITICAL: Separate React chunks (highest priority - most stable)
+            react: {
+              name: 'react',
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              priority: 50,
+              reuseExistingChunk: true,
+              enforce: true, // Force separate chunk
+            },
+            // CRITICAL: Separate Framer Motion (large library, separate chunk)
             framerMotion: {
               name: 'framer-motion',
               test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              priority: 40,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+            // CRITICAL: Separate Lucide React icons (large icon library)
+            lucideReact: {
+              name: 'lucide-react',
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+              priority: 35,
+              reuseExistingChunk: true,
+            },
+            // CRITICAL: Separate Recharts (large charting library)
+            recharts: {
+              name: 'recharts',
+              test: /[\\/]node_modules[\\/]recharts[\\/]/,
               priority: 30,
               reuseExistingChunk: true,
             },
-            react: {
-              name: 'react',
-              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-              priority: 40,
+            // CRITICAL: Separate form libraries (react-hook-form, zod)
+            forms: {
+              name: 'forms',
+              test: /[\\/]node_modules[\\/](react-hook-form|@hookform|zod)[\\/]/,
+              priority: 25,
               reuseExistingChunk: true,
             },
+            // CRITICAL: Separate date utilities
+            dateUtils: {
+              name: 'date-utils',
+              test: /[\\/]node_modules[\\/]date-fns[\\/]/,
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+            // CRITICAL: Other vendor libraries
             vendor: {
               name: 'vendor',
               test: /[\\/]node_modules[\\/]/,
-              priority: 20,
+              priority: 10,
+              reuseExistingChunk: true,
+              minChunks: 2, // Only create vendor chunk if used in 2+ chunks
+            },
+            // CRITICAL: Common chunks shared across routes
+            common: {
+              name: 'common',
+              minChunks: 2, // Shared by at least 2 routes
+              priority: 5,
               reuseExistingChunk: true,
             },
           },
         },
+        // CRITICAL: Module concatenation for better tree shaking
+        concatenateModules: true,
+        // CRITICAL: Minimize bundle size
+        minimize: !dev,
       };
     } else {
       // Server-side: Keep default optimization, just enable tree shaking
@@ -142,6 +178,7 @@ const nextConfig = {
         ...config.optimization,
         usedExports: true,
         sideEffects: false,
+        concatenateModules: true,
       };
     }
     

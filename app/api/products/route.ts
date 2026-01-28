@@ -63,8 +63,10 @@ function transformProduct(prismaProduct: {
   };
 }
 
-// Dynamic route: Uses searchParams for filtering, cache with headers
-export const dynamic = 'force-dynamic'; // Required because we use searchParams
+// CRITICAL: ISR with stale-while-revalidate
+// Allow Next.js to optimize this route
+export const dynamic = 'auto';
+export const revalidate = 60; // Revalidate every 60 seconds
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -79,10 +81,25 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // Get products using DB abstraction layer (with automatic fallback to mock)
-    let products = category 
-      ? await getProductsByCategory(category)
-      : await getAllProducts();
+    // CRITICAL: Use cached query with ISR
+    const getCachedProducts = unstable_cache(
+      async () => {
+        // Get products using DB abstraction layer (with automatic fallback to mock)
+        return category 
+          ? await getProductsByCategory(category)
+          : await getAllProducts();
+      },
+      [`products-${category || 'all'}-${collection || 'all'}`],
+      {
+        tags: [
+          CACHE_TAGS.products,
+          category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections,
+        ],
+        revalidate: 60,
+      }
+    );
+
+    let products = await getCachedProducts();
 
     // Apply filters (client-side filtering for mock data compatibility)
     if (inStock) {
@@ -136,6 +153,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       undefined,
       {
         cache: 60, // Cache for 60 seconds
+        staleWhileRevalidate: 300, // Serve stale for 5 minutes while revalidating
         tags: [CACHE_TAGS.products, category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections],
       }
     );

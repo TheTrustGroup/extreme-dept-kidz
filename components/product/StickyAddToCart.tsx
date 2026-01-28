@@ -69,8 +69,9 @@ export function StickyAddToCart({ product, className, purchaseState }: StickyAdd
     window.addEventListener("resize", handleScroll, { passive: true });
     
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
+      // CRITICAL: Remove with same options used for addEventListener
+      window.removeEventListener("scroll", handleScroll, { passive: true } as EventListenerOptions);
+      window.removeEventListener("resize", handleScroll, { passive: true } as EventListenerOptions);
     };
   }, []);
 

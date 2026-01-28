@@ -314,16 +314,49 @@ export async function getAllProducts(): Promise<Product[]> {
         throw new Error('Prisma not available - using mock data');
       }
       
+      // CRITICAL: Optimized query with selective field fetching
+      // Only fetch necessary fields to reduce payload size
       const prismaProducts = await prisma.product.findMany({
         // Return all products - visibility is controlled by inStock flag and variant stock levels
         // Products are visible on the website regardless of stock status
-        include: {
-          category: true,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          price: true,
+          originalPrice: true,
+          sku: true,
+          inStock: true,
+          createdAt: true,
+          updatedAt: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
           images: {
+            select: {
+              url: true,
+              alt: true,
+              isPrimary: true,
+              order: true,
+            },
             orderBy: { order: 'asc' },
           },
-          variants: true,
-          tags: true,
+          variants: {
+            select: {
+              size: true,
+              stock: true,
+            },
+          },
+          tags: {
+            select: {
+              name: true,
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',

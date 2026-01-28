@@ -2,12 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { m } from "framer-motion";
 import { useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { HERO_IMAGE_SIZES } from "@/lib/utils/responsive-image";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Hero background image
 const HERO_IMAGE = "/Extreme 1.png";
@@ -15,7 +14,7 @@ const HERO_IMAGE = "/Extreme 1.png";
 export function HeroSection(): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Parallax scroll effect - Optimized with RAF throttling
+  // CRITICAL: Parallax scroll effect - Optimized with passive listeners and GPU acceleration
   // Performance: Use passive scroll listener with requestAnimationFrame throttling
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -60,10 +59,16 @@ export function HeroSection(): JSX.Element {
       }}
       aria-label="Hero section"
     >
-      {/* Hero Image with Parallax */}
+      {/* Hero Image with Parallax - GPU-accelerated */}
       <m.div
         className="absolute inset-0 z-0 overflow-hidden"
-        style={{ y }}
+        style={{ 
+          y,
+          // CRITICAL: GPU acceleration for smooth parallax
+          transform: 'translateZ(0)',
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+        }}
       >
         <div 
           className="absolute inset-0 w-full h-full"
@@ -73,21 +78,24 @@ export function HeroSection(): JSX.Element {
             minHeight: "100%",
           }}
         >
-          {/* Hero Background Image */}
+          {/* Hero Background Image - LCP Element - Ultra-optimized */}
           <div className="absolute inset-0 w-full h-full bg-charcoal-900 overflow-hidden">
-            <Image
+            <OptimizedImage
               src={HERO_IMAGE}
               alt="Hero background - Extreme Dept Kidz"
-              fill
-              priority
+              variant="hero"
+              isLCP={true}
+              useIntersectionObserver={false}
+              enablePrefetch={false}
               quality={90}
+              blurVariant="hero"
               className="object-cover"
-              sizes={HERO_IMAGE_SIZES}
-              decoding="async"
-              // CRITICAL FIX: Remove redundant fetchPriority - priority already sets it to "high"
               style={{
                 objectPosition: "center center",
+                // CRITICAL: Prevent layout shift during image load
+                contentVisibility: "auto",
               }}
+              fill
               aria-hidden="true"
             />
           </div>

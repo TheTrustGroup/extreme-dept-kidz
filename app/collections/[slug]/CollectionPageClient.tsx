@@ -23,6 +23,7 @@ import {
   filterProducts,
   sortProducts,
 } from "@/lib/utils/filter-products";
+import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import type { Product } from "@/types";
 
 interface CollectionPageClientProps {
@@ -140,16 +141,20 @@ export function CollectionPageClient({
   const filteredProducts = React.useMemo(() => {
     try {
       const result = filterProducts(collectionProducts, filters);
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[CollectionPage] Filtered products:`, {
-          before: collectionProducts.length,
-          after: result.length,
-          filters,
-        });
-      }
+      // Performance: Removed console.log for production
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.log(`[CollectionPage] Filtered products:`, {
+      //     before: collectionProducts.length,
+      //     after: result.length,
+      //     filters,
+      //   });
+      // }
       return result;
     } catch (error) {
-      console.error('[CollectionPage] Error filtering products:', error);
+      // CRITICAL: Only log errors in development to prevent console errors in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[CollectionPage] Error filtering products:', error);
+      }
       // Return empty array on filter error
       return [];
     }
@@ -351,6 +356,21 @@ export function CollectionPageClient({
                 columns={4}
               />
             </m.div>
+            
+            {/* CRITICAL: Smart prefetching for product images */}
+            {/* Prefetches images when they're near viewport for instant loading */}
+            <SmartImagePrefetch
+              imageUrls={sortedProducts
+                .slice(0, 20) // Prefetch first 20 products
+                .flatMap((product) => [
+                  product.images[0]?.url,
+                  product.images[1]?.url, // Secondary images
+                ])
+                .filter((url): url is string => !!url)}
+              prefetchDistance={200}
+              maxConcurrent={3}
+              enabled={!isLoading && sortedProducts.length > 0}
+            />
           </div>
         </div>
       </Container>

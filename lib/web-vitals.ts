@@ -10,21 +10,41 @@ type Metric = {
 };
 
 /**
- * Send Web Vitals to analytics endpoint
+ * CRITICAL: Send Web Vitals to analytics endpoint
+ * Performance targets:
+ * - LCP < 1.8s (mobile)
+ * - FCP < 1.0s
+ * - TTI < 2.3s
+ * - CLS < 0.05
  */
 function sendToAnalytics(metric: Metric): void {
-  // In production, send to your analytics service
-  // Example: Google Analytics, Vercel Analytics, etc.
-  
+  // CRITICAL: Only log in development to avoid console overhead
   if (process.env.NODE_ENV === "development") {
-    console.log(`[Web Vitals] ${metric.name}:`, {
-      value: metric.value,
-      rating: metric.rating,
-      delta: metric.delta,
-    });
+    // Check if metric meets performance targets
+    const isGood = metric.rating === "good";
+    const targetMet = 
+      (metric.name === "LCP" && metric.value < 1800) ||
+      (metric.name === "FCP" && metric.value < 1000) ||
+      (metric.name === "TTI" && metric.value < 2300) ||
+      (metric.name === "CLS" && metric.value < 0.05) ||
+      (metric.name !== "LCP" && metric.name !== "FCP" && metric.name !== "TTI" && metric.name !== "CLS");
+    
+    if (!targetMet) {
+      console.error(`[Web Vitals] ⚠️ ${metric.name} target not met:`, {
+        value: metric.value,
+        rating: metric.rating,
+        target: metric.name === "LCP" ? "< 1800ms" : metric.name === "FCP" ? "< 1000ms" : metric.name === "TTI" ? "< 2300ms" : metric.name === "CLS" ? "< 0.05" : "N/A",
+      });
+    } else if (isGood) {
+      console.log(`[Web Vitals] ✅ ${metric.name}:`, {
+        value: metric.value,
+        rating: metric.rating,
+      });
+    }
   }
 
-  // Example: Send to Vercel Analytics
+  // CRITICAL: Send to analytics in production (Vercel Analytics, etc.)
+  // Uncomment and configure your analytics service:
   // if (typeof window !== "undefined" && (window as any).va) {
   //   (window as any).va("event", metric.name, {
   //     value: Math.round(metric.value),
