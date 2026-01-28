@@ -203,15 +203,25 @@ async function executeQuery<T>(
     return fallbackData;
   }
 
-  // If database connection failed, fail loudly in production
+  // If database not yet connected: in production try lazy init (Vercel serverless cold start)
   if (!dbConnected) {
-    const error = new Error(`Database not connected. Query: ${queryName}`);
-    if (isProduction) {
-      logger.error(error.message);
-      throw error;
+    if (isProduction && DB_CONFIG.enabled) {
+      try {
+        await initializeDatabase();
+      } catch (initErr) {
+        const err = initErr instanceof Error ? initErr : new Error('Unknown error');
+        logger.error(`[DB] ${queryName}: Lazy init failed:`, err.message);
+        throw new Error(`Database not connected. Query: ${queryName}. ${err.message}`);
+      }
+      if (!dbConnected) {
+        throw new Error(`Database not connected after init. Query: ${queryName}`);
+      }
+    } else if (isProduction) {
+      throw new Error(`Database not connected. Query: ${queryName}`);
+    } else {
+      logger.log(`[DB] ${queryName}: Using mock data (DB not connected)`);
+      return fallbackData;
     }
-    logger.log(`[DB] ${queryName}: Using mock data (DB not connected)`);
-    return fallbackData;
   }
 
   let lastError: Error | null = null;
