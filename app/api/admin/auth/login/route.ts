@@ -140,21 +140,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       logger.error('Database query error:', dbError);
       const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
       
-      // Check for specific Prisma connection errors
+      // Check for specific Prisma connection errors (P1000 auth, P1001 unreachable, P1002 timeout)
       const isConnectionError = 
         errorMessage.includes('Can\'t reach database server') ||
         errorMessage.includes('Authentication failed') ||
         errorMessage.includes('Connection') ||
         errorMessage.includes('timeout') ||
-        errorMessage.includes('P1001') || // Prisma connection error code
-        errorMessage.includes('P1000');   // Prisma authentication error code
+        errorMessage.includes('P1000') || // Prisma auth failed
+        errorMessage.includes('P1001') || // Prisma can't reach server
+        errorMessage.includes('P1002');   // Prisma connection timeout
       
+      const connectionHint = isConnectionError
+        ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
+        : undefined;
+
       return apiError(
         isConnectionError 
-          ? 'Unable to connect to database. Please check your database configuration in Vercel environment variables.'
+          ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
           : 'Database query failed. Please try again.',
         500,
-        process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        process.env.NODE_ENV === 'development' ? errorMessage : connectionHint
       );
     }
 

@@ -24,7 +24,12 @@
     "test-login": "tsx scripts/test-admin-login.ts",
     "reset-password-supabase": "tsx scripts/reset-password-supabase.ts",
     "cleanup-and-create-admin": "tsx scripts/cleanup-and-create-admin.ts",
-    "test-db": "tsx scripts/test-database-connection.ts",
+    "check-env": "tsx scripts/check-env.ts",
+    "fix-admin": "tsx scripts/fix-admin-user.ts",
+    "test-db": "tsx scripts/test-database.ts",
+    "audit-ecommerce": "tsx scripts/ecommerce-audit.ts",
+    "fix-all": "tsx scripts/master-fix-all.ts",
+    "test-db:legacy": "tsx scripts/test-database-connection.ts",
     "quality-check": "node scripts/quality-check.js",
     "pre-deploy": "npm run quality-check"
   },
