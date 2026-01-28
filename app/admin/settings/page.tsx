@@ -3,13 +3,40 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
+import { Eye, Loader2 } from "lucide-react";
 
 /**
  * Settings Page
- * 
+ *
  * Store configuration and settings.
  */
 export default function SettingsPage(): JSX.Element {
+  const [fixing, setFixing] = React.useState(false);
+  const [fixResult, setFixResult] = React.useState<{ ok: boolean; message: string; visibleInBoys?: number; visibleInGirls?: number } | null>(null);
+
+  const handleFixVisibility = async () => {
+    setFixing(true);
+    setFixResult(null);
+    try {
+      const res = await fetch("/api/admin/fix-product-visibility", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFixResult({
+          ok: true,
+          message: data.message ?? "Done.",
+          visibleInBoys: data.data?.visibleInBoys,
+          visibleInGirls: data.data?.visibleInGirls,
+        });
+      } else {
+        setFixResult({ ok: false, message: data.error ?? data.message ?? "Request failed." });
+      }
+    } catch (e) {
+      setFixResult({ ok: false, message: e instanceof Error ? e.message : "Network error." });
+    } finally {
+      setFixing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <H1 className="text-charcoal-900 text-3xl font-serif font-bold">Settings</H1>
@@ -88,6 +115,37 @@ export default function SettingsPage(): JSX.Element {
 
             <div className="flex justify-end">
               <Button variant="primary">Save Changes</Button>
+            </div>
+
+            <div className="border-t border-cream-200 pt-6 mt-6">
+              <h2 className="text-xl font-bold text-charcoal-900 mb-2">Product visibility</h2>
+              <p className="text-sm text-charcoal-600 mb-4">
+                If products created in admin don’t show on /collections/boys or /collections/girls, run this to ensure categories exist and products are assigned correctly.
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={handleFixVisibility}
+                  disabled={fixing}
+                  className="inline-flex items-center gap-2"
+                >
+                  {fixing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                  {fixing ? "Running…" : "Fix product visibility"}
+                </Button>
+                {fixResult && (
+                  <span
+                    className={
+                      fixResult.ok
+                        ? "text-green-700 text-sm"
+                        : "text-red-700 text-sm"
+                    }
+                  >
+                    {fixResult.ok && fixResult.visibleInBoys != null
+                      ? `${fixResult.message} Boys: ${fixResult.visibleInBoys}, Girls: ${fixResult.visibleInGirls ?? 0}`
+                      : fixResult.message}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
