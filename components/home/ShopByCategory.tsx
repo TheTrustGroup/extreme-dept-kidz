@@ -1,48 +1,38 @@
-"use client";
-
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2 } from "@/components/ui/typography";
-import { cn } from "@/lib/utils";
+import { getAllCategories } from "@/lib/db";
+import type { Category } from "@/types";
+import { CategoryCard } from "./CategoryCard";
 
-interface Category {
-  id: string;
-  name: string;
-  href: string;
-  image: string;
-}
+/**
+ * ShopByCategory Component
+ * 
+ * Fetches real categories from database and displays them in a grid.
+ * Only shows active categories.
+ */
+export async function ShopByCategory(): Promise<JSX.Element> {
+  // Fetch categories from database
+  let categories: Category[] = [];
+  try {
+    categories = await getAllCategories();
+    // Filter to only active categories
+    categories = categories.filter(cat => cat.isActive !== false);
+    // Limit to first 4 categories for grid layout
+    categories = categories.slice(0, 4);
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    // Fallback to empty array - component will render empty section
+    categories = [];
+  }
 
-const categories: Category[] = [
-  {
-    id: "boys",
-    name: "Boys",
-    href: "/collections/boys",
-    image: "", // Image will be added later
-  },
-  {
-    id: "new-arrivals",
-    name: "New Arrivals",
-    href: "/collections/new-arrivals",
-    image: "", // Image will be added later
-  },
-  {
-    id: "outerwear",
-    name: "Outerwear",
-    href: "/collections/boys?category=outerwear",
-    image: "", // Image will be added later
-  },
-  {
-    id: "accessories",
-    name: "Accessories",
-    href: "/collections/boys?category=accessories",
-    image: "", // Image will be added later
-  },
-];
+  // Don't render section if no categories
+  if (categories.length === 0) {
+    return <></>;
+  }
 
-export function ShopByCategory(): JSX.Element {
   return (
     <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
       <Container size="lg">
@@ -68,63 +58,4 @@ export function ShopByCategory(): JSX.Element {
   );
 }
 
-// Category Card Component
-interface CategoryCardProps {
-  category: Category;
-  index: number;
-}
-
-function CategoryCard({ category, index }: CategoryCardProps): JSX.Element {
-  return (
-    <m.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{
-        duration: 0.4,
-        delay: index * 0.08,
-        ease: "easeInOut",
-      }}
-    >
-      <Link href={category.href} className="block group">
-        <m.div
-          className={cn(
-            "relative overflow-hidden rounded-lg",
-            "bg-cream-100 shadow-sm",
-            "aspect-square",
-            "transition-all duration-300"
-          )}
-          whileHover={{ scale: 1.01, y: -2 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
-          {/* Image */}
-          <div className="relative w-full h-full">
-            {category.image ? (
-              <Image
-                src={category.image}
-                loading="lazy"
-                quality={85}
-                alt={category.name}
-                fill
-                className="object-cover transition-all duration-500 group-hover:brightness-110 group-hover:scale-105"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
-              />
-            ) : (
-              <div className="w-full h-full bg-cream-200" />
-            )}
-            {/* Overlay - darkens on hover */}
-            <div className="absolute inset-0 bg-charcoal-900/20 group-hover:bg-charcoal-900/30 transition-colors duration-500" />
-          </div>
-
-          {/* Category Name - Centered */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h3 className="font-serif text-3xl md:text-4xl lg:text-5xl font-semibold text-cream-50 tracking-tight drop-shadow-lg transition-transform duration-300 group-hover:scale-105">
-              {category.name}
-            </h3>
-          </div>
-        </m.div>
-      </Link>
-    </m.div>
-  );
-}
 

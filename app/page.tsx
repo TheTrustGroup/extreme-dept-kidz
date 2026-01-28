@@ -22,6 +22,11 @@ const ShopByStyleSection = nextDynamic(() => import("@/components/home").then((m
   loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
 
+const ShopByCategory = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByCategory })), {
+  ssr: true, // SSR enabled for streaming
+  loading: () => <StreamingSkeleton variant="section" height="h-96" />,
+});
+
 const FeaturedCollections = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })), {
   ssr: true, // SSR enabled for streaming
   loading: () => <StreamingSkeleton variant="section" height="h-96" />,
@@ -151,6 +156,14 @@ export default async function Home() {
           key="shop-by-style"
         >
           <ShopByStyleSection />
+        </Suspense>
+
+        {/* Shop by Category Section - Real categories from database */}
+        <Suspense 
+          fallback={<StreamingSkeleton variant="section" height="h-96" />}
+          key="shop-by-category"
+        >
+          <ShopByCategory />
         </Suspense>
 
         {/* Featured Collections Section - Below fold, can stream */}
