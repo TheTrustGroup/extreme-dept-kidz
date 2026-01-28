@@ -127,46 +127,88 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const normalizedEmail = email.toLowerCase().trim();
     const trimmedEmail = email.trim();
     let user;
-    try {
-      // Try exact match first (for case-sensitive storage like Admin@extremedeptkidz.com)
-      user = await prisma.adminUser.findUnique({
-        where: { email: trimmedEmail },
-      });
-      
-      // If not found with exact match, try case-insensitive lookup
-      // This handles both Admin@extremedeptkidz.com and admin@extremedeptkidz.com
-      if (!user) {
-        // Get all admin users and find case-insensitive match
-        const allAdmins = await prisma.adminUser.findMany({
-          where: { isActive: true },
-        });
-        user = allAdmins.find(u => u.email.toLowerCase() === normalizedEmail) || null;
-      }
-    } catch (dbError) {
-      logger.error('Database query error:', dbError);
-      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
-      
-      // Check for specific Prisma connection errors (P1000 auth, P1001 unreachable, P1002 timeout)
-      const isConnectionError = 
-        errorMessage.includes('Can\'t reach database server') ||
-        errorMessage.includes('Authentication failed') ||
-        errorMessage.includes('Connection') ||
-        errorMessage.includes('timeout') ||
-        errorMessage.includes('P1000') || // Prisma auth failed
-        errorMessage.includes('P1001') || // Prisma can't reach server
-        errorMessage.includes('P1002');   // Prisma connection timeout
-      
-      const connectionHint = isConnectionError
-        ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
-        : undefined;
+    
+    // Retry query up to 2 times for Vercel cold start (connection might not be ready)
+    const maxRetries = 2;
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Ensure connection on first attempt (Vercel cold start)
+        if (attempt === 1) {
+          try {
+            await Promise.race([
+              prisma.$connect(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 3000)),
+            ]);
+          } catch (connectError) {
+            logger.warn(`[Login] Connection attempt ${attempt} failed (will retry):`, connectError instanceof Error ? connectError.message : 'Unknown');
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms before retry
+              continue;
+            }
+          }
+        }
+        
+        // Try exact match first (for case-sensitive storage like Admin@extremedeptkidz.com)
+        user = await Promise.race([
+          prisma.adminUser.findUnique({
+            where: { email: trimmedEmail },
+          }),
+          new Promise<typeof user>((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 5000)),
+        ]) as typeof user;
+        
+        // If not found with exact match, try case-insensitive lookup
+        // This handles both Admin@extremedeptkidz.com and admin@extremedeptkidz.com
+        if (!user) {
+          // Get all admin users and find case-insensitive match
+          const allAdmins = await Promise.race([
+            prisma.adminUser.findMany({
+              where: { isActive: true },
+            }),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Query timeout')), 5000)),
+          ]);
+          user = allAdmins.find(u => u.email.toLowerCase() === normalizedEmail) || null;
+        }
+        
+        // Success - break out of retry loop
+        break;
+      } catch (dbError) {
+        lastError = dbError instanceof Error ? dbError : new Error('Unknown error');
+        logger.error(`[Login] Database query error (attempt ${attempt}/${maxRetries}):`, lastError.message);
+        
+        // If this was the last attempt, handle error
+        if (attempt === maxRetries) {
+          const errorMessage = lastError.message;
+          
+          // Check for specific Prisma connection errors (P1000 auth, P1001 unreachable, P1002 timeout)
+          const isConnectionError = 
+            errorMessage.includes('Can\'t reach database server') ||
+            errorMessage.includes('Authentication failed') ||
+            errorMessage.includes('Connection') ||
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('Query timeout') ||
+            errorMessage.includes('Connection timeout') ||
+            errorMessage.includes('P1000') || // Prisma auth failed
+            errorMessage.includes('P1001') || // Prisma can't reach server
+            errorMessage.includes('P1002');   // Prisma connection timeout
+          
+          const connectionHint = isConnectionError
+            ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
+            : undefined;
 
-      return apiError(
-        isConnectionError 
-          ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
-          : 'Database query failed. Please try again.',
-        500,
-        process.env.NODE_ENV === 'development' ? errorMessage : connectionHint
-      );
+          return apiError(
+            isConnectionError 
+              ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
+              : 'Database query failed. Please try again.',
+            500,
+            process.env.NODE_ENV === 'development' ? errorMessage : connectionHint
+          );
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+      }
     }
 
     if (!user) {
