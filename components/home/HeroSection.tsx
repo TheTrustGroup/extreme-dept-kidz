@@ -7,8 +7,12 @@ import { useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// Use MP4 for broad browser support; poster shows immediately before video plays
+const HERO_VIDEO_SRC = "/Extreme Hero Video.mp4";
+const HERO_POSTER = "/Extreme 1.png";
+
 export function HeroSection(): JSX.Element {
-  const [isLoaded, setIsLoaded] = React.useState(false);
+  // Show content immediately so hero is never stuck blank (no waiting on video)
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Parallax scroll effect
@@ -19,28 +23,25 @@ export function HeroSection(): JSX.Element {
 
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
-  // Fade-in animation variants
+  // Fade-in animation variants – content visible by default for fast perceived load
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        duration: 0.8,
+        duration: 0.5,
         ease: "easeOut",
-        staggerChildren: 0.2,
+        staggerChildren: 0.12,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-      },
+      transition: { duration: 0.4, ease: "easeOut" },
     },
   };
 
@@ -70,7 +71,8 @@ export function HeroSection(): JSX.Element {
             loop
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
+            poster={HERO_POSTER}
             className="absolute inset-0 w-full h-full"
             style={{
               objectFit: "cover",
@@ -84,13 +86,9 @@ export function HeroSection(): JSX.Element {
               WebkitTransform: "translateZ(0)",
               transformOrigin: "center center",
             }}
-            onLoadedData={() => setIsLoaded(true)}
-            onCanPlay={() => setIsLoaded(true)}
-            onLoadedMetadata={() => setIsLoaded(true)}
             aria-label="Hero background video showcasing Extreme Dept Kidz collection"
           >
-            <source src="/Hero Video Extreme.MOV" type="video/quicktime" />
-            <source src="/Hero Video Extreme.MOV" type="video/mp4" />
+            <source src={HERO_VIDEO_SRC} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Dark overlay for text visibility */}
@@ -102,8 +100,8 @@ export function HeroSection(): JSX.Element {
       <m.div
         className="relative z-10 w-full flex items-center justify-center"
         variants={containerVariants}
-        initial="hidden"
-        animate={isLoaded ? "visible" : "hidden"}
+        initial="visible"
+        animate="visible"
         style={{
           minHeight: "100vh",
         }}

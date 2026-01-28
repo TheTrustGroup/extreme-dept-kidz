@@ -3,39 +3,33 @@ import nextDynamic from "next/dynamic";
 import { generateWebsiteSchema, generateOrganizationSchema } from "@/lib/seo/structured-data";
 import { getAllProducts } from "@/lib/db";
 import type { Product } from "@/types";
+import { HeroSection } from "@/components/home";
+import { TrustBar } from "@/components/home";
 
-// Dynamically import home sections for code splitting and performance
-const HeroSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.HeroSection })), {
-  loading: () => <div className="min-h-screen bg-cream-50" />,
-  ssr: true, // Hero is above fold, load immediately
-});
-
-const TrustBar = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.TrustBar })), {
-  ssr: true, // Trust signals are important for first-time visitors
-});
+// Hero + TrustBar in main bundle so above-the-fold is fast and never static/blank
 
 const NewArrivalsSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })), {
-  ssr: false, // Below fold, can lazy load
+  ssr: true, // Render with page so content isn’t blank on first view
 });
 
 const ShopByStyleSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
-  ssr: false,
+  ssr: true,
 });
 
 const FeaturedCollections = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })), {
-  ssr: false,
+  ssr: true,
 });
 
 const EditorialSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.EditorialSection })), {
-  ssr: false,
+  ssr: true,
 });
 
 const GirlsCollectionSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })), {
-  ssr: false,
+  ssr: true,
 });
 
 const StyleGuideSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.StyleGuideSection })), {
-  ssr: false,
+  ssr: true,
 });
 
 export const dynamic = 'force-dynamic'; // Always fetch fresh products on homepage
