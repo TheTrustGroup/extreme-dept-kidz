@@ -7,8 +7,9 @@ import { useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Use MP4 for broad browser support; poster shows immediately before video plays
-const HERO_VIDEO_SRC = "/Extreme Hero Video.mp4";
+// Hero background video and poster (poster shows before video plays)
+// In production, set NEXT_PUBLIC_HERO_VIDEO_URL to your CDN/Vercel Blob URL so the repo stays small
+const HERO_VIDEO_SRC = process.env.NEXT_PUBLIC_HERO_VIDEO_URL || "/IMG_4474.mp4";
 const HERO_POSTER = "/Extreme 1.png";
 
 export function HeroSection(): JSX.Element {
@@ -73,9 +74,10 @@ export function HeroSection(): JSX.Element {
             playsInline
             preload="metadata"
             poster={HERO_POSTER}
-            className="absolute inset-0 w-full h-full"
+            disablePictureInPicture
+            disableRemotePlayback
+            className="absolute inset-0 w-full h-full object-cover"
             style={{
-              objectFit: "cover",
               objectPosition: "center center",
               minWidth: "100vw",
               minHeight: "100vh",

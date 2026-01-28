@@ -83,11 +83,16 @@ export default function EditCategoryPage() {
         });
         router.push('/admin/categories');
       } else {
+        const msg = data.error || data.message || 'Failed to update category';
+        const isAuthError = response.status === 401 || /token|expired|auth/i.test(String(msg));
         showToast({
           type: "error",
-          title: "Update Failed",
-          message: data.error || data.message || 'Failed to update category',
+          title: isAuthError ? "Session expired" : "Update Failed",
+          message: isAuthError ? "Please log in again and try again." : msg,
         });
+        if (isAuthError) {
+          router.push('/admin/login');
+        }
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {

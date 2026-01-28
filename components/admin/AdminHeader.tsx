@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
-import { Menu as MenuIcon, Search, Bell, ChevronDown } from "lucide-react";
+import { Menu as MenuIcon, Search, Bell, ChevronDown, LogOut } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { DatabaseStatus } from "@/components/admin/DatabaseStatus";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -148,6 +148,19 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
               </>
             )}
           </div>
+
+          {/* Sign out – always visible when logged in */}
+          {user && (
+            <button
+              onClick={() => logout()}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-medium hidden sm:inline">Sign out</span>
+            </button>
+          )}
 
           {/* User Menu */}
           {user && (

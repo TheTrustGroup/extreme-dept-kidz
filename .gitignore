@@ -42,3 +42,6 @@ next-env.d.ts
 
 
 /lib/generated/prisma
+
+# large hero video – host via CDN/Vercel Blob in prod, keep locally
+/public/IMG_4474.mp4

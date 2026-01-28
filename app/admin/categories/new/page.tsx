@@ -66,8 +66,9 @@ export default function NewCategoryPage() {
         router.push('/admin/categories');
         router.refresh(); // Force refresh to show new category
       } else {
-        // Show detailed validation errors if available
-        if (data.errors && typeof data.errors === 'object') {
+        const msg = data.error || data.message || 'Failed to create category';
+        const isAuthError = response.status === 401 || /token|expired|auth/i.test(String(msg));
+        if (data.errors && typeof data.errors === 'object' && !isAuthError) {
           const errorMessages = Object.values(data.errors).join(', ');
           showToast({
             type: "error",
@@ -77,9 +78,12 @@ export default function NewCategoryPage() {
         } else {
           showToast({
             type: "error",
-            title: "Create Failed",
-            message: data.error || data.message || 'Failed to create category',
+            title: isAuthError ? "Session expired" : "Create Failed",
+            message: isAuthError ? "Please log in again and try again." : msg,
           });
+          if (isAuthError) {
+            router.push('/admin/login');
+          }
         }
       }
     } catch (error) {

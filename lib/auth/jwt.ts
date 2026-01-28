@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production-min-32-chars';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m'; // Default to 15 minutes for admin tokens
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'; // Match cookie maxAge (7d) so token stays valid for full session
 
 // Warn if using default secret in production
 if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || JWT_SECRET === 'your-secret-key-change-in-production-min-32-chars')) {
