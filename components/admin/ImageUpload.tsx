@@ -53,20 +53,39 @@ export function ImageUpload({
 
     try {
       
-      const uploadPromises = Array.from(files).map(async (file) => {
-        // Validate file type - accept all image types (JPEG, PNG, WebP, HEIC, etc.)
-        const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
-        const isValidType = file.type.startsWith("image/") || validImageTypes.some(type => file.type.toLowerCase() === type);
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+        // Enhanced logging for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[ImageUpload] Processing file ${index + 1}/${files.length}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+          });
+        }
         
-        if (!isValidType) {
-          // Also check file extension as fallback (some mobile browsers don't set MIME type correctly)
-          const fileName = file.name.toLowerCase();
-          const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.heic', '.heif'];
-          const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-          
-          if (!hasValidExtension) {
-            throw new Error(`${file.name} is not a supported image file. Supported formats: JPEG, PNG, WebP, GIF, HEIC`);
-          }
+        // Validate file type - accept all image types (JPEG, PNG, WebP, HEIC, etc.)
+        // Some mobile browsers don't set MIME type correctly, so we're lenient
+        const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
+        const hasValidMimeType = file.type && (file.type.startsWith("image/") || validImageTypes.some(type => file.type.toLowerCase() === type));
+        
+        // Check file extension as fallback (critical for mobile browsers)
+        const fileName = file.name.toLowerCase();
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.heic', '.heif'];
+        const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+        
+        // If no MIME type and no valid extension, reject
+        if (!hasValidMimeType && !hasValidExtension) {
+          throw new Error(`${file.name} is not a supported image file. Supported formats: JPEG, PNG, WebP, GIF, HEIC`);
+        }
+        
+        // Log validation result
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[ImageUpload] File validation passed for ${file.name}:`, {
+            hasValidMimeType,
+            hasValidExtension,
+            mimeType: file.type || '(not set)',
+          });
         }
 
         // Validate file size (max 5MB)
@@ -146,31 +165,43 @@ export function ImageUpload({
         try {
           const contentType = response.headers.get('content-type') || '';
           
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[ImageUpload] Parsing response for ${file.name}:`, {
+              status: response.status,
+              contentType,
+              ok: response.ok,
+            });
+          }
+          
           if (contentType.includes('application/json')) {
             responseData = await response.json();
           } else {
             // Try to parse as JSON even if content-type is not set
             const responseText = await response.text();
             if (process.env.NODE_ENV === 'development') {
-              console.log('[ImageUpload] Response body (text):', responseText.substring(0, 200));
+              console.log('[ImageUpload] Response body (text, first 500 chars):', responseText.substring(0, 500));
             }
             
             if (!responseText || responseText.trim().length === 0) {
-              throw new Error("Server returned empty response");
+              throw new Error("Server returned empty response. Please try again.");
             }
             
             try {
               responseData = JSON.parse(responseText);
             } catch (parseError) {
               if (process.env.NODE_ENV === 'development') {
-                console.error('[ImageUpload] Failed to parse JSON:', parseError);
+                console.error('[ImageUpload] Failed to parse JSON:', parseError, 'Response text:', responseText.substring(0, 200));
               }
               // If parsing fails, check if it's an error response
               if (!response.ok) {
                 throw new Error(`Server error: ${response.status} ${response.statusText}`);
               }
-              throw new Error("Server returned invalid JSON response");
+              throw new Error("Server returned invalid JSON response. Please try again.");
             }
+          }
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[ImageUpload] Response data for ${file.name}:`, responseData);
           }
         } catch (parseError) {
           if (process.env.NODE_ENV === 'development') {
@@ -182,13 +213,14 @@ export function ImageUpload({
             try {
               const errorText = await responseClone.text();
               const errorData = errorText ? JSON.parse(errorText) : {};
-              throw new Error(errorData.message || errorData.error || `Upload failed (${response.status}): ${response.statusText}`);
+              const errorMsg = errorData.message || errorData.error || `Upload failed (${response.status}): ${response.statusText}`;
+              throw new Error(errorMsg);
             } catch (cloneError) {
-              throw new Error(`Upload failed (${response.status}): ${response.statusText}`);
+              throw new Error(`Upload failed (${response.status}): ${response.statusText}. Please try again.`);
             }
           }
           
-          throw new Error(`Server returned invalid response (status ${response.status}): ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+          throw new Error(`Server returned invalid response (status ${response.status}): ${parseError instanceof Error ? parseError.message : 'Unknown error'}. Please try again.`);
         }
         
         if (!response.ok) {
@@ -266,30 +298,58 @@ export function ImageUpload({
         .map(url => String(url).trim())
         .filter(url => url.length > 0);
       
-      // Only update if we have valid URLs - silently skip if none (upload may have succeeded but returned empty)
-      if (validUrls.length > 0) {
-        // Combine existing images with new ones
-        const allUrls = [...images, ...validUrls];
-        onChange(allUrls);
+      // Check if we got any valid URLs
+      if (validUrls.length === 0) {
+        // This is a critical error - uploads succeeded but no URLs were returned
+        const errorMsg = urls.length === 0 
+          ? "Upload completed but no images were returned. Please try again."
+          : `Upload completed but ${urls.length} image(s) failed to process. Please try again.`;
+        
         if (process.env.NODE_ENV === 'development') {
-          console.log('[ImageUpload] ✅ Successfully added', validUrls.length, 'image(s)');
+          console.error('[ImageUpload] ❌ No valid URLs returned after upload:', {
+            totalFiles: files.length,
+            urlsReceived: urls,
+            validUrls: validUrls,
+          });
         }
-      } else {
-        // Log warning but don't show error to user - upload may have succeeded but URLs weren't parsed correctly
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[ImageUpload] ⚠️ No valid URLs returned, but upload may have succeeded. URLs received:', urls);
-        }
-        // Don't throw error - just log it
+        
+        showToast({
+          type: "error",
+          title: "Upload Failed",
+          message: errorMsg,
+        });
+        return; // Exit early - don't update state
+      }
+      
+      // Success - combine existing images with new ones
+      const allUrls = [...images, ...validUrls];
+      onChange(allUrls);
+      
+      // Show success feedback
+      showToast({
+        type: "success",
+        title: "Images Uploaded",
+        message: `Successfully uploaded ${validUrls.length} image${validUrls.length > 1 ? 's' : ''}`,
+      });
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[ImageUpload] ✅ Successfully added', validUrls.length, 'image(s):', validUrls);
       }
     } catch (error) {
+      // Enhanced error logging
       if (process.env.NODE_ENV === 'development') {
-        console.error("Upload error:", error);
+        console.error('[ImageUpload] ❌ Upload error:', error);
+        if (error instanceof Error) {
+          console.error('[ImageUpload] Error stack:', error.stack);
+        }
       }
-      const errorMessage = error instanceof Error ? error.message : "Failed to upload images";
+      
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload images. Please try again.";
       showToast({
         type: "error",
         title: "Upload Failed",
         message: errorMessage,
+        duration: 5000, // Show longer for errors
       });
     } finally {
       setUploading(false);
@@ -372,26 +432,32 @@ export function ImageUpload({
           type="file"
           multiple
           accept="image/*"
-          onChange={(e) => {
+          onChange={async (e) => {
             // Prevent all default behavior and validation
             e.preventDefault();
             e.stopPropagation();
             
             const files = e.target.files;
             if (files && files.length > 0) {
-              // Use setTimeout to ensure validation doesn't interfere
-              setTimeout(() => {
-                handleFileSelect(files);
-              }, 0);
-            }
-            
-            // Reset the input value to allow selecting the same file again
-            // This must happen after a delay to prevent validation errors
-            setTimeout(() => {
+              // Create a copy of the FileList since it might be cleared
+              const filesArray = Array.from(files);
+              
+              // Reset the input value immediately to allow selecting the same file again
+              // But do it after we've captured the files
               if (e.target) {
                 e.target.value = '';
               }
-            }, 100);
+              
+              // Process files asynchronously
+              try {
+                await handleFileSelect(files);
+              } catch (error) {
+                // Error is already handled in handleFileSelect
+                if (process.env.NODE_ENV === 'development') {
+                  console.error('[ImageUpload] Error in onChange handler:', error);
+                }
+              }
+            }
           }}
           onClick={(e) => {
             // Prevent validation on click
