@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
-import { revalidateAllCollectionPages } from "@/lib/utils/cache-revalidation";
+import { revalidateAllCollectionPages, revalidateCollectionPage, revalidateProduct, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 
 export const dynamic = "force-dynamic";
 
@@ -255,20 +255,41 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Revalidate cache to ensure product appears immediately
     try {
-      const { revalidateProduct, revalidateAllCollectionPages } = await import('@/lib/utils/cache-revalidation');
+      // Get category slug for specific revalidation
+      const categorySlug = product.category?.slug;
       
       // Use efficient tag-based revalidation
       revalidateProduct(product.slug, product.id);
+      
+      // CRITICAL: Revalidate the specific category's collection page
+      if (categorySlug) {
+        revalidateCollectionPage(categorySlug);
+        logger.log(`[Cache] Revalidated category collection page: /collections/${categorySlug}`);
+      }
+      
+      // Revalidate all collection pages to ensure product appears everywhere
+      await revalidateAllCollectionPages();
       
       // Revalidate admin pages
       revalidatePath('/admin/products');
       revalidatePath('/api/products');
       
-      // Revalidate all collection pages to ensure product appears in its category
-      await revalidateAllCollectionPages();
+      // Additional tag-based revalidation for maximum coverage
+      revalidateTag(CACHE_TAGS.products);
+      revalidateTag(CACHE_TAGS.collections);
+      revalidateTag(CACHE_TAGS.homepage);
+      if (categorySlug) {
+        revalidateTag(CACHE_TAGS.category(categorySlug));
+        revalidateTag(CACHE_TAGS.collection(categorySlug));
+      }
+      
+      logger.log(`[Cache] Product created: ${product.name} - Revalidated cache for category: ${categorySlug || 'unknown'}`);
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
-      // Don't fail the request if revalidation fails
+      // Don't fail the request if revalidation fails, but log it
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Product Creation] Cache revalidation error:', revalidateError);
+      }
     }
 
     // Log activity

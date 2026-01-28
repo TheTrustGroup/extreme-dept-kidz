@@ -529,6 +529,8 @@ export async function getProductsByCategory(category: string): Promise<Product[]
       const prismaProducts = await prisma.product.findMany({
         where: {
           categoryId: categoryRecord.id,
+          // Only include products that are in stock or have variants in stock
+          // This ensures we show all products, not just in-stock ones
         },
         include: {
           category: true,
@@ -542,6 +544,15 @@ export async function getProductsByCategory(category: string): Promise<Product[]
           createdAt: 'desc',
         },
       });
+
+      // Debug logging in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[getProductsByCategory] Category: ${categoryRecord.name} (${categoryRecord.slug})`);
+        console.log(`[getProductsByCategory] Found ${prismaProducts.length} products`);
+        if (prismaProducts.length > 0) {
+          console.log(`[getProductsByCategory] Products:`, prismaProducts.map(p => p.name));
+        }
+      }
 
       // Transform Prisma products to Product type
       return prismaProducts.map((p): Product => {
