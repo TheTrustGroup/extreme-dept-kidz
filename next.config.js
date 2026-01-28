@@ -12,7 +12,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // Image Optimization
+  // CRITICAL FIX: Enhanced Image Optimization - Mobile-first, CDN-ready
   images: {
     domains: ['localhost', 'extremedeptkidz.com'],
     remotePatterns: [
@@ -26,17 +26,24 @@ const nextConfig = {
         hostname: "**",
       },
     ],
-    formats: ["image/avif", "image/webp"],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    formats: ["image/avif", "image/webp"], // AVIF first (best compression), WebP fallback
+    // Mobile-first device sizes: prioritize mobile breakpoints
+    deviceSizes: [375, 414, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    // Optimized image sizes for responsive breakpoints
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512],
-    minimumCacheTTL: 31536000, // 1 year
+    minimumCacheTTL: 31536000, // 1 year immutable cache
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Enable image optimization with CDN caching
+    unoptimized: false,
   },
   
-  // Compression & Headers
-  compress: true,
+  // CRITICAL FIX: Enhanced Compression & Headers
+  compress: true, // Enables gzip compression (Brotli handled by Vercel/CDN automatically)
   poweredByHeader: false,
+  
+  // HTTP/2 Server Push (handled automatically by Vercel/CDN)
+  // Next.js and Vercel automatically use HTTP/2 with server push for critical resources
   
   // Performance Optimizations
   // Disable SWC minification in dev to see full errors during development
@@ -184,6 +191,15 @@ const nextConfig = {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
+          // CRITICAL FIX: Enhanced CDN caching for uploaded assets
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Vercel-CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
         ],
       },
       {
@@ -211,6 +227,20 @@ const nextConfig = {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
+          // CRITICAL FIX: Enhanced CDN caching headers for edge optimization
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Vercel-CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          // Compression headers (Brotli handled by CDN, but specify Accept-Encoding)
+          {
+            key: "Accept-Encoding",
+            value: "br, gzip, deflate",
+          },
         ],
       },
       {
@@ -227,6 +257,15 @@ const nextConfig = {
         headers: [
           {
             key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          // CRITICAL FIX: Enhanced CDN caching for static assets
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Vercel-CDN-Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
         ],

@@ -8,6 +8,7 @@ import { ShoppingBag } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
 import { getProductCardBlurPlaceholder } from "@/lib/utils/image-utils";
+import { PRODUCT_CARD_SIZES } from "@/lib/utils/responsive-image";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { WishlistButton } from "@/components/WishlistButton";
 
@@ -125,7 +126,7 @@ export const ProductCard = React.memo(function ProductCard({
                 "transition-opacity duration-fast ease-in-out",
                 isHovered ? "opacity-100" : "opacity-0"
               )}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 280px"
+              sizes={PRODUCT_CARD_SIZES}
               // CRITICAL FIX: Lazy load secondary images - only load when needed (hover)
               // Preloading all secondary images causes "preloaded but not used" warnings
               loading="lazy"

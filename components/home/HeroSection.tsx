@@ -7,6 +7,7 @@ import { m } from "framer-motion";
 import { useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { HERO_IMAGE_SIZES } from "@/lib/utils/responsive-image";
 
 // Hero background image
 const HERO_IMAGE = "/Extreme 1.png";
@@ -81,7 +82,7 @@ export function HeroSection(): JSX.Element {
               priority
               quality={90}
               className="object-cover"
-              sizes="100vw"
+              sizes={HERO_IMAGE_SIZES}
               decoding="async"
               // CRITICAL FIX: Remove redundant fetchPriority - priority already sets it to "high"
               style={{
