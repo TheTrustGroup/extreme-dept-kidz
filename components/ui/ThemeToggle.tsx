@@ -71,6 +71,7 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
       transition={{ duration: 0.2, ease: "easeOut" }}
       aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
       aria-pressed={isDark}
+      title={isDark ? "Switch to light theme" : "Switch to dark theme"}
     >
       {/* Toggle Track */}
       <motion.div

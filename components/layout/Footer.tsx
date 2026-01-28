@@ -5,10 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { m } from "framer-motion";
 import { Instagram } from "lucide-react";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
 import { TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
 
 export function Footer(): JSX.Element {
+  const { theme } = useTheme();
   const [email, setEmail] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
@@ -28,7 +30,16 @@ export function Footer(): JSX.Element {
   };
 
   return (
-    <footer id="footer" className="bg-[#1a1a1a] text-cream-50" role="contentinfo">
+    <footer 
+      id="footer" 
+      className={cn(
+        "text-cream-50 transition-colors duration-300",
+        theme === "dark" 
+          ? "bg-dark-bg-secondary text-dark-text-primary" 
+          : "bg-[#1a1a1a] text-cream-50"
+      )} 
+      role="contentinfo"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Section */}
         <div className="py-16 md:py-20 lg:py-24">
@@ -48,13 +59,24 @@ export function Footer(): JSX.Element {
                     alt="EXTREME DEPT KIDZ"
                     width={1080}
                     height={720}
-                    className="h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]"
+                    className={cn(
+                      "h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]",
+                      "transition-opacity duration-300",
+                      theme === "dark"
+                        ? "brightness-0 invert opacity-90" // Invert logo for dark mode visibility
+                        : ""
+                    )}
                     priority={false}
                     sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
                   />
                 </Link>
               </div>
-              <p className="font-sans text-base text-cream-200/80 leading-relaxed max-w-md">
+              <p className={cn(
+                "font-sans text-base leading-relaxed max-w-md transition-colors duration-300",
+                theme === "dark" 
+                  ? "text-dark-text-secondary" 
+                  : "text-cream-200/80"
+              )}>
                 Elevated style for young legends. Premium streetwear and luxury essentials for the modern boy.
               </p>
               {/* Social Icons */}
@@ -85,10 +107,18 @@ export function Footer(): JSX.Element {
               transition={{ duration: 0.4, delay: 0.1 }}
               className="space-y-4"
             >
-              <h3 className="font-serif text-2xl font-bold text-cream-50">
+              <h3 className={cn(
+                "font-serif text-2xl font-bold transition-colors duration-300",
+                theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
+              )}>
                 STAY IN THE LOOP
               </h3>
-              <p className="font-sans text-base text-cream-200/80 leading-relaxed">
+              <p className={cn(
+                "font-sans text-base leading-relaxed transition-colors duration-300",
+                theme === "dark" 
+                  ? "text-dark-text-secondary" 
+                  : "text-cream-200/80"
+              )}>
                 Sign up for exclusive drops, style tips, and early access to new collections.
               </p>
               <form onSubmit={handleSubmit} className="space-y-3">
@@ -164,7 +194,12 @@ export function Footer(): JSX.Element {
               transition={{ duration: 0.4, delay: 0.2 }}
               aria-label="Shop navigation"
             >
-              <h4 className="font-sans text-xs font-semibold uppercase tracking-wider text-cream-200/60 mb-4">
+              <h4 className={cn(
+                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
+                theme === "dark" 
+                  ? "text-dark-text-muted" 
+                  : "text-cream-200/60"
+              )}>
                 SHOP
               </h4>
               <ul className="space-y-3">
@@ -185,7 +220,12 @@ export function Footer(): JSX.Element {
               transition={{ duration: 0.4, delay: 0.3 }}
               aria-label="Customer care navigation"
             >
-              <h4 className="font-sans text-xs font-semibold uppercase tracking-wider text-cream-200/60 mb-4">
+              <h4 className={cn(
+                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
+                theme === "dark" 
+                  ? "text-dark-text-muted" 
+                  : "text-cream-200/60"
+              )}>
                 CUSTOMER CARE
               </h4>
               <ul className="space-y-3">
@@ -207,7 +247,12 @@ export function Footer(): JSX.Element {
               transition={{ duration: 0.4, delay: 0.4 }}
               aria-label="Company navigation"
             >
-              <h4 className="font-sans text-xs font-semibold uppercase tracking-wider text-cream-200/60 mb-4">
+              <h4 className={cn(
+                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
+                theme === "dark" 
+                  ? "text-dark-text-muted" 
+                  : "text-cream-200/60"
+              )}>
                 COMPANY
               </h4>
               <ul className="space-y-3">
@@ -228,7 +273,12 @@ export function Footer(): JSX.Element {
               transition={{ duration: 0.4, delay: 0.5 }}
               aria-label="Connect navigation"
             >
-              <h4 className="font-sans text-xs font-semibold uppercase tracking-wider text-cream-200/60 mb-4">
+              <h4 className={cn(
+                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
+                theme === "dark" 
+                  ? "text-dark-text-muted" 
+                  : "text-cream-200/60"
+              )}>
                 CONNECT
               </h4>
               <ul className="space-y-3">
@@ -262,17 +312,31 @@ export function Footer(): JSX.Element {
         </div>
 
         {/* Bottom Bar */}
-        <div className="bg-[#0f0f0f] border-t border-cream-200/10 py-6">
+        <div className={cn(
+          "border-t py-6 transition-colors duration-300",
+          theme === "dark"
+            ? "bg-dark-bg-primary border-dark-border-glass"
+            : "bg-[#0f0f0f] border-cream-200/10"
+        )}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Left: Copyright */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm text-cream-200/60">
-              <span>© {new Date().getFullYear()} <span className="font-semibold text-cream-50">Extreme Dept Kidz</span>. All rights reserved.</span>
+            <div className={cn(
+              "flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm transition-colors duration-300",
+              theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
+            )}>
+              <span>© {new Date().getFullYear()} <span className={cn(
+                "font-semibold transition-colors duration-300",
+                theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
+              )}>Extreme Dept Kidz</span>. All rights reserved.</span>
               <span className="hidden sm:inline">•</span>
               <span className="italic">Made with precision & care</span>
             </div>
 
             {/* Center: Legal Links */}
-            <nav className="flex items-center gap-4 text-sm text-cream-200/60" aria-label="Legal links">
+            <nav className={cn(
+              "flex items-center gap-4 text-sm transition-colors duration-300",
+              theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
+            )} aria-label="Legal links">
               <FooterNavLink href="#" className="text-sm">Privacy Policy</FooterNavLink>
               <span className="text-cream-200/30">|</span>
               <FooterNavLink href="#" className="text-sm">Terms of Service</FooterNavLink>
@@ -303,6 +367,7 @@ interface FooterNavLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElemen
 }
 
 function FooterNavLink({ className, children, icon: Icon, href, ...props }: FooterNavLinkProps): JSX.Element {
+  const { theme } = useTheme();
   const Component = href?.startsWith("/") ? Link : "a";
   const linkProps = href?.startsWith("/") 
     ? { href } 
@@ -310,9 +375,11 @@ function FooterNavLink({ className, children, icon: Icon, href, ...props }: Foot
   return (
     <Component
       className={cn(
-        "font-sans text-sm text-cream-200/80 hover:text-cream-50",
-        "transition-colors duration-200 relative group",
-        "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] focus:rounded px-1",
+        "font-sans text-sm transition-colors duration-200 relative group",
+        "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:rounded px-1",
+        theme === "dark"
+          ? "text-dark-text-secondary hover:text-dark-text-primary focus:ring-accent-primary focus:ring-offset-dark-bg-secondary"
+          : "text-cream-200/80 hover:text-cream-50 focus:ring-cream-50 focus:ring-offset-[#1a1a1a]",
         className
       )}
       {...linkProps}
@@ -321,7 +388,10 @@ function FooterNavLink({ className, children, icon: Icon, href, ...props }: Foot
       <span className="relative inline-flex items-center space-x-2">
         {Icon && <Icon className="w-4 h-4" />}
         <span>{children}</span>
-        <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-cream-50 transition-all duration-300 group-hover:w-full" aria-hidden="true" />
+        <span className={cn(
+          "absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full",
+          theme === "dark" ? "bg-dark-text-primary" : "bg-cream-50"
+        )} aria-hidden="true" />
       </span>
     </Component>
   );

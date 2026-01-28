@@ -62,7 +62,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
           "header",
           "fixed top-0 left-0 right-0 z-[1000]",
           theme === "dark"
-            ? ""
+            ? "bg-dark-surface backdrop-blur-xl border-b border-dark-border-glass"
             : "bg-cream-50/88 backdrop-blur-xl border-b border-cream-200/50"
         )}
         initial={false}
@@ -94,7 +94,13 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                   alt="EXTREME DEPT KIDZ"
                   width={1080}
                   height={720}
-                  className="h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]"
+                  className={cn(
+                    "h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]",
+                    "transition-opacity duration-300",
+                    theme === "dark" 
+                      ? "brightness-0 invert" // Invert logo colors for dark mode visibility
+                      : ""
+                  )}
                   priority
                   quality={100}
                   sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
@@ -141,7 +147,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                     "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
                     "flex items-center justify-center",
                     theme === "dark"
-                      ? "text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-surface"
+                      ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface"
                       : "text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/60"
                   )}
                 >
@@ -218,7 +224,7 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
           theme === "dark"
             ? isEmphasized
               ? "text-accent-primary font-bold"
-              : "text-dark-text-secondary group-hover/nav:text-dark-text-primary group-hover/nav:bg-dark-surface"
+              : "text-dark-text-primary group-hover/nav:text-accent-primary group-hover/nav:bg-dark-surface"
             : isEmphasized
               ? "text-navy-900 font-bold"
               : "text-charcoal-700 group-hover/nav:text-charcoal-900 group-hover/nav:bg-cream-200/50"
@@ -262,7 +268,7 @@ function IconButton({ className, children, ...props }: IconButtonProps): JSX.Ele
         "transition-all duration-300 ease-out",
         "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
         theme === "dark"
-          ? "text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-surface"
+          ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface"
           : "text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/60",
         className
       )}

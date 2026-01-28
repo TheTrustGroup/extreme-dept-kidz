@@ -11,9 +11,9 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-// Default theme context for SSR
+// Default theme context for SSR - Light theme is primary
 const defaultThemeContext: ThemeContextType = {
-  theme: "dark",
+  theme: "light",
   toggleTheme: () => {},
   setTheme: () => {},
 };
@@ -24,25 +24,25 @@ const ThemeContext = createContext<ThemeContextType>(defaultThemeContext);
  * ThemeProvider Component
  * 
  * Manages dark/light theme state with localStorage persistence.
- * Dark theme is the primary/default theme.
+ * Light theme is the primary/default theme.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   // Initialize theme on mount
   useEffect(() => {
     setMounted(true);
     
-    // Check localStorage first, then system preference, default to dark
+    // Check localStorage first, then system preference, default to light
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored === "dark" || stored === "light") {
       setThemeState(stored);
       applyTheme(stored);
     } else {
-      // Check system preference, but default to dark (primary)
+      // Check system preference, but default to light (primary)
       const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme: Theme = systemPrefersDark ? "dark" : "dark"; // Always default to dark
+      const initialTheme: Theme = systemPrefersDark ? "dark" : "light"; // Default to light
       setThemeState(initialTheme);
       applyTheme(initialTheme);
     }
