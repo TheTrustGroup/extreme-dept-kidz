@@ -54,9 +54,19 @@ export function ImageUpload({
     try {
       
       const uploadPromises = Array.from(files).map(async (file) => {
-        // Validate file type
-        if (!file.type.startsWith("image/")) {
-          throw new Error(`${file.name} is not an image file`);
+        // Validate file type - accept all image types (JPEG, PNG, WebP, HEIC, etc.)
+        const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
+        const isValidType = file.type.startsWith("image/") || validImageTypes.some(type => file.type.toLowerCase() === type);
+        
+        if (!isValidType) {
+          // Also check file extension as fallback (some mobile browsers don't set MIME type correctly)
+          const fileName = file.name.toLowerCase();
+          const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.heic', '.heif'];
+          const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+          
+          if (!hasValidExtension) {
+            throw new Error(`${file.name} is not a supported image file. Supported formats: JPEG, PNG, WebP, GIF, HEIC`);
+          }
         }
 
         // Validate file size (max 5MB)
@@ -361,7 +371,7 @@ export function ImageUpload({
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/jpg,image/png,image/webp"
+          accept="image/*"
           onChange={(e) => {
             // Prevent all default behavior and validation
             e.preventDefault();
@@ -411,6 +421,9 @@ export function ImageUpload({
               </p>
               <p className="text-xs text-charcoal-500 mt-1">
                 {images.length}/{maxImages} images uploaded • Max 5MB each
+              </p>
+              <p className="text-xs text-charcoal-400 mt-1 hidden sm:block">
+                On mobile: Tap to access camera or gallery
               </p>
             </div>
           </div>
