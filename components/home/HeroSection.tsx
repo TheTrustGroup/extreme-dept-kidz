@@ -15,6 +15,7 @@ const HERO_POSTER = "/Extreme 1.png";
 export function HeroSection(): JSX.Element {
   // Show content immediately so hero is never stuck blank (no waiting on video)
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   // Parallax scroll effect
   const { scrollYProgress } = useScroll({
@@ -23,6 +24,49 @@ export function HeroSection(): JSX.Element {
   });
 
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+
+  // Ensure video plays after mount and handles autoplay restrictions
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Force play on mount (handles autoplay restrictions)
+    const playVideo = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        // Autoplay was prevented, try again on user interaction
+        console.warn("Video autoplay prevented, will play on interaction");
+        const playOnInteraction = () => {
+          video.play().catch(() => {});
+          document.removeEventListener("click", playOnInteraction);
+          document.removeEventListener("touchstart", playOnInteraction);
+        };
+        document.addEventListener("click", playOnInteraction, { once: true });
+        document.addEventListener("touchstart", playOnInteraction, { once: true });
+      }
+    };
+
+    // Play when video is ready
+    if (video.readyState >= 2) {
+      playVideo();
+    } else {
+      video.addEventListener("loadeddata", playVideo, { once: true });
+    }
+
+    // Ensure video continues playing if paused
+    const handlePause = () => {
+      if (video.paused && !video.ended) {
+        video.play().catch(() => {});
+      }
+    };
+    video.addEventListener("pause", handlePause);
+
+    return () => {
+      video.removeEventListener("loadeddata", playVideo);
+      video.removeEventListener("pause", handlePause);
+    };
+  }, []);
 
   // Fade-in animation variants – smooth, staggered reveal on load
   const containerVariants = {
@@ -69,11 +113,12 @@ export function HeroSection(): JSX.Element {
           }}
         >
           <video
+            ref={videoRef}
             autoPlay
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={HERO_POSTER}
             disablePictureInPicture
             disableRemotePlayback
@@ -90,6 +135,9 @@ export function HeroSection(): JSX.Element {
               transformOrigin: "center center",
             }}
             aria-label="Hero background video showcasing Extreme Dept Kidz collection"
+            onError={(e) => {
+              console.error("Hero video failed to load:", e);
+            }}
           >
             <source src={HERO_VIDEO_SRC} type="video/mp4" />
             Your browser does not support the video tag.
@@ -160,7 +208,7 @@ export function HeroSection(): JSX.Element {
               variant="primary"
               size="lg"
               className={cn(
-                "w-full sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
+                "w-full max-w-[280px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
                 "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
                 "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
                 "active:scale-[0.98] transition-all duration-300 ease-out",
@@ -177,7 +225,7 @@ export function HeroSection(): JSX.Element {
               variant="primary"
               size="lg"
               className={cn(
-                "w-full sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
+                "w-full max-w-[280px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
                 "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
                 "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
                 "active:scale-[0.98] transition-all duration-300 ease-out",
@@ -194,7 +242,7 @@ export function HeroSection(): JSX.Element {
               variant="secondary"
               size="lg"
               className={cn(
-                "w-full sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
+                "w-full max-w-[280px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
                 "bg-cream-50/10 border-2 border-cream-50 text-cream-50 backdrop-blur-md",
                 "hover:bg-cream-50 hover:text-charcoal-900 hover:border-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
                 "active:scale-[0.98] transition-all duration-300 ease-out",

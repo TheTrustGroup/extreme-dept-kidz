@@ -81,7 +81,7 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
         )}
       />
 
-      {/* Icon Container */}
+      {/* Icon Container - Clean single icon */}
       <motion.div
         className={cn(
           "absolute top-0.5 flex items-center justify-center rounded-full",
@@ -108,31 +108,11 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
         }}
       >
         {isDark ? (
-          <Moon className={cn("w-3.5 h-3.5", size === "lg" && "w-4 h-4")} />
+          <Moon className={cn("w-3.5 h-3.5", size === "lg" && "w-4 h-4")} strokeWidth={2} />
         ) : (
-          <Sun className={cn("w-3.5 h-3.5", size === "lg" && "w-4 h-4")} />
+          <Sun className={cn("w-3.5 h-3.5", size === "lg" && "w-4 h-4")} strokeWidth={2} />
         )}
       </motion.div>
-
-      {/* Icons on track */}
-      <div className="relative h-full flex items-center justify-between px-1.5 pointer-events-none">
-        <Sun
-          className={cn(
-            "transition-opacity duration-300",
-            isDark ? "opacity-30" : "opacity-100",
-            sizeClasses[size],
-            isDark ? "text-dark-text-muted" : "text-charcoal-600"
-          )}
-        />
-        <Moon
-          className={cn(
-            "transition-opacity duration-300",
-            isDark ? "opacity-100" : "opacity-30",
-            sizeClasses[size],
-            isDark ? "text-accent-primary" : "text-charcoal-400"
-          )}
-        />
-      </div>
     </motion.button>
   );
 }
