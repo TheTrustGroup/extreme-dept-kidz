@@ -118,7 +118,7 @@ export default function AdminLoginPage(): JSX.Element {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent transition-all"
-                placeholder="admin@extremedeptkidz.com"
+                placeholder="info@extremedeptkidz.com"
                 autoComplete="email"
               />
             </div>

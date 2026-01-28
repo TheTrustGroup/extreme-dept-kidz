@@ -103,7 +103,7 @@ export default function SettingsPage(): JSX.Element {
                   </label>
                   <input
                     type="email"
-                    defaultValue="admin@extremedeptkidz.com"
+                    defaultValue="info@extremedeptkidz.com"
                     className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500"
                   />
                 </div>
