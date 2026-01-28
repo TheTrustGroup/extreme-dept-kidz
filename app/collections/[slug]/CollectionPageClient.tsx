@@ -46,6 +46,7 @@ export function CollectionPageClient({ params, products: serverProducts }: Colle
   const [isLoading, setIsLoading] = React.useState(true);
 
   // Get collection or create virtual collection for category-based routes
+  // When server sends products for a slug (admin category), derive collection from first product so it always shows
   const collection = React.useMemo(() => {
     // First check if it's a real collection
     const foundCollection = mockCollections.find((c) => c.slug === params.slug);
@@ -75,8 +76,21 @@ export function CollectionPageClient({ params, products: serverProducts }: Colle
       };
     }
 
+    // Admin-created category: server sent products for this slug — use first product's category for title/description
+    if (serverProducts && serverProducts.length > 0 && serverProducts[0]?.category) {
+      const c = serverProducts[0].category;
+      return {
+        id: `coll-${params.slug}`,
+        name: c.name || params.slug,
+        slug: params.slug,
+        description: "",
+        image: "",
+        isActive: true,
+      };
+    }
+
     return null;
-  }, [params.slug]);
+  }, [params.slug, serverProducts]);
 
   // Initialize filters from URL params
   const getFiltersFromParams = (): FilterState => {
@@ -130,19 +144,17 @@ export function CollectionPageClient({ params, products: serverProducts }: Colle
   }, [filters, sortBy, router]);
 
   // Get and filter products - use server-fetched products or fallback to mock
-  // For category-based collections (boys/girls), use products directly from server
-  // For other collections, use the collection filter function
+  // When server sent products for this slug (category-based), use them directly so admin-created categories show
   const collectionProducts = React.useMemo(() => {
     if (!collection) return [];
-    const sourceProducts = serverProducts || mockProducts;
-    
-    // For category-based collections, products are already filtered by category on the server
-    // So we can use them directly
-    if (params.slug === 'boys' || params.slug === 'girls') {
+    // Server already filtered by category for this slug — use those products so new categories show immediately
+    if (serverProducts && serverProducts.length >= 0) {
+      return serverProducts;
+    }
+    const sourceProducts = mockProducts;
+    if (params.slug === "boys" || params.slug === "girls") {
       return sourceProducts;
     }
-    
-    // For other collections, use the collection filter
     return getProductsByCollection(sourceProducts, collection.slug);
   }, [collection, params.slug, serverProducts]);
 
