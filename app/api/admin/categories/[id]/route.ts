@@ -1,11 +1,12 @@
 import { NextResponse, NextRequest } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateCategorySchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import { CACHE_TAGS, revalidateCollectionPage } from "@/lib/utils/cache-revalidation";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -109,14 +110,28 @@ export async function PUT(
 
     // Revalidate so /collections/[slug] reflects changes
     try {
+      // Tag-based revalidation (most efficient)
+      revalidateTag(CACHE_TAGS.categories);
+      revalidateTag(CACHE_TAGS.collections);
+      revalidateTag(CACHE_TAGS.category(existing.slug));
+      if (category.slug !== existing.slug) {
+        revalidateTag(CACHE_TAGS.category(category.slug));
+      }
+      revalidateTag(CACHE_TAGS.homepage);
+      
+      // Path-based revalidation (for immediate updates)
       revalidatePath("/admin/categories");
       revalidatePath("/collections");
       revalidatePath(`/collections/${existing.slug}`);
       if (category.slug !== existing.slug) {
         revalidatePath(`/collections/${category.slug}`);
       }
+      revalidatePath("/");
+      
+      logger.log(`[Cache] Revalidated category update: ${existing.slug} → ${category.slug} (tags + paths)`);
     } catch (e) {
       logger.error("Failed to revalidate after category update:", e);
+      // Don't fail the request if revalidation fails
     }
 
     await logActivity({
@@ -170,6 +185,26 @@ export async function DELETE(
     await prisma.category.delete({
       where: { id },
     });
+
+    // Revalidate cache after deletion
+    try {
+      // Tag-based revalidation
+      revalidateTag(CACHE_TAGS.categories);
+      revalidateTag(CACHE_TAGS.collections);
+      revalidateTag(CACHE_TAGS.category(existing.slug));
+      revalidateTag(CACHE_TAGS.homepage);
+      
+      // Path-based revalidation
+      revalidatePath("/admin/categories");
+      revalidatePath("/collections");
+      revalidatePath(`/collections/${existing.slug}`);
+      revalidatePath("/");
+      
+      logger.log(`[Cache] Revalidated category deletion: ${existing.slug} (tags + paths)`);
+    } catch (e) {
+      logger.error("Failed to revalidate after category deletion:", e);
+      // Don't fail the request if revalidation fails
+    }
 
     // Log activity
     await logActivity({

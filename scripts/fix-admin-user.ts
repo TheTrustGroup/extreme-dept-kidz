@@ -52,10 +52,22 @@ async function main() {
     const { randomBytes } = await import('crypto');
     const id = randomBytes(16).toString('hex').substring(0, 25);
 
-    const sql = `INSERT INTO "AdminUser" (
-      "id", "email", "name", "passwordHash", "role", "isActive"
-    ) VALUES ($1, $2, $3, $4, 'super_admin'::"${enumType}", true)
-    RETURNING id, email, name, role, "isActive", "createdAt"`;
+    // Check if displayName column exists
+    const displayNameCheck = await prisma.$queryRaw<Array<{ column_name: string }>>`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'AdminUser' AND column_name = 'displayName'
+    `;
+    const hasDisplayName = displayNameCheck.length > 0;
+
+    const sql = hasDisplayName
+      ? `INSERT INTO "AdminUser" (
+          "id", "email", "name", "displayName", "passwordHash", "role", "isActive"
+        ) VALUES ($1, $2, $3, $3, $4, 'super_admin'::"${enumType}", true)
+        RETURNING id, email, name, role, "isActive", "createdAt"`
+      : `INSERT INTO "AdminUser" (
+          "id", "email", "name", "passwordHash", "role", "isActive"
+        ) VALUES ($1, $2, $3, $4, 'super_admin'::"${enumType}", true)
+        RETURNING id, email, name, role, "isActive", "createdAt"`;
 
     const rows = await prisma.$queryRawUnsafe<Array<{
       id: string;

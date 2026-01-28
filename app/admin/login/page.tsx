@@ -202,12 +202,11 @@ export default function AdminLoginPage(): JSX.Element {
             {process.env.NODE_ENV === "development" && (
               <div className="mt-6 p-4 bg-navy-50 rounded-lg border border-navy-200">
                 <p className="text-xs font-semibold text-navy-900 mb-2">
-                  Development Credentials:
+                  Admin Credentials:
                 </p>
                 <div className="text-xs text-navy-700 space-y-1">
-                  <p>Super Admin: admin@extremedeptkidz.com / Admin123!</p>
-                  <p>Manager: manager@extremedeptkidz.com / Manager123!</p>
-                  <p>Editor: editor@extremedeptkidz.com / Editor123!</p>
+                  <p>Email: info@extremedeptkidz.com</p>
+                  <p>Password: Admin123!@#</p>
                 </div>
               </div>
             )}

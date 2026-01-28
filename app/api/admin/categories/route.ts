@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createCategorySchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import { CACHE_TAGS, revalidateCollectionPage } from "@/lib/utils/cache-revalidation";
 
 export const dynamic = "force-dynamic";
 
@@ -98,11 +99,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Revalidate cache so /collections/[slug] shows new category immediately
     try {
+      // Tag-based revalidation (most efficient)
+      revalidateTag(CACHE_TAGS.categories);
+      revalidateTag(CACHE_TAGS.collections);
+      revalidateTag(CACHE_TAGS.category(category.slug));
+      revalidateTag(CACHE_TAGS.homepage);
+      
+      // Path-based revalidation (for immediate updates)
       revalidatePath('/admin/categories');
       revalidatePath('/collections');
       revalidatePath(`/collections/${category.slug}`);
+      revalidatePath('/');
+      
+      logger.log(`[Cache] Revalidated category: ${category.slug} (tags + paths)`);
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
+      // Don't fail the request if revalidation fails
     }
 
     // Log activity
