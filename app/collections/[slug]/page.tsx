@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CollectionPageClient } from "./CollectionPageClient";
 import { mockCollections } from "@/lib/mock-data";
 import { getAllProducts, getProductsByCategory } from "@/lib/db";
+import { getProductsByCollection } from "@/lib/utils/filter-products";
 import type { Product } from "@/types";
 
 interface CollectionPageProps {
@@ -87,19 +88,17 @@ export async function generateMetadata({
 export default async function CollectionPage({ params }: CollectionPageProps): Promise<JSX.Element> {
   const { slug } = await params;
   
-  // Fetch products from database
+  // Fetch products: category-first (Admin categories drive /collections/[slug])
+  // then fallback to tag-based filter for legacy slugs (new-arrivals, etc.)
   let products: Product[] = [];
   try {
-    // If it's a category-based collection (boys, girls), fetch by category
-    if (slug === 'boys' || slug === 'girls') {
-      products = await getProductsByCategory(slug);
-    } else {
-      // For other collections, fetch all products and filter client-side
-      products = await getAllProducts();
+    products = await getProductsByCategory(slug);
+    if (products.length === 0) {
+      const all = await getAllProducts();
+      products = getProductsByCollection(all, slug);
     }
   } catch (error) {
     console.error('Failed to fetch products for collection:', error);
-    // Continue with empty array - client component will handle gracefully
   }
 
   return <CollectionPageClient params={{ slug }} products={products} />;

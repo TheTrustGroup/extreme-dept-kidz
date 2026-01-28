@@ -30,6 +30,7 @@
     "audit-ecommerce": "tsx scripts/ecommerce-audit.ts",
     "inspect": "tsx scripts/inspect-database.ts",
     "fix-visibility": "tsx scripts/fix-product-visibility.ts",
+    "reset-for-real-data": "tsx scripts/reset-for-real-data.ts",
     "fix-all": "tsx scripts/master-fix-all.ts",
     "test-db:legacy": "tsx scripts/test-database-connection.ts",
     "quality-check": "node scripts/quality-check.js",

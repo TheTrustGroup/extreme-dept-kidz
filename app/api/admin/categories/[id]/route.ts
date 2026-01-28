@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateCategorySchema, validate } from "@/lib/validation/schemas";
@@ -106,7 +107,18 @@ export async function PUT(
       data: updateData,
     });
 
-    // Log activity
+    // Revalidate so /collections/[slug] reflects changes
+    try {
+      revalidatePath("/admin/categories");
+      revalidatePath("/collections");
+      revalidatePath(`/collections/${existing.slug}`);
+      if (category.slug !== existing.slug) {
+        revalidatePath(`/collections/${category.slug}`);
+      }
+    } catch (e) {
+      logger.error("Failed to revalidate after category update:", e);
+    }
+
     await logActivity({
       adminUserId: auth.user!.id,
       action: ActivityActions.CATEGORY_UPDATED,

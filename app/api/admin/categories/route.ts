@@ -93,10 +93,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Revalidate cache
+    // Revalidate cache so /collections/[slug] shows new category immediately
     try {
       revalidatePath('/admin/categories');
       revalidatePath('/collections');
+      revalidatePath(`/collections/${category.slug}`);
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);
     }
