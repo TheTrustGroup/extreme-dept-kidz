@@ -213,17 +213,7 @@ export const useAdminAuth = create<AdminAuthState>()(
       },
 
       logout: async (): Promise<void> => {
-        // Clear cookie via API
-        try {
-          await fetch("/api/admin/auth/logout", {
-            method: "POST",
-            credentials: 'include',
-          });
-        } catch (error) {
-          console.error("Logout API error:", error);
-        }
-        
-        // Clear local state
+        // Clear local state first (immediate UI update)
         set({
           user: null,
           token: null,
@@ -231,12 +221,39 @@ export const useAdminAuth = create<AdminAuthState>()(
         });
         lastAuthCheck = 0;
         
-        // CRITICAL: Clear cookie from client side
-        // Middleware will redirect to /admin/login on next request
+        // Clear cookie from client side immediately
         if (typeof window !== 'undefined') {
-          document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          // Do NOT redirect here - let middleware handle it
-          window.location.href = '/admin/login';
+          // Clear cookie with multiple variations to ensure it's removed
+          const hostname = window.location.hostname;
+          const cookiesToClear = [
+            'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT',
+            `admin-token=; path=/; domain=${hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT`,
+            `admin-token=; path=/; domain=.${hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT`,
+          ];
+          
+          cookiesToClear.forEach(cookie => {
+            document.cookie = cookie;
+          });
+        }
+        
+        // Clear cookie via API (best effort, don't wait for it)
+        try {
+          await fetch("/api/admin/auth/logout", {
+            method: "POST",
+            credentials: 'include',
+            cache: 'no-store',
+          }).catch(() => {
+            // Ignore network errors - we've already cleared local state and cookies
+          });
+        } catch (error) {
+          // Ignore errors - logout should always succeed locally
+          console.log("[Auth] Logout API call failed, but local logout completed:", error);
+        }
+        
+        // Always redirect to login page
+        if (typeof window !== 'undefined') {
+          // Use replace to prevent back button from going to admin pages
+          window.location.replace('/admin/login');
         }
       },
 

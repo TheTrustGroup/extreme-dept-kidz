@@ -9,15 +9,26 @@ export const dynamic = 'force-dynamic';
  * Logout API Route
  * 
  * Clears the admin authentication cookie.
+ * Always clears the cookie, even if authentication fails (for resilience).
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  // Get user info before clearing cookie (for logging)
-  const auth = await authenticateRequest(request);
-  const user = auth.user;
+  // Try to get user info before clearing cookie (for logging)
+  // But don't fail if authentication fails - we still want to clear the cookie
+  let user = null;
+  try {
+    const auth = await authenticateRequest(request);
+    if (auth.user && !auth.error) {
+      user = auth.user;
+    }
+  } catch (error) {
+    // Ignore authentication errors - we still want to clear the cookie
+    console.log('[Logout] User not authenticated or token invalid, clearing cookie anyway');
+  }
 
   const response = apiSuccess({}, "Logged out successfully");
   
-  // Clear the admin-token cookie
+  // ALWAYS clear the admin-token cookie, regardless of authentication status
+  // Clear cookie with multiple path variations to ensure it's removed
   response.cookies.set('admin-token', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -26,15 +37,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     path: '/',
   });
 
+  // Also clear with domain if in production
+  if (process.env.NODE_ENV === 'production') {
+    const domain = request.headers.get('host')?.split(':')[0];
+    if (domain && !domain.includes('localhost')) {
+      response.cookies.set('admin-token', '', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 0,
+        path: '/',
+        domain: `.${domain}`,
+      });
+    }
+  }
+
   // Log logout activity (if user was authenticated)
   if (user) {
-    await logActivity({
-      adminUserId: user.id,
-      action: ActivityActions.LOGOUT,
-      details: {
-        email: user.email,
-      },
-    }, request);
+    try {
+      await logActivity({
+        adminUserId: user.id,
+        action: ActivityActions.LOGOUT,
+        details: {
+          email: user.email,
+        },
+      }, request);
+    } catch (error) {
+      // Don't fail logout if activity logging fails
+      console.error('[Logout] Failed to log activity:', error);
+    }
   }
 
   return response;
