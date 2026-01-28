@@ -152,7 +152,7 @@ export default function SettingsPage(): JSX.Element {
                   {fixing ? "Running…" : "Fix product visibility"}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   onClick={handleRefreshCache}
                   disabled={fixing || refreshing}
                   className="inline-flex items-center gap-2"
