@@ -122,6 +122,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Ensure DB connection is ready (Vercel cold start) - lazy init if needed
+    try {
+      const { initializeDatabase } = await import('@/lib/db');
+      await initializeDatabase();
+    } catch (initError) {
+      logger.warn('[Login] DB init check failed (will try query anyway):', initError instanceof Error ? initError.message : 'Unknown');
+      // Continue - Prisma will attempt connection on first query
+    }
+
     // Find user - normalize email for lookup (case-insensitive)
     // Email is stored exactly as provided, but we lookup case-insensitively
     const normalizedEmail = email.toLowerCase().trim();
