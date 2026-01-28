@@ -93,9 +93,25 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
     shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon-152x152.png", sizes: "152x152", type: "image/png" },
+      { url: "/apple-touch-icon-120x120.png", sizes: "120x120", type: "image/png" },
+      { url: "/apple-touch-icon-76x76.png", sizes: "76x76", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "apple-touch-icon-precomposed",
+        url: "/apple-touch-icon.png",
+      },
+    ],
   },
   manifest: "/site.webmanifest",
 };
@@ -150,6 +166,12 @@ export default function RootLayout({
         {/* Performance: Resource hints */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        
+        {/* CRITICAL FIX: Preload icons to prevent 404 errors and improve performance */}
+        <link rel="preload" href="/apple-touch-icon.png" as="image" type="image/png" />
+        <link rel="preload" href="/favicon.ico" as="image" />
+        <link rel="preload" href="/icon-192x192.png" as="image" type="image/png" />
+        <link rel="preload" href="/icon-512x512.png" as="image" type="image/png" />
       </head>
       <body className="min-h-screen flex flex-col">
         <ErrorBoundary>
