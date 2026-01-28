@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { m } from "framer-motion";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { H1, Body } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
+import { LazyMotion, m, domAnimation } from "framer-motion";
 
 /**
  * Admin Login Page
@@ -62,14 +62,15 @@ export default function AdminLoginPage(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream-50 via-cream-100 to-navy-50 flex items-center justify-center p-4">
-      <Container size="sm">
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-cream-50 rounded-2xl shadow-2xl overflow-hidden"
-        >
+    <LazyMotion features={domAnimation} strict>
+      <div className="min-h-screen bg-gradient-to-br from-cream-50 via-cream-100 to-navy-50 flex items-center justify-center p-4">
+        <Container size="sm">
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="bg-cream-50 rounded-2xl shadow-2xl overflow-hidden"
+          >
           {/* Header */}
           <div className="bg-navy-900 px-8 py-12 text-center">
             <div className="flex justify-center mb-4">
@@ -211,8 +212,9 @@ export default function AdminLoginPage(): JSX.Element {
               </div>
             )}
           </div>
-        </m.div>
-      </Container>
-    </div>
+          </m.div>
+        </Container>
+      </div>
+    </LazyMotion>
   );
 }
