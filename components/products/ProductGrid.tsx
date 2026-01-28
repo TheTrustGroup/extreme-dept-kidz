@@ -20,13 +20,38 @@ interface ProductGridProps {
  * 
  * Responsive grid layout for displaying products.
  * Supports loading states and empty states.
+ * Includes hydration protection to prevent React hydration mismatches.
  */
 export function ProductGrid({
   products,
   columns = 4,
   isLoading = false,
   className,
-}: ProductGridProps): JSX.Element {
+}: ProductGridProps): JSX.Element | null {
+  const [mounted, setMounted] = React.useState(false);
+
+  // Fix hydration by only rendering on client
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // During SSR, return nothing to prevent hydration mismatch
+  if (!mounted) {
+    return null;
+  }
+
+  // Safety checks
+  if (!products || !Array.isArray(products)) {
+    return (
+      <div className="py-16 text-center">
+        <H3 className="text-charcoal-900 mb-4">Invalid product data</H3>
+        <Body className="text-charcoal-600 max-w-md mx-auto">
+          Please refresh the page or try again later.
+        </Body>
+      </div>
+    );
+  }
+
   // Empty state
   if (!isLoading && products.length === 0) {
     return (

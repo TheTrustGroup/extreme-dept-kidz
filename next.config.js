@@ -14,11 +14,16 @@ const nextConfig = {
   
   // Image Optimization
   images: {
+    domains: ['localhost', 'extremedeptkidz.com'],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "images.unsplash.com",
         pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
       },
     ],
     formats: ["image/avif", "image/webp"],
@@ -34,7 +39,8 @@ const nextConfig = {
   poweredByHeader: false,
   
   // Performance Optimizations
-  swcMinify: true,
+  // Disable SWC minification in dev to see full errors during development
+  swcMinify: process.env.NODE_ENV === 'production',
   
   // Optimize Fonts
   optimizeFonts: true,

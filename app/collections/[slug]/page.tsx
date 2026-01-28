@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { CollectionPageClient } from "./CollectionPageClient";
 import { getAllCategories, getAllProducts, getProductsByCategory } from "@/lib/db";
 import { getProductsByCollection } from "@/lib/utils/filter-products";
@@ -8,8 +9,9 @@ interface CollectionPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// ISR: Revalidate collection pages every 60 seconds, or on-demand via tags
-export const revalidate = 60;
+// Disable static generation to prevent hydration issues
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * Generate metadata from real category (Admin → Categories).
@@ -89,23 +91,72 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       ? { name: category.name, description: category.description ?? undefined }
       : undefined;
 
+    // Serialize data to prevent hydration issues
+    // Convert Dates to strings, ensure numbers are numbers, etc.
+    const serializedProducts = products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      description: product.description,
+      price: typeof product.price === 'number' ? product.price : Number(product.price),
+      originalPrice: product.originalPrice ? (typeof product.originalPrice === 'number' ? product.originalPrice : Number(product.originalPrice)) : undefined,
+      sku: product.sku,
+      inStock: Boolean(product.inStock),
+      category: {
+        id: product.category.id,
+        name: product.category.name,
+        slug: product.category.slug,
+      },
+      images: product.images.map((img) => ({
+        url: img.url,
+        alt: img.alt,
+        isPrimary: Boolean(img.isPrimary),
+      })),
+      sizes: product.sizes.map((size) => ({
+        size: size.size,
+        inStock: Boolean(size.inStock),
+      })),
+      tags: product.tags || [],
+      weight: product.weight,
+      dimensions: product.dimensions,
+      metadata: product.metadata,
+      createdAt: product.createdAt ? (typeof product.createdAt === 'string' ? product.createdAt : product.createdAt.toISOString()) : undefined,
+      updatedAt: product.updatedAt ? (typeof product.updatedAt === 'string' ? product.updatedAt : product.updatedAt.toISOString()) : undefined,
+    }));
+
     return (
-      <CollectionPageClient
-        params={{ slug }}
-        products={products}
-        collectionInfo={collectionInfo}
-      />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          </div>
+        }
+      >
+        <CollectionPageClient
+          params={{ slug }}
+          products={serializedProducts}
+          collectionInfo={collectionInfo}
+        />
+      </Suspense>
     );
   } catch (error) {
     console.error(`[CollectionPage] Error loading collection ${slug}:`, error);
     
     // Return error state with empty products
     return (
-      <CollectionPageClient
-        params={{ slug }}
-        products={[]}
-        collectionInfo={undefined}
-      />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          </div>
+        }
+      >
+        <CollectionPageClient
+          params={{ slug }}
+          products={[]}
+          collectionInfo={undefined}
+        />
+      </Suspense>
     );
   }
 }
