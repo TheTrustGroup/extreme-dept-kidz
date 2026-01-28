@@ -5,7 +5,7 @@ import { m } from "framer-motion";
 import { TrendingUp, Package, Users, DollarSign, AlertTriangle } from "lucide-react";
 import { getDashboardStats } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
-import { H1 } from "@/components/ui/typography";
+import { AdminH1, AdminH2, AdminH3, AdminBody, AdminBodySmall } from "@/components/admin/AdminTypography";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -23,19 +23,19 @@ function MetricCard({ title, value, change, trend, icon: Icon }: MetricCardProps
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
-      className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200 group"
+      className="admin-stat-card admin-section-md group"
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="admin-flex-md items-center justify-between mb-[var(--admin-space-4)]">
         <div className={cn(
-          "p-3 rounded-xl transition-all duration-200",
-          "bg-gradient-to-br from-indigo-500 to-purple-600",
-          "group-hover:scale-110"
+          "p-[var(--admin-space-3)] rounded-xl transition-all duration-200",
+          "bg-gradient-to-br from-navy-600 to-navy-800",
+          "group-hover:scale-110 flex-shrink-0"
         )}>
           <Icon className="w-6 h-6 text-white" />
         </div>
         <div
           className={cn(
-            "flex items-center gap-1 text-sm font-semibold px-2 py-1 rounded-full",
+            "admin-flex-sm items-center text-sm font-semibold px-[var(--admin-space-2)] py-1 rounded-full flex-shrink-0",
             trend === "up" 
               ? "text-green-700 bg-green-50" 
               : "text-red-700 bg-red-50"
@@ -48,17 +48,17 @@ function MetricCard({ title, value, change, trend, icon: Icon }: MetricCardProps
           {Math.abs(change)}%
         </div>
       </div>
-      <h3 className="text-3xl font-bold text-gray-900 mb-1">{value}</h3>
-      <p className="text-sm text-gray-600 font-medium">{title}</p>
+      <AdminH3 className="text-3xl mb-1">{value}</AdminH3>
+      <AdminBodySmall className="text-charcoal-600 font-medium">{title}</AdminBodySmall>
     </m.div>
   );
 }
 
 function DashboardSkeleton(): JSX.Element {
   return (
-    <div className="space-y-6">
+    <div className="space-y-[var(--space-6)]">
       <Skeleton className="h-10 w-48" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[var(--space-6)]">
         {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-32" />
         ))}
@@ -97,14 +97,14 @@ export default function AdminDashboardPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="admin-rhythm-lg">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <H1 className="text-gray-900 text-2xl sm:text-3xl font-bold mb-2">Dashboard</H1>
-          <p className="text-gray-600 text-xs sm:text-sm">Welcome back! Here&apos;s what&apos;s happening with your store.</p>
+      <div className="admin-section admin-flex-md flex-col sm:flex-row sm:justify-between sm:items-center">
+        <div className="admin-rhythm-sm">
+          <AdminH1>Dashboard</AdminH1>
+          <AdminBodySmall className="text-charcoal-600">Welcome back! Here&apos;s what&apos;s happening with your store.</AdminBodySmall>
         </div>
-        <select className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-xs sm:text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md w-full sm:w-auto">
+        <select className="admin-input px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-2)] sm:py-2.5 rounded-lg text-xs sm:text-sm text-charcoal-900 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent w-full sm:w-auto flex-shrink-0">
           <option>Last 30 days</option>
           <option>Last 7 days</option>
           <option>Last 90 days</option>
@@ -113,7 +113,7 @@ export default function AdminDashboardPage(): JSX.Element {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="admin-grid-md grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Revenue"
           value={formatPrice(stats.revenue * 100)}
@@ -149,59 +149,59 @@ export default function AdminDashboardPage(): JSX.Element {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+        className="admin-card-strong admin-section-md mb-[var(--admin-space-5)] sm:mb-[var(--admin-space-7)]"
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Revenue Over Time</h2>
-          <div className="flex gap-2">
-            <button className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+        <div className="admin-flex-md items-center justify-between mb-[var(--admin-space-4)] sm:mb-[var(--admin-space-5)] flex-wrap gap-[var(--admin-space-2)]">
+          <AdminH2 className="text-xl">Revenue Over Time</AdminH2>
+          <div className="admin-flex-sm">
+            <button className="px-[var(--admin-space-3)] py-1.5 text-xs font-medium text-charcoal-700 bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-all duration-200 border border-cream-200/50 hover:border-cream-300/70 shadow-sm hover:shadow-md">
               Day
             </button>
-            <button className="px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg">
+            <button className="px-[var(--admin-space-3)] py-1.5 text-xs font-medium text-navy-700 bg-navy-50/80 backdrop-blur-sm rounded-lg border border-navy-200/50 shadow-sm">
               Week
             </button>
-            <button className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+            <button className="px-[var(--admin-space-3)] py-1.5 text-xs font-medium text-charcoal-700 bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-all duration-200 border border-cream-200/50 hover:border-cream-300/70 shadow-sm hover:shadow-md">
               Month
             </button>
           </div>
         </div>
-        <div className="h-64 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-gray-100">
-          <div className="text-center">
-            <TrendingUp className="w-12 h-12 text-indigo-400 mx-auto mb-2" />
-            <p className="text-gray-600 font-medium">Chart will be implemented with Recharts</p>
+        <div className="h-48 sm:h-64 lg:h-80 flex items-center justify-center bg-gradient-to-br from-navy-50/50 to-navy-100/50 rounded-xl border border-cream-200/30 backdrop-blur-sm">
+          <div className="text-center admin-rhythm-sm">
+            <TrendingUp className="w-12 h-12 text-navy-400 mx-auto" />
+            <AdminBody className="text-charcoal-600 font-medium">Chart will be implemented with Recharts</AdminBody>
           </div>
         </div>
       </m.div>
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="admin-grid-md grid grid-cols-1 lg:grid-cols-2">
         {/* Top Products */}
         <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+          className="admin-card admin-section-md mb-[var(--admin-space-5)] sm:mb-[var(--admin-space-7)]"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Top Products</h2>
-          <div className="space-y-2">
+          <AdminH2 className="text-lg sm:text-xl mb-[var(--admin-space-4)] sm:mb-[var(--admin-space-5)]">Top Products</AdminH2>
+          <div className="admin-rhythm-sm">
             {stats.topProducts.map((product, idx) => (
               <m.div
                 key={product.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + idx * 0.05 }}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 group"
+                className="admin-flex-md items-center justify-between admin-section-sm bg-white/60 backdrop-blur-sm rounded-lg hover:bg-white/80 transition-all duration-200 group border border-cream-200/30 shadow-sm hover:shadow-md"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                <div className="admin-flex-md items-center">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-navy-600 to-navy-800 flex items-center justify-center text-white font-bold text-sm">
                     {idx + 1}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{product.name}</p>
-                    <p className="text-sm text-gray-600">{product.sold} sold</p>
+                    <AdminBody className="font-semibold text-charcoal-900">{product.name}</AdminBody>
+                    <AdminBodySmall className="text-charcoal-600">{product.sold} sold</AdminBodySmall>
                   </div>
                 </div>
-                <p className="font-bold text-indigo-600">{formatPrice(product.revenue * 100)}</p>
+                <AdminBody className="font-bold text-navy-600">{formatPrice(product.revenue * 100)}</AdminBody>
               </m.div>
             ))}
           </div>
@@ -212,26 +212,26 @@ export default function AdminDashboardPage(): JSX.Element {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+          className="admin-card admin-section-md"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Orders</h2>
-          <div className="space-y-2">
+          <AdminH2 className="text-xl mb-[var(--admin-space-5)]">Recent Orders</AdminH2>
+          <div className="admin-rhythm-sm">
             {stats.recentOrders.map((order, idx) => (
               <m.div
                 key={order.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 + idx * 0.05 }}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                className="admin-flex-md items-center justify-between admin-section-sm bg-cream-50 rounded-lg hover:bg-cream-100 transition-colors duration-200"
               >
                 <div>
-                  <p className="font-semibold text-gray-900">#{order.id}</p>
-                  <p className="text-sm text-gray-600">{order.customer}</p>
+                  <AdminBody className="font-semibold text-charcoal-900">#{order.id}</AdminBody>
+                  <AdminBodySmall className="text-charcoal-600">{order.customer}</AdminBodySmall>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-indigo-600">{formatPrice(order.total * 100)}</p>
+                  <AdminBody className="font-bold text-navy-600">{formatPrice(order.total * 100)}</AdminBody>
                   <span className={cn(
-                    "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1",
+                    "inline-flex items-center px-[var(--admin-space-2)] py-1 rounded-full text-xs font-medium mt-[var(--admin-space-1)]",
                     order.status === "pending" && "bg-yellow-100 text-yellow-800",
                     order.status === "shipped" && "bg-blue-100 text-blue-800",
                     order.status === "delivered" && "bg-green-100 text-green-800"
@@ -251,40 +251,40 @@ export default function AdminDashboardPage(): JSX.Element {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 shadow-sm"
+          className="admin-card admin-section-md bg-gradient-to-r from-yellow-50/80 to-orange-50/80 backdrop-blur-sm border border-yellow-200/50"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
+          <div className="admin-flex-md items-center justify-between mb-[var(--admin-space-5)]">
+            <div className="admin-flex-md items-center">
+              <div className="p-[var(--admin-space-2)] bg-yellow-100 rounded-lg flex-shrink-0">
                 <AlertTriangle className="w-5 h-5 text-yellow-600" />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">
+              <div className="admin-rhythm-sm">
+                <AdminH2 className="text-xl">
                   Low Stock Alert
-                </h2>
-                <p className="text-sm text-gray-600">{stats.lowStockItems.length} items need attention</p>
+                </AdminH2>
+                <AdminBodySmall className="text-charcoal-600">{stats.lowStockItems.length} items need attention</AdminBodySmall>
               </div>
             </div>
-            <button className="px-4 py-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors duration-200">
+            <button className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-2)] text-xs sm:text-sm font-semibold text-navy-600 hover:text-navy-700 hover:bg-navy-50/80 backdrop-blur-sm rounded-lg transition-all duration-200 flex-shrink-0 border border-transparent hover:border-navy-200/50 shadow-sm hover:shadow-md">
               View All
             </button>
           </div>
-          <div className="space-y-2">
+          <div className="admin-rhythm-sm">
             {stats.lowStockItems.map((item, idx) => (
               <m.div
                 key={`${item.id}-${item.size}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + idx * 0.05 }}
-                className="flex items-center justify-between p-4 bg-white rounded-lg border border-yellow-100 hover:border-yellow-200 transition-colors duration-200"
+                className="admin-flex-md items-center justify-between admin-section-sm bg-white rounded-lg border border-yellow-100 hover:border-yellow-200 transition-colors duration-200"
               >
-                <div>
-                  <p className="font-semibold text-gray-900">{item.name}</p>
-                  <p className="text-sm text-gray-600">Size {item.size}</p>
+                <div className="admin-rhythm-sm">
+                  <AdminBody className="font-semibold text-charcoal-900">{item.name}</AdminBody>
+                  <AdminBodySmall className="text-charcoal-600">Size {item.size}</AdminBodySmall>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-red-600">{item.stock} left</span>
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <div className="admin-flex-md items-center">
+                  <AdminBody className="font-bold text-red-600">{item.stock} left</AdminBody>
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0" />
                 </div>
               </m.div>
             ))}

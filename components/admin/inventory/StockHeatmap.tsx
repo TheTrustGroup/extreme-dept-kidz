@@ -111,22 +111,23 @@ export function StockHeatmap({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="admin-table-container">
+        <table className="admin-table w-full">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-semibold text-gray-700 sticky left-0 bg-white z-10">
+            <tr className="border-b border-cream-200">
+              <th className="text-left sticky left-0 bg-white z-10">
                 Product
               </th>
               {allSizes.map(size => (
                 <th
                   key={size}
-                  className="text-center py-3 px-2 font-semibold text-gray-700 min-w-[60px]"
+                  className="text-center"
+                  style={{ minWidth: 'var(--admin-min-width-xs, 60px)' }}
                 >
                   {size}
                 </th>
               ))}
-              <th className="text-center py-3 px-4 font-semibold text-gray-700">
+              <th className="text-center">
                 Total
               </th>
             </tr>
@@ -144,7 +145,7 @@ export function StockHeatmap({
                   className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                 >
                   <td className="py-3 px-4 font-medium text-gray-900 sticky left-0 bg-white z-10">
-                    <div className="max-w-[200px] truncate" title={item.productName}>
+                    <div className="truncate" style={{ maxWidth: 'var(--admin-max-width-sm, 200px)' }} title={item.productName}>
                       {item.productName}
                     </div>
                   </td>

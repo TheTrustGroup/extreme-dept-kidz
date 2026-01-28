@@ -8,6 +8,7 @@ import { Menu as MenuIcon, Search, Bell, ChevronDown, LogOut } from "lucide-reac
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { DatabaseStatus } from "@/components/admin/DatabaseStatus";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AdminBody, AdminBodySmall, AdminCaption } from "@/components/admin/AdminTypography";
 import { cn } from "@/lib/utils";
 
 // Wrapper component to catch errors in DatabaseStatus
@@ -32,7 +33,7 @@ interface AdminHeaderProps {
  */
 export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   const pathname = usePathname();
-  const { user, logout } = useAdminAuth();
+  const { user, logout, isAuthenticated } = useAdminAuth();
   const [showUserMenu, setShowUserMenu] = React.useState(false);
   const [showNotifications, setShowNotifications] = React.useState(false);
 
@@ -56,39 +57,39 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+    <header className="admin-header-glass sticky top-0 z-30">
       {/* Database Status Banner - Wrapped in error boundary */}
-      <div className="px-4 lg:px-8 py-2 border-b border-gray-100">
+      <div className="admin-section-sm px-[var(--admin-space-4)] lg:px-[var(--admin-space-6)] border-b border-cream-200">
         <React.Suspense fallback={null}>
           <DatabaseStatusWrapper />
         </React.Suspense>
       </div>
-      <div className="flex items-center justify-between px-4 lg:px-8 h-16">
+      <div className="admin-flex-md items-center justify-between px-[var(--admin-space-4)] lg:px-[var(--admin-space-6)]" style={{ height: 'var(--admin-header-height, 4rem)' }}>
         {/* Left: Menu & Breadcrumb */}
-        <div className="flex items-center gap-4">
+        <div className="admin-flex-md items-center">
           <button
             onClick={onMenuClick}
-            className="p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 lg:hidden active:scale-95"
+            className="p-[var(--admin-space-2)] text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-all duration-200 lg:hidden active:scale-95 flex-shrink-0"
             aria-label="Toggle menu"
           >
             <MenuIcon className="w-5 h-5" />
           </button>
 
           {/* Breadcrumb */}
-          <nav className="hidden md:flex items-center gap-2 text-sm">
+          <nav className="hidden md:flex items-center admin-flex-sm">
             {breadcrumbs.map((crumb, idx) => (
               <React.Fragment key={crumb.href}>
                 {idx > 0 && (
-                  <span className="text-gray-400">/</span>
+                  <span className="text-charcoal-400">/</span>
                 )}
                 <Link
                   href={crumb.href}
                   className={cn(
-                    "text-gray-600 hover:text-gray-900 transition-colors duration-200",
-                    idx === breadcrumbs.length - 1 && "font-semibold text-gray-900"
+                    "text-charcoal-600 hover:text-charcoal-900 transition-colors duration-200",
+                    idx === breadcrumbs.length - 1 && "font-semibold text-charcoal-900"
                   )}
                 >
-                  {crumb.label}
+                  <AdminBodySmall>{crumb.label}</AdminBodySmall>
                 </Link>
               </React.Fragment>
             ))}
@@ -96,26 +97,26 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
         </div>
 
         {/* Right: Search, Notifications, User */}
-        <div className="flex items-center gap-2">
+        <div className="admin-flex-sm items-center flex-wrap gap-[var(--admin-space-2)] min-w-0">
           {/* Search */}
           <button
-            className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-50 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 text-sm border border-gray-200 hover:border-gray-300 active:scale-[0.98]"
+            className="hidden md:flex items-center admin-flex-sm px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-2)] bg-white/60 backdrop-blur-sm rounded-lg text-charcoal-600 hover:bg-white/80 transition-all duration-200 border border-cream-200/50 hover:border-cream-300/70 active:scale-[0.98] shadow-sm hover:shadow-md flex-shrink-0"
             onClick={() => {
               // TODO: Open search modal
             }}
           >
             <Search className="w-4 h-4 flex-shrink-0" />
-            <span className="text-gray-500 hidden md:inline">Search...</span>
-            <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-semibold text-gray-500 bg-white border border-gray-300 rounded shadow-sm">
+            <AdminBodySmall className="text-charcoal-500 hidden lg:inline">Search...</AdminBodySmall>
+            <kbd className="hidden xl:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-semibold text-charcoal-500 bg-white border border-cream-300 rounded shadow-sm">
               ⌘K
             </kbd>
           </button>
 
           {/* Notifications */}
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 relative active:scale-95"
+              className="p-[var(--admin-space-2)] text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-all duration-200 relative active:scale-95"
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5" />
@@ -133,24 +134,25 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
+                  className="admin-dropdown admin-floating absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-80 rounded-xl overflow-hidden z-50"
                 >
-                  <div className="p-4 border-b border-gray-200 bg-gray-50">
-                    <h3 className="font-semibold text-gray-900">Notifications</h3>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    <div className="p-8 text-sm text-gray-600 text-center">
-                      <Bell className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                      <p>No new notifications</p>
+                    <div className="admin-section-sm border-b border-cream-200/50 bg-cream-50/80 backdrop-blur-sm">
+                      <AdminBody className="font-semibold text-charcoal-900">Notifications</AdminBody>
                     </div>
-                  </div>
+                    <div className="admin-scroll-container max-h-96">
+                      <div className="admin-section-md text-center">
+                        <Bell className="w-8 h-8 mx-auto mb-[var(--admin-space-2)] text-charcoal-400" />
+                        <AdminBodySmall className="text-charcoal-600">No new notifications</AdminBodySmall>
+                      </div>
+                    </div>
                 </m.div>
               </>
             )}
           </div>
 
-          {/* Sign out – always visible when logged in - CRITICAL: Ensure visibility */}
-          {user && (
+          {/* Sign Out Button - CRITICAL: Always visible when user exists, never hidden */}
+          {/* Ensure it renders even if user state is temporarily null by checking isAuthenticated as fallback */}
+          {(user || isAuthenticated) && (
             <button
               onClick={async () => {
                 try {
@@ -161,32 +163,38 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                   window.location.replace('/admin/login');
                 }
               }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200"
+              className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg text-charcoal-700 hover:text-red-600 hover:bg-red-50/80 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200/50 shadow-sm hover:shadow-md flex-shrink-0 z-10"
               aria-label="Sign out"
               title="Sign out"
+              style={{ 
+                minWidth: 'auto',
+                visibility: 'visible',
+                opacity: 1,
+                display: 'flex'
+              }}
             >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm font-medium hidden sm:inline">Sign out</span>
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <AdminBodySmall className="font-medium hidden md:inline ml-[var(--admin-space-1)]">Sign out</AdminBodySmall>
             </button>
           )}
 
           {/* User Menu */}
           {user && (
-            <div className="relative">
+            <div className="relative flex-shrink-0 z-10">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200 active:scale-95"
+                className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg hover:bg-cream-100/70 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-cream-200/50 min-w-0"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-navy-600 to-navy-800 flex items-center justify-center shadow-md flex-shrink-0">
                   <span className="text-white text-sm font-semibold">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span className="hidden sm:block text-sm font-medium text-gray-900 truncate max-w-[120px] lg:max-w-none">
+                <AdminBodySmall className="hidden md:block font-medium text-charcoal-900 truncate lg:max-w-none ml-[var(--admin-space-2)]" style={{ maxWidth: 'var(--admin-max-width-text-truncate, 7rem)' }}>
                   {user.name}
-                </span>
+                </AdminBodySmall>
                 <ChevronDown className={cn(
-                  "w-4 h-4 text-gray-600 transition-transform duration-200",
+                  "w-4 h-4 text-charcoal-600 transition-transform duration-200 flex-shrink-0 ml-[var(--admin-space-1)]",
                   showUserMenu && "rotate-180"
                 )} />
               </button>
@@ -202,20 +210,20 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50"
+                    className="admin-dropdown admin-floating absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-56 rounded-xl overflow-hidden z-50"
                   >
-                    <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
-                      <p className="font-semibold text-gray-900 text-sm">{user.name}</p>
-                      <p className="text-xs text-gray-600 truncate">{user.email}</p>
-                      <p className="text-xs text-gray-500 mt-1 capitalize">{user.role.replace("_", " ")}</p>
+                    <div className="admin-section-sm bg-gradient-to-r from-navy-50/80 to-navy-100/80 backdrop-blur-sm border-b border-cream-200/50">
+                      <AdminBodySmall className="font-semibold text-charcoal-900">{user.name}</AdminBodySmall>
+                      <AdminCaption className="text-charcoal-600 truncate normal-case">{user.email}</AdminCaption>
+                      <AdminCaption className="text-charcoal-500 mt-[var(--admin-space-1)] capitalize">{user.role.replace("_", " ")}</AdminCaption>
                     </div>
-                    <div className="p-1">
+                    <div className="admin-rhythm-sm p-[var(--admin-space-1)]">
                       <Link
                         href="/admin/settings/profile"
-                        className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                        className="block px-[var(--admin-space-3)] py-[var(--admin-space-2)] text-charcoal-700 hover:bg-cream-100/70 backdrop-blur-sm rounded-lg transition-all duration-200 hover:shadow-sm"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        Profile Settings
+                        <AdminBodySmall>Profile Settings</AdminBodySmall>
                       </Link>
                       <button
                         onClick={async () => {
@@ -228,10 +236,10 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                             window.location.replace('/admin/login');
                           }
                         }}
-                        className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        className="w-full text-left px-[var(--admin-space-3)] py-[var(--admin-space-2)] text-red-600 hover:bg-red-50/80 backdrop-blur-sm rounded-lg transition-all duration-200 hover:shadow-sm"
                         aria-label="Sign out"
                       >
-                        Sign Out
+                        <AdminBodySmall>Sign Out</AdminBodySmall>
                       </button>
                     </div>
                   </m.div>

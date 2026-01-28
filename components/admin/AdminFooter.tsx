@@ -1,38 +1,135 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, ExternalLink, Mail, BarChart3, Shield, Zap } from "lucide-react";
+import { ShoppingBag, ExternalLink, Mail, BarChart3, Shield, Zap, Lock } from "lucide-react";
+import { AdminBody, AdminBodySmall, AdminCaption } from "@/components/admin/AdminTypography";
 
 export function AdminFooter(): JSX.Element {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-navy-900/95 backdrop-blur-md border-t border-navy-800/50 text-cream-50 mt-8 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <footer className="bg-navy-900/95 backdrop-blur-xl border-t border-navy-800/30 text-cream-50 mt-[var(--admin-space-7)] shadow-xl" style={{ boxShadow: "0 -4px 24px rgba(0, 0, 0, 0.12), 0 -2px 8px rgba(0, 0, 0, 0.08)" }}>
+      <div className="max-w-7xl mx-auto px-[var(--admin-space-4)] sm:px-[var(--admin-space-5)] lg:px-[var(--admin-space-7)] py-[var(--admin-space-7)]">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+        <div className="admin-grid-md grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-[var(--admin-space-7)]">
           {/* Brand Section */}
-          <div className="space-y-4 lg:col-span-2">
-            <div className="flex items-center space-x-2 mb-3">
-              <div className="bg-cream-50/10 p-2 rounded-lg">
+          <div className="admin-rhythm-md lg:col-span-2">
+            <div className="admin-flex-sm items-center mb-[var(--admin-space-3)]">
+              <div className="bg-cream-50/10 backdrop-blur-sm p-[var(--admin-space-2)] rounded-lg border border-cream-50/10">
                 <ShoppingBag className="w-5 h-5 text-cream-50" />
               </div>
-              <span className="text-lg font-bold">Extreme Dept Kidz</span>
+              <AdminBody className="text-lg font-bold text-cream-50">Extreme Dept Kidz</AdminBody>
             </div>
-            <p className="text-sm text-cream-200/80 leading-relaxed max-w-md">
+            <AdminBodySmall className="text-cream-200/80 leading-relaxed max-w-md">
               Premium fashion for the modern family. Manage your e-commerce operations with precision and style.
-            </p>
-            <div className="flex items-center space-x-4 pt-2">
-              <div className="flex items-center space-x-1 text-xs text-cream-200/70 bg-navy-800/50 px-2 py-1 rounded">
-                <Shield className="w-3 h-3" />
+            </AdminBodySmall>
+            <div className="admin-flex-md flex-wrap items-center pt-[var(--admin-space-2)]">
+              <div className="admin-flex-sm items-center text-xs text-cream-200/70 bg-navy-800/60 backdrop-blur-sm px-[var(--admin-space-2)] py-1 rounded border border-navy-700/30" style={{ overflow: 'visible' }}>
+                <div 
+                  className="flex-shrink-0 flex items-center justify-center" 
+                  style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    minWidth: '12px', 
+                    minHeight: '12px',
+                    aspectRatio: '1 / 1',
+                    overflow: 'visible',
+                    position: 'relative'
+                  }}
+                >
+                  <Shield 
+                    className="w-full h-full" 
+                    style={{ 
+                      width: '12px', 
+                      height: '12px', 
+                      display: 'block', 
+                      flexShrink: 0,
+                      overflow: 'visible',
+                      position: 'relative'
+                    }} 
+                  />
+                </div>
                 <span>Secure</span>
               </div>
-              <div className="flex items-center space-x-1 text-xs text-cream-200/70 bg-navy-800/50 px-2 py-1 rounded">
-                <Zap className="w-3 h-3" />
+              <div className="admin-flex-sm items-center text-xs text-cream-200/70 bg-navy-800/60 backdrop-blur-sm px-[var(--admin-space-2)] py-1 rounded border border-navy-700/30" style={{ overflow: 'visible' }}>
+                <div 
+                  className="flex-shrink-0 flex items-center justify-center" 
+                  style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    minWidth: '12px', 
+                    minHeight: '12px',
+                    aspectRatio: '1 / 1',
+                    overflow: 'visible',
+                    position: 'relative'
+                  }}
+                >
+                  <Lock 
+                    className="w-full h-full" 
+                    style={{ 
+                      width: '12px', 
+                      height: '12px', 
+                      display: 'block', 
+                      flexShrink: 0,
+                      overflow: 'visible',
+                      position: 'relative'
+                    }} 
+                  />
+                </div>
+                <span>SSL Encrypted</span>
+              </div>
+              <div className="admin-flex-sm items-center text-xs text-cream-200/70 bg-navy-800/60 backdrop-blur-sm px-[var(--admin-space-2)] py-1 rounded border border-navy-700/30" style={{ overflow: 'visible' }}>
+                <div 
+                  className="flex-shrink-0 flex items-center justify-center" 
+                  style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    minWidth: '12px', 
+                    minHeight: '12px',
+                    aspectRatio: '1 / 1',
+                    overflow: 'visible',
+                    position: 'relative'
+                  }}
+                >
+                  <Zap 
+                    className="w-full h-full" 
+                    style={{ 
+                      width: '12px', 
+                      height: '12px', 
+                      display: 'block', 
+                      flexShrink: 0,
+                      overflow: 'visible',
+                      position: 'relative'
+                    }} 
+                  />
+                </div>
                 <span>Fast</span>
               </div>
-              <div className="flex items-center space-x-1 text-xs text-cream-200/70 bg-navy-800/50 px-2 py-1 rounded">
-                <BarChart3 className="w-3 h-3" />
+              <div className="admin-flex-sm items-center text-xs text-cream-200/70 bg-navy-800/60 backdrop-blur-sm px-[var(--admin-space-2)] py-1 rounded border border-navy-700/30" style={{ overflow: 'visible' }}>
+                <div 
+                  className="flex-shrink-0 flex items-center justify-center" 
+                  style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    minWidth: '12px', 
+                    minHeight: '12px',
+                    aspectRatio: '1 / 1',
+                    overflow: 'visible',
+                    position: 'relative'
+                  }}
+                >
+                  <BarChart3 
+                    className="w-full h-full" 
+                    style={{ 
+                      width: '12px', 
+                      height: '12px', 
+                      display: 'block', 
+                      flexShrink: 0,
+                      overflow: 'visible',
+                      position: 'relative'
+                    }} 
+                  />
+                </div>
                 <span>Analytics</span>
               </div>
             </div>
@@ -40,27 +137,27 @@ export function AdminFooter(): JSX.Element {
 
           {/* External Links */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider mb-4 text-cream-50">
+            <AdminCaption className="text-sm font-semibold mb-[var(--admin-space-4)] text-cream-50 normal-case">
               Quick Actions
-            </h3>
-            <ul className="space-y-3">
+            </AdminCaption>
+            <ul className="admin-rhythm-md">
               <li>
                 <Link
                   href="/"
                   target="_blank"
-                  className="text-sm text-cream-200/80 hover:text-cream-50 transition-colors duration-200 flex items-center space-x-2 group"
+                  className="text-sm text-cream-200/80 hover:text-cream-50 transition-all duration-200 admin-flex-sm items-center group hover:translate-x-1"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>View Store</span>
+                  <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                  <AdminBodySmall>View Store</AdminBodySmall>
                 </Link>
               </li>
               <li>
                 <a
                   href="mailto:support@extremedeptkidz.com"
-                  className="text-sm text-cream-200/80 hover:text-cream-50 transition-colors duration-200 flex items-center space-x-2 group"
+                  className="text-sm text-cream-200/80 hover:text-cream-50 transition-all duration-200 admin-flex-sm items-center group hover:translate-x-1"
                 >
-                  <Mail className="w-4 h-4" />
-                  <span>Support</span>
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <AdminBodySmall>Support</AdminBodySmall>
                 </a>
               </li>
             </ul>
@@ -68,15 +165,15 @@ export function AdminFooter(): JSX.Element {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-navy-800/50 pt-6">
-          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="text-sm text-cream-200/60">
+        <div className="border-t border-navy-800/30 pt-[var(--admin-space-5)]">
+          <div className="admin-flex-md flex-col md:flex-row items-center justify-between md:gap-0">
+            <AdminBodySmall className="text-cream-200/60">
               © {currentYear} <span className="font-semibold text-cream-50">Extreme Dept Kidz</span>. All rights reserved.
-            </div>
-            <div className="flex items-center space-x-4 text-sm text-cream-200/60">
-              <span className="px-2 py-1 bg-navy-800/50 rounded text-xs font-medium">Admin Panel v1.0</span>
+            </AdminBodySmall>
+            <div className="admin-flex-md items-center text-sm text-cream-200/60">
+              <AdminCaption className="px-[var(--admin-space-2)] py-1 bg-navy-800/60 backdrop-blur-sm rounded text-xs font-medium normal-case border border-navy-700/30">Admin Panel v1.0</AdminCaption>
               <span className="hidden sm:inline">•</span>
-              <span className="hidden sm:inline">Powered by Next.js</span>
+              <AdminBodySmall className="hidden sm:inline">Powered by Next.js</AdminBodySmall>
             </div>
           </div>
         </div>

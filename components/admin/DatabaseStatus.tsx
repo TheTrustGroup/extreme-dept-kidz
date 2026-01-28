@@ -114,10 +114,10 @@ export function DatabaseStatus(): JSX.Element | null {
 
   return (
     <div
-      className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border`}
+      className={`admin-flex-sm items-center px-[var(--admin-space-4)] py-[var(--admin-space-2)] rounded-lg text-sm ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border`}
     >
       <div
-        className={`w-2 h-2 rounded-full ${statusConfig.dot} ${
+        className={`w-2 h-2 rounded-full flex-shrink-0 ${statusConfig.dot} ${
           status.connected && !status.mockMode ? "animate-pulse" : ""
         }`}
       />

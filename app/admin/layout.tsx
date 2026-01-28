@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <div className="flex h-screen bg-[#f8f9fa] overflow-hidden admin-background">
+        <div className="admin-container flex h-screen bg-cream-50 overflow-hidden admin-background">
           {/* Background Image Layer */}
           <div 
             className="fixed inset-0 z-0 pointer-events-none"
@@ -92,8 +92,8 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
           <div className="flex-1 flex flex-col overflow-hidden relative z-10">
             <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-              <div className="max-w-7xl mx-auto">
+            <main className="admin-scroll-container flex-1 p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-7)]">
+              <div className="max-w-7xl mx-auto admin-rhythm-lg">
                 <ErrorBoundary>
                   {children}
                 </ErrorBoundary>

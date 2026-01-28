@@ -1,22 +1,23 @@
 /* Premium Admin Dashboard Design System */
+/* Uses luxury design tokens from main design system for consistency */
 
 :root {
-  /* Color System - Professional Dark/Light Mode */
-  --admin-bg: #f8f9fa;
+  /* Color System - Aligned with luxury brand palette */
+  --admin-bg: var(--color-cream-50, #faf9f7);
   --admin-surface: #ffffff;
   --admin-sidebar: #0f0f0f;
   --admin-sidebar-hover: #1a1a1a;
-  --admin-border: rgba(0, 0, 0, 0.08);
+  --admin-border: rgba(28, 28, 28, 0.08);
   --admin-border-dark: rgba(255, 255, 255, 0.1);
-  --admin-text-primary: #111827;
-  --admin-text-secondary: #6b7280;
-  --admin-text-tertiary: #9ca3af;
+  --admin-text-primary: var(--color-charcoal-900, #111827);
+  --admin-text-secondary: var(--color-charcoal-600, #6b7280);
+  --admin-text-tertiary: var(--color-charcoal-400, #9ca3af);
   --admin-text-inverse: #ffffff;
   
-  /* Accent Colors */
-  --admin-primary: #4f46e5;
-  --admin-primary-hover: #4338ca;
-  --admin-primary-light: #eef2ff;
+  /* Accent Colors - Using brand colors */
+  --admin-primary: var(--color-navy-600, #1e3a5f);
+  --admin-primary-hover: var(--color-navy-700, #152a47);
+  --admin-primary-light: var(--color-navy-50, #e8edf3);
   --admin-success: #10b981;
   --admin-warning: #f59e0b;
   --admin-danger: #ef4444;
@@ -27,26 +28,34 @@
   --admin-status-warning: #f59e0b;
   --admin-status-error: #ef4444;
   --admin-status-info: #3b82f6;
-  --admin-status-gray: #6b7280;
+  --admin-status-gray: var(--color-charcoal-600, #6b7280);
   
-  /* Spacing System (8px grid) */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-  --space-3xl: 64px;
+  /* Spacing System - Consistent scale: 4px → 8px → 12px → 16px → 24px → 32px → 48px */
+  --admin-space-1: 4px;
+  --admin-space-2: 8px;
+  --admin-space-3: 12px;
+  --admin-space-4: 16px;
+  --admin-space-5: 24px;
+  --admin-space-6: 32px;
+  --admin-space-7: 48px;
   
-  /* Typography */
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-base: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 24px;
-  --font-size-3xl: 32px;
-  --font-size-4xl: 40px;
+  /* Legacy support - map to new scale */
+  --space-xs: var(--admin-space-1, 4px);
+  --space-sm: var(--admin-space-2, 8px);
+  --space-md: var(--admin-space-4, 16px);
+  --space-lg: var(--admin-space-5, 24px);
+  --space-xl: var(--admin-space-6, 32px);
+  --space-2xl: var(--admin-space-7, 48px);
+  
+  /* Typography - Uses main design system tokens */
+  --font-size-xs: var(--font-size-xs, 0.75rem);
+  --font-size-sm: var(--font-size-sm, 0.875rem);
+  --font-size-base: var(--font-size-base, 1rem);
+  --font-size-lg: var(--font-size-lg, 1.125rem);
+  --font-size-xl: var(--font-size-xl, 1.25rem);
+  --font-size-2xl: var(--font-size-2xl, 1.5rem);
+  --font-size-3xl: var(--font-size-3xl, 1.875rem);
+  --font-size-4xl: var(--font-size-4xl, 2.25rem);
   
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -85,85 +94,290 @@
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
+  
+  /* Sidebar Dimensions - Responsive */
+  --admin-sidebar-width-expanded: 250px;
+  --admin-sidebar-width-collapsed: 80px;
+  
+  /* Header Height - Responsive */
+  --admin-header-height: 4rem; /* 64px - matches h-16 */
+  
+  /* Table Row Height - Consistent */
+  --admin-table-row-height: 3rem; /* 48px */
+  
+  /* Width Constraints - Responsive */
+  --admin-min-width-xs: 60px;
+  --admin-max-width-sm: 200px;
+  --admin-max-width-text-truncate: 7rem;
+  
+  /* Glass Morphism Design Tokens - Matching Frontend */
+  --admin-glass-bg-light: rgba(255, 255, 255, 0.8);
+  --admin-glass-bg-strong: rgba(255, 255, 255, 0.95);
+  --admin-glass-border: rgba(0, 0, 0, 0.06);
+  --admin-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+  --admin-glass-shadow-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --admin-glass-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --admin-glass-blur: 12px;
+  --admin-glass-blur-strong: 20px;
+  
+  /* Premium Shadows - Subtle & Elegant */
+  --admin-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --admin-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --admin-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --admin-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Smooth Transitions */
+  --admin-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --admin-transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --admin-transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --admin-transition-premium: 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Premium Button Styles */
+/* Premium Button Styles - Enhanced with Glass Morphism */
 .admin-btn {
-  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200;
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm;
+  transition: all var(--admin-transition-base, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
   @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  will-change: transform, box-shadow;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .admin-btn-primary {
-  @apply bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;
-  @apply shadow-sm hover:shadow-md active:scale-[0.98];
+  @apply bg-navy-600 text-white hover:bg-navy-700 focus:ring-navy-500;
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-btn-primary:hover {
+  box-shadow: var(--admin-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  transform: translateY(-1px);
+}
+
+.admin-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--admin-transition-fast, 150ms);
 }
 
 .admin-btn-secondary {
-  @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-indigo-500;
-  @apply shadow-sm hover:shadow-md active:scale-[0.98];
+  @apply text-charcoal-700 focus:ring-navy-500;
+  background: var(--admin-glass-bg-light, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--admin-shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+.admin-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06));
+  transform: translateY(-1px);
+}
+
+.admin-btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--admin-transition-fast, 150ms);
 }
 
 .admin-btn-danger {
   @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
-  @apply shadow-sm hover:shadow-md active:scale-[0.98];
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-btn-danger:hover {
+  box-shadow: var(--admin-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  transform: translateY(-1px);
+}
+
+.admin-btn-danger:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--admin-transition-fast, 150ms);
 }
 
 .admin-btn-ghost {
-  @apply text-gray-700 hover:bg-gray-100 focus:ring-indigo-500;
+  @apply text-charcoal-700 focus:ring-navy-500;
+  background: transparent;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid transparent;
 }
 
-/* Premium Input Styles */
+.admin-btn-ghost:hover {
+  background: rgba(249, 250, 251, 0.6);
+  border-color: rgba(0, 0, 0, 0.04);
+  box-shadow: var(--admin-shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+/* Premium Input Styles - Glass Morphism */
 .admin-input {
-  @apply w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg;
-  @apply bg-white text-gray-900 placeholder-gray-500;
-  @apply focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
-  @apply transition-all duration-200;
+  @apply w-full px-[var(--admin-space-4)] py-2.5 text-sm rounded-lg;
+  @apply text-charcoal-900 placeholder-charcoal-500;
+  @apply focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent;
+  background: var(--admin-glass-bg-light, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--admin-shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.05));
+  transition: all var(--admin-transition-base, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Premium Card Styles */
+.admin-input:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--admin-primary, var(--color-navy-600));
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)), 0 0 0 3px rgba(30, 58, 95, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Premium Card Styles - Glass Morphism */
 .admin-card {
-  @apply bg-white rounded-xl border border-gray-200 shadow-sm;
-  @apply transition-all duration-200 hover:shadow-md;
+  backdrop-filter: blur(var(--admin-glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--admin-glass-blur, 12px));
+  background: var(--admin-glass-bg-light, rgba(255, 255, 255, 0.8));
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  border-radius: 0.75rem;
+  box-shadow: var(--admin-glass-shadow, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1));
+  transition: all var(--admin-transition-smooth, 300ms) cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow, border-color;
 }
 
-/* Premium Table Styles */
+.admin-card:hover {
+  box-shadow: var(--admin-glass-shadow-hover, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  border-color: rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.admin-card-strong {
+  backdrop-filter: blur(var(--admin-glass-blur-strong, 20px));
+  -webkit-backdrop-filter: blur(var(--admin-glass-blur-strong, 20px));
+  background: var(--admin-glass-bg-strong, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  border-radius: 0.75rem;
+  box-shadow: var(--admin-glass-shadow-elevated, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  transition: all var(--admin-transition-smooth, 300ms) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Premium Table Styles - Professional Typography & Glass Morphism */
 .admin-table {
-  @apply w-full text-sm;
+  @apply w-full;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.875rem; /* 14px - consistent table font size */
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .admin-table thead {
-  @apply bg-gray-50 border-b border-gray-200;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(249, 250, 251, 0.8);
+  border-bottom: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .admin-table th {
-  @apply px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider;
+  @apply text-left text-xs font-semibold text-charcoal-700 uppercase tracking-wider;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.75rem; /* 12px for headers */
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: var(--admin-space-3, 12px) var(--admin-space-4, 16px);
+  height: var(--admin-table-row-height, 3rem);
+  vertical-align: middle;
 }
 
 .admin-table td {
-  @apply px-4 py-3 text-gray-900 border-b border-gray-100;
+  @apply text-charcoal-900;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.875rem !important; /* 14px - consistent table font size */
+  font-weight: 400;
+  line-height: 1.5;
+  padding: var(--admin-space-3, 12px) var(--admin-space-4, 16px) !important;
+  min-height: 3rem; /* Consistent row height - 48px */
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .admin-table tbody tr {
-  @apply hover:bg-gray-50 transition-colors duration-150;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all var(--admin-transition-fast, 150ms) cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 3rem; /* Consistent row height - 48px */
+  display: table-row;
+  vertical-align: middle;
 }
 
-/* Premium Sidebar Styles */
+.admin-table tbody tr:hover {
+  background: rgba(249, 250, 251, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transform: scale(1.001);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Table Container - Prevent Overflow with Glass Effect - Responsive */
+.admin-table-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.75rem;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06));
+  width: 100%;
+  position: relative;
+}
+
+/* Responsive table container adjustments */
+@media (max-width: 767px) {
+  .admin-table-container {
+    border-radius: 0;
+    margin-left: calc(-1 * var(--admin-space-4, 16px));
+    margin-right: calc(-1 * var(--admin-space-4, 16px));
+    width: calc(100% + var(--admin-space-4, 16px) * 2);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-table-container {
+    margin-left: calc(-1 * var(--admin-space-5, 24px));
+    margin-right: calc(-1 * var(--admin-space-5, 24px));
+    width: calc(100% + var(--admin-space-5, 24px) * 2);
+  }
+}
+
+.admin-table-container .admin-table {
+  min-width: 100%;
+  table-layout: auto;
+}
+
+/* Premium Sidebar Styles - Professional Typography */
 .admin-sidebar {
   @apply bg-[#0f0f0f] text-white;
   @apply border-r border-[rgba(255,255,255,0.1)];
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .admin-sidebar-item {
-  @apply flex items-center gap-3 px-4 py-3 rounded-lg;
-  @apply text-sm font-medium text-gray-300;
+  @apply flex items-center gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] rounded-lg;
+  @apply font-medium text-white/70;
   @apply transition-all duration-200;
-  @apply hover:bg-[#1a1a1a] hover:text-white;
+  @apply hover:bg-white/10 hover:text-white;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.9rem; /* Consistent sidebar font size */
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 0.25rem; /* Clear spacing between items */
 }
 
 .admin-sidebar-item-active {
-  @apply bg-indigo-600 text-white;
-  @apply border-l-4 border-indigo-400;
+  @apply bg-navy-600 text-white;
+  @apply border-l-4 border-navy-400;
 }
 
 /* Premium Badge Styles */
@@ -187,10 +401,23 @@
   @apply bg-blue-100 text-blue-800;
 }
 
-/* Premium Stat Card */
+/* Premium Stat Card - Glass Morphism */
 .admin-stat-card {
-  @apply bg-white rounded-xl p-6 border border-gray-200 shadow-sm;
-  @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+  backdrop-filter: blur(var(--admin-glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--admin-glass-blur, 12px));
+  background: var(--admin-glass-bg-light, rgba(255, 255, 255, 0.8));
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  border-radius: 0.75rem;
+  padding: var(--admin-space-5, 24px);
+  box-shadow: var(--admin-glass-shadow, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1));
+  transition: all var(--admin-transition-smooth, 300ms) cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow, border-color;
+}
+
+.admin-stat-card:hover {
+  box-shadow: var(--admin-glass-shadow-hover, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  border-color: rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 /* Smooth Animations */
@@ -248,4 +475,451 @@
 .admin-background > * {
   position: relative;
   z-index: 1;
+}
+
+/* Admin Typography System - Base Styles & Layout System */
+.admin-container {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Prevent margin collapsing */
+  display: flow-root;
+}
+
+/* Vertical Rhythm - Consistent spacing */
+.admin-rhythm > * + * {
+  margin-top: var(--admin-space-4, 16px);
+}
+
+.admin-rhythm-sm > * + * {
+  margin-top: var(--admin-space-2, 8px);
+}
+
+.admin-rhythm-md > * + * {
+  margin-top: var(--admin-space-5, 24px);
+}
+
+.admin-rhythm-lg > * + * {
+  margin-top: var(--admin-space-7, 48px);
+}
+
+/* Grid Layout Utilities */
+.admin-grid {
+  display: grid;
+  gap: var(--admin-space-4, 16px);
+}
+
+.admin-grid-sm {
+  display: grid;
+  gap: var(--admin-space-2, 8px);
+}
+
+.admin-grid-md {
+  display: grid;
+  gap: var(--admin-space-5, 24px);
+}
+
+.admin-grid-lg {
+  display: grid;
+  gap: var(--admin-space-7, 48px);
+}
+
+/* Flexbox Layout Utilities */
+.admin-flex {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-2, 8px);
+}
+
+.admin-flex-sm {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-1, 4px);
+}
+
+/* CRITICAL: Trust Badge Icon Fix - Prevent clipping and ensure proper rendering */
+.admin-flex-sm > div:first-child {
+  overflow: visible !important;
+  position: relative;
+  contain: none;
+}
+
+/* Ensure icons render crisply on retina displays */
+.admin-flex-sm svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.admin-flex-md {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-4, 16px);
+}
+
+/* CRITICAL: Ensure header right section doesn't clip buttons */
+.admin-header-glass > div:last-child {
+  overflow: visible !important;
+  min-width: 0;
+}
+
+.admin-header-glass .admin-flex-sm {
+  overflow: visible !important;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.admin-flex-lg {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-5, 24px);
+}
+
+/* Prevent Overflow Bugs */
+.admin-container * {
+  box-sizing: border-box;
+}
+
+.admin-scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.admin-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* Fix Floating UI Blocks */
+.admin-floating {
+  position: relative;
+  z-index: 10;
+}
+
+/* Prevent Collapsing Margins */
+.admin-section {
+  display: flow-root;
+  padding: var(--admin-space-4, 16px);
+}
+
+.admin-section-sm {
+  display: flow-root;
+  padding: var(--admin-space-2, 8px);
+}
+
+.admin-section-md {
+  display: flow-root;
+  padding: var(--admin-space-5, 24px);
+}
+
+.admin-section-lg {
+  display: flow-root;
+  padding: var(--admin-space-7, 48px);
+}
+
+/* Admin Headings - Consistent styling */
+.admin-container h1,
+.admin-container h2,
+.admin-container h3,
+.admin-container h4 {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.admin-container h1 {
+  font-weight: 700;
+}
+
+/* Admin Body Text - Consistent styling */
+.admin-container p,
+.admin-container span:not(.admin-sidebar-item),
+.admin-container div:not(.admin-sidebar-item) {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.admin-container p.medium,
+.admin-container span.medium {
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+/* Premium Admin Header - Glass Morphism */
+.admin-header-glass {
+  backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
+  background: var(--admin-glass-bg-light, rgba(255, 255, 255, 0.8));
+  border-bottom: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06));
+  transition: all var(--admin-transition-base, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Premium Button Styles - Enhanced */
+.admin-btn {
+  transition: all var(--admin-transition-base, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+
+.admin-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--admin-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+}
+
+.admin-btn:active {
+  transform: translateY(0);
+  transition-duration: var(--admin-transition-fast, 150ms);
+}
+
+/* Premium Input Styles - Enhanced */
+.admin-input {
+  transition: all var(--admin-transition-base, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--admin-shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+.admin-input:focus {
+  border-color: var(--admin-primary, var(--color-navy-600));
+  box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)), 0 0 0 3px rgba(30, 58, 95, 0.1);
+}
+
+/* Premium Table Styles - Additional enhancements */
+.admin-table-container {
+  transition: all var(--admin-transition-base, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-table-container:hover {
+  box-shadow: var(--admin-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+}
+
+/* Premium Dropdown/Modal Styles */
+.admin-dropdown {
+  backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
+  background: var(--admin-glass-bg-strong, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--admin-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
+  transition: all var(--admin-transition-smooth, 300ms) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive Breakpoints - Mobile First Approach */
+/* Mobile: 375px - 767px */
+@media (max-width: 767px) {
+  .admin-header-glass {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .admin-card,
+  .admin-stat-card {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  /* Ensure buttons are visible on mobile */
+  .admin-flex-sm {
+    flex-wrap: wrap;
+    gap: var(--admin-space-2, 8px);
+  }
+  
+  /* Table overflow handling on mobile */
+  .admin-table-container {
+    margin-left: calc(-1 * var(--admin-space-4, 16px));
+    margin-right: calc(-1 * var(--admin-space-4, 16px));
+    border-radius: 0;
+  }
+  
+  /* Modal scaling for mobile */
+  .admin-modal {
+    margin: var(--admin-space-4, 16px);
+    max-width: calc(100% - var(--admin-space-4, 16px) * 2);
+    max-height: calc(100vh - var(--admin-space-4, 16px) * 2);
+  }
+  
+  /* Card stacking on mobile */
+  .admin-grid-md,
+  .admin-grid-lg {
+    grid-template-columns: 1fr;
+    gap: var(--admin-space-4, 16px);
+  }
+}
+
+/* Tablet: 768px - 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-header-glass {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Card grid adjustments for tablet */
+  .admin-grid-md {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--admin-space-5, 24px);
+  }
+  
+  .admin-grid-lg {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--admin-space-6, 32px);
+  }
+  
+  /* Table overflow handling on tablet */
+  .admin-table-container {
+    margin-left: calc(-1 * var(--admin-space-5, 24px));
+    margin-right: calc(-1 * var(--admin-space-5, 24px));
+  }
+  
+  /* Modal scaling for tablet */
+  .admin-modal {
+    margin: var(--admin-space-5, 24px);
+    max-width: calc(100% - var(--admin-space-5, 24px) * 2);
+    max-height: calc(100vh - var(--admin-space-5, 24px) * 2);
+  }
+}
+
+/* Laptop: 1024px - 1439px */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .admin-grid-md {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .admin-grid-lg {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop: 1440px+ */
+@media (min-width: 1440px) {
+  .admin-grid-md {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .admin-grid-lg {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-card,
+  .admin-stat-card,
+  .admin-btn,
+  .admin-input,
+  .admin-table tbody tr {
+    transition: none;
+    transform: none !important;
+  }
+  
+  .admin-header-glass,
+  .admin-card,
+  .admin-stat-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.95);
+  }
+}
+
+/* Responsive Modal Styles */
+.admin-modal {
+  position: relative;
+  margin: var(--admin-space-4, 16px);
+  max-width: calc(100% - var(--admin-space-4, 16px) * 2);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .admin-modal {
+    margin: var(--admin-space-5, 24px) auto;
+    max-width: calc(100% - var(--admin-space-5, 24px) * 2);
+    width: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-modal {
+    margin: var(--admin-space-6, 32px) auto;
+  }
+}
+
+/* Responsive Button Visibility */
+@media (max-width: 767px) {
+  /* Ensure buttons don't get hidden on mobile */
+  .admin-btn {
+    min-height: 44px; /* Touch target size */
+    padding: var(--admin-space-2, 8px) var(--admin-space-3, 12px);
+  }
+  
+  /* Stack action buttons vertically on mobile */
+  .admin-flex-sm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .admin-flex-sm > * {
+    width: 100%;
+  }
+}
+
+/* Responsive Card Improvements */
+@media (max-width: 767px) {
+  .admin-card,
+  .admin-stat-card {
+    margin-bottom: var(--admin-space-4, 16px);
+  }
+  
+  /* Ensure cards don't overflow on mobile */
+  .admin-card > *,
+  .admin-stat-card > * {
+    min-width: 0;
+  }
+}
+
+/* Responsive Grid Improvements */
+@media (max-width: 767px) {
+  .admin-grid-md,
+  .admin-grid-lg {
+    grid-template-columns: 1fr !important;
+    gap: var(--admin-space-4, 16px) !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-grid-md {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .admin-grid-lg {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .admin-grid-md {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  .admin-grid-lg {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .admin-grid-md {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  .admin-grid-lg {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
 }

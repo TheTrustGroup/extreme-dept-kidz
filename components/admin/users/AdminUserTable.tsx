@@ -259,62 +259,62 @@ export function AdminUserTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+      <div className="admin-card-strong rounded-xl overflow-hidden">
+        <div className="admin-table-container">
+          <table className="admin-table w-full">
+            <thead className="bg-cream-50 border-b border-cream-200 sticky top-0 z-10">
               <tr>
-                <th className="px-4 py-3 text-left">
+                <th className="text-left">
                   <button
                     onClick={() => handleSort('name')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
                   >
                     User
                     {getSortIcon('name')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="text-left">
                   <button
                     onClick={() => handleSort('role')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
                   >
                     Role
                     {getSortIcon('role')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="text-left">
                   <button
                     onClick={() => handleSort('isActive')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
                   >
                     Status
                     {getSortIcon('isActive')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="text-left">
                   <button
                     onClick={() => handleSort('lastLoginAt')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
                   >
                     Last Login
                     {getSortIcon('lastLoginAt')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="text-left">
                   <button
                     onClick={() => handleSort('createdAt')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
                   >
                     Created
                     {getSortIcon('createdAt')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                <th className="text-right font-semibold text-charcoal-700">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-cream-200">
               {filteredAndSorted.map((user, index) => {
                 const isCurrentUser = user.id === currentUserId;
                 const isInactive = !user.isActive;
@@ -326,33 +326,33 @@ export function AdminUserTable({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className={cn(
-                      "hover:bg-gray-50 transition-colors",
-                      isInactive && "bg-gray-50 opacity-75"
+                      "hover:bg-cream-50 transition-colors",
+                      isInactive && "bg-cream-50 opacity-75"
                     )}
                   >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">
+                      <div className="flex items-center gap-[var(--admin-space-3)]">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500 flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {user.email}
+                        <div className="min-w-0">
+                          <div className="font-medium text-gray-900 truncate">{user.name}</div>
+                          <div className="text-sm text-gray-500 flex items-center gap-1 truncate">
+                            <Mail className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{user.email}</span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">
                       <span className={cn(
-                        "px-2 py-1 text-xs font-medium rounded-full",
+                        "px-2 py-1 text-xs font-medium rounded-full inline-block",
                         getRoleColor(user.role)
                       )}>
                         {user.role.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">
                       <span className={cn(
                         "px-2 py-1 text-xs font-medium rounded-full",
                         user.isActive
@@ -362,20 +362,20 @@ export function AdminUserTable({
                         {user.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="text-charcoal-600">
                       {user.lastLoginAt ? (
                         <div className="flex items-center gap-1 text-xs">
                           <Calendar className="w-3 h-3" />
                           {format(new Date(user.lastLoginAt), 'MMM d, yyyy')}
                         </div>
                       ) : (
-                        <span className="text-gray-400 text-xs">Never</span>
+                        <span className="text-charcoal-400 text-xs">Never</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 text-xs">
+                    <td className="text-charcoal-600">
                       {format(new Date(user.createdAt), 'MMM d, yyyy')}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="text-right">
                       <div className="relative">
                         <button
                           onClick={() => setShowActionsMenu(

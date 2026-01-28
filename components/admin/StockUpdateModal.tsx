@@ -128,7 +128,7 @@ export function StockUpdateModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg p-4 sm:p-6 lg:p-8 max-w-2xl w-full mx-2 sm:mx-4 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+      <div className="admin-modal bg-white rounded-lg p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-6)] max-w-2xl w-full mx-auto max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl font-bold truncate">Update Stock - {productName}</h2>

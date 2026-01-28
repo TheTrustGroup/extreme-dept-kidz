@@ -321,36 +321,36 @@ export function InventoryManagement(): JSX.Element {
       </div>
 
       {/* Inventory Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
+      <div className="admin-card-strong rounded-lg overflow-hidden">
+        <div className="admin-table-container -mx-4 sm:mx-0">
           <div className="inline-block min-w-full align-middle">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="admin-table min-w-full divide-y divide-cream-200">
+              <thead className="bg-cream-50">
                 <tr>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] text-left hidden sm:table-cell">
                     Product
                   </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                  <th className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] text-left hidden sm:table-cell">
                     SKU
                   </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                  <th className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] text-left hidden md:table-cell">
                     Price
                   </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] text-left">
                     Stock by Size
                   </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                  <th className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] text-left hidden lg:table-cell">
                     Total
                   </th>
-                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                  <th className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] text-left hidden md:table-cell">
                     Status
                   </th>
-                  <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] text-right">
                     Actions
                   </th>
                 </tr>
               </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-cream-200">
               {filteredProducts.map((product) => {
                 const hasLowStock = product.lowStockSizes.length > 0;
                 const isOutOfStock = product.outOfStockSizes.length > 0 && product.totalStock === 0;
@@ -362,7 +362,7 @@ export function InventoryManagement(): JSX.Element {
                       isOutOfStock ? 'bg-red-50' : hasLowStock ? 'bg-yellow-50' : ''
                     }`}
                   >
-                    <td className="px-3 sm:px-6 py-4">
+                    <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)]">
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           {product.images[0] ? (
@@ -383,18 +383,18 @@ export function InventoryManagement(): JSX.Element {
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 sm:px-6 py-4 text-sm text-gray-600 hidden sm:table-cell">
+                    <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)] text-sm text-gray-600 hidden sm:table-cell">
                       {product.sku || product.id}
                     </td>
-                    <td className="px-3 sm:px-6 py-4 text-sm font-medium text-gray-900 hidden md:table-cell">
+                    <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)] text-sm font-medium text-gray-900 hidden md:table-cell">
                       {(product.price / 100).toFixed(0)} GHS
                     </td>
-                    <td className="px-3 sm:px-6 py-4">
+                    <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)]">
                       <div className="flex gap-1 sm:gap-2 flex-wrap">
                         {product.sizes.map((size) => (
                           <span
                             key={size.size}
-                            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs rounded font-medium whitespace-nowrap ${
+                            className={`px-[var(--admin-space-2)] sm:px-[var(--admin-space-2)] py-[var(--admin-space-1)] sm:py-[var(--admin-space-2)] text-xs rounded font-medium whitespace-nowrap ${
                               (size.quantity || 0) === 0
                                 ? 'bg-red-100 text-red-700'
                                 : (size.quantity || 0) < 5
@@ -407,12 +407,12 @@ export function InventoryManagement(): JSX.Element {
                         ))}
                       </div>
                     </td>
-                    <td className="px-3 sm:px-6 py-4 text-sm font-semibold text-gray-900 hidden lg:table-cell">
+                    <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)] text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       {product.totalStock}
                     </td>
                     <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
                       <span
-                        className={`px-2 py-1 text-xs rounded-full font-medium whitespace-nowrap ${
+                        className={`px-[var(--admin-space-2)] py-[var(--admin-space-2)] text-xs rounded-full font-medium whitespace-nowrap ${
                           isOutOfStock
                             ? 'bg-red-100 text-red-700'
                             : hasLowStock
@@ -423,7 +423,7 @@ export function InventoryManagement(): JSX.Element {
                         {isOutOfStock ? 'Out of Stock' : hasLowStock ? 'Low Stock' : 'In Stock'}
                       </span>
                     </td>
-                    <td className="px-3 sm:px-6 py-4 text-right">
+                    <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)] text-right">
                       <Button
                         variant="ghost"
                         size="sm"

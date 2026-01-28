@@ -139,26 +139,26 @@ export function ProductManagement(): JSX.Element {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="admin-table-container">
+          <table className="admin-table w-full">
             <thead className="bg-cream-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="text-left">
                   Product
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="text-left">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="text-left">
                   Price
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="text-left">
                   Stock
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="text-left">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="text-right">
                   Actions
                 </th>
               </tr>
