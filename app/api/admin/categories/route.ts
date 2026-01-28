@@ -25,6 +25,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        _count: { select: { products: true } },
+      },
     });
     
     return apiSuccess(

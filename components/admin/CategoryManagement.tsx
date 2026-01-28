@@ -14,6 +14,7 @@ interface Category {
   description: string | null;
   isActive: boolean;
   products?: Array<{ id: string }>;
+  _count?: { products: number };
 }
 
 export function CategoryManagement(): JSX.Element {
@@ -179,7 +180,7 @@ export function CategoryManagement(): JSX.Element {
                       {category.description || "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-charcoal-600">
-                      {category.products?.length || 0}
+                      {category._count?.products ?? category.products?.length ?? 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
