@@ -213,6 +213,8 @@ export const useAdminAuth = create<AdminAuthState>()(
       },
 
       logout: async (): Promise<void> => {
+        console.log("[Auth] Logout initiated");
+        
         // Clear local state first (immediate UI update)
         set({
           user: null,
@@ -229,29 +231,44 @@ export const useAdminAuth = create<AdminAuthState>()(
             'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT',
             `admin-token=; path=/; domain=${hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT`,
             `admin-token=; path=/; domain=.${hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT`,
+            'admin-token=; path=/admin; expires=Thu, 01 Jan 1970 00:00:00 GMT',
+            `admin-token=; path=/admin; domain=${hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT`,
           ];
           
           cookiesToClear.forEach(cookie => {
             document.cookie = cookie;
           });
+          
+          console.log("[Auth] Cleared cookies from client side");
         }
         
-        // Clear cookie via API (best effort, don't wait for it)
+        // Clear cookie via API - wait for it to complete
         try {
-          await fetch("/api/admin/auth/logout", {
+          const response = await fetch("/api/admin/auth/logout", {
             method: "POST",
             credentials: 'include',
             cache: 'no-store',
-          }).catch(() => {
-            // Ignore network errors - we've already cleared local state and cookies
+            headers: {
+              'Content-Type': 'application/json',
+            },
           });
+          
+          if (response.ok) {
+            console.log("[Auth] Logout API call successful");
+          } else {
+            console.warn("[Auth] Logout API returned non-OK status:", response.status);
+          }
         } catch (error) {
-          // Ignore errors - logout should always succeed locally
-          console.log("[Auth] Logout API call failed, but local logout completed:", error);
+          // Log but don't block - we've already cleared local state
+          console.error("[Auth] Logout API call failed:", error);
         }
+        
+        // Small delay to ensure cookie clearing completes
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         // Always redirect to login page
         if (typeof window !== 'undefined') {
+          console.log("[Auth] Redirecting to login page");
           // Use replace to prevent back button from going to admin pages
           window.location.replace('/admin/login');
         }

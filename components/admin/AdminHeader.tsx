@@ -152,7 +152,15 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
           {/* Sign out – always visible when logged in */}
           {user && (
             <button
-              onClick={() => logout()}
+              onClick={async () => {
+                try {
+                  await logout();
+                } catch (error) {
+                  console.error("Logout error:", error);
+                  // Force redirect even if logout fails
+                  window.location.replace('/admin/login');
+                }
+              }}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200"
               aria-label="Sign out"
               title="Sign out"
@@ -210,9 +218,15 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                         Profile Settings
                       </Link>
                       <button
-                        onClick={() => {
-                          logout();
+                        onClick={async () => {
                           setShowUserMenu(false);
+                          try {
+                            await logout();
+                          } catch (error) {
+                            console.error("Logout error:", error);
+                            // Force redirect even if logout fails
+                            window.location.replace('/admin/login');
+                          }
                         }}
                         className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                         aria-label="Sign out"

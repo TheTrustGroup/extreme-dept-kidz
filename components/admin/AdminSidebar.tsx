@@ -354,7 +354,15 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
               )}
             </div>
             <button
-              onClick={logout}
+              onClick={async () => {
+                try {
+                  await logout();
+                } catch (error) {
+                  console.error("Logout error:", error);
+                  // Force redirect even if logout fails
+                  window.location.replace('/admin/login');
+                }
+              }}
               className={cn(
                 "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 text-sm font-medium",
                 "group",
