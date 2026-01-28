@@ -175,6 +175,41 @@ export default function RootLayout({
         {/* CRITICAL FIX: Removed icon preloads - icons are small (< 100KB total) and browsers handle them efficiently */}
         {/* Preloading icons causes "preloaded but not used" warnings and wastes bandwidth */}
         {/* Icons are already referenced in metadata and manifest - browsers will fetch them when needed */}
+        
+        {/* PWA: Theme color and background color meta tags for proper splash screen */}
+        <meta name="theme-color" content="#1A1A2E" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#1A1A2E" media="(prefers-color-scheme: dark)" />
+        <meta name="background-color" content="#F5F1E8" />
+        
+        {/* iOS PWA: Apple mobile web app meta tags */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Extreme Dept Kidz" />
+        
+        {/* iOS PWA: Splash screen sizes for all device sizes */}
+        {/* iPhone 14 Pro Max / 13 Pro Max / 12 Pro Max */}
+        <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/splash-iphone-14-pro-max.png" />
+        {/* iPhone 14 Plus / 13 / 12 */}
+        <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" href="/splash-iphone-14-plus.png" />
+        {/* iPhone 14 / 13 mini / 12 mini */}
+        <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/splash-iphone-14.png" />
+        {/* iPhone 11 Pro Max / XS Max */}
+        <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" href="/splash-iphone-11-pro-max.png" />
+        {/* iPhone 11 / XR */}
+        <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="/splash-iphone-11.png" />
+        {/* iPhone 8 Plus / 7 Plus / 6s Plus */}
+        <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" href="/splash-iphone-8-plus.png" />
+        {/* iPhone 8 / 7 / 6s / SE 2nd gen */}
+        <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splash-iphone-8.png" />
+        {/* iPad Pro 12.9" */}
+        <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="/splash-ipad-pro-12-9.png" />
+        {/* iPad Pro 11" */}
+        <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/splash-ipad-pro-11.png" />
+        {/* iPad Air / Mini */}
+        <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="/splash-ipad.png" />
+        
+        {/* Fallback splash screen (uses largest icon) */}
+        <link rel="apple-touch-startup-image" href="/icon-512x512.png" />
       </head>
       <body className="min-h-screen flex flex-col">
         <ErrorBoundary>
