@@ -3,8 +3,8 @@
  * Handles real DB or falls back to mock data seamlessly
  */
 
-import { mockProducts, mockCategories, completeLooks } from '@/lib/mock-data';
-import type { Product, Category } from '@/types';
+import { mockProducts, mockCategories, mockCollections, completeLooks } from '@/lib/mock-data';
+import type { Product, Category, Collection } from '@/types';
 import type { CompleteLook } from '@/types/complete-look';
 import { logger } from '@/lib/utils/logger';
 
@@ -930,6 +930,42 @@ export async function getCategoryById(id: string): Promise<Category | null> {
     },
     mockCategories.find(c => c.id === id) || null,
     `getCategoryById(${id})`
+  );
+}
+
+// Collections
+export async function getAllCollections(): Promise<Collection[]> {
+  return executeQuery(
+    async () => {
+      const { prisma } = await import('./prisma');
+      if (!prisma) {
+        throw new Error('Prisma not available');
+      }
+      
+      const prismaCollections = await prisma.collection.findMany({
+        where: {
+          isActive: true, // Only return active collections
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      // Transform Prisma collections to Collection type
+      return prismaCollections.map((c): Collection => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description ?? undefined,
+        image: c.image ?? '',
+        bannerImage: c.bannerImage ?? undefined,
+        isActive: c.isActive,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      }));
+    },
+    mockCollections,
+    'getAllCollections'
   );
 }
 
