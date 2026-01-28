@@ -6,6 +6,7 @@ import type { Product } from "@/types";
 import { HeroSection } from "@/components/home";
 import { TrustBar } from "@/components/home";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { unstable_cache } from "next/cache";
 
 // Hero + TrustBar in main bundle so above-the-fold is fast and never static/blank
 
@@ -82,14 +83,26 @@ export default async function Home() {
 
   // Fetch products from database to display on homepage
   // Performance: Tagged for efficient cache invalidation
+  // Build-time resilient: getAllProducts now handles build-time failures gracefully
   let products: Product[] = [];
   try {
-    // Note: unstable_cache with tags would be ideal, but getAllProducts already handles caching
-    // We'll tag at the API level instead
-    products = await getAllProducts();
+    // Use unstable_cache for ISR with tag-based revalidation
+    // getAllProducts will fallback to mock data during build if DB unavailable
+    const getCachedProducts = unstable_cache(
+      async () => getAllProducts(),
+      ['homepage-products'],
+      {
+        tags: [CACHE_TAGS.products, CACHE_TAGS.homepage],
+        revalidate: 60,
+      }
+    );
+    
+    products = await getCachedProducts();
   } catch (error) {
+    // Fallback: Continue with empty array - components will use mock data as fallback
+    // This should rarely happen now that getAllProducts handles build-time failures
     console.error('Failed to fetch products for homepage:', error);
-    // Continue with empty array - components will use mock data as fallback
+    products = [];
   }
 
   return (

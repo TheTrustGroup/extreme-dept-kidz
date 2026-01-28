@@ -185,9 +185,13 @@ async function executeQuery<T>(
   queryName: string
 ): Promise<T> {
   const isProduction = process.env.NODE_ENV === 'production';
+  // Detect build time: Next.js sets NEXT_PHASE during build, or we can check if we're in a build context
+  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                      process.env.NEXT_PHASE === 'phase-development' ||
+                      (typeof process !== 'undefined' && process.env.npm_lifecycle_event === 'build');
   
-  // In production, DATABASE_URL must be set
-  if (isProduction && !DB_CONFIG.enabled) {
+  // In production runtime (not build), DATABASE_URL must be set
+  if (isProduction && !isBuildTime && !DB_CONFIG.enabled) {
     const error = new Error(`Database not configured. DATABASE_URL is required in production. Query: ${queryName}`);
     logger.error(error.message);
     throw error;
@@ -195,10 +199,14 @@ async function executeQuery<T>(
 
   // If using mock data (development only), return immediately
   if (DB_CONFIG.type === 'mock' || !DB_CONFIG.enabled) {
-    if (isProduction) {
+    // During build time, allow fallback to mock data even in production mode
+    if (isProduction && !isBuildTime) {
       const error = new Error(`Cannot use mock data in production. Query: ${queryName}`);
       logger.error(error.message);
       throw error;
+    }
+    if (isBuildTime) {
+      logger.log(`[Build] ${queryName}: Using mock data (build-time fallback)`);
     }
     return fallbackData;
   }
@@ -245,12 +253,23 @@ async function executeQuery<T>(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Unknown error');
       
-      logger.error(`❌ ${queryName} failed (attempt ${attempt}/${DB_CONFIG.retryAttempts}):`, lastError.message);
+      // During build time, don't spam errors - just log once
+      if (isBuildTime && attempt === 1) {
+        logger.log(`[Build] ${queryName}: Database unavailable during build, will use mock data fallback`);
+      } else if (!isBuildTime) {
+        logger.error(`❌ ${queryName} failed (attempt ${attempt}/${DB_CONFIG.retryAttempts}):`, lastError.message);
+      }
 
       // Wait before retry (exponential backoff)
-      if (attempt < DB_CONFIG.retryAttempts) {
-        const delay = DB_CONFIG.retryDelay * Math.pow(2, attempt - 1);
-        await new Promise(resolve => setTimeout(resolve, delay));
+      // Skip retries during build time to speed up build
+      if (isBuildTime || attempt < DB_CONFIG.retryAttempts) {
+        if (!isBuildTime && attempt < DB_CONFIG.retryAttempts) {
+          const delay = DB_CONFIG.retryDelay * Math.pow(2, attempt - 1);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else if (isBuildTime) {
+          // During build, fail fast after first attempt
+          break;
+        }
       }
     }
   }
@@ -258,13 +277,21 @@ async function executeQuery<T>(
   // All retries failed
   const error = new Error(`Database query failed after ${DB_CONFIG.retryAttempts} attempts. Query: ${queryName}. Error: ${lastError?.message}`);
   
-  // In production, throw error instead of falling back
+  // During build time, allow fallback to mock data to prevent build failures
+  if (isBuildTime) {
+    logger.warn(`[Build] ${queryName}: Database unavailable during build, using mock data fallback`);
+    dbConnected = false;
+    connectionError = lastError;
+    return fallbackData;
+  }
+  
+  // In production runtime, throw error instead of falling back
   if (isProduction) {
     logger.error(error.message);
     throw error;
   }
   
-  // In development, log and fall back to mock data
+  // In development runtime, log and fall back to mock data
   logger.warn(`[DB] ${queryName}: Connection failed, using mock data (development mode only)`);
   
   // Update connection status
