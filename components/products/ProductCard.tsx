@@ -113,7 +113,7 @@ export const ProductCard = React.memo(function ProductCard({
             decoding="async"
           />
 
-          {/* Secondary Image (on hover) - Preload to prevent CLS */}
+          {/* Secondary Image (on hover) - Lazy load to prevent unnecessary preloads */}
           {secondaryImage && (
             <Image
               src={secondaryImage.url}
@@ -126,10 +126,11 @@ export const ProductCard = React.memo(function ProductCard({
                 isHovered ? "opacity-100" : "opacity-0"
               )}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 280px"
-              // Performance: Preload secondary image to prevent layout shift on hover
-              loading="eager"
+              // CRITICAL FIX: Lazy load secondary images - only load when needed (hover)
+              // Preloading all secondary images causes "preloaded but not used" warnings
+              loading="lazy"
               quality={85}
-              fetchPriority="high"
+              fetchPriority="low"
               decoding="async"
               // Hidden but loaded to reserve space
               style={{ position: "absolute" }}

@@ -83,7 +83,7 @@ export function HeroSection(): JSX.Element {
               className="object-cover"
               sizes="100vw"
               decoding="async"
-              fetchPriority="high"
+              // CRITICAL FIX: Remove redundant fetchPriority - priority already sets it to "high"
               style={{
                 objectPosition: "center center",
               }}

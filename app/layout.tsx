@@ -167,11 +167,9 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         
-        {/* CRITICAL FIX: Preload icons to prevent 404 errors and improve performance */}
-        <link rel="preload" href="/apple-touch-icon.png" as="image" type="image/png" />
-        <link rel="preload" href="/favicon.ico" as="image" />
-        <link rel="preload" href="/icon-192x192.png" as="image" type="image/png" />
-        <link rel="preload" href="/icon-512x512.png" as="image" type="image/png" />
+        {/* CRITICAL FIX: Removed icon preloads - icons are small (< 100KB total) and browsers handle them efficiently */}
+        {/* Preloading icons causes "preloaded but not used" warnings and wastes bandwidth */}
+        {/* Icons are already referenced in metadata and manifest - browsers will fetch them when needed */}
       </head>
       <body className="min-h-screen flex flex-col">
         <ErrorBoundary>

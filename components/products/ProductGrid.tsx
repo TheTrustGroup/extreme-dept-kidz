@@ -111,8 +111,10 @@ export function ProductGrid({
         // CRITICAL FIX: Products start visible (opacity: 1) to prevent invisible but clickable bug
         // Animation only applies subtle fade-in for above-fold items, below-fold are instant
         products.map((product, index) => {
-          // Performance: First 4 cards are above fold - prioritize loading
-          const isAboveFold = index < 4;
+          // CRITICAL FIX: Only first 1-2 items should have priority (LCP element only)
+          // Too many priority images cause "preloaded but not used" warnings
+          // Most viewports show 1-2 products above fold, so prioritize only those
+          const isAboveFold = index < 2; // Reduced from 4 to 2
           
           return (
             <m.div

@@ -106,7 +106,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                   quality={90}
                   sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
                   decoding="async"
-                  fetchPriority="high"
+                  // CRITICAL FIX: Remove redundant fetchPriority - priority already sets it to "high"
                 />
               </Link>
             </m.div>
