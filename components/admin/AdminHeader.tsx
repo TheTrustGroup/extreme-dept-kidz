@@ -149,35 +149,26 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
             )}
           </div>
 
-          {/* Sign out – always visible when logged in - CRITICAL FIX: Ensure visibility */}
-          <button
-            onClick={async () => {
-              if (!user) {
-                // If no user, redirect to login
-                window.location.replace('/admin/login');
-                return;
-              }
-              try {
-                await logout();
-              } catch (error) {
-                console.error("Logout error:", error);
-                // Force redirect even if logout fails
-                window.location.replace('/admin/login');
-              }
-            }}
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 active:scale-95 border",
-              user 
-                ? "text-gray-700 hover:text-red-600 hover:bg-red-50 border-transparent hover:border-red-200"
-                : "opacity-0 pointer-events-none"
-            )}
-            aria-label="Sign out"
-            title="Sign out"
-            disabled={!user}
-          >
-            <LogOut className="w-4 h-4 flex-shrink-0" />
-            <span className="text-sm font-medium hidden sm:inline">Sign out</span>
-          </button>
+          {/* Sign out – always visible when logged in - CRITICAL: Ensure visibility */}
+          {user && (
+            <button
+              onClick={async () => {
+                try {
+                  await logout();
+                } catch (error) {
+                  console.error("Logout error:", error);
+                  // Force redirect even if logout fails
+                  window.location.replace('/admin/login');
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-medium hidden sm:inline">Sign out</span>
+            </button>
+          )}
 
           {/* User Menu */}
           {user && (
