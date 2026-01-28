@@ -296,6 +296,10 @@ html {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Apply transitions only to interactive elements to prevent scroll flickering */
+a, button, input, select, textarea {
   transition:
     background-color var(--transition-base),
     border-color var(--transition-base),
@@ -333,9 +337,6 @@ body {
   /* Smooth font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Performance: GPU acceleration for transforms */
-  transform: translateZ(0);
-  will-change: scroll-position;
   /* Cross-browser: Prevent text size adjustment on iOS */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -343,6 +344,7 @@ body {
   scroll-behavior: smooth;
   /* Cross-browser: iOS Safari smooth scrolling */
   -webkit-overflow-scrolling: touch;
+  /* Prevent scroll flickering - removed will-change and transform */
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -61,6 +61,8 @@ export function ScrollReveal({
         ease: "easeInOut",
         delay,
       }}
+      // Prevent flickering during scroll - use will-change only when animating
+      style={{ willChange: isInView ? 'auto' : 'opacity, transform' }}
       className={cn(className)}
     >
       {children}
