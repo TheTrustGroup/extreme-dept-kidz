@@ -18,8 +18,13 @@ Your `.env.local` file only works for **local development**. In production (Verc
 
 #### **DATABASE_URL** (Required)
 ```
-postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+postgresql://postgres.[project-ref]:[password]@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
+
+**⚠️ Get your actual DATABASE_URL from Supabase Dashboard:**
+1. Go to Supabase → Settings → Database
+2. Under "Connection string", select "Transaction" mode
+3. Copy the full URI (includes password)
 
 **⚠️ CRITICAL - Port 6543 (Transaction Mode) Required:**
 - **Port 6543** = Transaction mode (for serverless/Vercel) ✅ **USE THIS**
@@ -30,11 +35,12 @@ postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pool
 
 #### **JWT_SECRET** (Required)
 ```
-edbf56ab7567b37d8fcb7a6255a5eb2a39f740dcf0694529f8448e2ff1ae9893
+[Your JWT secret - at least 32 characters]
 ```
 
 **Important:**
-- Must be at least 32 characters (yours is 64, which is perfect)
+- Must be at least 32 characters
+- Generate a secure random string (e.g., `openssl rand -hex 32`)
 - Keep this secret - never commit it to git
 
 ### 4. Set Environment Scope
@@ -97,19 +103,12 @@ Should show:
 
 ## Your Current Setup
 
-Based on your `.env.local`:
+**⚠️ IMPORTANT:** Never commit actual credentials to git. Get your values from:
 
-**DATABASE_URL:**
-```
-postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
-```
+1. **DATABASE_URL:** Supabase Dashboard → Settings → Database → Connection string (Transaction mode)
+2. **JWT_SECRET:** Generate a secure random string (e.g., `openssl rand -hex 32`)
 
-**JWT_SECRET:**
-```
-edbf56ab7567b37d8fcb7a6255a5eb2a39f740dcf0694529f8448e2ff1ae9893
-```
-
-Copy these **exactly** into Vercel environment variables.
+Copy these values into Vercel environment variables.
 
 ## After Setup
 

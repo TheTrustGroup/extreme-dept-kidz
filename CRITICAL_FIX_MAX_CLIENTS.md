@@ -26,12 +26,12 @@ When multiple requests hit Vercel simultaneously (login + collection pages), Ses
 
 **Before (WRONG):**
 ```
-postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?pgbouncer=true
+postgresql://postgres.[project-ref]:[password]@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?pgbouncer=true
 ```
 
 **After (CORRECT):**
 ```
-postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+postgresql://postgres.[project-ref]:[password]@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
 ### Step 2: Redeploy

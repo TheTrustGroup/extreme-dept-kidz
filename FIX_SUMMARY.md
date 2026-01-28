@@ -29,12 +29,12 @@ FATAL: MaxClientsInSessionMode: max clients reached - in Session mode max client
 
    **Current (WRONG):**
    ```
-   postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?pgbouncer=true
+   postgresql://postgres.[project-ref]:[password]@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?pgbouncer=true
    ```
 
    **Change to (CORRECT):**
    ```
-   postgresql://postgres.puuszplmdbindiesfxlr:z7Uooww7O96G2Sdd@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+   postgresql://postgres.[project-ref]:[password]@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
    ```
 
    **Only change:** `:5432` → `:6543`
