@@ -45,9 +45,8 @@ export function CollectionPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [products, setProducts] = React.useState<Product[]>(serverProducts);
-  const [lastFetchTime, setLastFetchTime] = React.useState(Date.now());
 
   // Use server-passed real category (collectionInfo) or derive from first product
   const collection = React.useMemo(() => {
@@ -158,54 +157,13 @@ export function CollectionPageClient({
     return sortProducts(filteredProducts, sortBy);
   }, [filteredProducts, sortBy]);
 
-  // Refresh products periodically and on focus (for newly uploaded products)
-  React.useEffect(() => {
-    const refreshProducts = async () => {
-      try {
-        const response = await fetch(`/api/products?category=${params.slug}`, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const freshProducts: Product[] = data.data?.products || data.products || [];
-          if (freshProducts.length !== products.length || 
-              JSON.stringify(freshProducts.map((p: Product) => p.id)) !== JSON.stringify(products.map((p: Product) => p.id))) {
-            setProducts(freshProducts);
-            setLastFetchTime(Date.now());
-          }
-        }
-      } catch (error) {
-        console.error('[CollectionPage] Error refreshing products:', error);
-      }
-    };
-
-    // Refresh on window focus (user returns to tab)
-    const handleFocus = () => {
-      const timeSinceLastFetch = Date.now() - lastFetchTime;
-      // Only refresh if it's been more than 30 seconds
-      if (timeSinceLastFetch > 30000) {
-        refreshProducts();
-      }
-    };
-
-    // Refresh every 60 seconds
-    const interval = setInterval(refreshProducts, 60000);
-    window.addEventListener('focus', handleFocus);
-
-    setIsLoading(false);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [params.slug, products.length, lastFetchTime]);
+  // Update products when server products change
+  // No polling needed - ISR + tag-based revalidation handles product updates automatically
 
   // Update products when server products change
+  // This ensures products update when ISR revalidates the page
   React.useEffect(() => {
-    if (serverProducts.length > 0) {
+    if (serverProducts && serverProducts.length >= 0) {
       setProducts(serverProducts);
     }
   }, [serverProducts]);

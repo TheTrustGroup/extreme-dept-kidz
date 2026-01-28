@@ -20,25 +20,14 @@ interface ProductGridProps {
  * 
  * Responsive grid layout for displaying products.
  * Supports loading states and empty states.
- * Includes hydration protection to prevent React hydration mismatches.
+ * SSR-safe: Renders consistent skeleton during SSR to prevent hydration mismatches.
  */
 export function ProductGrid({
   products,
   columns = 4,
   isLoading = false,
   className,
-}: ProductGridProps): JSX.Element | null {
-  const [mounted, setMounted] = React.useState(false);
-
-  // Fix hydration by only rendering on client
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // During SSR, return nothing to prevent hydration mismatch
-  if (!mounted) {
-    return null;
-  }
+}: ProductGridProps): JSX.Element {
 
   // Safety checks
   if (!products || !Array.isArray(products)) {
@@ -65,6 +54,7 @@ export function ProductGrid({
   }
 
   // Grid column classes based on columns prop
+  // SSR-safe: Deterministic classes that match on server and client
   // Mobile (375px+): 1 column
   // Small mobile (428px+): 1 column
   // Tablet (768px+): 2 columns
@@ -103,13 +93,15 @@ export function ProductGrid({
         contain: "layout style paint",
       }}
     >
-      {isLoading ? (
+      {isLoading || products.length === 0 ? (
         // Loading state - show skeleton cards with proper dimensions to prevent layout shift
+        // SSR-safe: Same skeleton count on server and client
         Array.from({ length: columns * 2 }).map((_, index) => (
           <SkeletonCard key={`skeleton-${index}`} />
         ))
       ) : (
         // Product cards with stagger animation
+        // SSR-safe: Deterministic rendering order based on products array
         products.map((product, index) => {
           // Performance: First 4 cards are above fold - prioritize loading
           const isAboveFold = index < 4;

@@ -8,19 +8,11 @@ import { useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Hero background video and poster (poster shows before video plays)
-// In production, set NEXT_PUBLIC_HERO_VIDEO_URL to your CDN/Vercel Blob URL so the repo stays small
-const HERO_VIDEO_SRC = process.env.NEXT_PUBLIC_HERO_VIDEO_URL || "/IMG_4474.mp4";
-const HERO_POSTER = "/Extreme 1.png";
+// Hero background image
+const HERO_IMAGE = "/Extreme 1.png";
 
 export function HeroSection(): JSX.Element {
-  // Show content immediately so hero is never stuck blank (no waiting on video)
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [videoLoaded, setVideoLoaded] = React.useState(false);
-  const [videoError, setVideoError] = React.useState(false);
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [shouldLoadVideo, setShouldLoadVideo] = React.useState(true);
 
   // Parallax scroll effect - Optimized with RAF throttling
   // Performance: Use passive scroll listener with requestAnimationFrame throttling
@@ -32,146 +24,6 @@ export function HeroSection(): JSX.Element {
 
   // Performance: Throttle transform updates with useTransform (already optimized by framer-motion)
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-
-  // Intersection Observer for lazy loading on mobile (performance optimization)
-  React.useEffect(() => {
-    // On mobile, only load video when section is visible
-    if (typeof window === "undefined") return;
-    
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile) {
-      setShouldLoadVideo(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setShouldLoadVideo(true);
-            observer.disconnect();
-          }
-        });
-      },
-      {
-        rootMargin: "50px", // Start loading slightly before visible
-        threshold: 0.1,
-      }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  // Enhanced video loading and playback logic
-  React.useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !shouldLoadVideo) return;
-
-    // Track video loading state
-    const handleLoadedData = () => {
-      setVideoLoaded(true);
-    };
-
-    const handleCanPlay = () => {
-      setVideoLoaded(true);
-    };
-
-    const handleLoadedMetadata = () => {
-      setVideoLoaded(true);
-    };
-
-    const handleError = (e: Event) => {
-      console.error("Hero video failed to load:", e);
-      setVideoError(true);
-      setVideoLoaded(false);
-    };
-
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-      // Auto-resume if paused unintentionally (but not if ended)
-      if (!video.ended && video.paused) {
-        video.play().catch(() => {
-          // Silently handle autoplay restrictions
-        });
-      }
-    };
-
-    const handleEnded = () => {
-      // Restart loop
-      video.currentTime = 0;
-      video.play().catch(() => {});
-    };
-
-    // Attach event listeners
-    video.addEventListener("loadeddata", handleLoadedData);
-    video.addEventListener("canplay", handleCanPlay);
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("error", handleError);
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
-    video.addEventListener("ended", handleEnded);
-
-    // Attempt to play video
-    const attemptPlay = async () => {
-      try {
-        // Ensure video is muted for autoplay
-        video.muted = true;
-        video.playsInline = true;
-        
-        // Try to play
-        await video.play();
-        setIsPlaying(true);
-      } catch (error) {
-        // Autoplay was prevented - will play on user interaction
-        console.log("Video autoplay prevented, will play on interaction");
-        
-        const playOnInteraction = () => {
-          video.play()
-            .then(() => setIsPlaying(true))
-            .catch(() => {});
-          document.removeEventListener("click", playOnInteraction);
-          document.removeEventListener("touchstart", playOnInteraction);
-          document.removeEventListener("scroll", playOnInteraction);
-        };
-        
-        // Try multiple interaction types for better mobile support
-        document.addEventListener("click", playOnInteraction, { once: true, passive: true });
-        document.addEventListener("touchstart", playOnInteraction, { once: true, passive: true });
-        document.addEventListener("scroll", playOnInteraction, { once: true, passive: true });
-      }
-    };
-
-    // Check if video is already loaded
-    if (video.readyState >= 2) {
-      setVideoLoaded(true);
-      attemptPlay();
-    } else {
-      // Wait for video to load
-      video.addEventListener("canplaythrough", attemptPlay, { once: true });
-    }
-
-    // Cleanup
-    return () => {
-      video.removeEventListener("loadeddata", handleLoadedData);
-      video.removeEventListener("canplay", handleCanPlay);
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("error", handleError);
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
-      video.removeEventListener("ended", handleEnded);
-      video.removeEventListener("canplaythrough", attemptPlay);
-    };
-  }, [shouldLoadVideo]);
 
   // Fade-in animation variants – smooth, staggered reveal on load
   const containerVariants = {
@@ -207,7 +59,7 @@ export function HeroSection(): JSX.Element {
       }}
       aria-label="Hero section"
     >
-      {/* Hero Video with Parallax */}
+      {/* Hero Image with Parallax */}
       <m.div
         className="absolute inset-0 z-0 overflow-hidden"
         style={{ y }}
@@ -220,60 +72,25 @@ export function HeroSection(): JSX.Element {
             minHeight: "100%",
           }}
         >
-          {/* Poster Image - Shows immediately, prevents CLS */}
-          {(!videoLoaded || videoError) && (
-            <div className="absolute inset-0 w-full h-full bg-charcoal-900 overflow-hidden">
-              <Image
-                src={HERO_POSTER}
-                alt="Hero background - Extreme Dept Kidz"
-                fill
-                priority
-                quality={90}
-                className="object-cover"
-                sizes="100vw"
-                decoding="async"
-                fetchPriority="high"
-                style={{
-                  objectPosition: "center center",
-                }}
-                aria-hidden="true"
-              />
-            </div>
-          )}
-
-          {/* Hero Video - Only render if no error and should load */}
-          {!videoError && shouldLoadVideo && (
-            <video
-              ref={videoRef}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              poster={HERO_POSTER}
-              disablePictureInPicture
-              disableRemotePlayback
-              className={cn(
-                "absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out",
-                videoLoaded && isPlaying ? "opacity-100 z-10" : "opacity-0 z-0"
-              )}
+          {/* Hero Background Image */}
+          <div className="absolute inset-0 w-full h-full bg-charcoal-900 overflow-hidden">
+            <Image
+              src={HERO_IMAGE}
+              alt="Hero background - Extreme Dept Kidz"
+              fill
+              priority
+              quality={90}
+              className="object-cover"
+              sizes="100vw"
+              decoding="async"
+              fetchPriority="high"
               style={{
                 objectPosition: "center center",
-                minWidth: "100vw",
-                minHeight: "100vh",
-                width: "100%",
-                height: "100%",
-                transform: "scale(1.02)",
-                willChange: "transform, opacity",
-                WebkitTransform: "translateZ(0)",
-                transformOrigin: "center center",
               }}
-              aria-label="Hero background video showcasing Extreme Dept Kidz collection"
-            >
-              <source src={HERO_VIDEO_SRC} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          )}
+              aria-hidden="true"
+            />
+          </div>
+          
           {/* Soft gradient overlay – premium, breathable depth */}
           <div
             className="absolute inset-0"

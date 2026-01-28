@@ -3,15 +3,17 @@ import { Suspense } from "react";
 import { CollectionPageClient } from "./CollectionPageClient";
 import { getAllCategories, getAllProducts, getProductsByCategory } from "@/lib/db";
 import { getProductsByCollection } from "@/lib/utils/filter-products";
+import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { unstable_cache } from "next/cache";
 import type { Product } from "@/types";
 
 interface CollectionPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Disable static generation to prevent hydration issues
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// ISR: Revalidate collection pages every 60 seconds, or on-demand via tags
+// This allows products to appear quickly after admin upload while maintaining freshness
+export const revalidate = 60;
 
 /**
  * Generate metadata from real category (Admin → Categories).
@@ -58,9 +60,28 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
   const { slug } = await params;
 
   try {
+    // Use unstable_cache with tags for efficient cache invalidation
+    const getCachedCategories = unstable_cache(
+      async () => getAllCategories(),
+      [`categories-${slug}`],
+      {
+        tags: [CACHE_TAGS.categories, CACHE_TAGS.collections, CACHE_TAGS.category(slug)],
+        revalidate: 60,
+      }
+    );
+
+    const getCachedProducts = unstable_cache(
+      async () => getProductsByCategory(slug),
+      [`products-${slug}`],
+      {
+        tags: [CACHE_TAGS.products, CACHE_TAGS.category(slug), CACHE_TAGS.collection(slug)],
+        revalidate: 60,
+      }
+    );
+
     const [categories, productsByCategory] = await Promise.all([
-      getAllCategories(),
-      getProductsByCategory(slug),
+      getCachedCategories(),
+      getCachedProducts(),
     ]);
 
     const category = categories.find((c) => c.slug === slug && c.isActive);

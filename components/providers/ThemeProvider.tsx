@@ -26,49 +26,52 @@ const ThemeContext = createContext<ThemeContextType>(defaultThemeContext);
  * Manages dark/light theme state with localStorage persistence.
  * Light theme is the primary/default theme.
  * 
- * Performance: Prevents FOUC by applying theme synchronously before render
+ * SSR-safe: Theme is applied via inline script in layout.tsx before React hydration.
+ * This component only manages theme state after hydration to prevent mismatches.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Performance: Initialize theme synchronously to prevent FOUC
-    // This runs only on client-side mount
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("theme") as Theme | null;
-      if (stored === "dark" || stored === "light") {
-        // Apply immediately to prevent flash
-        applyThemeSync(stored);
-        return stored;
-      }
-      // Check system preference, default to light
-      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme: Theme = systemPrefersDark ? "dark" : "light";
-      applyThemeSync(initialTheme);
-      return initialTheme;
-    }
-    return "light";
-  });
+  // SSR-safe: Always start with "light" theme (matches server render)
+  // The inline script in layout.tsx applies the correct theme before hydration
+  const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
-  // Initialize theme on mount (for SSR hydration)
+  // Initialize theme on mount (after hydration)
+  // The inline script already applied the theme, so we just sync state
   useEffect(() => {
     setMounted(true);
     
-    // Double-check theme on mount (handles edge cases)
-    const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored === "dark" || stored === "light") {
-      if (stored !== theme) {
-        setThemeState(stored);
-        applyTheme(stored);
+    // Read theme from DOM (set by inline script) or localStorage
+    const getInitialTheme = (): Theme => {
+      // Check data-theme attribute (set by inline script)
+      if (typeof document !== "undefined") {
+        const dataTheme = document.documentElement.getAttribute("data-theme");
+        if (dataTheme === "dark" || dataTheme === "light") {
+          return dataTheme as Theme;
+        }
       }
-    } else {
-      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme: Theme = systemPrefersDark ? "dark" : "light";
-      if (initialTheme !== theme) {
-        setThemeState(initialTheme);
-        applyTheme(initialTheme);
+      
+      // Fallback to localStorage
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("theme") as Theme | null;
+        if (stored === "dark" || stored === "light") {
+          return stored;
+        }
+        
+        // Fallback to system preference
+        const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        return systemPrefersDark ? "dark" : "light";
       }
+      
+      return "light";
+    };
+
+    const initialTheme = getInitialTheme();
+    if (initialTheme !== theme) {
+      setThemeState(initialTheme);
+      // Ensure DOM matches state (handles edge cases)
+      applyTheme(initialTheme);
     }
-  }, []);
+  }, [theme]);
 
   // Apply theme to document synchronously (prevents FOUC)
   function applyThemeSync(newTheme: Theme) {
