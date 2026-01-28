@@ -61,8 +61,15 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
 
   try {
     // Use unstable_cache with tags for efficient cache invalidation
+    // CRITICAL: Cache keys must match the tags used in revalidation
     const getCachedCategories = unstable_cache(
-      async () => getAllCategories(),
+      async () => {
+        const categories = await getAllCategories();
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[CollectionPage] Fetched ${categories.length} categories for cache`);
+        }
+        return categories;
+      },
       [`categories-${slug}`],
       {
         tags: [CACHE_TAGS.categories, CACHE_TAGS.collections, CACHE_TAGS.category(slug)],
@@ -71,7 +78,16 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     );
 
     const getCachedProducts = unstable_cache(
-      async () => getProductsByCategory(slug),
+      async () => {
+        const products = await getProductsByCategory(slug);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[CollectionPage] Fetched ${products.length} products for cache (category: ${slug})`);
+          if (products.length > 0) {
+            console.log(`[CollectionPage] Products:`, products.map(p => p.name));
+          }
+        }
+        return products;
+      },
       [`products-${slug}`],
       {
         tags: [CACHE_TAGS.products, CACHE_TAGS.category(slug), CACHE_TAGS.collection(slug)],
