@@ -24,28 +24,41 @@ export default function AdminLoginPage(): JSX.Element {
     setError("");
     setLoading(true);
 
-    const res = await fetch('/api/admin/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // REQUIRED for cookies
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // REQUIRED for cookies
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!res.ok) {
-      // show error
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || 'Login failed. Please check your credentials.');
+      if (!res.ok) {
+        // Try to parse error response
+        let errorMessage = 'Login failed. Please check your credentials.';
+        try {
+          const data = await res.json();
+          errorMessage = data.error || data.message || errorMessage;
+          // Include details if available (for debugging)
+          if (data.details && process.env.NODE_ENV === 'development') {
+            errorMessage += ` (${data.details})`;
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, use status text
+          errorMessage = `Login failed: ${res.status} ${res.statusText}`;
+        }
+        setError(errorMessage);
+        setLoading(false);
+        return;
+      }
+
+      // Success - redirect to admin
+      window.location.href = '/admin';
+    } catch (fetchError) {
+      // Network error or other fetch failures
+      console.error('Login fetch error:', fetchError);
+      setError('Network error. Please check your connection and try again.');
       setLoading(false);
-      return;
     }
-
-    // DO NOTHING ELSE
-    // NO redirect
-    // NO router.push
-    // NO refresh
-
-    // Let middleware handle navigation on next render
-    window.location.href = '/admin';
   }
 
   return (

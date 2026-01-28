@@ -55,16 +55,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // 1. BOT DETECTION
+    // 1. BOT DETECTION - Only block obvious bots (score > 80)
+    // Reduced threshold to prevent false positives
     const botDetection = detectBot(request);
     
-    if (botDetection.isBot && botDetection.score > 70) {
+    if (botDetection.isBot && botDetection.score > 80) {
       logger.warn('🤖 Bot detected on login:', botDetection.reasons);
       return apiError(
         'Suspicious activity detected',
         403,
-        'Request blocked by security system'
+        'Request blocked by security system. If you believe this is an error, please contact support.'
       );
+    }
+    
+    // Log but don't block for moderate bot scores (for debugging)
+    if (botDetection.score > 50 && botDetection.score <= 80) {
+      logger.log(`[Login] ⚠️ Moderate bot score (${botDetection.score}):`, botDetection.reasons);
     }
 
     // 2. RATE LIMITING - 5 attempts per 15 minutes per IP
@@ -362,7 +368,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       errorMessage.includes('Environment variable') ||
       errorMessage.includes('configuration') ||
       errorMessage.includes('Prisma') ||
-      errorMessage.includes('database');
+      errorMessage.includes('database') ||
+      errorMessage.includes('connection');
     
     // Check for JSON parsing errors
     const isJsonError = 
@@ -370,19 +377,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       errorMessage.includes('Unexpected token') ||
       errorMessage.includes('parse');
     
+    // Check for network/connection errors
+    const isNetworkError = 
+      errorMessage.includes('fetch') ||
+      errorMessage.includes('network') ||
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('ETIMEDOUT');
+    
     // In development, always show the actual error
     // In production, show detailed error for config issues, generic for others
-    const shouldShowDetails = process.env.NODE_ENV === 'development' || isConfigError || isJsonError;
+    const shouldShowDetails = process.env.NODE_ENV === 'development' || isConfigError || isJsonError || isNetworkError;
+    
+    // Provide more helpful error messages
+    let userFriendlyError = 'Login failed. Please try again or contact support if the issue persists.';
+    if (isConfigError) {
+      userFriendlyError = errorMessage;
+    } else if (isJsonError) {
+      userFriendlyError = 'Invalid request format. Please check your input.';
+    } else if (isNetworkError) {
+      userFriendlyError = 'Unable to connect to server. Please check your internet connection.';
+    }
     
     return apiError(
-      isConfigError 
-        ? errorMessage 
-        : isJsonError
-        ? 'Invalid request format. Please check your input.'
-        : 'Login failed. Please try again or contact support if the issue persists.',
+      userFriendlyError,
       500,
       shouldShowDetails ? errorMessage : undefined,
-      isConfigError ? 'CONFIG_ERROR' : isJsonError ? 'JSON_ERROR' : 'INTERNAL_ERROR'
+      isConfigError ? 'CONFIG_ERROR' : isJsonError ? 'JSON_ERROR' : isNetworkError ? 'NETWORK_ERROR' : 'INTERNAL_ERROR'
     );
   }
 }

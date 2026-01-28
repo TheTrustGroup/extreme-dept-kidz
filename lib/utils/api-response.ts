@@ -64,11 +64,14 @@ export function apiError(
     error.includes('DATABASE_URL') ||
     error.includes('Database connection') ||
     error.includes('Environment variable') ||
-    error.includes('configuration');
+    error.includes('configuration') ||
+    error.includes('Prisma') ||
+    error.includes('database');
   
   // Show actual error for configuration issues, generic message for other 500 errors
+  // But always show the error message itself (not "Internal server error") for better UX
   const errorMessage = isProduction && status === 500 && !isConfigurationError
-    ? 'Internal server error'
+    ? error // Show the actual error message instead of generic "Internal server error"
     : error;
   
   return NextResponse.json(

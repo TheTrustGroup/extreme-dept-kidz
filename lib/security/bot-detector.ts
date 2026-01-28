@@ -36,23 +36,24 @@ export function detectBot(request: NextRequest): BotDetectionResult {
   }
 
   // 2. Check for missing headers (bots often don't send these)
+  // Reduced scoring - some legitimate browsers may not send these
   if (!acceptLanguage) {
-    score += 20;
+    score += 10; // Reduced from 20
     reasons.push('Missing accept-language');
   }
 
   if (!acceptEncoding) {
-    score += 20;
+    score += 10; // Reduced from 20
     reasons.push('Missing accept-encoding');
   }
 
   // 3. Check for common bot patterns
   if (!userAgent || userAgent.length < 10) {
-    score += 30;
+    score += 20; // Reduced from 30
     reasons.push('Empty or very short user agent');
   }
 
-  // 4. Check for headless browser signatures
+  // 4. Check for headless browser signatures (only block obvious ones)
   const headlessSignatures = ['headless', 'phantom', 'selenium', 'puppeteer', 'playwright'];
   if (headlessSignatures.some(sig => uaLower.includes(sig))) {
     score += 70;
@@ -60,10 +61,11 @@ export function detectBot(request: NextRequest): BotDetectionResult {
   }
 
   // 5. Check for missing or suspicious referer
-  if (!referer && request.method === 'POST') {
-    score += 15;
-    reasons.push('Missing referer on POST request');
-  }
+  // Removed - too many false positives, especially with mobile browsers
+  // if (!referer && request.method === 'POST') {
+  //   score += 15;
+  //   reasons.push('Missing referer on POST request');
+  // }
 
   // 6. Allow known good bots (Google, etc.)
   const goodBots = ['googlebot', 'bingbot', 'slackbot', 'twitterbot'];
