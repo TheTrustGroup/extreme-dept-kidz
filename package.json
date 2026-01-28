@@ -31,6 +31,7 @@
     "ultimate-fix": "tsx scripts/ultimate-fix.ts",
     "fix-supabase": "tsx scripts/fix-supabase-connection.ts",
     "verify": "tsx scripts/verify-website.ts",
+    "inspect-product": "tsx scripts/inspect-product.ts",
     "audit-ecommerce": "tsx scripts/ecommerce-audit.ts",
     "inspect": "tsx scripts/inspect-database.ts",
     "fix-visibility": "tsx scripts/fix-product-visibility.ts",
