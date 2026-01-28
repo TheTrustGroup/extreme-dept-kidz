@@ -69,8 +69,14 @@ export function ProductGrid({
         "md:gap-[var(--space-6)]", // 24px tablet
         "lg:gap-[var(--space-7)]", // 32px desktop
         "xl:gap-[var(--space-8)]", // 40px large desktop
+        // Performance: Grid optimization
+        "items-stretch",
         className
       )}
+      style={{
+        // Performance: Prevent layout shift
+        contain: "layout style paint",
+      }}
     >
       {isLoading ? (
         // Loading state - show skeleton cards with proper dimensions to prevent layout shift

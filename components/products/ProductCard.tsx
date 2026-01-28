@@ -78,9 +78,12 @@ export const ProductCard = React.memo(function ProductCard({
           "group-hover:border-cream-300/80"
         )}
         aria-label={product.name}
+        style={{
+          minHeight: 0, // Allow flex shrinking
+        }}
       >
         {/* Image Container - Fixed aspect ratio prevents layout shift */}
-        <div className="product-image relative aspect-square overflow-hidden flex-shrink-0">
+        <div className="product-image relative aspect-square overflow-hidden flex-shrink-0" style={{ minHeight: 0 }}>
           {/* Primary Image */}
           <Image
             src={primaryImage.url}
@@ -92,13 +95,15 @@ export const ProductCard = React.memo(function ProductCard({
               "transition-opacity duration-fast ease-in-out",
               isHovered && secondaryImage ? "opacity-0" : "opacity-100"
             )}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 280px"
             loading={priority ? "eager" : "lazy"}
             quality={85}
             fetchPriority={fetchPriority}
             // Performance: Add blur placeholder to prevent layout shift
             placeholder="blur"
             blurDataURL={getProductCardBlurPlaceholder()}
+            // Performance: Decode images asynchronously
+            decoding="async"
           />
 
           {/* Secondary Image (on hover) - Preload to prevent CLS */}
@@ -113,11 +118,12 @@ export const ProductCard = React.memo(function ProductCard({
                 "transition-opacity duration-fast ease-in-out",
                 isHovered ? "opacity-100" : "opacity-0"
               )}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 280px"
               // Performance: Preload secondary image to prevent layout shift on hover
               loading="eager"
               quality={85}
               fetchPriority="high"
+              decoding="async"
               // Hidden but loaded to reserve space
               style={{ position: "absolute" }}
             />
@@ -198,8 +204,8 @@ export const ProductCard = React.memo(function ProductCard({
           )}
         </div>
 
-        {/* Product Info - Using spacing scale */}
-        <div className="p-[var(--space-5)] space-y-[var(--space-3)]">
+        {/* Product Info - Using spacing scale - Flex grow to fill space for equal heights */}
+        <div className="p-[var(--space-5)] space-y-[var(--space-3)] flex-grow flex flex-col justify-between">
           {/* Product Name */}
           <h3 className="product-title line-clamp-2">
             {product.name}

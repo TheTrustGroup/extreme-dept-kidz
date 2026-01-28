@@ -98,7 +98,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
       <div className="relative">
-        {/* Hero Section - Full viewport height */}
+        {/* Hero Section - Full viewport height, seamless with header */}
         <HeroSection />
 
         {/* Trust Bar - Prominent trust signals for first-time visitors */}

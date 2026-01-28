@@ -20,15 +20,15 @@ interface TrustItemProps {
 function TrustItem({ icon, text }: TrustItemProps): JSX.Element {
   const { theme } = useTheme();
   return (
-    <div className="flex items-center gap-[var(--space-3)] sm:gap-[var(--space-3)]">
+    <div className="flex items-center justify-center gap-[var(--space-2)] sm:gap-[var(--space-3)]">
       <div className={cn(
-        "flex-shrink-0 transition-colors duration-300 flex items-center",
+        "flex-shrink-0 transition-colors duration-300 flex items-center justify-center",
         theme === "dark" ? "text-accent-primary" : "text-forest-600"
       )}>
         {icon}
       </div>
       <span className={cn(
-        "font-sans text-xs sm:text-sm font-medium whitespace-nowrap transition-colors duration-300",
+        "font-sans text-xs sm:text-sm font-medium whitespace-nowrap transition-colors duration-300 text-center",
         theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
       )}>
         {text}
@@ -51,17 +51,17 @@ export function TrustBar(): JSX.Element {
       aria-label="Trust signals and value propositions"
     >
       <Container>
-        <div className="flex flex-wrap items-center justify-center gap-[var(--space-8)] sm:gap-[var(--space-10)] md:gap-[var(--space-12)] lg:gap-[var(--space-13)]">
+        <div className="flex flex-wrap items-center justify-center gap-[var(--space-5)] sm:gap-[var(--space-6)] md:gap-[var(--space-8)] lg:gap-[var(--space-10)]">
           <TrustItem
-            icon={<RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />}
+            icon={<RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" aria-hidden="true" />}
             text="30-Day Returns"
           />
           <TrustItem
-            icon={<Shield className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />}
+            icon={<Shield className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" aria-hidden="true" />}
             text="Secure Checkout"
           />
           <TrustItem
-            icon={<Lock className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />}
+            icon={<Lock className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" aria-hidden="true" />}
             text="SSL Encrypted"
           />
         </div>

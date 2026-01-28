@@ -106,10 +106,11 @@ export function MobileNav({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop with blur and dark overlay */}
+          {/* Backdrop with blur and dark overlay - Higher z-index to overlay header */}
           <m.div
             className={cn(
-              "fixed inset-0 backdrop-blur-md z-40 transition-colors duration-300",
+              "fixed inset-0 backdrop-blur-md transition-colors duration-300",
+              "z-[1001]",
               theme === "dark"
                 ? "bg-dark-bg-primary/60"
                 : "bg-charcoal-900/40"
@@ -122,11 +123,12 @@ export function MobileNav({
             aria-hidden="true"
           />
 
-          {/* Drawer */}
+          {/* Drawer - Higher z-index than backdrop and header */}
           <m.div
             ref={drawerRef}
             className={cn(
-              "fixed top-0 right-0 bottom-0 w-full max-w-md shadow-2xl z-50 focus:outline-none transition-colors duration-300",
+              "fixed top-0 right-0 bottom-0 w-full max-w-md shadow-2xl focus:outline-none transition-colors duration-300",
+              "z-[1002]",
               theme === "dark"
                 ? "bg-dark-bg-primary"
                 : "bg-cream-50"

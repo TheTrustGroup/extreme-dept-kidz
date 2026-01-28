@@ -43,7 +43,12 @@ const styleCategories: StyleCategory[] = [
   },
 ];
 
-export function ShopByStyleSection(): JSX.Element {
+export function ShopByStyleSection(): JSX.Element | null {
+  // Only render if categories exist
+  if (!styleCategories || styleCategories.length === 0) {
+    return null;
+  }
+
   return (
     <section 
       // Design System: Consistent spacing using 8px base scale
@@ -134,11 +139,12 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
               <Image
                 src={category.image}
                 loading="lazy"
-                quality={90}
+                quality={85}
                 alt={`${category.name} style category - ${category.name} products`}
                 fill
                 className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                decoding="async"
                 aria-hidden="false"
               />
             ) : (

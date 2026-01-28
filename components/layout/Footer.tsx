@@ -61,10 +61,16 @@ export function Footer(): JSX.Element {
                     height={720}
                     className={cn(
                       "h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]",
-                      "transition-opacity duration-300"
+                      "transition-opacity duration-300",
+                      theme === "dark"
+                        ? "brightness-0 invert opacity-90" // Invert logo for dark mode visibility
+                        : ""
                     )}
                     priority={false}
+                    quality={90}
                     sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
+                    decoding="async"
+                    loading="lazy"
                   />
                 </Link>
               </div>

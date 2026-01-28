@@ -103,9 +103,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                       : ""
                   )}
                   priority
-                  quality={100}
+                  quality={90}
                   sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
-                  unoptimized={false}
+                  decoding="async"
+                  fetchPriority="high"
                 />
               </Link>
             </m.div>
@@ -179,9 +180,14 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                 </IconButton>
               </div>
 
-              {/* Mobile/Tablet Menu Button */}
+              {/* Mobile/Tablet Menu Button - Ensure proper z-index */}
               <button
-                className="xl:hidden flex items-center justify-center text-charcoal-900 hover:text-navy-900 transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 p-3 min-h-[44px] min-w-[44px]"
+                className={cn(
+                  "xl:hidden flex items-center justify-center transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-offset-2 p-3 min-h-[44px] min-w-[44px] relative z-[1003]",
+                  theme === "dark"
+                    ? "text-dark-text-primary hover:text-accent-primary focus:ring-accent-primary"
+                    : "text-charcoal-900 hover:text-navy-900 focus:ring-navy-500"
+                )}
                 aria-label="Toggle menu"
                 aria-expanded={isMobileMenuOpen}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

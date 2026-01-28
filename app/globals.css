@@ -336,6 +336,33 @@ body {
   /* Performance: GPU acceleration for transforms */
   transform: translateZ(0);
   will-change: scroll-position;
+  /* Cross-browser: Prevent text size adjustment on iOS */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Cross-browser: Smooth scrolling */
+  scroll-behavior: smooth;
+  /* Cross-browser: iOS Safari smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    scroll-behavior: auto;
+  }
+}
+
+/* Cross-browser: iOS Safari viewport height fix */
+@supports (-webkit-touch-callout: none) {
+  html,
+  body,
+  #__next {
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Fix hero section on iOS Safari */
+  section[aria-label="Hero section"] {
+    min-height: -webkit-fill-available;
+  }
 }
 
 /* Initialize reveal animations on page load - Consolidated with optimized version below */
@@ -453,22 +480,37 @@ video {
 /* Smooth scrolling for all elements */
 /* Smooth scrolling - already handled above */
 
-/* Custom scrollbar styling for luxury feel */
+/* Custom scrollbar styling for luxury feel - Cross-browser */
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--color-cream-100);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-charcoal-300);
-  border-radius: 5px;
+  background: var(--color-charcoal-400);
+  border-radius: 10px;
+  border: 2px solid var(--color-cream-100);
+  transition: background-color var(--transition-base);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-charcoal-400);
+  background: var(--color-charcoal-600);
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-charcoal-400) var(--color-cream-100);
+}
+
+/* Cross-browser: Smooth scrollbar behavior */
+html {
+  scrollbar-gutter: stable;
 }
 
 /* Focus styles for accessibility - WCAG 2.1 AA compliant */
@@ -829,21 +871,32 @@ textarea:focus-visible {
   touch-action: manipulation;
 }
 
-/* Performance: Optimize images */
+/* Performance: Optimize images - Cross-browser */
 img {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
   /* Prevent layout shift */
   max-width: 100%;
   height: auto;
+  /* Cross-browser: Prevent image dragging */
+  -webkit-user-drag: none;
+  user-select: none;
+  /* Performance: Optimize rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* Cross-browser: Prevent blue highlight on tap (iOS) */
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Performance: Optimize video */
+/* Performance: Optimize video - Cross-browser */
 video {
   object-fit: cover;
   /* Prevent layout shift */
   max-width: 100%;
   height: auto;
+  /* Cross-browser: Prevent video dragging */
+  -webkit-user-drag: none;
+  /* Performance: GPU acceleration */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Performance: Content visibility for off-screen content */
@@ -871,6 +924,63 @@ input[type="submit"] {
   :focus-visible {
     outline: 4px solid;
     outline-offset: 4px;
+  }
+}
+
+/* Cross-browser: Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Safari-specific optimizations */
+  .product-card,
+  .glass-panel,
+  .glass-card {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Fix Safari backdrop-filter rendering */
+  .header,
+  .glass-panel,
+  .glass-card,
+  .glass {
+    -webkit-backdrop-filter: blur(18px);
+  }
+}
+
+/* Cross-browser: Firefox specific fixes */
+@-moz-document url-prefix() {
+  /* Firefox-specific optimizations */
+  .product-card:hover {
+    transform: translateY(-6px) translateZ(0);
+  }
+  
+  /* Fix Firefox backdrop-filter */
+  .header,
+  .glass-panel,
+  .glass-card,
+  .glass {
+    backdrop-filter: blur(18px);
+  }
+}
+
+/* Cross-browser: Edge/Chrome specific fixes */
+@supports (-ms-ime-align: auto) {
+  /* Edge-specific optimizations */
+  .header {
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Cross-browser: iOS Safari fixes */
+@supports (-webkit-touch-callout: none) and (not (-webkit-appearance: none)) {
+  /* iOS Safari specific */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix iOS Safari viewport height */
+  .min-h-screen {
+    min-height: -webkit-fill-available;
   }
 }
 

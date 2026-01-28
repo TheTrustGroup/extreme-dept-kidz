@@ -36,16 +36,21 @@ const collections: Collection[] = [
   },
 ];
 
-export function FeaturedCollections(): JSX.Element {
+export function FeaturedCollections(): JSX.Element | null {
+  // Only render if collections exist
+  if (!collections || collections.length === 0) {
+    return null;
+  }
+
   return (
     <section 
-      // Design System: XLarge section spacing - 48px mobile, 80px tablet, 128px desktop
-      className="py-12 md:py-20 lg:py-32 bg-cream-50"
+      // Design System: Consistent spacing using 8px base scale
+      className="section bg-cream-50"
       aria-labelledby="collections-heading"
     >
       <Container size="lg">
-        {/* Design System: Large spacing between header and content - 32px mobile, 48px desktop */}
-        <div className="space-y-8 lg:space-y-12">
+        {/* Design System: Consistent spacing using 8px base scale */}
+        <div className="space-y-[var(--space-8)] lg:space-y-[var(--space-12)]">
           {/* Section Title */}
           <div className="text-center">
             <H2 id="collections-heading" className="text-charcoal-900">
@@ -53,10 +58,10 @@ export function FeaturedCollections(): JSX.Element {
             </H2>
           </div>
 
-          {/* Collections Grid */}
+          {/* Collections Grid - Consistent spacing */}
           <div 
-            // Design System: Grid gaps - 16px mobile, 20px tablet, 24px desktop, 32px large desktop
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8"
+            // Design System: Consistent spacing using 8px base scale
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--space-4)] sm:gap-[var(--space-5)] md:gap-[var(--space-6)] lg:gap-[var(--space-8)]"
             role="list"
             aria-label="Featured collections"
           >
@@ -119,6 +124,7 @@ function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 30vw"
+                decoding="async"
                 aria-hidden="false"
               />
             ) : (

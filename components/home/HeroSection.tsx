@@ -196,9 +196,11 @@ export function HeroSection(): JSX.Element {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative flex items-center justify-center overflow-hidden"
       style={{
         isolation: "isolate",
+        minHeight: "calc(100vh - 2rem - 3.5rem)", // Full viewport minus TopBar (2rem) + Header (3.5rem mobile)
+        paddingTop: "calc(2rem + 3.5rem)", // Account for fixed header
       }}
       aria-label="Hero section"
     >
@@ -208,10 +210,11 @@ export function HeroSection(): JSX.Element {
         style={{ y }}
       >
         <div 
-          className="relative w-full h-full min-h-screen"
+          className="absolute inset-0 w-full h-full"
           style={{
             isolation: "isolate",
             contain: "layout style paint",
+            minHeight: "100%",
           }}
         >
           {/* Poster Image - Shows immediately, prevents CLS */}
@@ -225,6 +228,8 @@ export function HeroSection(): JSX.Element {
                 quality={90}
                 className="object-cover"
                 sizes="100vw"
+                decoding="async"
+                fetchPriority="high"
                 style={{
                   objectPosition: "center center",
                 }}
@@ -285,9 +290,9 @@ export function HeroSection(): JSX.Element {
         initial="hidden"
         animate="visible"
         style={{
-          minHeight: "100vh",
-          paddingTop: "var(--space-12)",
-          paddingBottom: "var(--space-12)",
+          minHeight: "100%",
+          paddingTop: "var(--space-6)",
+          paddingBottom: "var(--space-6)",
         }}
       >
         <div className="container w-full">
