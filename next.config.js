@@ -12,7 +12,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // CRITICAL FIX: Enhanced Image Optimization - Mobile-first, CDN-ready
+  // NEXT/IMAGE STRICT CONFIG: Optimized image configuration
   images: {
     domains: ['localhost', 'extremedeptkidz.com'],
     remotePatterns: [
@@ -26,14 +26,17 @@ const nextConfig = {
         hostname: "**",
       },
     ],
-    formats: ["image/avif", "image/webp"], // AVIF first (best compression), WebP fallback
-    // Mobile-first device sizes: prioritize mobile breakpoints
-    deviceSizes: [375, 414, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    // Optimized image sizes for responsive breakpoints
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512],
-    minimumCacheTTL: 31536000, // 1 year immutable cache
+    // NEXT/IMAGE STRICT CONFIG: Modern formats only
+    formats: ['image/avif', 'image/webp'],
+    // NEXT/IMAGE STRICT CONFIG: 24-hour cache TTL for optimal balance
+    minimumCacheTTL: 86400,
+    // NEXT/IMAGE STRICT CONFIG: Disable SVG for security
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // NEXT/IMAGE STRICT CONFIG: Standard device breakpoints
+    deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920],
+    // NEXT/IMAGE STRICT CONFIG: Optimized image sizes
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     // Enable image optimization with CDN caching
     unoptimized: false,
   },

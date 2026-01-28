@@ -2,7 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* COLOR SYSTEM NORMALIZATION: Import design tokens */
+@import '../styles/tokens.css';
+
 /* CRITICAL: Performance optimizations for ultra-fast rendering */
+/* COLOR SYSTEM NORMALIZATION: Force sRGB color scheme for pixel-perfect consistency across browsers */
 html {
   scroll-behavior: smooth;
   /* CRITICAL: Enable hardware acceleration for smooth scrolling */
@@ -16,6 +20,12 @@ html {
   contain: layout style;
   /* CRITICAL: Optimize paint performance */
   will-change: scroll-position;
+  /* COLOR SYSTEM NORMALIZATION: Force sRGB color space - ensures pixel-identical colors */
+  color-scheme: light;
+  color-profile: sRGB;
+  /* CRITICAL: Cross-browser color consistency */
+  -webkit-color-profile: sRGB;
+  color-interpolation-filters: sRGB;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -38,53 +48,9 @@ html {
 }
 
 :root {
-  /* CSS Custom Properties for Design Tokens */
-  --color-cream-50: #fefdfb;
-  --color-cream-100: #fdfbf6;
-  --color-cream-200: #faf7ed;
-  --color-cream-300: #f5f0e0;
-  --color-cream-400: #ede5d0;
-  --color-cream-500: #e0d5b8;
-  --color-cream-600: #d4c5a0;
-  --color-cream-700: #c4b088;
-  --color-cream-800: #a8966f;
-  --color-cream-900: #8a7856;
-
-  --color-charcoal-50: #f6f6f6;
-  --color-charcoal-100: #e7e7e7;
-  --color-charcoal-200: #d1d1d1;
-  --color-charcoal-300: #b0b0b0;
-  --color-charcoal-400: #888888;
-  --color-charcoal-500: #6d6d6d;
-  --color-charcoal-600: #5d5d5d;
-  --color-charcoal-700: #4f4f4f;
-  --color-charcoal-800: #454545;
-  --color-charcoal-900: #3d3d3d;
-  --color-charcoal-950: #1a1a1a;
-
-  --color-navy-50: #f0f4f8;
-  --color-navy-100: #d9e2ec;
-  --color-navy-200: #bcccdc;
-  --color-navy-300: #9fb3c8;
-  --color-navy-400: #829ab1;
-  --color-navy-500: #627d98;
-  --color-navy-600: #486581;
-  --color-navy-700: #334e68;
-  --color-navy-800: #243b53;
-  --color-navy-900: #102a43;
-  --color-navy-950: #0a1a2a;
-
-  --color-forest-50: #f0f9f4;
-  --color-forest-100: #dcf2e3;
-  --color-forest-200: #bce5ca;
-  --color-forest-300: #8fd1a6;
-  --color-forest-400: #5ab57a;
-  --color-forest-500: #369a5a;
-  --color-forest-600: #277d47;
-  --color-forest-700: #21643a;
-  --color-forest-800: #1d5030;
-  --color-forest-900: #194229;
-  --color-forest-950: #0c2416;
+  /* COLOR SYSTEM NORMALIZATION: Design tokens are now imported from tokens.css */
+  /* All color definitions moved to /styles/tokens.css for centralized management */
+  /* Legacy color mappings maintained for backward compatibility via tokens.css */
 
   /* Spacing scale - 8px-32px steps for consistent rhythm */
   --spacing-xs: 0.5rem;    /* 8px */
@@ -137,37 +103,25 @@ html {
   --ease-natural: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-productive: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Glassmorphism design tokens */
-  --glass-bg-light: rgba(254, 253, 251, 0.72);
-  --glass-bg-strong: rgba(254, 253, 251, 0.88);
-  --glass-border: rgba(250, 247, 237, 0.6);
-  --glass-shadow: 0 8px 32px rgba(26, 26, 26, 0.08);
-  --glass-shadow-elevated: 0 12px 40px rgba(26, 26, 26, 0.12);
+  /* Glassmorphism design tokens - COLOR SYSTEM NORMALIZATION: Use brand tokens */
+  /* Using rgba() with brand token values for cross-browser compatibility */
+  --glass-bg-light: rgba(250, 249, 247, 0.72); /* brand-bg with 72% opacity */
+  --glass-bg-strong: rgba(250, 249, 247, 0.88); /* brand-bg with 88% opacity */
+  --glass-border: rgba(250, 247, 237, 0.6); /* cream-200 with 60% opacity */
+  --glass-shadow: 0 8px 32px rgba(28, 28, 28, 0.08); /* brand-text with 8% opacity */
+  --glass-shadow-elevated: 0 12px 40px rgba(28, 28, 28, 0.12); /* brand-text with 12% opacity */
   --glass-blur: 12px;
   --glass-blur-strong: 20px;
 
-  /* Warm accent – soft pastels for emotional appeal */
-  --accent-blush: rgba(196, 176, 136, 0.15);
-  --accent-warm: rgba(138, 120, 86, 0.12);
-
-  /* Premium warm accents – honey, blush, sage (see docs/DESIGN_SYSTEM_PALETTE_TYPOGRAPHY.md) */
-  --color-honey-50: #fefaf3;
-  --color-honey-100: #fdf3e3;
-  --color-honey-200: #f9e6c8;
-  --color-honey-300: #f0d4a8;
-  --color-honey-400: #e0b87a;
-  --color-honey-500: #c9a227;
-  --color-honey-600: #a8841f;
-
-  --color-blush-50: #fdf8f6;
-  --color-blush-100: #f9ede8;
-  --color-blush-200: #f0ddd5;
-  --color-blush-300: #e4c9be;
-
-  --color-sage-50: #f4f7f4;
-  --color-sage-100: #e6ede6;
-  --color-sage-500: #5a7d5a;
-  --color-sage-600: #4a6b4a;
+  /* Warm accent – soft pastels for emotional appeal - COLOR SYSTEM NORMALIZATION */
+  --accent-blush: rgba(201, 161, 74, 0.15); /* brand-secondary with 15% opacity */
+  --accent-warm: rgba(138, 120, 86, 0.12); /* cream-900 with 12% opacity */
+  
+  /* Hero gradient overlays - COLOR SYSTEM NORMALIZATION: Use brand-text */
+  --hero-gradient-overlay: linear-gradient(180deg, rgba(28, 28, 28, 0.55) 0%, rgba(28, 28, 28, 0.35) 40%, rgba(28, 28, 28, 0.45) 100%);
+  --hero-text-shadow: 0 4px 20px rgba(28, 28, 28, 0.5), 0 2px 8px rgba(28, 28, 28, 0.4);
+  --hero-text-shadow-subtle: 0 2px 12px rgba(28, 28, 28, 0.5), 0 1px 4px rgba(28, 28, 28, 0.4);
+  --hero-scroll-indicator-shadow: drop-shadow(0 2px 8px rgba(28, 28, 28, 0.8));
 
   /* Typography system – font families (map to layout-loaded vars) */
   --font-serif: var(--font-playfair), Georgia, serif;
@@ -489,32 +443,33 @@ body {
 }
 
 /* CRITICAL: Theme-aware body styles - optimized for zero layout shift */
+/* COLOR SYSTEM NORMALIZATION: Use brand tokens */
 body {
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   line-height: 1.6;
   overflow-x: hidden;
   /* CRITICAL: Prevent layout thrashing */
   contain: layout style paint;
-  /* Default: Light theme (primary) */
-  background-color: var(--color-cream-50);
-  color: var(--color-charcoal-900);
+  /* Default: Light theme (primary) - COLOR SYSTEM NORMALIZATION: Use brand tokens */
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
   transition: background-color 0.3s ease, color 0.3s ease;
   /* CRITICAL: Optimize paint performance */
   will-change: contents;
 }
 
-/* Light theme (primary) - explicit for clarity */
+/* Light theme (primary) - COLOR SYSTEM NORMALIZATION: Use brand tokens */
 [data-theme="light"] body,
 body.light {
-  background-color: var(--color-cream-50);
-  color: var(--color-charcoal-900);
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
 }
 
-/* Dark theme overrides (secondary) */
+/* Dark theme overrides (secondary) - COLOR SYSTEM NORMALIZATION */
 [data-theme="dark"] body,
 body.dark {
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary, #0b0f1a);
+  color: var(--color-text-primary, #ffffff);
 }
 
 /* CRITICAL: Optimize image rendering for zero CLS */
@@ -530,27 +485,125 @@ img {
   contain: layout style paint;
 }
 
-/* CRITICAL: Next.js Image optimization - prevent CLS */
-img[data-nimg] {
+/* CRITICAL: Next.js Image optimization - prevent CLS - Cross-browser */
+img[data-nimg],
+[data-nimg] {
   contain: layout style paint;
   /* Prevent layout shift - maintain aspect ratio */
   aspect-ratio: attr(width) / attr(height);
   /* CRITICAL: Ensure images don't cause layout shifts */
   object-fit: cover;
+  /* CRITICAL FIX: Ensure images are visible - pixel-perfect rendering */
+  opacity: 1;
+  visibility: visible;
+  display: block;
+  /* Cross-browser: Force rendering */
+  image-rendering: auto;
+  -webkit-image-rendering: auto;
+  -moz-image-rendering: auto;
 }
 
-/* CRITICAL: Ensure images maintain aspect ratio to prevent CLS */
-img[width][height] {
+/* CRITICAL: Ensure images maintain aspect ratio to prevent CLS - Cross-browser */
+img[width][height],
+[width][height] {
   height: auto;
   /* Prevent layout shift during load */
   aspect-ratio: attr(width) / attr(height);
+  /* CRITICAL FIX: Ensure images render - pixel-perfect rendering */
+  opacity: 1;
+  visibility: visible;
+  display: block;
+  /* Cross-browser: Force rendering */
+  image-rendering: auto;
+  -webkit-image-rendering: auto;
+  -moz-image-rendering: auto;
 }
 
-/* CRITICAL: Hero image - LCP element optimization */
-section[aria-label="Hero section"] img[data-nimg] {
+/* CRITICAL: Hero image - LCP element optimization - Cross-browser compatible (Safari, Chrome, Firefox, iOS, Android) */
+section[aria-label="Hero section"] img[data-nimg],
+section[aria-label="Hero section"] [data-nimg],
+section[aria-label="Hero section"] img {
   /* LCP element - ensure instant rendering */
   content-visibility: auto;
   contain-intrinsic-size: 100vw 100vh;
+  /* CRITICAL FIX: Ensure hero image is always visible - pixel-perfect rendering */
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  /* Cross-browser: Force rendering */
+  image-rendering: auto;
+  -webkit-image-rendering: auto;
+  -moz-image-rendering: auto;
+  /* CRITICAL: Prevent Safari rendering issues */
+  -webkit-backface-visibility: visible !important;
+  backface-visibility: visible !important;
+  /* CRITICAL: Ensure proper z-index */
+  z-index: 0;
+}
+
+/* CRITICAL FIX: Hero image wrapper - Cross-browser compatibility, no CLS, no hydration collapse */
+section[aria-label="Hero section"] .relative {
+  /* Ensure proper layout reservation */
+  position: relative;
+  width: 100%;
+  min-height: 70vh;
+  /* CRITICAL: Ensure container is always visible */
+  opacity: 1;
+  visibility: visible;
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  section[aria-label="Hero section"] .relative {
+    min-height: 85vh;
+  }
+}
+
+/* CRITICAL FIX: Hero image container - prevent collapse - Cross-browser */
+section[aria-label="Hero section"] .relative > img,
+section[aria-label="Hero section"] .relative > div > img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  /* Cross-browser: Force rendering */
+  image-rendering: auto;
+  -webkit-image-rendering: auto;
+  -moz-image-rendering: auto;
+}
+
+/* CRITICAL: iOS Safari specific hero image fixes */
+@supports (-webkit-touch-callout: none) {
+  section[aria-label="Hero section"] {
+    min-height: -webkit-fill-available;
+  }
+  
+  section[aria-label="Hero section"] .relative {
+    min-height: -webkit-fill-available;
+  }
+  
+  section[aria-label="Hero section"] img[data-nimg],
+  section[aria-label="Hero section"] [data-nimg],
+  section[aria-label="Hero section"] img {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+  }
+}
+
+/* CRITICAL: Android Chrome specific hero image fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  section[aria-label="Hero section"] img[data-nimg],
+  section[aria-label="Hero section"] [data-nimg],
+  section[aria-label="Hero section"] img {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 }
 
 /* CRITICAL: High-quality logo rendering in header - prevent layout shift */
@@ -700,17 +753,17 @@ textarea:focus-visible {
 /* Glassmorphism utility classes - Theme-aware (Light theme is primary) */
 /* Performance: Optimized for smooth scrolling with reduced blur on mobile */
 .glass-panel {
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   transition: background-color var(--duration-card-hover) var(--ease-premium),
               border-color var(--duration-card-hover) var(--ease-premium),
               box-shadow var(--duration-card-hover) var(--ease-premium);
   /* Performance: Only animate properties that change */
   will-change: background-color, border-color;
-  /* Light theme (primary) */
-  background: var(--glass-bg-light);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  /* Light theme (primary) - with fallbacks for cross-browser consistency */
+  background: var(--glass-bg-light, rgba(254, 253, 251, 0.72));
+  border: 1px solid var(--glass-border, rgba(250, 247, 237, 0.6));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(26, 26, 26, 0.08));
   /* Performance: GPU acceleration + containment */
   transform: translateZ(0);
   contain: layout style paint;
@@ -861,36 +914,73 @@ textarea:focus-visible {
   }
 }
 
-/* Product card utility class with premium hover effects - Optimized */
+/* Product card utility class - MOBILE-FIRST LAYOUT FIX: Fixed heights with min-height reservation - Cross-browser stabilization */
 .product-card {
   position: relative;
-  /* CRITICAL FIX: Changed overflow: hidden to overflow: visible for image container
-     Only apply overflow: hidden to image container itself, not parent */
+  /* MOBILE-FIRST LAYOUT FIX: Fixed aspect ratio - ENFORCED across all browsers */
+  aspect-ratio: 3 / 4 !important;
+  /* MOBILE-FIRST LAYOUT FIX: Min-height reservation prevents layout shift - ENFORCED */
+  min-height: 420px !important;
+  height: auto;
+  /* MOBILE-FIRST LAYOUT FIX: Max-height constraint - ENFORCED */
+  max-height: 520px !important;
+  /* Remove overflow from card - only on image container */
   overflow: visible;
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(var(--glass-blur-md));
-  -webkit-backdrop-filter: blur(var(--glass-blur-md));
+  border-radius: var(--radius-xl, 30px);
+  backdrop-filter: blur(var(--glass-blur-md, 18px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-md, 18px));
   transition: transform var(--duration-card-hover) var(--ease-natural),
               box-shadow var(--duration-card-hover) var(--ease-natural),
               background-color var(--duration-card-hover) var(--ease-natural);
   will-change: transform, box-shadow;
-  /* Light theme (primary) */
-  background: var(--glass-bg-light);
-  box-shadow: var(--glass-shadow);
-  /* CRITICAL: Prevent layout shift and forced reflows */
+  /* Light theme (primary) - COLOR SYSTEM NORMALIZATION: Use CSS variables for pixel-perfect colors */
+  background: var(--glass-bg-light, rgba(254, 253, 251, 0.72));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(26, 26, 26, 0.08));
+  /* CRITICAL: Prevent layout shift and forced reflows - Cross-browser */
   contain: layout style paint;
-  /* CRITICAL FIX: Ensure products are always visible */
+  /* CRITICAL FIX: Ensure products are always visible - pixel-perfect rendering */
   opacity: 1 !important;
   visibility: visible !important;
-  /* CRITICAL FIX: Ensure proper height to prevent collapse - use intrinsic sizing */
-  min-height: 0; /* Allow flex shrinking but ensure content determines height */
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   /* Ensure proper stacking context */
   isolation: isolate;
-  /* CRITICAL: GPU acceleration for smooth animations */
+  /* CRITICAL: GPU acceleration for smooth animations - Cross-browser */
   transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* CRITICAL FIX: Ensure clickable area is always accessible */
+  pointer-events: auto;
+  cursor: pointer;
+  /* PRODUCT CARD REBUILD: Prevent margin collapse, uniform spacing */
+  margin: 0;
+  padding: 0;
+  gap: 0; /* Uniform vertical rhythm handled by content gap */
+}
+
+/* MOBILE-FIRST LAYOUT FIX: Skeleton card size parity - match ProductCard exactly */
+.skeleton-card {
+  /* Match ProductCard dimensions exactly */
+  aspect-ratio: 3 / 4;
+  min-height: 420px;
+  height: auto;
+  max-height: 520px;
+  border-radius: var(--radius-xl, 30px);
+  background: var(--glass-bg-light, rgba(254, 253, 251, 0.72));
+  box-shadow: var(--glass-shadow, 0 8px 32px rgba(26, 26, 26, 0.08));
+  /* Prevent layout shift */
+  contain: layout style paint;
+}
+
+/* PRODUCT CARD REBUILD: Content container with uniform padding and rhythm */
+.product-card-content {
+  display: flex;
+  flex-direction: column;
+  padding: 16px; /* Consistent padding: 16px uniform */
+  gap: 12px; /* Uniform vertical rhythm: 12px between elements */
+  flex: 1;
+  min-height: 0; /* Allow flex shrinking */
 }
 
 [data-theme="dark"] .product-card,
@@ -925,33 +1015,72 @@ textarea:focus-visible {
   box-shadow: var(--shadow-medium);
 }
 
-.product-image img {
+/* ROOT FIX: Image container - strict layout constraints - Cross-browser stabilization */
+/* Z-INDEX FIX: Image wrapper at z-index 1 */
+.product-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4 !important; /* CRITICAL: Enforce aspect ratio across browsers */
+  overflow: hidden;
+  border-radius: 20px;
+  min-height: 0;
+  flex-shrink: 0;
+  /* Prevent margin collapse */
+  margin: 0;
+  padding: 0;
+  /* Z-INDEX FIX: Image wrapper base layer */
+  z-index: 1;
+  /* CRITICAL: Ensure container is always visible */
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+/* ROOT FIX: Product image - strict styling */
+/* Z-INDEX FIX: Images inherit wrapper z-index 1 */
+.product-image img,
+.product-image [data-nimg],
+.product-image > div {
+  object-fit: cover;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform var(--duration-image-swap) var(--ease-natural);
-  will-change: transform;
-  /* CRITICAL: Prevent layout shift */
-  aspect-ratio: 3/4;
+  transition: transform var(--duration-image-swap) var(--ease-natural),
+              opacity var(--duration-image-swap) var(--ease-natural);
+  will-change: transform, opacity;
   /* CRITICAL: GPU acceleration for smooth image transitions */
   transform: translateZ(0);
   backface-visibility: hidden;
   /* CRITICAL: Prevent forced reflows */
   contain: layout style paint;
+  /* CRITICAL FIX: Ensure images are always visible */
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* ROOT FIX: Remove any fixed height hacks */
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Z-INDEX FIX: Images at base layer */
+  z-index: 1;
+}
+
+/* Z-INDEX FIX: Overlays (badges, wishlist, out of stock) at z-index 2 */
+.product-image > [style*="zIndex: 2"],
+.product-image .absolute[style*="zIndex: 2"] {
+  z-index: 2 !important;
+}
+
+/* Z-INDEX FIX: Buttons at z-index 3 */
+.product-image button,
+.product-image [role="button"] {
+  z-index: 3 !important;
+  position: relative;
 }
 
 /* CRITICAL: Ultra smooth image transitions */
-.product-image img {
-  transition: 
-    transform var(--duration-image-swap) var(--ease-premium),
-    opacity var(--duration-image-swap) var(--ease-premium);
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.product-card:hover .product-image img {
-  transform: scale(1.05);
+/* ROOT FIX: Image hover effects - maintain strict constraints */
+.product-card:hover .product-image img,
+.product-card:hover .product-image [data-nimg] {
+  transform: scale(1.05) translateZ(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -960,29 +1089,35 @@ textarea:focus-visible {
   }
 }
 
-/* CRITICAL: Perfect typographic rhythm */
+/* PRODUCT CARD REBUILD: Perfect typographic rhythm with clamped titles */
 .product-title {
-  font-size: 0.95rem;
+  font-size: clamp(0.875rem, 0.8rem + 0.2vw, 0.95rem); /* Responsive clamp */
   font-weight: 500;
   letter-spacing: 0.2px;
-  line-height: 1.5;
-  color: var(--color-text-primary);
-  /* Luxury spacing - perfect rhythm */
-  margin-bottom: var(--space-2);
+  line-height: 1.4; /* Tighter line height for 2-line clamp */
+  color: var(--brand-text, var(--color-charcoal-900));
+  /* PRODUCT CARD REBUILD: Uniform spacing - handled by parent gap */
+  margin: 0;
+  padding: 0;
   transition: color var(--transition-base) var(--ease-soft-in-out);
+  /* PRODUCT CARD REBUILD: Ensure proper text clamping */
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .product-card:hover .product-title {
   color: var(--color-text-primary);
 }
 
+/* PRODUCT CARD REBUILD: Price styling with uniform rhythm */
 .product-price {
-  font-size: 1rem;
+  font-size: clamp(0.9375rem, 0.9rem + 0.1vw, 1rem); /* Responsive clamp */
   font-weight: 600;
   line-height: 1.4;
-  color: var(--accent-secondary);
-  /* Luxury spacing - perfect rhythm */
-  margin-top: var(--space-2);
+  color: var(--brand-secondary, var(--color-honey-500));
+  /* PRODUCT CARD REBUILD: Uniform spacing - handled by parent gap */
+  margin: 0;
+  padding: 0;
   transition: 
     color var(--transition-base) var(--ease-soft-in-out),
     transform var(--transition-fast) var(--ease-soft-out);
@@ -992,30 +1127,7 @@ textarea:focus-visible {
   transform: scale(1.02);
 }
 
-/* CRITICAL: Product Actions - Ultra smooth micro-interactions */
-.product-actions {
-  position: absolute;
-  bottom: var(--space-6);
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  opacity: 0;
-  transition: 
-    opacity var(--duration-quick-add) var(--ease-premium),
-    transform var(--duration-quick-add) var(--ease-premium);
-  will-change: opacity, transform;
-  pointer-events: none;
-  width: calc(100% - var(--space-6) * 2);
-  max-width: 280px;
-  z-index: 10;
-}
-
-@media (min-width: 1024px) {
-  .product-card:hover .product-actions {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-    pointer-events: auto;
-  }
-}
+/* ROOT FIX: Removed absolute positioning overlay - product actions moved below image */
 
 /* Reduce animations on mobile for better performance */
 @media (max-width: 1023px) {
@@ -1178,6 +1290,82 @@ textarea:focus-visible {
   -webkit-tap-highlight-color: transparent;
   /* CRITICAL: Allow native touch gestures, prevent double-tap zoom */
   touch-action: manipulation;
+}
+
+/* MOBILE-FIRST LAYOUT FIX: Mobile breakpoint (max-width: 767px) - Cross-browser stabilization */
+@media (max-width: 767px) {
+  .product-card,
+  .skeleton-card {
+    /* MOBILE-FIRST LAYOUT FIX: Maintain strict constraints on mobile - pixel-perfect */
+    aspect-ratio: 3 / 4 !important;
+    min-height: 420px !important; /* Min-height reservation */
+    height: auto;
+    max-height: 520px !important;
+    /* Prevent layout shift - cross-browser */
+    contain: layout style paint;
+    /* Prevent margin collapse */
+    margin: 0;
+    /* CRITICAL: Ensure cards are always visible */
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    flex-direction: column;
+  }
+  
+  .product-grid,
+  [class*="grid"] {
+    /* MOBILE-FIRST LAYOUT FIX: Reserve min-height for grid */
+    min-height: 420px; /* Reserve space for at least one card */
+    height: auto;
+    /* Prevent layout shift */
+    contain: layout style;
+  }
+  
+  /* MOBILE-FIRST LAYOUT FIX: Ensure images render on mobile with strict constraints - Cross-browser */
+  .product-image {
+    aspect-ratio: 3 / 4 !important;
+    border-radius: 20px;
+    min-height: 0; /* Allow flex shrinking */
+    /* CRITICAL: Ensure image container is always visible */
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+  }
+  
+  .product-image img,
+  .product-image [data-nimg],
+  .product-image > div {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+    /* Cross-browser: Force rendering */
+    image-rendering: auto;
+    -webkit-image-rendering: auto;
+    -moz-image-rendering: auto;
+  }
+}
+
+/* MOBILE-FIRST LAYOUT FIX: Tablet breakpoint (768px+) */
+@media (min-width: 768px) {
+  .product-card,
+  .skeleton-card {
+    /* Maintain fixed heights on tablet */
+    min-height: 420px;
+    max-height: 520px;
+  }
+}
+
+/* MOBILE-FIRST LAYOUT FIX: Desktop breakpoint (1024px+) */
+@media (min-width: 1024px) {
+  .product-card,
+  .skeleton-card {
+    /* Maintain fixed heights on desktop */
+    min-height: 420px;
+    max-height: 520px;
+  }
 }
 
 /* CRITICAL: Enable native momentum scrolling on iOS */

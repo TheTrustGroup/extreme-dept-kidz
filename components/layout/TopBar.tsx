@@ -12,7 +12,7 @@ export function TopBar(): JSX.Element {
       "fixed top-0 left-0 right-0 z-[60] h-8 text-xs border-b backdrop-blur-md transition-colors duration-300",
       theme === "dark"
         ? "bg-dark-bg-secondary text-dark-text-secondary border-dark-border-glass shadow-dark-soft"
-        : "bg-charcoal-900/95 text-cream-50 border-charcoal-800/50 shadow-glass"
+        : "bg-[var(--brand-text)]/95 text-cream-50 border-charcoal-800/50 shadow-glass" // COLOR SYSTEM NORMALIZATION: Use brand-text
     )}>
       <div className="container h-full max-w-7xl mx-auto">
         <div className="h-full flex items-center justify-between gap-[var(--space-4)]">

@@ -41,10 +41,11 @@ export function WishlistButton({
     <button
       onClick={handleClick}
       className={cn(
-        `${sizeClasses[size]} flex items-center justify-center rounded-full bg-white shadow-md hover:shadow-lg transition-all z-10`,
+        `${sizeClasses[size]} flex items-center justify-center rounded-full bg-white shadow-md hover:shadow-lg transition-all`,
         inWishlist && 'bg-red-50',
         className
       )}
+      style={{ zIndex: 3 }}
       aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
       title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
     >

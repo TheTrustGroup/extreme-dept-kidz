@@ -180,7 +180,7 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
             className="absolute inset-0 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500"
             style={{
               boxShadow:
-                "0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.1)",
+                "0 25px 50px -12px rgba(28, 28, 28, 0.4), 0 0 0 1px rgba(28, 28, 28, 0.1)", // brand-text shadows
             }}
             aria-hidden="true"
           />

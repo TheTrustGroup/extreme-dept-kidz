@@ -102,7 +102,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
                 willChange: 'scroll-position',
                 contain: 'layout style paint',
                 scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(61, 61, 61, 0.3) transparent',
+                scrollbarColor: 'rgba(28, 28, 28, 0.3) transparent', // brand-text with 30% opacity
               }}
               role="list"
               aria-label="New arrivals carousel"

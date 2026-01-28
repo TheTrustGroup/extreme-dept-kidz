@@ -76,7 +76,7 @@ export function ZoomableImage({
         className="absolute inset-0 flex items-center justify-center bg-charcoal-900/0 pointer-events-none"
         animate={{
           opacity: isHovered ? 1 : 0,
-          backgroundColor: isHovered ? "rgba(0, 0, 0, 0.1)" : "rgba(0, 0, 0, 0)",
+          backgroundColor: isHovered ? "rgba(28, 28, 28, 0.1)" : "rgba(28, 28, 28, 0)", // brand-text overlay
         }}
         transition={{ duration: 0.3 }}
       >

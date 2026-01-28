@@ -36,7 +36,7 @@ export function Footer(): JSX.Element {
         "text-cream-50 transition-colors duration-300",
         theme === "dark" 
           ? "bg-dark-bg-secondary text-dark-text-primary" 
-          : "bg-[#1a1a1a] text-cream-50"
+          : "bg-charcoal-950 text-cream-50" // COLOR SYSTEM NORMALIZATION: Use token
       )} 
       role="contentinfo"
     >
@@ -148,7 +148,7 @@ export function Footer(): JSX.Element {
                       "ml-2 p-3 rounded-lg bg-navy-900 text-cream-50",
                       "hover:bg-navy-800 transition-colors duration-200",
                       "disabled:opacity-50 disabled:cursor-not-allowed",
-                      "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a]"
+                      "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:ring-offset-charcoal-950" // COLOR SYSTEM NORMALIZATION: Use token
                     )}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -326,7 +326,7 @@ export function Footer(): JSX.Element {
           "border-t py-[var(--space-6)] transition-colors duration-300",
           theme === "dark"
             ? "bg-dark-bg-primary border-dark-border-glass"
-            : "bg-[#0f0f0f] border-cream-200/10"
+            : "bg-charcoal-950 border-cream-200/10" // COLOR SYSTEM NORMALIZATION: Use token
         )}>
           <div className="container max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-[var(--space-4)]">
             {/* Left: Copyright - Consistent spacing */}
@@ -395,7 +395,7 @@ function FooterNavLink({ className, children, icon: Icon, href, ...props }: Foot
         "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:rounded px-1",
         theme === "dark"
           ? "text-dark-text-secondary hover:text-dark-text-primary focus:ring-accent-primary focus:ring-offset-dark-bg-secondary"
-          : "text-cream-200/80 hover:text-cream-50 focus:ring-cream-50 focus:ring-offset-[#1a1a1a]",
+          : "text-cream-200/80 hover:text-cream-50 focus:ring-cream-50 focus:ring-offset-charcoal-950", // COLOR SYSTEM NORMALIZATION: Use token
         className
       )}
       {...linkProps}

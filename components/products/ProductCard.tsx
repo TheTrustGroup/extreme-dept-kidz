@@ -33,9 +33,14 @@ export const ProductCard = React.memo(function ProductCard({
   const [isHovered, setIsHovered] = React.useState(false);
   const addToCart = useCartStore((state) => state.addItem);
 
-  // Get primary image
-  const primaryImage = product.images.find((img) => (img as ProductImage).isPrimary) || product.images[0];
-  const secondaryImage = product.images[1];
+  // Get primary image - CRITICAL: Always ensure we have a valid image
+  const primaryImage = product.images?.find((img) => (img as ProductImage).isPrimary) || product.images?.[0];
+  const secondaryImage = product.images?.[1];
+  
+  // CRITICAL FIX: Ensure we have a valid image URL - prevent blank cards
+  if (!primaryImage?.url) {
+    console.warn(`Product ${product.id} has no valid image`);
+  }
 
   // Check if product is on sale
   const isOnSale = product.originalPrice && product.originalPrice > product.price;
@@ -63,8 +68,17 @@ export const ProductCard = React.memo(function ProductCard({
       href={`/products/${product.slug}`}
       className={cn(
         "group block focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2",
+        "w-full h-full",
         className
       )}
+      style={{
+        // CRITICAL FIX: Ensure link is fully clickable
+        display: "block",
+        opacity: 1,
+        visibility: "visible",
+        pointerEvents: "auto",
+        cursor: "pointer",
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
@@ -73,19 +87,26 @@ export const ProductCard = React.memo(function ProductCard({
     >
       <m.article
         className={cn(
-          "product-card w-full flex flex-col h-full",
+          "product-card w-full flex flex-col",
           "group-hover:border-cream-300/80",
           "micro-interaction" // Luxury micro-interactions
         )}
         aria-label={product.name}
         style={{
-          // CRITICAL FIX: Ensure proper height to prevent collapse
-          minHeight: 0, // Allow flex shrinking
+          // MOBILE-FIRST LAYOUT FIX: Fixed card heights with min-height reservation
+          aspectRatio: "3 / 4",
+          // Mobile-first: Reserve minimum height to prevent layout shift
+          minHeight: "420px", // Minimum height reservation
+          height: "auto", // Allow natural height based on aspect ratio
+          maxHeight: "520px", // Maximum height constraint
           // Ensure visibility - prevent invisible but clickable bug
           opacity: 1,
           visibility: "visible",
           // Prevent stacking context issues
-          isolation: "isolate"
+          isolation: "isolate",
+          // Ensure proper clickable area
+          pointerEvents: "auto",
+          cursor: "pointer"
         }}
         whileHover={{ 
           y: -6,
@@ -103,30 +124,64 @@ export const ProductCard = React.memo(function ProductCard({
           }
         }}
       >
-        {/* Image Container - Fixed aspect ratio prevents layout shift */}
-        {/* CRITICAL: Apply overflow: hidden here, not on parent card, and ensure proper isolation */}
-        <div className="product-image relative aspect-square overflow-hidden flex-shrink-0" style={{ minHeight: 0, isolation: "isolate" }}>
-          {/* Primary Image - Ultra-optimized with IntersectionObserver */}
-          <OptimizedImage
-            src={primaryImage.url}
-            alt={primaryImage.alt || `${product.name} - ${product.category.name}`}
-            variant="product-card"
-            isLCP={priority}
-            useIntersectionObserver={!priority}
-            enablePrefetch={true}
-            quality={priority ? 90 : undefined}
-            blurVariant="product-card"
-            className={cn(
-              "object-cover",
-              // Luxury: Ultra smooth transitions
-              "transition-opacity duration-[var(--duration-image-swap)] ease-[var(--ease-premium)]",
-              isHovered && secondaryImage ? "opacity-0" : "opacity-100"
-            )}
-            fill
-          />
+        {/* Image Container - PRODUCT CARD REBUILD: Fixed image ratio */}
+        <div 
+          className="product-image flex-shrink-0" 
+          style={{ 
+            position: "relative",
+            width: "100%",
+            aspectRatio: "3 / 4", // Fixed image ratio: 3:4
+            overflow: "hidden",
+            borderRadius: "20px",
+            isolation: "isolate",
+            zIndex: 1,
+            marginBottom: 0 // Uniform vertical rhythm: no extra margin
+          }}
+        >
+          {/* Primary Image - CRITICAL FIX: Always render, ensure no blank cards */}
+          {primaryImage?.url ? (
+            <OptimizedImage
+              src={primaryImage.url}
+              alt={primaryImage.alt || `${product.name} - ${product.category.name}`}
+              variant="product-card"
+              isLCP={priority}
+              useIntersectionObserver={!priority}
+              enablePrefetch={true}
+              quality={priority ? 90 : undefined}
+              blurVariant="product-card"
+              className={cn(
+                // CRITICAL: Strict image styling - ensure visibility
+                "object-cover w-full h-full",
+                // Luxury: Ultra smooth transitions
+                "transition-opacity duration-[var(--duration-image-swap)] ease-[var(--ease-premium)]",
+                isHovered && secondaryImage ? "opacity-0" : "opacity-100"
+              )}
+              style={{
+                objectFit: "cover",
+                width: "100%",
+                height: "100%",
+                // CRITICAL: Ensure image is always visible
+                opacity: isHovered && secondaryImage ? 0 : 1,
+                visibility: 'visible',
+                display: 'block',
+              }}
+              fill
+            />
+          ) : (
+            // Fallback placeholder if no image URL
+            <div 
+              className="w-full h-full bg-cream-100 flex items-center justify-center"
+              style={{
+                aspectRatio: "3 / 4",
+                minHeight: "100%",
+              }}
+            >
+              <span className="text-charcoal-400 text-sm">No Image</span>
+            </div>
+          )}
 
-          {/* Secondary Image (on hover) - Ultra-lazy loaded with IntersectionObserver */}
-          {secondaryImage && (
+          {/* Secondary Image (on hover) - CRITICAL FIX: Always render if exists */}
+          {secondaryImage?.url && (
             <OptimizedImage
               src={secondaryImage.url}
               alt={secondaryImage.alt || `${product.name} - alternate view - ${product.category.name}`}
@@ -137,18 +192,30 @@ export const ProductCard = React.memo(function ProductCard({
               quality={85}
               blurVariant="product-card"
               className={cn(
-                "object-cover",
+                // CRITICAL: Strict image styling - ensure visibility
+                "object-cover w-full h-full",
                 // Luxury: Ultra smooth transitions
                 "transition-opacity duration-[var(--duration-image-swap)] ease-[var(--ease-premium)]",
                 isHovered ? "opacity-100" : "opacity-0"
               )}
-              style={{ position: "absolute" }}
+              style={{ 
+                position: "absolute",
+                top: 0,
+                left: 0,
+                objectFit: "cover",
+                width: "100%",
+                height: "100%",
+                // CRITICAL: Ensure image is always visible when hovered
+                opacity: isHovered ? 1 : 0,
+                visibility: 'visible',
+                display: 'block',
+              }}
               fill
             />
           )}
 
-          {/* Badges (Design System: Top-left, 12px offset, 8px gap) */}
-          <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+          {/* Badges - Z-INDEX FIX: Overlays at z-index 2 */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2" style={{ zIndex: 2 }}>
             {isNew && (
               <m.span
                 className={cn(
@@ -197,14 +264,14 @@ export const ProductCard = React.memo(function ProductCard({
             )}
           </div>
 
-          {/* Wishlist Icon (Design System: Top-right, 12px offset, 40×40px) */}
-          <div className="absolute top-3 right-3 z-10">
+          {/* Wishlist Icon - Z-INDEX FIX: Overlays at z-index 2 */}
+          <div className="absolute top-3 right-3" style={{ zIndex: 2 }}>
             <WishlistButton product={product} size="md" />
           </div>
 
-          {/* Out of Stock Overlay (Design System: Cream 50, 90% opacity) */}
+          {/* Out of Stock Overlay - Z-INDEX FIX: Overlays at z-index 2 */}
           {!product.inStock && (
-            <div className="absolute inset-0 z-[5] flex items-center justify-center bg-cream-50/90">
+            <div className="absolute inset-0 flex items-center justify-center bg-cream-50/90" style={{ zIndex: 2 }}>
               <span
                 className={cn(
                   // Typography (Design System: Playfair Display, 18px, Medium, Uppercase, 1px letter-spacing)
@@ -216,41 +283,11 @@ export const ProductCard = React.memo(function ProductCard({
             </div>
           )}
 
-          {/* Quick Add to Cart Button - Desktop hover overlay */}
-          {product.inStock && (
-            <div className="product-actions hidden lg:block">
-              <m.button
-                onClick={handleQuickAdd}
-                className={cn(
-                  "btn w-full flex items-center justify-center gap-2",
-                  "h-12 min-h-[48px] px-4 py-3",
-                  "bg-navy-900 text-cream-50 rounded-lg",
-                  "font-sans text-sm font-semibold uppercase tracking-wide",
-                  "hover:bg-navy-800 shadow-navy",
-                  "focus:outline-none focus:ring-2 focus:ring-cream-50 focus:ring-offset-2",
-                  "transition-all duration-[var(--duration-button-hover)] ease-[var(--ease-premium)]"
-                )}
-                aria-label={`Quick add ${product.name} to cart`}
-                whileHover={{ 
-                  scale: 1.02,
-                  y: -1,
-                  transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
-                }}
-                whileTap={{ 
-                  scale: 0.98,
-                  transition: { duration: 0.1, ease: [0.4, 0, 1, 1] }
-                }}
-              >
-                <ShoppingBag className="w-4 h-4" aria-hidden="true" />
-                <span>Add to Cart</span>
-              </m.button>
-            </div>
-          )}
         </div>
 
-        {/* Quick Add to Cart Button - Mobile: Always visible below image */}
+        {/* Quick Add to Cart Button - PRODUCT CARD REBUILD: Consistent padding */}
         {product.inStock && (
-          <div className="px-[var(--space-5)] pb-[var(--space-3)] lg:hidden">
+          <div style={{ padding: '0 16px 16px 16px' }}> {/* Consistent padding: 16px */}
             <m.button
               onClick={handleQuickAdd}
               className={cn(
@@ -271,15 +308,24 @@ export const ProductCard = React.memo(function ProductCard({
           </div>
         )}
 
-        {/* Product Info - Using spacing scale - Flex grow to fill space for equal heights */}
-        <div className="p-[var(--space-5)] space-y-[var(--space-3)] flex-grow flex flex-col justify-between">
-          {/* Product Name */}
-          <h3 className="product-title line-clamp-2">
+        {/* Product Info - PRODUCT CARD REBUILD: Uniform vertical rhythm & consistent padding */}
+        <div className="product-card-content">
+          {/* Product Name - PRODUCT CARD REBUILD: Clamp titles, max 2 lines */}
+          <h3 className="product-title" style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: '1.4',
+            minHeight: '2.8em', // Fixed height for 2 lines (1.4 * 2)
+            maxHeight: '2.8em',
+          }}>
             {product.name}
           </h3>
 
-          {/* Price Section */}
-          <div className="flex items-baseline gap-[var(--space-2)]">
+          {/* Price Section - PRODUCT CARD REBUILD: Uniform spacing */}
+          <div className="flex items-baseline gap-2" style={{ marginTop: 0 }}>
             {/* Current Price */}
             <span className="product-price">
               {formatPrice(product.price)}
@@ -292,40 +338,10 @@ export const ProductCard = React.memo(function ProductCard({
             )}
           </div>
 
-          {/* Category Label (Design System: Inter, 11px, Medium, Uppercase, 1px letter-spacing, Charcoal 600) */}
-          <p className="font-sans text-[11px] font-medium text-charcoal-600 uppercase tracking-widest">
+          {/* Category Label - PRODUCT CARD REBUILD: Uniform spacing */}
+          <p className="font-sans text-[11px] font-medium text-charcoal-600 uppercase tracking-widest" style={{ marginTop: 0 }}>
             {product.category.name}
           </p>
-
-          {/* Size Guide (Design System: Tier 2 - Reduce hesitation) */}
-          {product.sizes && product.sizes.length > 0 && (
-            <div className="pt-[var(--space-2)] border-t border-cream-200">
-              <div className="flex items-center justify-between">
-                <span className="font-sans text-xs text-charcoal-600">Available Sizes:</span>
-                <div className="flex items-center gap-[var(--space-2)] flex-wrap">
-                  {product.sizes.slice(0, 4).map((sizeItem) => (
-                    <span
-                      key={sizeItem.size}
-                      className={cn(
-                        "font-sans text-[10px] font-medium px-1.5 py-0.5 rounded",
-                        sizeItem.inStock
-                          ? "bg-cream-100 text-charcoal-700 border border-cream-300"
-                          : "bg-cream-50 text-charcoal-400 border border-cream-200 line-through"
-                      )}
-                      aria-label={sizeItem.inStock ? `Size ${sizeItem.size} available` : `Size ${sizeItem.size} out of stock`}
-                    >
-                      {sizeItem.size}
-                    </span>
-                  ))}
-                  {product.sizes.length > 4 && (
-                    <span className="font-sans text-[10px] text-charcoal-500">
-                      +{product.sizes.length - 4} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </m.article>
     </Link>

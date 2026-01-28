@@ -53,22 +53,20 @@ export function ProductGrid({
     );
   }
 
-  // Grid column classes based on columns prop
-  // SSR-safe: Deterministic classes that match on server and client
+  // MOBILE-FIRST LAYOUT FIX: Consistent breakpoints
   // Mobile (375px+): 1 column
-  // Small mobile (428px+): 1 column
   // Tablet (768px+): 2 columns
-  // Large tablet (1024px+): 3 columns
-  // Desktop (1280px+): 4 columns
-  // Large desktop (1920px+): 4-6 columns
+  // Desktop (1024px+): 3 columns
+  // Large Desktop (1280px+): 4 columns
+  // Extra Large (1536px+): 5-6 columns
   const getGridCols = (cols: number): string => {
     const gridMap: Record<number, string> = {
       1: "grid-cols-1",
-      2: "grid-cols-1 md:grid-cols-2",
-      3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-      4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-      5: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
-      6: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6",
+      2: "grid-cols-1 md:grid-cols-2", // 768px+
+      3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3", // 768px+ / 1024px+
+      4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", // 768px+ / 1024px+ / 1280px+
+      5: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5", // 768px+ / 1024px+ / 1280px+ / 1536px+
+      6: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6", // 768px+ / 1024px+ / 1280px+ / 1536px+
     };
     return gridMap[cols] || gridMap[4];
   };
@@ -93,8 +91,8 @@ export function ProductGrid({
       style={{
         // Performance: Prevent layout shift
         contain: "layout style paint",
-        // CRITICAL FIX: Ensure grid container has proper height
-        minHeight: 0,
+        // MOBILE-FIRST LAYOUT FIX: Min-height reservation for grid container
+        minHeight: "420px", // Reserve space for at least one card
         // Prevent stacking context issues
         isolation: "isolate"
       }}
@@ -128,20 +126,26 @@ export function ProductGrid({
                 delay: isAboveFold ? index * 0.02 : 0,
                 ease: "easeOut"
               }}
-              // Prevent layout shift by maintaining consistent structure
-              className="w-full h-full flex"
+              // MOBILE-FIRST LAYOUT FIX: Prevent layout shift with min-height reservation
+              className="w-full flex"
               style={{
-                // Ensure products are always visible, even during animation
-                minHeight: 0,
+                // CRITICAL FIX: Ensure products are always visible, even during animation
+                opacity: 1,
+                visibility: "visible",
+                // MOBILE-FIRST LAYOUT FIX: Fixed card heights with min-height reservation
+                minHeight: "420px", // Match ProductCard min-height
+                height: "auto",
                 // Prevent stacking context issues
-                isolation: "isolate"
+                isolation: "isolate",
+                // Ensure clickable area
+                pointerEvents: "auto"
               }}
             >
               <ProductCard 
                 product={product} 
                 priority={isAboveFold}
                 fetchPriority={isAboveFold ? "auto" : "low"}
-                className="w-full h-full flex flex-col"
+                className="w-full flex flex-col"
               />
             </m.div>
           );

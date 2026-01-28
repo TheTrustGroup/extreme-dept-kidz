@@ -16,29 +16,59 @@ export function SkeletonCard({ className }: SkeletonCardProps): JSX.Element {
   return (
     <div 
       className={cn(
-        "relative overflow-hidden rounded-lg bg-cream-50 w-full flex flex-col",
+        "product-card skeleton-card relative overflow-hidden w-full flex flex-col",
         "shadow-sm",
         className
       )}
+      style={{
+        // MOBILE-FIRST LAYOUT FIX: Skeleton size parity - match ProductCard exactly
+        aspectRatio: "3 / 4",
+        minHeight: "420px", // Match ProductCard min-height reservation
+        height: "auto",
+        maxHeight: "520px", // Match ProductCard max-height
+        borderRadius: "30px", // Match ProductCard border-radius
+      }}
     >
-      {/* Image skeleton - Match ProductCard aspect-square */}
-      <div className="relative aspect-square overflow-hidden bg-cream-100 rounded-t-lg">
+      {/* Image skeleton - MOBILE-FIRST LAYOUT FIX: Match ProductCard image ratio exactly */}
+      <div 
+        className="relative overflow-hidden bg-cream-100"
+        style={{
+          width: "100%",
+          aspectRatio: "3 / 4", // Match ProductCard image ratio
+          borderRadius: "20px", // Match ProductCard image border-radius
+          marginBottom: 0, // Uniform vertical rhythm
+        }}
+      >
         <Skeleton className="absolute inset-0" />
       </div>
 
-      {/* Content skeleton - Match ProductCard padding (16px) */}
-      <div className="p-4 space-y-2">
-        {/* Product name skeleton - Match H4 height (2 lines) */}
-        <div className="space-y-2">
-          <Skeleton className="h-5 w-full" variant="rounded" />
-          <Skeleton className="h-5 w-3/4" variant="rounded" />
+      {/* Content skeleton - MOBILE-FIRST LAYOUT FIX: Match ProductCard padding exactly */}
+      <div 
+        className="product-card-content"
+        style={{
+          padding: "16px", // Match ProductCard consistent padding
+          gap: "12px", // Match ProductCard uniform vertical rhythm
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Product name skeleton - MOBILE-FIRST LAYOUT FIX: Match 2-line title height */}
+        <div style={{
+          minHeight: "2.8em", // Match ProductCard title min-height (2 lines)
+          maxHeight: "2.8em",
+          display: "flex",
+          flexDirection: "column",
+          gap: "4px",
+        }}>
+          <Skeleton className="h-4 w-full" variant="rounded" />
+          <Skeleton className="h-4 w-3/4" variant="rounded" />
         </div>
         
-        {/* Price skeleton - Match price height */}
-        <Skeleton className="h-6 w-1/3" variant="rounded" />
+        {/* Price skeleton - MOBILE-FIRST LAYOUT FIX: Match price height */}
+        <Skeleton className="h-5 w-1/3" variant="rounded" style={{ marginTop: 0 }} />
         
-        {/* Category skeleton - Match label height */}
-        <Skeleton className="h-3 w-1/2" variant="rounded" />
+        {/* Category skeleton - MOBILE-FIRST LAYOUT FIX: Match category label height */}
+        <Skeleton className="h-3 w-1/2" variant="rounded" style={{ marginTop: 0 }} />
       </div>
     </div>
   );

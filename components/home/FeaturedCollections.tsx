@@ -151,7 +151,7 @@ function CollectionCard({ collection, index }: CollectionCardProps): JSX.Element
             transition={{ duration: 0.3 }}
             style={{
               boxShadow:
-                "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                "0 25px 50px -12px rgba(28, 28, 28, 0.25), 0 0 0 1px rgba(28, 28, 28, 0.05)", // brand-text shadows
             }}
           />
         </m.div>

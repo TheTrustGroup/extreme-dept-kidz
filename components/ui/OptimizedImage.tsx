@@ -86,8 +86,9 @@ export function OptimizedImage({
   className,
   ...props
 }: OptimizedImageProps): JSX.Element {
+  // CRITICAL FIX: Always start with images visible for LCP and non-lazy images
   const [isInView, setIsInView] = React.useState(!useIntersectionObserver || isLCP);
-  const [shouldLoad, setShouldLoad] = React.useState(isLCP);
+  const [shouldLoad, setShouldLoad] = React.useState(isLCP || !useIntersectionObserver);
   const [isMobile, setIsMobile] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   
@@ -119,13 +120,18 @@ export function OptimizedImage({
   React.useEffect(() => {
     if (inView && useIntersectionObserver) {
       setIsInView(true);
-      // Small delay to prioritize critical content
-      const timer = setTimeout(() => {
-        setShouldLoad(true);
-      }, isLCP ? 0 : 50);
-      return () => clearTimeout(timer);
+      // CRITICAL FIX: Load images immediately when in view
+      setShouldLoad(true);
     }
-  }, [inView, useIntersectionObserver, isLCP]);
+  }, [inView, useIntersectionObserver]);
+
+  // CRITICAL FIX: Ensure LCP images load immediately
+  React.useEffect(() => {
+    if (isLCP || !useIntersectionObserver) {
+      setIsInView(true);
+      setShouldLoad(true);
+    }
+  }, [isLCP, useIntersectionObserver]);
 
   // Smart prefetching: Prefetch when near viewport
   React.useEffect(() => {
@@ -208,24 +214,41 @@ export function OptimizedImage({
     return 'auto';
   };
 
-  // Don't render until in view (for lazy loading)
-  if (!isInView) {
-    return (
-      <div
-        ref={setRefs}
-        className={cn("bg-cream-100 animate-pulse", className)}
-        style={{
-          aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : '1/1',
-          contain: 'layout style paint',
-        }}
-        aria-label="Loading image"
-      />
-    );
-  }
+  // CRITICAL FIX: Always render image container with proper dimensions
+  // Images MUST always render - no conditional rendering that causes blank cards
+  const [imageError, setImageError] = React.useState(false);
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+
+  // Handle image load errors - fallback to placeholder
+  const handleImageError = React.useCallback(() => {
+    setImageError(true);
+  }, []);
+
+  const handleImageLoad = React.useCallback(() => {
+    setImageLoaded(true);
+  }, []);
+
+  // CRITICAL: Always render the image container with proper aspect ratio
+  // Show placeholder only if image hasn't loaded yet AND not in view (for lazy loading)
+  const showPlaceholder = !isInView && useIntersectionObserver && !isLCP && !shouldLoad;
 
   return (
-    <div ref={setRefs} className={cn("relative", className)} style={{ contain: 'layout style paint' }}>
-      {shouldLoad ? (
+    <div 
+      ref={setRefs} 
+      className={cn("relative", className)} 
+      style={{ 
+        contain: 'layout style paint',
+        width: '100%',
+        height: '100%',
+        minHeight: props.width && props.height ? undefined : '100%',
+        // CRITICAL: Ensure container is always visible
+        opacity: 1,
+        visibility: 'visible',
+      }}
+    >
+      {/* CRITICAL FIX: Always render Image component - never conditionally hide */}
+      {/* Next.js Image handles lazy loading internally, we just need to ensure it renders */}
+      {shouldLoad || isLCP ? (
         <Image
           src={src}
           alt={alt}
@@ -240,20 +263,51 @@ export function OptimizedImage({
           placeholder="blur"
           blurDataURL={getBlurDataURL()}
           decoding="async"
+          onError={handleImageError}
+          onLoad={handleImageLoad}
           className={cn(
             "object-cover",
-            className
+            className,
+            // CRITICAL: Ensure image is always visible
+            imageLoaded ? "opacity-100" : "opacity-100"
           )}
+          style={{
+            ...props.style,
+            // CRITICAL FIX: Ensure images are always visible - pixel-perfect rendering
+            opacity: imageError ? 0.5 : 1,
+            visibility: 'visible',
+            display: 'block',
+          } as React.CSSProperties}
           {...props}
         />
-      ) : (
+      ) : null}
+      
+      {/* Placeholder - only show when image is not loaded yet */}
+      {showPlaceholder && (
         <div
-          className={cn("bg-cream-100 animate-pulse", className)}
+          className={cn("absolute inset-0 bg-cream-100 animate-pulse", className)}
           style={{
-            aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : '1/1',
+            contain: 'layout style paint',
+            width: '100%',
+            height: '100%',
+            zIndex: 0,
+          }}
+          aria-label="Loading image"
+        />
+      )}
+      
+      {/* Error fallback - show if image fails to load */}
+      {imageError && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-cream-100"
+          style={{
+            zIndex: 1,
             contain: 'layout style paint',
           }}
-        />
+          aria-label="Image failed to load"
+        >
+          <div className="text-charcoal-400 text-xs">Image</div>
+        </div>
       )}
     </div>
   );

@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { m } from "framer-motion";
 import { useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Hero background image
 const HERO_IMAGE = "/Extreme 1.png";
@@ -78,34 +78,73 @@ export function HeroSection(): JSX.Element {
             minHeight: "100%",
           }}
         >
-          {/* Hero Background Image - LCP Element - Ultra-optimized */}
-          <div className="absolute inset-0 w-full h-full bg-charcoal-900 overflow-hidden">
-            <OptimizedImage
-              src={HERO_IMAGE}
-              alt="Hero background - Extreme Dept Kidz"
-              variant="hero"
-              isLCP={true}
-              useIntersectionObserver={false}
-              enablePrefetch={false}
-              quality={90}
-              blurVariant="hero"
-              className="object-cover"
+          {/* Hero Background Image - CRITICAL FIX: Cross-browser compatibility (Safari, Chrome, Firefox, iOS, Android) */}
+          {/* COLOR SYSTEM NORMALIZATION: Use brand-text for background */}
+          <div 
+            className="absolute inset-0 w-full h-full overflow-hidden" 
+            style={{ 
+              backgroundColor: 'var(--brand-text)',
+              // CRITICAL: Ensure container is always visible
+              opacity: 1,
+              visibility: 'visible',
+              display: 'block',
+            }}
+          >
+            <div 
+              className="relative w-full h-full"
               style={{
-                objectPosition: "center center",
-                // CRITICAL: Prevent layout shift during image load
-                contentVisibility: "auto",
+                // CRITICAL: Cross-browser height fixes
+                // Standard viewport height (mobile-first)
+                minHeight: 'calc(100vh - 2rem - 3.5rem)',
+                // CRITICAL: Ensure proper positioning
+                position: 'relative',
+                width: '100%',
+                height: '100%',
               }}
-              fill
-              aria-hidden="true"
-            />
+            >
+              <Image
+                src={HERO_IMAGE}
+                alt="Hero background - Extreme Dept Kidz"
+                fill
+                priority
+                quality={90}
+                className="object-cover"
+                style={{
+                  objectPosition: "center center",
+                  // CRITICAL FIX: Ensure hero image is always visible - cross-browser
+                  opacity: 1,
+                  visibility: 'visible',
+                  display: 'block',
+                  // CRITICAL: Ensure proper z-index
+                  zIndex: 0,
+                } as React.CSSProperties}
+                sizes="100vw"
+                aria-hidden="true"
+                // CRITICAL: Cross-browser loading attributes
+                loading="eager"
+                fetchPriority="high"
+                // CRITICAL: Error handling
+                onError={(e) => {
+                  console.error('Hero image failed to load:', HERO_IMAGE);
+                  // Fallback: ensure container is still visible
+                  const target = e.target as HTMLImageElement;
+                  if (target) {
+                    target.style.opacity = '0.5';
+                  }
+                }}
+                onLoad={() => {
+                  // Ensure image is visible after load
+                  console.log('Hero image loaded successfully');
+                }}
+              />
+            </div>
           </div>
           
-          {/* Soft gradient overlay – premium, breathable depth */}
+          {/* Soft gradient overlay – premium, breathable depth - COLOR SYSTEM NORMALIZATION */}
           <div
             className="absolute inset-0"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(26,26,26,0.55) 0%, rgba(26,26,26,0.35) 40%, rgba(26,26,26,0.45) 100%)",
+              background: "var(--hero-gradient-overlay)", // COLOR SYSTEM NORMALIZATION: Uses brand-text CSS variable
             }}
             aria-hidden="true"
           />
@@ -136,8 +175,7 @@ export function HeroSection(): JSX.Element {
               )}
               variants={itemVariants}
               style={{
-                textShadow:
-                  "0 4px 20px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4)",
+                textShadow: "var(--hero-text-shadow)", // COLOR SYSTEM NORMALIZATION: Uses CSS variable
               }}
             >
               Premium Streetwear for Young Legends
@@ -153,7 +191,7 @@ export function HeroSection(): JSX.Element {
               )}
               variants={itemVariants}
               style={{
-                textShadow: "0 2px 12px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.4)",
+                textShadow: "var(--hero-text-shadow-subtle)", // COLOR SYSTEM NORMALIZATION: Uses CSS variable
               }}
             >
               Elevated style for the modern boy. Built for adventure, designed for life.
@@ -224,7 +262,7 @@ export function HeroSection(): JSX.Element {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 0.6 }}
         style={{
-          filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8))",
+          filter: "var(--hero-scroll-indicator-shadow)", // COLOR SYSTEM NORMALIZATION: Uses CSS variable
         }}
         aria-hidden="true"
       >
