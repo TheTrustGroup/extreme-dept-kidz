@@ -198,9 +198,12 @@ export async function PUT(
 
     // Revalidate cache to show updated product immediately
     try {
-      // Revalidate product-specific pages
-      revalidatePath(`/products/${product.slug}`);
-      revalidatePath('/products');
+      const { revalidateProduct, revalidateCategoryChange, revalidateAllCollectionPages } = await import('@/lib/utils/cache-revalidation');
+      
+      // Use efficient tag-based revalidation
+      revalidateProduct(product.slug, product.id);
+      
+      // Revalidate admin pages
       revalidatePath('/admin/products');
       revalidatePath('/api/products');
       

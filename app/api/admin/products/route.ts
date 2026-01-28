@@ -255,9 +255,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Revalidate cache to ensure product appears immediately
     try {
-      // Revalidate product-specific pages
-      revalidatePath(`/products/${product.slug}`);
-      revalidatePath('/products');
+      const { revalidateProduct, revalidateAllCollectionPages } = await import('@/lib/utils/cache-revalidation');
+      
+      // Use efficient tag-based revalidation
+      revalidateProduct(product.slug, product.id);
+      
+      // Revalidate admin pages
       revalidatePath('/admin/products');
       revalidatePath('/api/products');
       

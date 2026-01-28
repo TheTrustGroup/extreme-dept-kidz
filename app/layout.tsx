@@ -106,8 +106,35 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`} data-theme="light">
+    <html lang="en" className={`${playfair.variable} ${inter.variable}`} data-theme="light" suppressHydrationWarning>
       <head>
+        {/* Performance: Prevent theme FOUC by applying theme before React hydration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'dark' || theme === 'light') {
+                    document.documentElement.setAttribute('data-theme', theme);
+                    document.documentElement.classList.remove('light', 'dark');
+                    document.documentElement.classList.add(theme);
+                  } else {
+                    var systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    var initialTheme = systemPrefersDark ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', initialTheme);
+                    document.documentElement.classList.remove('light', 'dark');
+                    document.documentElement.classList.add(initialTheme);
+                  }
+                } catch (e) {
+                  // Fallback to light theme
+                  document.documentElement.setAttribute('data-theme', 'light');
+                  document.documentElement.classList.add('light');
+                }
+              })();
+            `,
+          }}
+        />
         {/* Font preconnect for faster font loading - Next.js handles this automatically */}
         {/* Image CDN preconnect */}
         <link

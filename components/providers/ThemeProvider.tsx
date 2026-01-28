@@ -25,30 +25,61 @@ const ThemeContext = createContext<ThemeContextType>(defaultThemeContext);
  * 
  * Manages dark/light theme state with localStorage persistence.
  * Light theme is the primary/default theme.
+ * 
+ * Performance: Prevents FOUC by applying theme synchronously before render
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>(() => {
+    // Performance: Initialize theme synchronously to prevent FOUC
+    // This runs only on client-side mount
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("theme") as Theme | null;
+      if (stored === "dark" || stored === "light") {
+        // Apply immediately to prevent flash
+        applyThemeSync(stored);
+        return stored;
+      }
+      // Check system preference, default to light
+      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initialTheme: Theme = systemPrefersDark ? "dark" : "light";
+      applyThemeSync(initialTheme);
+      return initialTheme;
+    }
+    return "light";
+  });
   const [mounted, setMounted] = useState(false);
 
-  // Initialize theme on mount
+  // Initialize theme on mount (for SSR hydration)
   useEffect(() => {
     setMounted(true);
     
-    // Check localStorage first, then system preference, default to light
+    // Double-check theme on mount (handles edge cases)
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored === "dark" || stored === "light") {
-      setThemeState(stored);
-      applyTheme(stored);
+      if (stored !== theme) {
+        setThemeState(stored);
+        applyTheme(stored);
+      }
     } else {
-      // Check system preference, but default to light (primary)
       const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme: Theme = systemPrefersDark ? "dark" : "light"; // Default to light
-      setThemeState(initialTheme);
-      applyTheme(initialTheme);
+      const initialTheme: Theme = systemPrefersDark ? "dark" : "light";
+      if (initialTheme !== theme) {
+        setThemeState(initialTheme);
+        applyTheme(initialTheme);
+      }
     }
   }, []);
 
-  // Apply theme to document
+  // Apply theme to document synchronously (prevents FOUC)
+  function applyThemeSync(newTheme: Theme) {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.setAttribute("data-theme", newTheme);
+    root.classList.remove("light", "dark");
+    root.classList.add(newTheme);
+  }
+
+  // Apply theme to document (async version)
   const applyTheme = (newTheme: Theme) => {
     const root = document.documentElement;
     root.setAttribute("data-theme", newTheme);
@@ -67,11 +98,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(newTheme);
   };
 
-  // Prevent flash of wrong theme
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Always render children - theme is applied synchronously to prevent FOUC
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}

@@ -2,15 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Performance: Smooth scrolling */
+/* Performance: Smooth scrolling with GPU acceleration */
 html {
   scroll-behavior: smooth;
+  /* Performance: Enable hardware acceleration for smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+  /* Performance: Optimize font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Performance: Reduce layout shifts */
+  text-rendering: optimizeLegibility;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
+}
+
+/* Performance: Optimize scroll performance */
+* {
+  /* Performance: Use GPU acceleration for transforms */
+  transform: translateZ(0);
+  will-change: auto;
+}
+
+/* Performance: Optimize animations to use GPU */
+[data-animate],
+.animate-transform {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 :root {

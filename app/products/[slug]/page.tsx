@@ -11,7 +11,9 @@ interface ProductPageProps {
   }>;
 }
 
-export const dynamic = 'force-dynamic'; // Always fetch fresh product data
+// ISR: Revalidate product pages every 300 seconds (5 min), or on-demand via tags
+// This allows products to appear quickly while maintaining freshness
+export const revalidate = 300;
 
 /**
  * Generate metadata for product page

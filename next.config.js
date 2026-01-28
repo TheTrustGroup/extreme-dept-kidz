@@ -44,12 +44,15 @@ const nextConfig = {
     optimizePackageImports: [
       "framer-motion",
       "lucide-react",
+      "recharts",
       // Note: @prisma/client removed to ensure proper binary bundling
     ],
     // Enable React Server Components optimizations
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    // Performance: Optimize server component rendering
+    serverComponentsExternalPackages: ['@prisma/client'],
   },
   
   // TypeScript configuration
@@ -79,21 +82,55 @@ const nextConfig = {
   },
   
   // Webpack Optimizations
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     // Optimize bundle size
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
       };
+      
+      // Performance: Enhanced tree shaking and code splitting (client-side only)
+      config.optimization = {
+        ...config.optimization,
+        usedExports: true,
+        sideEffects: false,
+        // Performance: Better code splitting (client-side only to avoid server bundle issues)
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Performance: Separate vendor chunks for better caching
+            framerMotion: {
+              name: 'framer-motion',
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              priority: 30,
+              reuseExistingChunk: true,
+            },
+            react: {
+              name: 'react',
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              priority: 40,
+              reuseExistingChunk: true,
+            },
+            vendor: {
+              name: 'vendor',
+              test: /[\\/]node_modules[\\/]/,
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    } else {
+      // Server-side: Keep default optimization, just enable tree shaking
+      config.optimization = {
+        ...config.optimization,
+        usedExports: true,
+        sideEffects: false,
+      };
     }
-    
-    // Tree shaking optimizations
-    config.optimization = {
-      ...config.optimization,
-      usedExports: true,
-      sideEffects: false,
-    };
     
     return config;
   },

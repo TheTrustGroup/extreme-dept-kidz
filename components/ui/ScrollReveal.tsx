@@ -61,8 +61,13 @@ export function ScrollReveal({
         ease: "easeInOut",
         delay,
       }}
-      // Prevent flickering during scroll - use will-change only when animating
-      style={{ willChange: isInView ? 'auto' : 'opacity, transform' }}
+      // Performance: GPU-accelerated transforms, optimize will-change
+      style={{ 
+        willChange: isInView ? 'auto' : 'opacity, transform',
+        // Performance: Force GPU acceleration
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+      }}
       className={cn(className)}
     >
       {children}

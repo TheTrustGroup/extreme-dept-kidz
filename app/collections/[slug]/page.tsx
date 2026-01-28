@@ -8,7 +8,8 @@ interface CollectionPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export const dynamic = "force-dynamic";
+// ISR: Revalidate collection pages every 60 seconds, or on-demand via tags
+export const revalidate = 60;
 
 /**
  * Generate metadata from real category (Admin → Categories).

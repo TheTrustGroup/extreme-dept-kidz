@@ -19,6 +19,7 @@ export function ScrollIndicator({ containerRef, className }: ScrollIndicatorProp
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
+  // Performance: Throttle scroll checks with requestAnimationFrame
   const checkScrollability = React.useCallback(() => {
     if (!containerRef.current) return;
 
@@ -31,13 +32,41 @@ export function ScrollIndicator({ containerRef, className }: ScrollIndicatorProp
     const container = containerRef.current;
     if (!container) return;
 
+    // Performance: Use RAF for scroll throttling
+    let rafId: number | null = null;
+    let ticking = false;
+
+    const throttledCheck = () => {
+      if (!ticking) {
+        rafId = requestAnimationFrame(() => {
+          checkScrollability();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // Initial check
     checkScrollability();
-    container.addEventListener("scroll", checkScrollability);
-    window.addEventListener("resize", checkScrollability);
+
+    // Performance: Use passive listeners for better scroll performance
+    container.addEventListener("scroll", throttledCheck, { passive: true });
+    
+    // Performance: Throttle resize events
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(checkScrollability, 150);
+    };
+    window.addEventListener("resize", handleResize, { passive: true });
 
     return () => {
-      container.removeEventListener("scroll", checkScrollability);
-      window.removeEventListener("resize", checkScrollability);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      container.removeEventListener("scroll", throttledCheck);
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(resizeTimeout);
     };
   }, [containerRef, checkScrollability]);
 

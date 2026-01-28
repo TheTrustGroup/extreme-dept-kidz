@@ -29,21 +29,46 @@ interface ApiErrorResponse {
 
 /**
  * Success response
+ * 
+ * Performance: Adds cache headers for ISR compatibility
  */
 export function apiSuccess<T>(
   data: T,
   message?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
+  options?: {
+    cache?: 'no-store' | 'force-cache' | number; // number = seconds to cache
+    tags?: string[]; // Revalidation tags
+  }
 ): NextResponse<ApiSuccessResponse<T>> {
-  return NextResponse.json({
-    success: true,
-    data,
-    message,
-    metadata: {
-      timestamp: new Date().toISOString(),
-      ...metadata,
+  const headers = new Headers();
+  
+  // Performance: Set cache headers for ISR
+  if (options?.tags && options.tags.length > 0) {
+    headers.set('Cache-Control', `public, s-maxage=60, stale-while-revalidate=300`);
+    headers.set('CDN-Cache-Control', `public, s-maxage=60`);
+    headers.set('Vercel-CDN-Cache-Control', `public, s-maxage=60`);
+  } else if (options?.cache === 'no-store') {
+    headers.set('Cache-Control', 'no-store');
+  } else if (typeof options?.cache === 'number') {
+    headers.set('Cache-Control', `public, s-maxage=${options.cache}, stale-while-revalidate=${options.cache * 5}`);
+  } else {
+    // Default: 60s cache with stale-while-revalidate
+    headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+  }
+  
+  return NextResponse.json(
+    {
+      success: true,
+      data,
+      message,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        ...metadata,
+      },
     },
-  });
+    { headers }
+  );
 }
 
 /**

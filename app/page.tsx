@@ -5,6 +5,7 @@ import { getAllProducts } from "@/lib/db";
 import type { Product } from "@/types";
 import { HeroSection } from "@/components/home";
 import { TrustBar } from "@/components/home";
+import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 
 // Hero + TrustBar in main bundle so above-the-fold is fast and never static/blank
 
@@ -32,7 +33,8 @@ const StyleGuideSection = nextDynamic(() => import("@/components/home").then((mo
   ssr: true,
 });
 
-export const dynamic = 'force-dynamic'; // Always fetch fresh products on homepage
+// ISR: Revalidate homepage every 60 seconds, or on-demand via tags
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
@@ -79,8 +81,11 @@ export default async function Home() {
   const organizationSchema = generateOrganizationSchema();
 
   // Fetch products from database to display on homepage
+  // Performance: Tagged for efficient cache invalidation
   let products: Product[] = [];
   try {
+    // Note: unstable_cache with tags would be ideal, but getAllProducts already handles caching
+    // We'll tag at the API level instead
     products = await getAllProducts();
   } catch (error) {
     console.error('Failed to fetch products for homepage:', error);

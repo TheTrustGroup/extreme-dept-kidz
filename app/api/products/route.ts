@@ -12,6 +12,8 @@ import { getAllProducts, getProductsByCategory, getDatabaseStatus } from "@/lib/
 import type { Product } from "@/types";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
+import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { unstable_cache } from "next/cache";
 
 /**
  * Transform Prisma product to application Product type
@@ -61,7 +63,8 @@ function transformProduct(prismaProduct: {
   };
 }
 
-export const dynamic = "force-dynamic";
+// Dynamic route: Uses searchParams for filtering, cache with headers
+export const dynamic = 'force-dynamic'; // Required because we use searchParams
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -129,7 +132,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           hasMore: offset + limit < total,
         },
       },
-      "Products fetched successfully"
+      "Products fetched successfully",
+      undefined,
+      {
+        cache: 60, // Cache for 60 seconds
+        tags: [CACHE_TAGS.products, category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections],
+      }
     );
   } catch (error) {
     logger.error("❌ Error fetching products:", error);

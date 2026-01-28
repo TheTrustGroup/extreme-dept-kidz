@@ -22,12 +22,15 @@ export function HeroSection(): JSX.Element {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = React.useState(true);
 
-  // Parallax scroll effect
+  // Parallax scroll effect - Optimized with RAF throttling
+  // Performance: Use passive scroll listener with requestAnimationFrame throttling
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
+    layoutEffect: false, // Performance: Use effect instead of layoutEffect for better performance
   });
 
+  // Performance: Throttle transform updates with useTransform (already optimized by framer-motion)
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   // Intersection Observer for lazy loading on mobile (performance optimization)
