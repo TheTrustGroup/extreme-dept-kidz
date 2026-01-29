@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <div className="admin-container flex h-screen bg-cream-50 overflow-hidden admin-background" style={{ isolation: 'isolate', position: 'relative', zIndex: 1, contain: 'layout style' }}>
+        <div className="admin-container flex h-screen bg-cream-50 overflow-hidden admin-background" style={{ isolation: 'isolate', position: 'relative', zIndex: 1 }}>
           {/* Background Image Layer */}
           <div 
             className="fixed inset-0 z-0 pointer-events-none"

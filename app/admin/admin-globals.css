@@ -670,8 +670,6 @@
   isolation: isolate;
   position: relative;
   z-index: 10 !important;
-  /* Ensure header stays within admin container */
-  contain: layout style paint;
 }
 
 /* Premium Button Styles - Enhanced */
@@ -720,8 +718,6 @@
   border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
   box-shadow: var(--admin-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
   transition: all var(--admin-transition-smooth, 300ms) cubic-bezier(0.4, 0, 0.2, 1);
-  /* CRITICAL: Ensure dropdown stays within admin container and below browser UI */
-  contain: layout style paint;
   /* Force z-index to be relative to parent, not viewport */
   position: absolute !important;
   /* Prevent any z-index inheritance issues */
