@@ -73,9 +73,9 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <div className="admin-container flex h-screen bg-cream-50 overflow-hidden admin-background" style={{ isolation: 'isolate', position: 'relative', zIndex: 1 }}>
+        <div className="admin-container flex flex-col h-screen bg-cream-50 overflow-hidden admin-background" style={{ isolation: "isolate", position: "relative", zIndex: 1 }}>
           {/* Background Image Layer */}
-          <div 
+          <div
             className="fixed inset-0 z-0 pointer-events-none"
             style={{
               backgroundImage: "url('/admin-bg.png')",
@@ -85,14 +85,18 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
               opacity: 0.03,
             }}
           />
-          
-          <AdminSidebar
-            isOpen={sidebarOpen}
-            onToggle={() => setSidebarOpen(!sidebarOpen)}
-          />
 
-          <div className="flex-1 flex flex-col overflow-hidden relative" style={{ zIndex: 10, isolation: 'isolate' }}>
+          {/* Header first: full width at top */}
+          <div className="relative z-20 flex-shrink-0" style={{ isolation: "isolate" }}>
             <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+          </div>
+
+          {/* Below header: sidebar + main */}
+          <div className="flex flex-1 overflow-hidden relative" style={{ zIndex: 10, isolation: "isolate" }}>
+            <AdminSidebar
+              isOpen={sidebarOpen}
+              onToggle={() => setSidebarOpen(!sidebarOpen)}
+            />
 
             <main className="admin-scroll-container flex-1 p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-7)]">
               <div className="max-w-7xl mx-auto admin-rhythm-lg">
