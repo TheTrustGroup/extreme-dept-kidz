@@ -32,11 +32,12 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://extremedeptkidz.com
 
 fetch(`${API_BASE}/api/admin/products`, { credentials: 'include' })
 fetch(`${API_BASE}/api/admin/inventory`, { credentials: 'include' })
+fetch(`${API_BASE}/api/orders`, { credentials: 'include' })  // orders list (rewrites to admin orders)
 ```
 
-### 3. Login URL
+### 3. Login and “current user”
 
-Login must also go to the main site:
+Login and “me” must go to the main site:
 
 ```javascript
 // Login
@@ -46,6 +47,9 @@ fetch(`${API_BASE}/admin/api/login`, {
   body: JSON.stringify({ email, password }),
   credentials: 'include',
 });
+
+// Current user (after login)
+fetch(`${API_BASE}/admin/api/me`, { credentials: 'include' });
 ```
 
 ### 4. Checklist
@@ -62,8 +66,10 @@ fetch(`${API_BASE}/admin/api/login`, {
 CORS is already configured on the main site for origin `https://warehouse.extremedeptkidz.com` on:
 
 - `/api/admin/auth/login` and `/admin/api/login`
+- `/admin/api/me` (rewrites to `/api/admin/auth/me`)
 - `/api/admin/products`
 - `/api/admin/inventory`
 - `/api/admin/inventory/analytics`
+- `/api/orders` (rewrites to `/api/admin/orders`)
 
 So once the warehouse calls **https://extremedeptkidz.com** with credentials, the browser will allow the response.

@@ -6,10 +6,12 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   reactStrictMode: true,
 
-  // Warehouse app (warehouse.extremedeptkidz.com) calls POST /admin/api/login
+  // Warehouse app (warehouse.extremedeptkidz.com) – align paths with main API
   async rewrites() {
     return [
       { source: '/admin/api/login', destination: '/api/admin/auth/login' },
+      { source: '/admin/api/me', destination: '/api/admin/auth/me' },
+      { source: '/api/orders', destination: '/api/admin/orders' },
     ];
   },
   
