@@ -5,6 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
+import { AdminBreadcrumbProvider } from "@/components/admin/AdminBreadcrumbContext";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useAdminKeyboards } from "@/lib/hooks/use-admin-keyboard";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -95,7 +97,10 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
             <main className="admin-scroll-container flex-1 p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-7)]">
               <div className="max-w-7xl mx-auto admin-rhythm-lg">
                 <ErrorBoundary>
-                  {children}
+                  <AdminBreadcrumbProvider>
+                    <AdminBreadcrumb />
+                    {children}
+                  </AdminBreadcrumbProvider>
                 </ErrorBoundary>
               </div>
             </main>

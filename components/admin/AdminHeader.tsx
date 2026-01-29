@@ -79,25 +79,6 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Generate breadcrumb from pathname
-  const breadcrumbs = React.useMemo(() => {
-    const parts = pathname.split("/").filter(Boolean);
-    const crumbs = [{ label: "Dashboard", href: "/admin" }];
-
-    if (parts.length > 1) {
-      parts.slice(1).forEach((part, index) => {
-        const href = `/${parts.slice(0, index + 2).join("/")}`;
-        const label = part
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-        crumbs.push({ label, href });
-      });
-    }
-
-    return crumbs;
-  }, [pathname]);
-
   return (
     <header className="admin-header-glass sticky top-0" style={{ zIndex: 10, isolation: 'isolate', position: 'relative' }}>
       {/* Database Status Banner - Wrapped in error boundary */}
@@ -107,7 +88,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
         </React.Suspense>
       </div>
       <div className="admin-flex-md items-center justify-between px-[var(--admin-space-4)] lg:px-[var(--admin-space-6)]" style={{ height: 'var(--admin-header-height, 4rem)' }}>
-        {/* Left: Menu & Breadcrumb */}
+        {/* Left: Menu */}
         <div className="admin-flex-md items-center">
           <button
             onClick={onMenuClick}
@@ -117,25 +98,6 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
             <MenuIcon className="w-5 h-5" />
           </button>
 
-          {/* Breadcrumb */}
-          <nav className="hidden md:flex items-center admin-flex-sm">
-            {breadcrumbs.map((crumb, idx) => (
-              <React.Fragment key={crumb.href}>
-                {idx > 0 && (
-                  <span className="text-charcoal-400">/</span>
-                )}
-                <Link
-                  href={crumb.href}
-                  className={cn(
-                    "text-charcoal-600 hover:text-charcoal-900 transition-colors duration-200",
-                    idx === breadcrumbs.length - 1 && "font-semibold text-charcoal-900"
-                  )}
-                >
-                  <AdminBodySmall>{crumb.label}</AdminBodySmall>
-                </Link>
-              </React.Fragment>
-            ))}
-          </nav>
         </div>
 
         {/* Right: Search, Notifications, User */}

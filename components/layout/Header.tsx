@@ -226,10 +226,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
 
           {/* Mobile Layout (< 768px) */}
           <div className="md:hidden h-full flex items-center justify-between px-[var(--space-4)]">
-            {/* Logo - Centered */}
+            {/* Logo - Left Aligned */}
             <m.div
               className={cn(
-                "flex-1 flex items-center justify-center h-full",
+                "flex-shrink-0 flex items-center h-full",
                 isScrolled && "opacity-95"
               )}
               whileHover={{ scale: 1.01 }}

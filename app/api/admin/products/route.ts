@@ -22,7 +22,90 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
+    const categoryId = searchParams.get('categoryId') || '';
+    const status = searchParams.get('status') || ''; // 'active', 'draft', 'outOfStock'
+    const stockStatus = searchParams.get('stockStatus') || ''; // 'inStock', 'lowStock', 'outOfStock'
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const sortBy = searchParams.get('sortBy') || 'createdAt'; // 'name', 'price', 'stock', 'createdAt', 'bestSelling'
+    const sortOrder = searchParams.get('sortOrder') || 'desc'; // 'asc' or 'desc'
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: any = {};
+
+    // Search filter
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { sku: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Category filter
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    // Status filter
+    if (status === 'active') {
+      where.inStock = true;
+    } else if (status === 'outOfStock') {
+      where.inStock = false;
+    } else if (status === 'draft') {
+      // Draft products: no images or incomplete data
+      where.OR = [
+        { images: { none: {} } },
+        { name: { equals: '' } },
+      ];
+    }
+
+    // Price range filter
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) {
+        where.price.gte = parseInt(minPrice, 10) * 100; // Convert to cents
+      }
+      if (maxPrice) {
+        where.price.lte = parseInt(maxPrice, 10) * 100; // Convert to cents
+      }
+    }
+
+    // Build orderBy clause
+    let orderBy: any = {};
+    switch (sortBy) {
+      case 'name':
+        orderBy = { name: sortOrder };
+        break;
+      case 'price':
+        orderBy = { price: sortOrder };
+        break;
+      case 'createdAt':
+        orderBy = { createdAt: sortOrder };
+        break;
+      case 'stock':
+        // Sort by total stock (requires aggregation, handled in transform)
+        orderBy = { createdAt: sortOrder };
+        break;
+      case 'bestSelling':
+        // Sort by order items count (requires aggregation)
+        orderBy = { createdAt: sortOrder };
+        break;
+      default:
+        orderBy = { createdAt: 'desc' };
+    }
+
+    // Get total count for pagination
+    const total = await prisma.product.count({ where });
+
+    // Fetch products with pagination
     const prismaProducts = await prisma.product.findMany({
+      where,
       include: {
         category: true,
         images: {
@@ -35,46 +118,89 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             collection: true,
           },
         },
+        orderItems: {
+          select: {
+            quantity: true,
+          },
+        },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy,
+      skip,
+      take: limit,
     });
 
     // Transform Prisma products to Product type format (variants -> sizes)
-    const products = prismaProducts.map((p) => ({
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      description: p.description,
-      price: p.price,
-      originalPrice: p.originalPrice ?? undefined,
-      sku: p.sku ?? undefined,
-      inStock: p.inStock,
-      images: p.images.map((img) => ({
-        url: img.url,
-        alt: img.alt ?? undefined,
-        isPrimary: img.isPrimary,
-      })),
-      sizes: p.variants.map((v) => ({
-        size: v.size,
-        inStock: v.stock > 0,
-        quantity: v.stock,
-      })),
-      category: {
-        id: p.category.id,
-        name: p.category.name,
-        slug: p.category.slug,
-      },
-      tags: p.tags.map((t) => t.name),
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
-    }));
+    const products = prismaProducts.map((p) => {
+      const totalStock = p.variants.reduce((sum, v) => sum + v.stock, 0);
+      const totalSold = p.orderItems.reduce((sum, item) => sum + item.quantity, 0);
+      
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        description: p.description,
+        price: p.price,
+        originalPrice: p.originalPrice ?? undefined,
+        sku: p.sku ?? undefined,
+        inStock: p.inStock,
+        totalStock,
+        totalSold,
+        images: p.images.map((img) => ({
+          url: img.url,
+          alt: img.alt ?? undefined,
+          isPrimary: img.isPrimary,
+        })),
+        sizes: p.variants.map((v) => ({
+          size: v.size,
+          inStock: v.stock > 0,
+          quantity: v.stock,
+        })),
+        category: {
+          id: p.category.id,
+          name: p.category.name,
+          slug: p.category.slug,
+        },
+        tags: p.tags.map((t) => t.name),
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      };
+    });
+
+    // Apply stock-based sorting if needed
+    let sortedProducts = products;
+    if (sortBy === 'stock') {
+      sortedProducts = [...products].sort((a, b) => {
+        return sortOrder === 'asc' 
+          ? a.totalStock - b.totalStock 
+          : b.totalStock - a.totalStock;
+      });
+    } else if (sortBy === 'bestSelling') {
+      sortedProducts = [...products].sort((a, b) => {
+        return sortOrder === 'asc'
+          ? a.totalSold - b.totalSold
+          : b.totalSold - a.totalSold;
+      });
+    }
+
+    // Apply stock status filter after fetching (since it requires computed values)
+    let filteredProducts = sortedProducts;
+    if (stockStatus === 'lowStock') {
+      filteredProducts = sortedProducts.filter(p => p.totalStock > 0 && p.totalStock <= 10);
+    } else if (stockStatus === 'outOfStock') {
+      filteredProducts = sortedProducts.filter(p => p.totalStock === 0);
+    } else if (stockStatus === 'inStock') {
+      filteredProducts = sortedProducts.filter(p => p.totalStock > 0);
+    }
+
+    const totalPages = Math.ceil(total / limit);
 
     return apiSuccess(
       {
-        products,
-        count: products.length,
+        products: filteredProducts,
+        count: filteredProducts.length,
+        total,
+        page,
+        totalPages,
       },
       'Products fetched successfully'
     );

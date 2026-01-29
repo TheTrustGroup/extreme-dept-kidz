@@ -9,12 +9,13 @@ import { cn } from "@/lib/utils";
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
-  message: string;
+  message: string | React.ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info";
   onConfirm: () => void;
   onCancel: () => void;
+  children?: React.ReactNode;
 }
 
 export function ConfirmDialog({
@@ -26,6 +27,7 @@ export function ConfirmDialog({
   variant = "danger",
   onConfirm,
   onCancel,
+  children,
 }: ConfirmDialogProps): JSX.Element | null {
   // Handle escape key
   React.useEffect(() => {
@@ -88,7 +90,10 @@ export function ConfirmDialog({
                 <AlertTriangle className={cn("w-6 h-6 flex-shrink-0 mt-0.5", styles.icon)} />
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-                  <p className="text-sm text-gray-600 mb-6">{message}</p>
+                  <div className="text-sm text-gray-600 mb-6">
+                    {typeof message === 'string' ? <p>{message}</p> : message}
+                  </div>
+                  {children}
                   <div className="flex gap-3 justify-end">
                     <Button
                       variant="ghost"

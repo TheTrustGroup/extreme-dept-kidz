@@ -7,12 +7,16 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { SingleImageUpload } from '@/components/admin/SingleImageUpload';
+import { useAdminBreadcrumb } from '@/components/admin/AdminBreadcrumbContext';
+import { usePathname } from 'next/navigation';
 
 export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const categoryId = params.id as string;
   const { showToast } = useToast();
+  const breadcrumb = useAdminBreadcrumb();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,6 +46,13 @@ export default function EditCategoryPage() {
           image: category.image || '',
           isActive: category.isActive !== undefined ? category.isActive : true,
         });
+        
+        // Update breadcrumb with category name
+        if (breadcrumb && pathname && category.name) {
+          // Set label for the ID path (before /edit)
+          const idPath = pathname.replace('/edit', '');
+          breadcrumb.setDynamicLabel(idPath, category.name);
+        }
       } else {
         showToast({
           type: "error",

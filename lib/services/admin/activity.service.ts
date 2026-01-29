@@ -339,4 +339,17 @@ export const ActivityActions = {
   LOGIN: 'auth.login',
   LOGOUT: 'auth.logout',
   LOGIN_FAILED: 'auth.login_failed',
+
+  // Customer actions
+  CUSTOMER_VIEWED: 'customer.viewed',
+  CUSTOMER_UPDATED: 'customer.updated',
+  CUSTOMER_NOTE_ADDED: 'customer.note_added',
+  CUSTOMER_ADDRESS_ADDED: 'customer.address_added',
+  CUSTOMER_ADDRESS_UPDATED: 'customer.address_updated',
+  CUSTOMER_ADDRESS_DELETED: 'customer.address_deleted',
+  CUSTOMER_DISABLED: 'customer.disabled',
+  CUSTOMER_ENABLED: 'customer.enabled',
+  CUSTOMER_DELETED: 'customer.deleted',
+  CUSTOMER_PASSWORD_RESET: 'customer.password_reset',
+  CUSTOMER_VERIFICATION_SENT: 'customer.verification_sent',
 } as const;

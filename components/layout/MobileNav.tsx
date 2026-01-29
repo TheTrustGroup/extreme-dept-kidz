@@ -9,8 +9,7 @@ import { cn } from "@/lib/utils";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "@/components/providers/ThemeProvider";
-import { Instagram } from "lucide-react";
-import { TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
+import { InstagramIcon, TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -29,7 +28,7 @@ const navLinks = [
 const socialLinks = [
   { 
     href: "https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl", 
-    icon: Instagram, 
+    icon: InstagramIcon, 
     label: "Instagram" 
   },
   { 

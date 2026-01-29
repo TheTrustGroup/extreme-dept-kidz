@@ -1,41 +1,41 @@
 "use client";
 
 import * as React from "react";
-import { EnhancedOrderTable } from "@/components/admin/orders/EnhancedOrderTable";
+import { ComprehensiveOrderTable } from "@/components/admin/orders/ComprehensiveOrderTable";
 import { H1 } from "@/components/ui/typography";
 
 /**
  * Orders Management Page
  * 
- * View and manage all orders.
+ * Comprehensive orders management with filtering, bulk actions, and detailed views.
  */
 export default function OrdersPage(): JSX.Element {
   const [orders, setOrders] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    async function loadOrders(): Promise<void> {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/admin/orders', {
-          credentials: 'include',
-        });
+  const loadOrders = React.useCallback(async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/orders', {
+        credentials: 'include',
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch orders');
-        }
-
-        const data = await response.json();
-        setOrders(data.data?.orders || []);
-      } catch (error) {
-        console.error("Failed to load orders:", error);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
       }
-    }
 
-    loadOrders();
+      const data = await response.json();
+      setOrders(data.data?.orders || []);
+    } catch (error) {
+      console.error("Failed to load orders:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  React.useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
   return (
     <div className="space-y-6">
@@ -47,8 +47,8 @@ export default function OrdersPage(): JSX.Element {
         </div>
       </div>
 
-      {/* Enhanced Orders Table */}
-      <EnhancedOrderTable orders={orders} loading={loading} />
+      {/* Comprehensive Orders Table */}
+      <ComprehensiveOrderTable orders={orders} loading={loading} onRefresh={loadOrders} />
     </div>
   );
 }

@@ -243,15 +243,50 @@ model User {
   id            String   @id @default(cuid())
   email         String   @unique
   name          String?
+  phone         String?
   passwordHash  String? // For email/password auth
   emailVerified Boolean  @default(false)
   image         String?
   role          UserRole @default(CUSTOMER)
+  isActive      Boolean  @default(true) // Account status (Active/Inactive)
   orders        Order[]
+  notes         CustomerNote[]
+  addresses     UserAddress[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([email])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+// Internal admin notes about a customer
+model CustomerNote {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  note        String   @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([adminUserId])
+}
+
+// Saved addresses for a customer
+model UserAddress {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label             String?  // e.g. "Home", "Office"
+  address           Json     // { name, line1, line2?, city, state?, postalCode, country, phone? }
+  isDefaultShipping Boolean  @default(false)
+  isDefaultBilling  Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
 }
 
 enum UserRole {
@@ -277,6 +312,7 @@ model AdminUser {
   createdAt               DateTime    @default(now())
   updatedAt               DateTime    @updatedAt
   activityLogs            AdminActivityLog[] // Activity log entries
+  customerNotes           CustomerNote[]    // Notes added to customers
 
   @@index([email])
   @@index([role])

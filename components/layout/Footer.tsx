@@ -4,10 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
-import { Instagram, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
-import { TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
+import { InstagramIcon, TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
 import { isValidEmail } from "@/lib/utils/validation";
 
 interface NewsletterFormState {
@@ -165,7 +165,7 @@ export function Footer(): JSX.Element {
               <div className="flex items-center gap-[var(--space-4)] pt-[var(--space-2)]">
                 <SocialIcon 
                   href="https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl" 
-                  icon={Instagram} 
+                  icon={InstagramIcon} 
                   label="Instagram" 
                 />
                 <SocialIcon 
@@ -181,54 +181,56 @@ export function Footer(): JSX.Element {
               </div>
             </m.div>
 
-            {/* Newsletter Section */}
+            {/* Newsletter Section - Refined */}
             <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="space-y-[var(--space-4)]"
+              className="space-y-[var(--space-5)]"
             >
-              <h3 className={cn(
-                "font-serif text-2xl font-bold transition-colors duration-300",
-                theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
-              )}>
-                STAY IN THE LOOP
-              </h3>
-              <p className={cn(
-                "font-sans text-base leading-relaxed transition-colors duration-300",
-                theme === "dark" 
-                  ? "text-dark-text-secondary" 
-                  : "text-cream-200/80"
-              )}>
-                Sign up for exclusive drops, style tips, and early access to new collections.
-              </p>
+              <div>
+                <h3 className={cn(
+                  "font-serif text-2xl md:text-3xl font-bold mb-3 transition-colors duration-300",
+                  theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
+                )}>
+                  STAY IN THE LOOP
+                </h3>
+                <p className={cn(
+                  "font-sans text-base md:text-lg leading-relaxed transition-colors duration-300",
+                  theme === "dark" 
+                    ? "text-dark-text-secondary" 
+                    : "text-cream-200/90"
+                )}>
+                  Sign up for exclusive drops, style tips, and early access to new collections.
+                </p>
+              </div>
 
-              {/* First Order Incentive - Prominent */}
+              {/* First Order Incentive - Enhanced */}
               <div className={cn(
-                "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2",
+                "flex items-center gap-3 px-5 py-4 rounded-xl border-2",
                 theme === "dark"
-                  ? "bg-dark-surface border-accent-primary/50"
-                  : "bg-navy-900/30 border-navy-900/50"
+                  ? "bg-dark-surface border-accent-primary/60"
+                  : "bg-navy-900/40 border-navy-900/60 backdrop-blur-sm"
               )}>
                 <span className={cn(
-                  "text-lg font-bold",
+                  "text-2xl",
                   theme === "dark" ? "text-accent-primary" : "text-cream-50"
                 )}>
                   🎁
                 </span>
-                <div>
+                <div className="flex-1">
                   <p className={cn(
-                    "font-sans text-sm font-bold",
+                    "font-sans text-base font-bold mb-1",
                     theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
                   )}>
                     First Order: 10% OFF
                   </p>
                   <p className={cn(
-                    "font-sans text-xs",
-                    theme === "dark" ? "text-dark-text-secondary" : "text-cream-200/80"
+                    "font-sans text-sm",
+                    theme === "dark" ? "text-dark-text-secondary" : "text-cream-200/90"
                   )}>
-                    Use code: <span className="font-mono font-semibold">WELCOME10</span>
+                    Use code: <span className="font-mono font-bold text-base">WELCOME10</span>
                   </p>
                 </div>
               </div>
@@ -462,49 +464,7 @@ export function Footer(): JSX.Element {
               </ul>
             </m.nav>
 
-            {/* CONNECT */}
-            <m.nav
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-              aria-label="Connect navigation"
-            >
-              <h4 className={cn(
-                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
-                theme === "dark" 
-                  ? "text-dark-text-muted" 
-                  : "text-cream-200/60"
-              )}>
-                CONNECT
-              </h4>
-              <ul className="space-y-[var(--space-3)]">
-                <FooterNavLink 
-                  href="https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl" 
-                  icon={Instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Instagram
-                </FooterNavLink>
-                <FooterNavLink 
-                  href="https://www.tiktok.com/@extreme_dept_kidz?_r=1&_t=ZM-92wJ2AMJUoS" 
-                  icon={TikTokIcon}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  TikTok
-                </FooterNavLink>
-                <FooterNavLink 
-                  href="https://snapchat.com/t/dE3hKeZX" 
-                  icon={SnapchatIcon}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Snapchat
-                </FooterNavLink>
-              </ul>
-            </m.nav>
+            {/* CONNECT section removed - social links are in Brand section above */}
           </div>
         </div>
 
@@ -525,8 +485,6 @@ export function Footer(): JSX.Element {
                 "font-semibold transition-colors duration-300",
                 theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
               )}>Extreme Dept Kidz</span>. All rights reserved.</span>
-              <span className="hidden sm:inline">•</span>
-              <span className="italic">Made with precision & care</span>
             </div>
 
             {/* Center: Legal Links - Consistent spacing */}

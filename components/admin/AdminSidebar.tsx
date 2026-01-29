@@ -21,6 +21,16 @@ import {
   FileText,
   UserCog,
   LogOut,
+  Plus,
+  FolderOpen,
+  Boxes,
+  PackageCheck,
+  Truck,
+  CheckCircle,
+  RotateCcw,
+  TrendingUp,
+  Eye,
+  PackageSearch,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { AdminSidebarText, AdminCaption } from "@/components/admin/AdminTypography";
@@ -51,6 +61,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
   const [collapsed, setCollapsed] = React.useState(false);
   const [isDesktop, setIsDesktop] = React.useState(false);
   const [pendingOrdersCount, setPendingOrdersCount] = React.useState<number | null>(null);
+  const [lowStockCount, setLowStockCount] = React.useState<number | null>(null);
   
   // Fetch pending orders count for badge
   React.useEffect(() => {
@@ -79,6 +90,32 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
     }
   }, [user]);
 
+  // Fetch low stock count for Products badge
+  React.useEffect(() => {
+    const fetchLowStockCount = async (): Promise<void> => {
+      try {
+        const response = await fetch('/api/admin/inventory', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const lowStock = data.data?.lowStock || data.lowStock || 0;
+          setLowStockCount(lowStock > 0 ? lowStock : null);
+        }
+      } catch (error) {
+        console.error('[AdminSidebar] Failed to fetch low stock count:', error);
+        // Fail silently - don't break the UI
+      }
+    };
+
+    if (user) {
+      fetchLowStockCount();
+      // Refresh every 60 seconds
+      const interval = setInterval(fetchLowStockCount, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
   // Responsive breakpoint detection - Desktop: 1024px+, Tablet: 768px-1023px, Mobile: <768px
   React.useEffect(() => {
     const checkScreenSize = (): void => {
@@ -103,20 +140,21 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       label: "Products",
       href: "/admin/products",
       icon: Package,
+      badge: lowStockCount ?? undefined,
       children: [
-        { label: "All Products", href: "/admin/products", icon: Package },
-        { label: "Add New", href: "/admin/products/new", icon: Package },
-        { label: "Categories", href: "/admin/categories", icon: Package },
+        { label: "All Products", href: "/admin/products", icon: PackageSearch },
+        { label: "Add New", href: "/admin/products/new", icon: Plus },
+        { label: "Categories", href: "/admin/categories", icon: FolderOpen },
       ],
     },
     {
       label: "Inventory",
       href: "/admin/inventory",
-      icon: Package,
+      icon: Boxes,
       children: [
-        { label: "Dashboard", href: "/admin/inventory", icon: Package },
-        { label: "Forecast", href: "/admin/inventory/forecast", icon: Package },
-        { label: "Reports", href: "/admin/inventory/reports", icon: Package },
+        { label: "Dashboard", href: "/admin/inventory", icon: Boxes },
+        { label: "Forecast", href: "/admin/inventory/forecast", icon: TrendingUp },
+        { label: "Reports", href: "/admin/inventory/reports", icon: FileText },
       ],
     },
     {
@@ -125,35 +163,39 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       icon: Shirt,
       children: [
         { label: "All Looks", href: "/admin/looks", icon: Shirt },
-        { label: "Create Look", href: "/admin/looks/new", icon: Shirt },
+        { label: "Create Look", href: "/admin/looks/new", icon: Plus },
       ],
     },
     {
       label: "Orders",
       href: "/admin/orders",
       icon: ShoppingBag,
-      badge: pendingOrdersCount ?? undefined, // Pending orders count - only show if > 0
+      badge: pendingOrdersCount ?? undefined,
       children: [
         { label: "All Orders", href: "/admin/orders", icon: ShoppingBag },
-        { label: "Pending", href: "/admin/orders?status=pending", icon: ShoppingBag },
-        { label: "Shipped", href: "/admin/orders?status=shipped", icon: ShoppingBag },
-        { label: "Delivered", href: "/admin/orders?status=delivered", icon: ShoppingBag },
+        { label: "Processing", href: "/admin/orders?status=pending", icon: PackageCheck },
+        { label: "Completed", href: "/admin/orders?status=delivered", icon: CheckCircle },
+        { label: "Returns", href: "/admin/orders?status=returned", icon: RotateCcw },
       ],
     },
     {
       label: "Customers",
       href: "/admin/customers",
       icon: Users,
+      children: [
+        { label: "All Customers", href: "/admin/customers", icon: Users },
+        { label: "Customer Groups", href: "/admin/customers/groups", icon: Users },
+      ],
     },
     {
       label: "Analytics",
       href: "/admin/analytics",
       icon: BarChart3,
-    },
-    {
-      label: "Activity Log",
-      href: "/admin/activity",
-      icon: FileText,
+      children: [
+        { label: "Sales", href: "/admin/analytics/sales", icon: TrendingUp },
+        { label: "Traffic", href: "/admin/analytics/traffic", icon: Eye },
+        { label: "Products", href: "/admin/analytics/products", icon: Package },
+      ],
     },
     {
       label: "Admin Users",
@@ -166,6 +208,29 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       icon: Settings,
     },
   ];
+
+  // Auto-expand parent items when a child is active
+  React.useEffect(() => {
+    navItems.forEach((item) => {
+      if (item.children) {
+        const hasActiveChild = item.children.some((child) => {
+          if (child.href === "/admin") {
+            return pathname === "/admin";
+          }
+          return pathname.startsWith(child.href);
+        });
+        if (hasActiveChild) {
+          setExpandedItems((prev) => {
+            if (!prev.has(item.label)) {
+              return new Set(prev).add(item.label);
+            }
+            return prev;
+          });
+        }
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const toggleExpanded = (label: string): void => {
     setExpandedItems((prev) => {
@@ -190,46 +255,59 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.has(item.label);
     const active = isActive(item.href);
+    const hasActiveChild = hasChildren && item.children?.some((child) => isActive(child.href));
+    const isItemActive = active || hasActiveChild;
     const Icon = item.icon;
 
+    // Base padding: level 0 = 1rem, level 1+ = 1rem + (level * 0.75rem)
+    const paddingLeft = level === 0 ? "1rem" : `${1 + level * 0.75}rem`;
+
     return (
-      <div key={item.href}>
+      <div key={item.href} className="mb-0.5">
         {hasChildren ? (
           <>
             <button
               onClick={() => toggleExpanded(item.label)}
               className={cn(
-                "w-full admin-flex-md items-center justify-between px-[var(--admin-space-4)] py-[var(--admin-space-3)] rounded-lg transition-all duration-200 text-left group",
-                active
-                  ? "bg-navy-600/90 backdrop-blur-sm text-white shadow-lg shadow-navy-500/20"
-                  : "text-white/70 hover:bg-white/8 hover:text-white backdrop-blur-sm"
+                "w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 text-left group relative",
+                "text-sm font-medium",
+                isItemActive
+                  ? "bg-navy-600/90 text-white shadow-lg shadow-navy-500/20"
+                  : "text-white/70 hover:bg-white/10 hover:text-white"
               )}
               style={{ 
-                paddingLeft: `${level * 1 + 1}rem`,
+                paddingLeft,
                 transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
               }}
             >
-              <div className="admin-flex-md items-center min-w-0">
+              {/* Active state left border accent (3-4px) */}
+              {isItemActive && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-navy-400 rounded-r-full" />
+              )}
+              
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <Icon className={cn(
                   "w-5 h-5 flex-shrink-0 transition-transform duration-200",
-                  active && "scale-110"
+                  isItemActive && "text-white"
                 )} />
-                <AdminSidebarText className={cn(
-                  "font-medium transition-opacity duration-300 truncate",
+                <span className={cn(
+                  "transition-opacity duration-300 truncate text-sm",
                   sidebarExpanded ? "opacity-100" : "opacity-0 w-0"
-                )}>{item.label}</AdminSidebarText>
+                )}>{item.label}</span>
                 {item.badge && sidebarExpanded && (
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-[var(--admin-space-2)] py-[var(--admin-space-1)] rounded-full animate-pulse">
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
                     {item.badge}
                   </span>
                 )}
               </div>
+              
+              {/* Arrow indicator - always show for parent items */}
               {sidebarExpanded && (
-                isExpanded ? (
-                  <ChevronDown className="w-4 h-4 flex-shrink-0 transition-transform duration-200" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 flex-shrink-0 transition-transform duration-200" />
-                )
+                <ChevronRight className={cn(
+                  "w-4 h-4 flex-shrink-0 transition-transform duration-200 ml-2",
+                  isExpanded && "rotate-90",
+                  isItemActive ? "text-white" : "text-white/50"
+                )} />
               )}
             </button>
             <AnimatePresence>
@@ -241,7 +319,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="py-[var(--admin-space-1)]">
+                  <div className="py-1">
                     {item.children?.map((child) => renderNavItem(child, level + 1))}
                   </div>
                 </m.div>
@@ -252,29 +330,32 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
           <Link
             href={item.href}
             className={cn(
-              "admin-flex-md items-center px-[var(--admin-space-4)] py-[var(--admin-space-3)] rounded-lg transition-all duration-200 group relative backdrop-blur-sm",
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
+              "text-sm font-medium",
               active
                 ? "bg-navy-600/90 text-white shadow-lg shadow-navy-500/20"
-                : "text-white/70 hover:bg-white/8 hover:text-white"
+                : "text-white/70 hover:bg-white/10 hover:text-white"
             )}
             style={{ 
-              paddingLeft: `${level * 1 + 1}rem`,
+              paddingLeft,
               transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
             }}
           >
+            {/* Active state left border accent (3-4px) */}
             {active && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-navy-400 rounded-r-full" />
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-navy-400 rounded-r-full" />
             )}
+            
             <Icon className={cn(
               "w-5 h-5 flex-shrink-0 transition-transform duration-200",
-              active && "scale-110"
+              active && "text-white"
             )} />
-            <AdminSidebarText className={cn(
-              "font-medium transition-opacity duration-300 truncate",
+            <span className={cn(
+              "transition-opacity duration-300 truncate text-sm",
               sidebarExpanded ? "opacity-100" : "opacity-0 w-0"
-            )}>{item.label}</AdminSidebarText>
+            )}>{item.label}</span>
             {item.badge && sidebarExpanded && (
-              <span className="ml-auto bg-red-500 text-white text-xs font-bold px-[var(--admin-space-2)] py-[var(--admin-space-1)] rounded-full animate-pulse">
+              <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
                 {item.badge}
               </span>
             )}
