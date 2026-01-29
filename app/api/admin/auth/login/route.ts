@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+
+/** CORS origin for warehouse app – add headers so cross-origin response is allowed */
+const WAREHOUSE_ORIGIN = 'https://warehouse.extremedeptkidz.com';
+
+function withCors(request: NextRequest, response: NextResponse): NextResponse {
+  const origin = request.headers.get('Origin');
+  if (origin === WAREHOUSE_ORIGIN) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
+  }
+  return response;
+}
 import { verifyPassword } from '@/lib/auth/password';
 import { generateToken } from '@/lib/auth/jwt';
 import { checkRateLimit, getClientIP } from '@/lib/auth/rate-limit';
@@ -20,24 +34,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check DATABASE_URL first
     if (!process.env.DATABASE_URL) {
       logger.error('[Login] ❌ DATABASE_URL is not set');
-      return apiError(
+      return withCors(request, apiError(
         'Database configuration error. DATABASE_URL environment variable is not set.',
         500,
         'Please check Vercel environment variables and ensure DATABASE_URL is configured.',
         'MISSING_DATABASE_URL'
-      );
+      ));
     }
 
     // Check JWT_SECRET - CRITICAL for authentication
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       logger.error('[Login] ❌ JWT_SECRET is not set');
-      return apiError(
+      return withCors(request, apiError(
         'Authentication configuration error: JWT_SECRET environment variable is not set. Please set JWT_SECRET in your environment variables.',
         500,
         'Set JWT_SECRET in Vercel environment variables (must be at least 32 characters).',
         'MISSING_JWT_SECRET'
-      );
+      ));
     }
     
     if (jwtSecret.length < 32) {
@@ -47,12 +61,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // Don't log the actual secret, just first/last chars for verification
         preview: jwtSecret.length > 0 ? `${jwtSecret[0]}...${jwtSecret[jwtSecret.length - 1]}` : 'empty',
       });
-      return apiError(
+      return withCors(request, apiError(
         'Authentication configuration error: JWT_SECRET must be at least 32 characters long.',
         500,
         `Current JWT_SECRET length: ${jwtSecret.length} (required: 32+). Update JWT_SECRET in Vercel environment variables.`,
         'INVALID_JWT_SECRET'
-      );
+      ));
     }
 
     // 1. BOT DETECTION - Only block obvious bots (score > 80)
@@ -61,11 +75,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     if (botDetection.isBot && botDetection.score > 80) {
       logger.warn('🤖 Bot detected on login:', botDetection.reasons);
-      return apiError(
+      return withCors(request, apiError(
         'Suspicious activity detected',
         403,
         'Request blocked by security system. If you believe this is an error, please contact support.'
-      );
+      ));
     }
     
     // Log but don't block for moderate bot scores (for debugging)
@@ -88,7 +102,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       response.headers.set('X-RateLimit-Limit', '5');
       response.headers.set('X-RateLimit-Remaining', '0');
       response.headers.set('X-RateLimit-Reset', rateLimit.resetTime.toString());
-      return response;
+      return withCors(request, response);
     }
 
     // Parse request body with error handling
@@ -97,29 +111,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       body = await request.json();
     } catch (parseError) {
       logger.error('[Login] ❌ Failed to parse request body:', parseError);
-      return apiError(
+      return withCors(request, apiError(
         'Invalid request format',
         400,
         'Request body must be valid JSON',
         'INVALID_JSON'
-      );
+      ));
     }
 
     // Validate input
     const validation = validate(adminLoginSchema, body);
     if (!validation.success) {
-      return apiValidationError(validation.errors);
+      return withCors(request, apiValidationError(validation.errors));
     }
 
     const { email, password } = validation.data;
 
     if (!prisma) {
       logger.error('Prisma client is null - DATABASE_URL may not be set');
-      return apiError(
+      return withCors(request, apiError(
         'Database connection unavailable. Please check environment variables.',
         500,
         'Visit /api/admin/auth/test-db for detailed diagnostics'
-      );
+      ));
     }
 
     // Ensure DB connection is ready (Vercel cold start) - lazy init if needed
@@ -182,13 +196,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
             : undefined;
 
-          return apiError(
+          return withCors(request, apiError(
             isConnectionError 
               ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
               : 'Database query failed. Please try again.',
             500,
             process.env.NODE_ENV === 'development' ? errorMessage : connectionHint
-          );
+          ));
         }
         
         // Wait before retry (exponential backoff: 500ms, 1000ms, 1500ms)
@@ -199,11 +213,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!user) {
       logger.log(`Login attempt failed: User not found for email ${normalizedEmail}`);
       // Don't reveal if user exists (security best practice)
-      return apiUnauthorized('Invalid email or password');
+      return withCors(request, apiUnauthorized('Invalid email or password'));
     }
 
     if (!user.isActive) {
-      return apiError('Account is inactive', 403);
+      return withCors(request, apiError('Account is inactive', 403));
     }
 
     // Verify password - trim to avoid whitespace issues
@@ -212,7 +226,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check if password hash exists
     if (!user.passwordHash) {
       logger.error('[Login] ❌ No password hash found for user:', user.email);
-      return apiUnauthorized('Invalid email or password');
+      return withCors(request, apiUnauthorized('Invalid email or password'));
     }
     
     let isValid = false;
@@ -247,16 +261,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Block after 10 failed attempts
       if (attempts >= 10) {
         logger.error('🚨 Account locked due to too many failed attempts:', user.email);
-        return apiError(
+        return withCors(request, apiError(
           'Account temporarily locked due to too many failed attempts',
           423
-        );
+        ));
       }
 
       // Timing attack prevention - delay response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      return apiUnauthorized('Invalid email or password');
+      return withCors(request, apiUnauthorized('Invalid email or password'));
     }
 
     // Clear failed attempts on successful login
@@ -292,18 +306,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       
       // Check if it's a JWT_SECRET issue
       if (errorMessage.includes('JWT_SECRET') || errorMessage.includes('secret')) {
-        return apiError(
+        return withCors(request, apiError(
           'Authentication configuration error. JWT_SECRET is not set or invalid.',
           500,
           'Please check JWT_SECRET in Vercel environment variables. It must be at least 32 characters long.'
-        );
+        ));
       }
       
-      return apiError(
+      return withCors(request, apiError(
         'Token generation failed',
         500,
         errorMessage
-      );
+      ));
     }
 
     // Create response - MUST NOT REDIRECT
@@ -374,7 +388,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       logger.warn('[Login] ⚠️ Failed to log activity:', activityError);
     }
 
-    return response;
+    return withCors(request, response);
   } catch (error) {
     logger.error('[Login] ❌ Unexpected error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -425,11 +439,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userFriendlyError = 'Unable to connect to server. Please check your internet connection.';
     }
     
-    return apiError(
+    return withCors(request, apiError(
       userFriendlyError,
       500,
       shouldShowDetails ? errorMessage : undefined,
       isConfigError ? 'CONFIG_ERROR' : isJsonError ? 'JSON_ERROR' : isNetworkError ? 'NETWORK_ERROR' : 'INTERNAL_ERROR'
-    );
+    ));
   }
 }

@@ -1,10 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+/** CORS origin allowed for warehouse app (cross-origin login) */
+const WAREHOUSE_ORIGIN = 'https://warehouse.extremedeptkidz.com';
+
+/** CORS headers for warehouse origin (credentials: true) */
+function corsHeaders(origin: string): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+
 /**
  * Middleware for Asset Pipeline Optimization
  * 
  * Enforces:
+ * - CORS for warehouse.extremedeptkidz.com (admin API login)
  * - CDN caching headers
  * - Compression (Brotli/gzip)
  * - HTTP/2 streaming optimizations
@@ -12,8 +27,31 @@ import type { NextRequest } from 'next/server';
  * - Mobile-first optimizations
  */
 export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
   const { pathname } = request.nextUrl;
+  const origin = request.headers.get('Origin') || '';
+
+  // CORS: allow warehouse app to call admin API (login and related)
+  const isAdminApi =
+    pathname === '/api/admin/auth/login' ||
+    pathname === '/admin/api/login' ||
+    pathname.startsWith('/api/admin/') ||
+    pathname.startsWith('/admin/api/');
+  if (isAdminApi && origin === WAREHOUSE_ORIGIN) {
+    // Preflight: respond 204 with CORS headers only
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, {
+        status: 204,
+        headers: corsHeaders(origin),
+      });
+    }
+    const response = NextResponse.next();
+    Object.entries(corsHeaders(origin)).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+    return response;
+  }
+
+  const response = NextResponse.next();
 
   // CRITICAL FIX: Enhanced CDN caching for static assets
   // Images, fonts, and static files get immutable cache headers
@@ -87,9 +125,12 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-// Match all static assets and image routes
+// Match all static assets and image routes, plus admin API for CORS
 export const config = {
   matcher: [
+    // CORS for warehouse: admin API routes
+    '/api/admin/:path*',
+    '/admin/api/:path*',
     /*
      * Match all request paths except:
      * - api routes

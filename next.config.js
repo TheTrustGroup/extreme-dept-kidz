@@ -5,6 +5,13 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig = {
   reactStrictMode: true,
+
+  // Warehouse app (warehouse.extremedeptkidz.com) calls POST /admin/api/login
+  async rewrites() {
+    return [
+      { source: '/admin/api/login', destination: '/api/admin/auth/login' },
+    ];
+  },
   
   // TypeScript configuration
   typescript: {
