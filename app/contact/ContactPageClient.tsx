@@ -9,6 +9,7 @@ import { Mail, Phone, CheckCircle2, ChevronDown } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { H1, H2, H3, Body } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { cn } from "@/lib/utils";
 
 /**
@@ -99,9 +100,19 @@ export function ContactPageClient(): JSX.Element {
     setExpandedFAQ(expandedFAQ === index ? null : index);
   };
 
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: "Contact Us" },
+  ];
+
   return (
     <div className="min-h-screen bg-cream-50 pt-20 md:pt-24 pb-16">
       <Container size="lg">
+        {/* Breadcrumb */}
+        <div className="mb-6 sm:mb-8">
+          <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
+        </div>
+
         {/* Page Title */}
         <div className="text-center mb-12 md:mb-16">
           <H1 className="text-charcoal-900 mb-4">We&apos;re Here to Help</H1>

@@ -354,5 +354,22 @@ model CompleteLookProduct {
   @@index([productId])
 }
 
-// Add relation to Product model
-// (This will be added to the Product model)
+// ============================================
+// NEWSLETTER SUBSCRIPTIONS
+// ============================================
+
+model NewsletterSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  isActive    Boolean  @default(true)
+  source      String?  // "footer", "popup", "checkout", etc.
+  metadata    Json?    // Additional metadata (IP address, user agent, etc.)
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([email])
+  @@index([isActive])
+  @@index([subscribedAt])
+}

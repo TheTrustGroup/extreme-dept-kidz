@@ -4,16 +4,19 @@ import * as React from "react";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { X, User, ShoppingBag } from "lucide-react";
+import { X, User, ShoppingBag, Search, HeadphonesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { Instagram } from "lucide-react";
+import { TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
 
 interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
   cartItemCount?: number;
+  onSearchOpen?: () => void;
 }
 
 const navLinks = [
@@ -21,14 +24,31 @@ const navLinks = [
   { label: "NEW ARRIVALS", href: "/collections/new-arrivals" },
   { label: "GIRLS", href: "/collections/girls" },
   { label: "COLLECTIONS", href: "/collections" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
+];
+
+const socialLinks = [
+  { 
+    href: "https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl", 
+    icon: Instagram, 
+    label: "Instagram" 
+  },
+  { 
+    href: "https://www.tiktok.com/@extreme_dept_kidz?_r=1&_t=ZM-92wJ2AMJUoS", 
+    icon: TikTokIcon, 
+    label: "TikTok" 
+  },
+  { 
+    href: "https://snapchat.com/t/dE3hKeZX", 
+    icon: SnapchatIcon, 
+    label: "Snapchat" 
+  },
 ];
 
 export function MobileNav({
   isOpen,
   onClose,
   cartItemCount = 0,
+  onSearchOpen,
 }: MobileNavProps) {
   const { open: openCart } = useCartDrawer();
   const { theme } = useTheme();
@@ -174,14 +194,14 @@ export function MobileNav({
                 </button>
               </div>
 
-              {/* Quick Actions - Account, Cart, Theme - Always visible at top */}
+              {/* Quick Actions - Account, Cart, Search, Theme - Always visible at top */}
               <div className={cn(
                 "px-[var(--space-4)] sm:px-[var(--space-5)] py-[var(--space-3)] border-b transition-colors duration-300 flex-shrink-0",
                 theme === "dark"
                   ? "border-dark-border-glass"
                   : "border-cream-200"
               )}>
-                <div className="grid grid-cols-3 gap-[var(--space-2)]">
+                <div className="grid grid-cols-4 gap-[var(--space-2)]">
                   {/* Account */}
                   <Link
                     href="/account"
@@ -226,6 +246,24 @@ export function MobileNav({
                     </div>
                     <span className="font-sans text-xs font-medium">Cart</span>
                   </button>
+
+                  {/* Search */}
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onSearchOpen?.();
+                    }}
+                    className={cn(
+                      "flex flex-col items-center gap-[var(--space-1)] p-[var(--space-2)] rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
+                      theme === "dark"
+                        ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
+                        : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
+                    )}
+                    aria-label="Search products"
+                  >
+                    <Search className="w-5 h-5" aria-hidden="true" />
+                    <span className="font-sans text-xs font-medium">Search</span>
+                  </button>
                   
                   {/* Theme Toggle */}
                   <div className="flex flex-col items-center gap-[var(--space-1)]">
@@ -264,13 +302,13 @@ export function MobileNav({
                       <Link
                         href={link.href}
                         className={cn(
-                          "block font-serif text-xl sm:text-2xl font-semibold transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)]",
+                          "flex items-center font-serif text-xl sm:text-2xl font-semibold transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] min-h-[44px]",
                           theme === "dark"
                             ? link.isEmphasized
-                              ? "text-accent-primary font-bold"
+                              ? "text-accent-primary font-semibold"
                               : "text-dark-text-primary hover:text-accent-primary"
                             : link.isEmphasized
-                              ? "text-navy-900 font-bold"
+                              ? "text-navy-900 font-semibold"
                               : "text-charcoal-900 hover:text-navy-900",
                           theme === "dark"
                             ? "focus:ring-accent-primary"
@@ -282,8 +320,102 @@ export function MobileNav({
                       </Link>
                     </m.li>
                   ))}
+                  
+                  {/* Customer Care Link */}
+                  <m.li
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: navLinks.length * 0.06,
+                      duration: 0.3,
+                      ease: "easeOut",
+                    }}
+                  >
+                    <Link
+                      href="/contact"
+                      className={cn(
+                        "flex items-center gap-[var(--space-2)] font-serif text-lg sm:text-xl font-medium transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] min-h-[44px]",
+                        theme === "dark"
+                          ? "text-dark-text-primary hover:text-accent-primary"
+                          : "text-charcoal-900 hover:text-navy-900",
+                        theme === "dark"
+                          ? "focus:ring-accent-primary"
+                          : "focus:ring-navy-500"
+                      )}
+                      onClick={onClose}
+                    >
+                      <HeadphonesIcon className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+                      <span>Customer Care</span>
+                    </Link>
+                  </m.li>
+
+                  {/* About Us Link */}
+                  <m.li
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: (navLinks.length + 1) * 0.06,
+                      duration: 0.3,
+                      ease: "easeOut",
+                    }}
+                  >
+                    <Link
+                      href="/about"
+                      className={cn(
+                        "flex items-center font-serif text-lg sm:text-xl font-medium transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] min-h-[44px]",
+                        theme === "dark"
+                          ? "text-dark-text-primary hover:text-accent-primary"
+                          : "text-charcoal-900 hover:text-navy-900",
+                        theme === "dark"
+                          ? "focus:ring-accent-primary"
+                          : "focus:ring-navy-500"
+                      )}
+                      onClick={onClose}
+                    >
+                      About Us
+                    </Link>
+                  </m.li>
                 </ul>
               </nav>
+
+              {/* Social Media Icons - Fixed at bottom */}
+              <div className={cn(
+                "px-[var(--space-4)] sm:px-[var(--space-5)] py-[var(--space-4)] border-t transition-colors duration-300 flex-shrink-0",
+                theme === "dark"
+                  ? "border-dark-border-glass"
+                  : "border-cream-200"
+              )}>
+                <div className="flex items-center justify-center gap-[var(--space-4)]">
+                  {socialLinks.map((social, index) => {
+                    const Icon = social.icon;
+                    return (
+                      <m.a
+                        key={social.label}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
+                          theme === "dark"
+                            ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
+                            : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
+                        )}
+                        aria-label={social.label}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          delay: (navLinks.length + 2) * 0.06 + index * 0.03,
+                          duration: 0.3,
+                          ease: "easeOut",
+                        }}
+                        onClick={onClose}
+                      >
+                        <Icon className="w-6 h-6" aria-hidden="true" />
+                      </m.a>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </m.div>
         </>

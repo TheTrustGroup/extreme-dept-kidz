@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Skeleton } from "./skeleton";
+import { Skeleton } from "./Skeleton";
 import { cn } from "@/lib/utils";
 
 /**
@@ -22,10 +22,10 @@ export function SkeletonCard({ className }: SkeletonCardProps): JSX.Element {
       )}
       style={{
         // MOBILE-FIRST LAYOUT FIX: Skeleton size parity - match ProductCard exactly
-        aspectRatio: "3 / 4",
-        minHeight: "420px", // Match ProductCard min-height reservation
+        aspectRatio: "4 / 5",
+        minHeight: "400px", // Match ProductCard min-height reservation
         height: "auto",
-        maxHeight: "520px", // Match ProductCard max-height
+        maxHeight: "500px", // Match ProductCard max-height
         borderRadius: "30px", // Match ProductCard border-radius
       }}
     >
@@ -34,12 +34,12 @@ export function SkeletonCard({ className }: SkeletonCardProps): JSX.Element {
         className="relative overflow-hidden bg-cream-100"
         style={{
           width: "100%",
-          aspectRatio: "3 / 4", // Match ProductCard image ratio
-          borderRadius: "20px", // Match ProductCard image border-radius
+          aspectRatio: "4 / 5", // Match ProductCard image ratio
+          borderRadius: "12px", // Match ProductCard image border-radius
           marginBottom: 0, // Uniform vertical rhythm
         }}
       >
-        <Skeleton className="absolute inset-0" />
+        <Skeleton className="absolute inset-0 skeleton-shimmer" />
       </div>
 
       {/* Content skeleton - MOBILE-FIRST LAYOUT FIX: Match ProductCard padding exactly */}

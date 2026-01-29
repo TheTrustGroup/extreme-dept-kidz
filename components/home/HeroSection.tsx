@@ -107,7 +107,7 @@ export function HeroSection(): JSX.Element {
                 alt="Hero background - Extreme Dept Kidz"
                 fill
                 priority
-                quality={90}
+                quality={85}
                 className="object-cover"
                 style={{
                   objectPosition: "center center",
@@ -123,6 +123,8 @@ export function HeroSection(): JSX.Element {
                 // CRITICAL: Cross-browser loading attributes
                 loading="eager"
                 fetchPriority="high"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                 // CRITICAL: Error handling
                 onError={(e) => {
                   console.error('Hero image failed to load:', HERO_IMAGE);
@@ -194,7 +196,7 @@ export function HeroSection(): JSX.Element {
                 textShadow: "var(--hero-text-shadow-subtle)", // COLOR SYSTEM NORMALIZATION: Uses CSS variable
               }}
             >
-              Elevated style for the modern boy. Built for adventure, designed for life.
+              Elevated style for young legends. Built for adventure, designed for life.
             </m.p>
 
             {/* CTA Buttons - Perfectly centered */}

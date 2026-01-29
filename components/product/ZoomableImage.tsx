@@ -21,7 +21,7 @@ export function ZoomableImage({
   sizes,
   priority = false,
   loading = "lazy",
-  quality = 90,
+  quality = 80,
   onLightboxOpen,
 }: ZoomableImageProps): JSX.Element {
   const [isHovered, setIsHovered] = React.useState(false);

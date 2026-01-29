@@ -43,7 +43,7 @@ export function LifestyleSection(): JSX.Element {
 
             <p className="text-lg text-charcoal-600 leading-relaxed max-w-lg">
               From the playground to the city streets, every piece is crafted
-              for the modern boy who moves with confidence. Premium materials,
+              for young legends who move with confidence. Premium materials,
               thoughtful design, and styles that grow with them.
             </p>
 

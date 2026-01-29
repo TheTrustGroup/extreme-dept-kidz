@@ -11,6 +11,7 @@ import type { CompleteLook } from "@/types";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { formatPrice } from "@/lib/utils";
 
 /**
@@ -118,9 +119,19 @@ export function StyleGuideGalleryClient(): JSX.Element {
 
   const hasActiveFilters = Object.values(filter).some(Boolean);
 
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: "Style Guide" },
+  ];
+
   return (
     <div className="min-h-screen bg-cream-50 pt-20 md:pt-24 pb-16">
       <Container size="lg">
+        {/* Breadcrumb */}
+        <div className="mb-6 sm:mb-8">
+          <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
+        </div>
+
         {/* Header */}
         <div className="mb-8 md:mb-12 text-center">
           <H1 className="text-charcoal-900 text-3xl md:text-4xl lg:text-5xl font-serif font-bold mb-4">

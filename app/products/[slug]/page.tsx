@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProductPageClient } from "./ProductPageClient";
-import { getProductBySlug } from "@/lib/db";
+import { getProductBySlug, getAllProducts } from "@/lib/db";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 import type { Product } from "@/types";
 
@@ -81,6 +81,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
+  // Fetch all products for recommendations
+  const allProducts = await getAllProducts();
+
   // Generate structured data
   const productSchema = generateProductSchema(product);
   const breadcrumbSchema = generateBreadcrumbSchema([
@@ -122,7 +125,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         }
         key={`product-${product.slug}`}
       >
-        <ProductPageClient product={product} />
+        <ProductPageClient product={product} allProducts={allProducts} />
       </Suspense>
     </>
   );

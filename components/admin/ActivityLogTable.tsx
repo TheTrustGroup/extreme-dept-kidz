@@ -4,7 +4,7 @@ import * as React from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface ActivityLog {
   id: string;

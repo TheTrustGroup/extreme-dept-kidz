@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
+import { SingleImageUpload } from '@/components/admin/SingleImageUpload';
 
 export default function EditCategoryPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function EditCategoryPage() {
     name: '',
     slug: '',
     description: '',
+    image: '',
     isActive: true,
   });
 
@@ -37,6 +39,7 @@ export default function EditCategoryPage() {
           name: category.name || '',
           slug: category.slug || '',
           description: category.description || '',
+          image: category.image || '',
           isActive: category.isActive !== undefined ? category.isActive : true,
         });
       } else {
@@ -199,6 +202,12 @@ export default function EditCategoryPage() {
             rows={4}
           />
         </div>
+
+        <SingleImageUpload
+          imageUrl={formData.image || null}
+          onChange={(url) => setFormData({ ...formData, image: url || '' })}
+          label="Category Image (Optional)"
+        />
 
         <div className="flex items-center">
           <input

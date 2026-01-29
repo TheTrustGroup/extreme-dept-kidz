@@ -24,13 +24,15 @@ import {
   sortProducts,
 } from "@/lib/utils/filter-products";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
+import { ComingSoonPage } from "@/components/collections/ComingSoonPage";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import type { Product } from "@/types";
 
 interface CollectionPageClientProps {
   params: { slug: string };
   products?: Product[];
   /** From server: real category name/description (Admin → Categories). When set, no mock data is used. */
-  collectionInfo?: { name: string; description?: string };
+  collectionInfo?: { name: string; description?: string; image?: string; metadata?: Record<string, unknown> };
 }
 
 /**
@@ -86,10 +88,12 @@ export function CollectionPageClient({
   const getFiltersFromParams = (): FilterState => {
     return {
       categories: searchParams.get("categories")?.split(",").filter(Boolean) || [],
+      ageRanges: searchParams.get("ageRanges")?.split(",").filter(Boolean) || [],
       sizes: searchParams.get("sizes")?.split(",").filter(Boolean) || [],
+      colors: searchParams.get("colors")?.split(",").filter(Boolean) || [],
       priceRange: {
         min: parseInt(searchParams.get("minPrice") || "0", 10),
-        max: parseInt(searchParams.get("maxPrice") || "18000", 10),
+        max: parseInt(searchParams.get("maxPrice") || "100000", 10),
       },
       inStockOnly: searchParams.get("inStock") === "true",
     };
@@ -109,13 +113,19 @@ export function CollectionPageClient({
     if (filters.categories.length > 0) {
       params.set("categories", filters.categories.join(","));
     }
+    if (filters.ageRanges.length > 0) {
+      params.set("ageRanges", filters.ageRanges.join(","));
+    }
     if (filters.sizes.length > 0) {
       params.set("sizes", filters.sizes.join(","));
+    }
+    if (filters.colors.length > 0) {
+      params.set("colors", filters.colors.join(","));
     }
     if (filters.priceRange.min !== 0) {
       params.set("minPrice", filters.priceRange.min.toString());
     }
-    if (filters.priceRange.max !== 18000) {
+    if (filters.priceRange.max !== 100000) {
       params.set("maxPrice", filters.priceRange.max.toString());
     }
     if (filters.inStockOnly) {
@@ -175,6 +185,39 @@ export function CollectionPageClient({
     }
   }, [serverProducts]);
 
+  // Get available categories and colors from products
+  const availableCategories = React.useMemo(() => {
+    const cats = new Set(products.map((p) => p.category.name));
+    return Array.from(cats).sort();
+  }, [products]);
+
+  const availableColors = React.useMemo(() => {
+    const colors = new Set<string>();
+    products.forEach((product) => {
+      // Check metadata for colors
+      if (product.metadata && Array.isArray(product.metadata.colors)) {
+        (product.metadata.colors as string[]).forEach((c) => colors.add(c));
+      }
+      // Infer from name/description
+      const text = `${product.name} ${product.description}`.toLowerCase();
+      const colorMap: Record<string, string> = {
+        black: "black",
+        white: "white",
+        navy: "navy",
+        gray: "gray",
+        grey: "gray",
+        beige: "beige",
+        red: "red",
+        blue: "blue",
+        green: "green",
+      };
+      Object.entries(colorMap).forEach(([keyword, color]) => {
+        if (text.includes(keyword)) colors.add(color);
+      });
+    });
+    return Array.from(colors).sort();
+  }, [products]);
+
   // Handle filter changes
   const handleFiltersChange = (newFilters: FilterState): void => {
     setFilters(newFilters);
@@ -200,10 +243,24 @@ export function CollectionPageClient({
     });
   };
 
+  const handleRemoveAgeRange = (ageRange: string): void => {
+    setFilters({
+      ...filters,
+      ageRanges: filters.ageRanges.filter((a) => a !== ageRange),
+    });
+  };
+
+  const handleRemoveColor = (color: string): void => {
+    setFilters({
+      ...filters,
+      colors: filters.colors.filter((c) => c !== color),
+    });
+  };
+
   const handleClearPrice = (): void => {
     setFilters({
       ...filters,
-      priceRange: { min: 0, max: 18000 },
+      priceRange: { min: 0, max: 100000 },
     });
   };
 
@@ -217,8 +274,10 @@ export function CollectionPageClient({
   const handleClearAllFilters = (): void => {
     setFilters({
       categories: [],
+      ageRanges: [],
       sizes: [],
-      priceRange: { min: 0, max: 18000 },
+      colors: [],
+      priceRange: { min: 0, max: 100000 },
       inStockOnly: false,
     });
   };
@@ -232,9 +291,47 @@ export function CollectionPageClient({
 
   const activeFiltersCount = 
     filters.categories.length +
+    filters.ageRanges.length +
     filters.sizes.length +
-    (filters.priceRange.min !== 0 || filters.priceRange.max !== 18000 ? 1 : 0) +
+    filters.colors.length +
+    (filters.priceRange.min !== 0 || filters.priceRange.max !== 100000 ? 1 : 0) +
     (filters.inStockOnly ? 1 : 0);
+
+  // Check if this is the Girls collection with no products - show Coming Soon page
+  const isGirlsCollection = params.slug === "girls";
+  const hasNoProducts = products.length === 0;
+
+  if (isGirlsCollection && hasNoProducts) {
+    // Extract launch date from category metadata or use default
+    const launchDate = collectionInfo?.metadata && typeof collectionInfo.metadata.launchDate === 'string'
+      ? collectionInfo.metadata.launchDate
+      : "Spring 2025";
+    
+    // Use category image if available, otherwise use default
+    const heroImage = collectionInfo?.image || "/4677.png";
+    
+    // Extract preview images from metadata or use defaults
+    const previewImages = collectionInfo?.metadata && Array.isArray(collectionInfo.metadata.previewImages)
+      ? collectionInfo.metadata.previewImages as string[]
+      : [
+          "/IMG_4673.png",
+          "/IMG_4689.png",
+          "/4671.png",
+          "/4672.png",
+          "/4674.png",
+          "/4675.png",
+        ];
+
+    return (
+      <ComingSoonPage
+        collectionName={collectionInfo?.name || "Girls"}
+        collectionSlug="girls"
+        estimatedLaunchDate={launchDate}
+        heroImage={heroImage}
+        previewImages={previewImages}
+      />
+    );
+  }
 
   if (!collection) {
     return (
@@ -259,8 +356,24 @@ export function CollectionPageClient({
     );
   }
 
+  // Generate breadcrumb items
+  const breadcrumbItems = React.useMemo(() => {
+    return [
+      { label: "Home", href: "/" },
+      { label: "Collections", href: "/collections" },
+      { label: collection.name },
+    ];
+  }, [collection.name]);
+
   return (
     <div className="min-h-screen bg-cream-50">
+      {/* Breadcrumb - Below header, before page title */}
+      <div className="pt-20 md:pt-24 pb-4">
+        <Container size="lg">
+          <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
+        </Container>
+      </div>
+
       {/* Collection Hero Header */}
       <section className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden bg-charcoal-900">
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
@@ -312,6 +425,8 @@ export function CollectionPageClient({
             onFiltersChange={handleFiltersChange}
             isOpen={isFilterOpen}
             onClose={() => setIsFilterOpen(false)}
+            categories={availableCategories}
+            availableColors={availableColors}
           />
 
           {/* Products Section */}
@@ -330,6 +445,8 @@ export function CollectionPageClient({
               filters={filters}
               onRemoveCategory={handleRemoveCategory}
               onRemoveSize={handleRemoveSize}
+              onRemoveAgeRange={handleRemoveAgeRange}
+              onRemoveColor={handleRemoveColor}
               onClearPrice={handleClearPrice}
               onClearStock={handleClearStock}
               onClearAll={handleClearAllFilters}

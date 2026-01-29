@@ -35,13 +35,12 @@ export async function GET(request: NextRequest) {
 
         return searchableText.includes(query);
       })
-      .slice(0, 20) // Limit to 20 results
       .map((product) => ({
         id: product.id,
         name: product.name,
         slug: product.slug,
         price: product.price,
-        image: product.images[0]?.url || '/placeholder.jpg',
+        image: product.images?.find(img => img.isPrimary)?.url || product.images?.[0]?.url || '/placeholder.jpg',
         category: product.category.name,
       }));
 

@@ -43,7 +43,7 @@ export function CategoryCard({ category, index }: CategoryCardProps): JSX.Elemen
               <Image
                 src={category.image}
                 loading="lazy"
-                quality={85}
+                quality={80}
                 alt={category.name}
                 fill
                 className="object-cover transition-all duration-500 group-hover:brightness-110 group-hover:scale-105"
@@ -53,7 +53,7 @@ export function CategoryCard({ category, index }: CategoryCardProps): JSX.Elemen
               <div className="w-full h-full bg-cream-200" />
             )}
             {/* Overlay - darkens on hover */}
-            <div className="absolute inset-0 bg-charcoal-900/20 group-hover:bg-charcoal-900/30 transition-colors duration-500" />
+            <div className="absolute inset-0 bg-charcoal-900/20 group-hover:bg-charcoal-900/30 transition-colors duration-300" />
           </div>
 
           {/* Category Name - Centered */}

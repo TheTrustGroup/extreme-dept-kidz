@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StyleGuideGalleryClient } from "./StyleGuideGalleryClient";
+import { generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
   title: "Style Guide | Complete Looks | Extreme Dept Kidz",
@@ -28,5 +29,18 @@ export const metadata: Metadata = {
  * Shows all curated complete looks with filtering options.
  */
 export default function StyleGuidePage(): JSX.Element {
-  return <StyleGuideGalleryClient />;
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Style Guide", url: "/style-guide" },
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <StyleGuideGalleryClient />
+    </>
+  );
 }

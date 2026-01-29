@@ -9,6 +9,7 @@ import { Providers } from "@/components/providers";
 import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { LazyWebVitals } from "./LazyWebVitals";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 
@@ -186,6 +187,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col">
         <ErrorBoundary>
+          <PageLoadingBar />
           <SkipLinks />
           <Providers>
             <Suspense fallback={<PageLoader />}>

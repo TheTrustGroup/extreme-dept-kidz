@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ContactPageClient } from "./ContactPageClient";
+import { generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
   title: "Contact Us | Extreme Dept Kidz",
@@ -29,5 +30,18 @@ export const metadata: Metadata = {
  * Contact page with form, contact information, and FAQ section.
  */
 export default function ContactPage(): JSX.Element {
-  return <ContactPageClient />;
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Contact Us", url: "/contact" },
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <ContactPageClient />
+    </>
+  );
 }

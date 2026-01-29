@@ -10,13 +10,15 @@ export type SortOption =
   | "featured"
   | "price-low"
   | "price-high"
-  | "newest";
+  | "newest"
+  | "bestselling";
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "featured", label: "Featured" },
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
-  { value: "newest", label: "Newest" },
+  { value: "newest", label: "Newest First" },
+  { value: "bestselling", label: "Best Selling" },
 ];
 
 interface ProductToolbarProps {
@@ -91,7 +93,7 @@ export function ProductToolbar({
 
         {/* Result Count */}
         <Body className="text-charcoal-600 text-xs xs:text-sm sm:text-base">
-          {resultCount} {resultCount === 1 ? "product" : "products"}
+          Showing <span className="font-semibold text-charcoal-900">{resultCount}</span> {resultCount === 1 ? "product" : "products"}
         </Body>
       </div>
 

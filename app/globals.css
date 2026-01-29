@@ -2,6 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Price Range Slider Styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1c1c1c;
+  border: 2px solid #faf7ed;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1c1c1c;
+  border: 2px solid #faf7ed;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: transparent;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: transparent;
+}
+
 /* COLOR SYSTEM NORMALIZATION: Import design tokens */
 @import '../styles/tokens.css';
 
@@ -918,12 +970,12 @@ textarea:focus-visible {
 .product-card {
   position: relative;
   /* MOBILE-FIRST LAYOUT FIX: Fixed aspect ratio - ENFORCED across all browsers */
-  aspect-ratio: 3 / 4 !important;
+  aspect-ratio: 4 / 5 !important;
   /* MOBILE-FIRST LAYOUT FIX: Min-height reservation prevents layout shift - ENFORCED */
-  min-height: 420px !important;
+  min-height: 400px !important;
   height: auto;
   /* MOBILE-FIRST LAYOUT FIX: Max-height constraint - ENFORCED */
-  max-height: 520px !important;
+  max-height: 500px !important;
   /* Remove overflow from card - only on image container */
   overflow: visible;
   border-radius: var(--radius-xl, 30px);
@@ -962,10 +1014,10 @@ textarea:focus-visible {
 /* MOBILE-FIRST LAYOUT FIX: Skeleton card size parity - match ProductCard exactly */
 .skeleton-card {
   /* Match ProductCard dimensions exactly */
-  aspect-ratio: 3 / 4;
-  min-height: 420px;
+  aspect-ratio: 4 / 5;
+  min-height: 400px;
   height: auto;
-  max-height: 520px;
+  max-height: 500px;
   border-radius: var(--radius-xl, 30px);
   background: var(--glass-bg-light, rgba(254, 253, 251, 0.72));
   box-shadow: var(--glass-shadow, 0 8px 32px rgba(26, 26, 26, 0.08));

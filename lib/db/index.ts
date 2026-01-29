@@ -894,6 +894,7 @@ export async function getAllCategories(): Promise<Category[]> {
         description: c.description ?? undefined,
         image: c.image ?? undefined,
         isActive: c.isActive,
+        metadata: c.metadata ? (typeof c.metadata === 'object' ? c.metadata as Record<string, unknown> : undefined) : undefined,
       }));
     },
     mockCategories,

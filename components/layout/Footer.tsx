@@ -3,30 +3,109 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { m } from "framer-motion";
-import { Instagram } from "lucide-react";
+import { m, AnimatePresence } from "framer-motion";
+import { Instagram, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
 import { TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
+import { isValidEmail } from "@/lib/utils/validation";
+
+interface NewsletterFormState {
+  email: string;
+  error: string | null;
+  isSubmitting: boolean;
+  isSuccess: boolean;
+}
 
 export function Footer(): JSX.Element {
   const { theme } = useTheme();
-  const [email, setEmail] = React.useState("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [isSuccess, setIsSuccess] = React.useState(false);
+  const [formState, setFormState] = React.useState<NewsletterFormState>({
+    email: "",
+    error: null,
+    isSubmitting: false,
+    isSuccess: false,
+  });
+  const [hasSubmitted, setHasSubmitted] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!email) return;
+    setHasSubmitted(true);
+    setFormState((prev) => ({ ...prev, error: null }));
 
-    setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      setEmail("");
-      setTimeout(() => setIsSuccess(false), 3000);
-    }, 1000);
+    const trimmedEmail = formState.email.trim();
+
+    // Validate email
+    if (!trimmedEmail) {
+      setFormState((prev) => ({
+        ...prev,
+        error: "Email is required",
+      }));
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      setFormState((prev) => ({
+        ...prev,
+        error: "Please enter a valid email address",
+      }));
+      return;
+    }
+
+    // Prevent duplicate submissions
+    if (formState.isSubmitting) {
+      return;
+    }
+
+    setFormState((prev) => ({ ...prev, isSubmitting: true, error: null }));
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          source: "footer",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to subscribe. Please try again.");
+      }
+
+      // Success
+      setFormState({
+        email: "",
+        error: null,
+        isSubmitting: false,
+        isSuccess: true,
+      });
+      setHasSubmitted(false);
+
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setFormState((prev) => ({ ...prev, isSuccess: false }));
+      }, 5000);
+    } catch (error) {
+      setFormState((prev) => ({
+        ...prev,
+        error: error instanceof Error ? error.message : "Failed to subscribe. Please try again.",
+        isSubmitting: false,
+      }));
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.value;
+    setFormState((prev) => ({
+      ...prev,
+      email: value,
+      // Clear error when user starts typing
+      error: hasSubmitted && prev.error ? null : prev.error,
+    }));
   };
 
   return (
@@ -67,7 +146,7 @@ export function Footer(): JSX.Element {
                         : ""
                     )}
                     priority={false}
-                    quality={90}
+                    quality={75}
                     sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
                     decoding="async"
                     loading="lazy"
@@ -80,7 +159,7 @@ export function Footer(): JSX.Element {
                   ? "text-dark-text-secondary" 
                   : "text-cream-200/80"
               )}>
-                Elevated style for young legends. Premium streetwear and luxury essentials for the modern boy.
+                Elevated style for young legends. Premium streetwear and luxury essentials for kids.
               </p>
               {/* Social Icons - Consistent spacing */}
               <div className="flex items-center gap-[var(--space-4)] pt-[var(--space-2)]">
@@ -124,65 +203,167 @@ export function Footer(): JSX.Element {
               )}>
                 Sign up for exclusive drops, style tips, and early access to new collections.
               </p>
-              <form onSubmit={handleSubmit} className="space-y-[var(--space-3)]">
-                <div className="relative flex items-center">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className={cn(
-                      "flex-1 bg-transparent border border-cream-200/30 rounded-lg px-4 py-3",
-                      "text-cream-50 placeholder:text-cream-400/60",
-                      "focus:outline-none focus:border-cream-50 focus:ring-2 focus:ring-cream-50/20",
-                      "transition-all duration-300",
-                      "font-sans text-sm"
-                    )}
-                    required
-                    disabled={isSubmitting}
-                  />
-                  <m.button
-                    type="submit"
-                    disabled={isSubmitting || !email}
-                    className={cn(
-                      "ml-2 p-3 rounded-lg bg-navy-900 text-cream-50",
-                      "hover:bg-navy-800 transition-colors duration-200",
-                      "disabled:opacity-50 disabled:cursor-not-allowed",
-                      "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:ring-offset-charcoal-950" // COLOR SYSTEM NORMALIZATION: Use token
-                    )}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Subscribe to newsletter"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+
+              {/* First Order Incentive - Prominent */}
+              <div className={cn(
+                "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2",
+                theme === "dark"
+                  ? "bg-dark-surface border-accent-primary/50"
+                  : "bg-navy-900/30 border-navy-900/50"
+              )}>
+                <span className={cn(
+                  "text-lg font-bold",
+                  theme === "dark" ? "text-accent-primary" : "text-cream-50"
+                )}>
+                  🎁
+                </span>
+                <div>
+                  <p className={cn(
+                    "font-sans text-sm font-bold",
+                    theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
+                  )}>
+                    First Order: 10% OFF
+                  </p>
+                  <p className={cn(
+                    "font-sans text-xs",
+                    theme === "dark" ? "text-dark-text-secondary" : "text-cream-200/80"
+                  )}>
+                    Use code: <span className="font-mono font-semibold">WELCOME10</span>
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-[var(--space-3)]" noValidate>
+                <div className="relative flex flex-col gap-2">
+                  <div className="relative flex items-center">
+                    <input
+                      type="email"
+                      value={formState.email}
+                      onChange={handleEmailChange}
+                      placeholder="Enter your email"
+                      className={cn(
+                        "flex-1 bg-transparent border rounded-lg px-4 py-3",
+                        "text-cream-50 placeholder:text-cream-400/60",
+                        "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                        "transition-all duration-300",
+                        "font-sans text-sm",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
+                        formState.error
+                          ? theme === "dark"
+                            ? "border-red-400/50 focus:border-red-400 focus:ring-red-400/20"
+                            : "border-red-400/50 focus:border-red-400 focus:ring-red-400/20"
+                          : theme === "dark"
+                            ? "border-dark-border-glass focus:border-accent-primary focus:ring-accent-primary/20"
+                            : "border-cream-200/30 focus:border-cream-50 focus:ring-cream-50/20"
+                      )}
+                      disabled={formState.isSubmitting}
+                      aria-invalid={formState.error ? "true" : "false"}
+                      aria-describedby={formState.error ? "newsletter-error" : undefined}
+                    />
+                    <m.button
+                      type="submit"
+                      disabled={formState.isSubmitting || !formState.email.trim()}
+                      className={cn(
+                        "ml-2 p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center",
+                        "transition-colors duration-200",
+                        "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                        theme === "dark"
+                          ? "bg-accent-primary text-dark-bg-primary hover:bg-accent-primary/90 focus:ring-accent-primary focus:ring-offset-dark-bg-secondary"
+                          : "bg-navy-900 text-cream-50 hover:bg-navy-800 focus:ring-navy-500 focus:ring-offset-charcoal-950",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                      whileHover={{ scale: formState.isSubmitting ? 1 : 1.05 }}
+                      whileTap={{ scale: formState.isSubmitting ? 1 : 0.95 }}
+                      aria-label="Subscribe to newsletter"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
-                  </m.button>
+                      {formState.isSubmitting ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"
+                          />
+                        </svg>
+                      )}
+                    </m.button>
+                  </div>
+
+                  {/* Error Message */}
+                  <AnimatePresence>
+                    {formState.error && (
+                      <m.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        id="newsletter-error"
+                        className="flex items-center gap-2 text-sm"
+                        role="alert"
+                      >
+                        <AlertCircle className={cn(
+                          "w-4 h-4 flex-shrink-0",
+                          theme === "dark" ? "text-red-400" : "text-red-300"
+                        )} />
+                        <span className={cn(
+                          theme === "dark" ? "text-red-400" : "text-red-300"
+                        )}>
+                          {formState.error}
+                        </span>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Success Message */}
+                  <AnimatePresence>
+                    {formState.isSuccess && (
+                      <m.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center gap-2 text-sm"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <CheckCircle2 className={cn(
+                          "w-4 h-4 flex-shrink-0",
+                          theme === "dark" ? "text-green-400" : "text-green-300"
+                        )} />
+                        <span className={cn(
+                          theme === "dark" ? "text-green-400" : "text-green-300"
+                        )}>
+                          Successfully subscribed! Check your email for your welcome code.
+                        </span>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                {isSuccess && (
-                  <m.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-green-400"
+
+                {/* GDPR Compliance Text */}
+                <p className={cn(
+                  "text-xs leading-relaxed",
+                  theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
+                )}>
+                  By subscribing, you agree to receive marketing emails from EXTREME DEPT KIDZ. 
+                  You can unsubscribe at any time. We respect your privacy and will never share your email address. 
+                  <Link 
+                    href="/privacy-policy" 
+                    className={cn(
+                      "underline hover:no-underline transition-colors duration-200",
+                      theme === "dark" ? "text-dark-text-secondary hover:text-dark-text-primary" : "text-cream-200/80 hover:text-cream-50"
+                    )}
                   >
-                    ✓ Successfully subscribed!
-                  </m.p>
-                )}
-                <div className="flex items-center space-x-2 text-xs text-cream-200/70">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full bg-navy-900/50 text-cream-50 font-medium">
-                    ✓ First order: 10% off
-                  </span>
-                </div>
+                    View our Privacy Policy
+                  </Link>.
+                </p>
               </form>
             </m.div>
           </div>
@@ -217,7 +398,8 @@ export function Footer(): JSX.Element {
                 <FooterNavLink href="/collections/girls">Girls</FooterNavLink>
                 <FooterNavLink href="/collections/new-arrivals">New Arrivals</FooterNavLink>
                 <FooterNavLink href="/collections">Collections</FooterNavLink>
-                <FooterNavLink href="#">Gift Cards</FooterNavLink>
+                {/* TODO: Gift Cards functionality needs to be implemented - create gift card purchase and redemption system */}
+                {/* <FooterNavLink href="#">Gift Cards</FooterNavLink> */}
                 <FooterNavLink href="/collections?sort=price-low">Sale</FooterNavLink>
               </ul>
             </m.nav>
@@ -239,13 +421,14 @@ export function Footer(): JSX.Element {
                 CUSTOMER CARE
               </h4>
               <ul className="space-y-[var(--space-3)]">
-                <FooterNavLink href="#">Shipping Info</FooterNavLink>
-                <FooterNavLink href="#">Returns & Exchange</FooterNavLink>
-                <FooterNavLink href="#">Size Guide</FooterNavLink>
-                <FooterNavLink href="#">Order Tracking</FooterNavLink>
+                <FooterNavLink href="/shipping-info">Shipping Info</FooterNavLink>
+                <FooterNavLink href="/returns-exchange">Returns & Exchange</FooterNavLink>
+                <FooterNavLink href="/size-guide">Size Guide</FooterNavLink>
+                <FooterNavLink href="/track-order">Order Tracking</FooterNavLink>
                 <FooterNavLink href="/contact">Contact Us</FooterNavLink>
                 <FooterNavLink href="mailto:info@extremedeptkidz.com">info@extremedeptkidz.com</FooterNavLink>
-                <FooterNavLink href="#">FAQs</FooterNavLink>
+                {/* TODO: FAQs page needs to be created - add common questions and answers */}
+                {/* <FooterNavLink href="#">FAQs</FooterNavLink> */}
               </ul>
             </m.nav>
 
@@ -268,10 +451,14 @@ export function Footer(): JSX.Element {
               <ul className="space-y-[var(--space-3)]">
                 <FooterNavLink href="/about">About Us</FooterNavLink>
                 <FooterNavLink href="/about">Our Story</FooterNavLink>
-                <FooterNavLink href="#">Careers</FooterNavLink>
-                <FooterNavLink href="#">Press</FooterNavLink>
-                <FooterNavLink href="#">Wholesale</FooterNavLink>
-                <FooterNavLink href="#">Sustainability</FooterNavLink>
+                {/* TODO: Careers page needs to be created - add job listings, company culture, application process */}
+                {/* <FooterNavLink href="#">Careers</FooterNavLink> */}
+                {/* TODO: Press page needs to be created - add press releases, media kit, brand assets */}
+                {/* <FooterNavLink href="#">Press</FooterNavLink> */}
+                {/* TODO: Wholesale page needs to be created - add wholesale inquiry form, minimum order requirements, pricing */}
+                {/* <FooterNavLink href="#">Wholesale</FooterNavLink> */}
+                {/* TODO: Sustainability page needs to be created - add sustainability practices, materials, environmental impact */}
+                {/* <FooterNavLink href="#">Sustainability</FooterNavLink> */}
               </ul>
             </m.nav>
 
@@ -347,17 +534,17 @@ export function Footer(): JSX.Element {
               "flex items-center gap-[var(--space-4)] text-sm transition-colors duration-300",
               theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
             )} aria-label="Legal links">
-              <FooterNavLink href="#" className="text-sm">Privacy Policy</FooterNavLink>
+              <FooterNavLink href="/privacy-policy" className="text-sm">Privacy Policy</FooterNavLink>
               <span className={cn(
                 "transition-colors duration-300",
                 theme === "dark" ? "text-dark-text-muted" : "text-cream-200/30"
               )}>|</span>
-              <FooterNavLink href="#" className="text-sm">Terms of Service</FooterNavLink>
+              <FooterNavLink href="/terms-of-service" className="text-sm">Terms of Service</FooterNavLink>
               <span className={cn(
                 "transition-colors duration-300",
                 theme === "dark" ? "text-dark-text-muted" : "text-cream-200/30"
               )}>|</span>
-              <FooterNavLink href="#" className="text-sm">Accessibility</FooterNavLink>
+              <FooterNavLink href="/accessibility" className="text-sm">Accessibility</FooterNavLink>
             </nav>
 
             {/* Right: Payment Icons - Consistent spacing */}

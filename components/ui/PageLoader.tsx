@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Skeleton } from "./skeleton";
+import { Skeleton } from "./Skeleton";
 import { cn } from "@/lib/utils";
 
 /**

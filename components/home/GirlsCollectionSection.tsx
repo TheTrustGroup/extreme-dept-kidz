@@ -54,44 +54,65 @@ export function GirlsCollectionSection({ products }: GirlsCollectionSectionProps
 
           {/* Products Grid - Single Row, 4 Products */}
           {girlsProducts.length > 0 ? (
-            <div 
-              className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 md:gap-6"
-              role="list"
-              aria-label="Girls collection products"
-            >
-              {girlsProducts.map((product, index) => (
-                <m.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  role="listitem"
-                >
-                  <ProductCard product={product} />
-                </m.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-charcoal-500 text-sm" role="status" aria-live="polite">
-              <p>Girls collection coming soon</p>
-            </div>
-          )}
+            <>
+              <div 
+                className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 md:gap-6"
+                role="list"
+                aria-label="Girls collection products"
+              >
+                {girlsProducts.map((product, index) => (
+                  <m.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    role="listitem"
+                  >
+                    <ProductCard product={product} />
+                  </m.div>
+                ))}
+              </div>
 
-          {/* Link to Girls Collection */}
-          <div className="text-center">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="inline-flex items-center space-x-2 min-h-[44px]"
-              asChild
+              {/* Link to Girls Collection */}
+              <div className="text-center">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex items-center space-x-2 min-h-[44px]"
+                  asChild
+                >
+                  <Link href="/collections/girls" aria-label="View girls collection">
+                    <span>View Girls Collection</span>
+                    <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <m.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="text-center py-12"
             >
-              <Link href="/collections/girls" aria-label="View girls collection">
-                <span>View Girls Collection</span>
-                <ChevronRight className="w-4 h-4" aria-hidden="true" />
-              </Link>
-            </Button>
-          </div>
+              <Body className="text-charcoal-600 mb-6">
+                Our Girls collection is launching soon. Be the first to know when it drops!
+              </Body>
+              <Button
+                variant="primary"
+                size="lg"
+                className="inline-flex items-center space-x-2 min-h-[44px]"
+                asChild
+              >
+                <Link href="/collections/girls" aria-label="View girls collection coming soon">
+                  <span>Learn More</span>
+                  <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            </m.div>
+          )}
         </div>
       </Container>
     </section>

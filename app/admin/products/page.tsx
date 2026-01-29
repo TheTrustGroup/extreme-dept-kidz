@@ -10,7 +10,7 @@ import { getProducts } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";

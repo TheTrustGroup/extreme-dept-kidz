@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { H3, Body } from "@/components/ui/typography";
 import type { ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
+import { useFocusTrap } from "@/lib/hooks/use-keyboard-navigation";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -36,13 +37,21 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   // Handle quantity change
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
+    const item = items.find(i => i.id === itemId);
     updateQuantity(itemId, newQuantity);
+    if (item) {
+      announceToScreenReader(`Quantity updated to ${newQuantity} for ${item.product.name}`);
+    }
   };
 
   // Handle remove item with confirmation
   const handleRemoveClick = (itemId: string) => {
+    const item = items.find(i => i.id === itemId);
     if (removingItemId === itemId) {
       // Confirm removal
+      if (item) {
+        announceToScreenReader(`${item.product.name} removed from cart`);
+      }
       removeItem(itemId);
       setRemovingItemId(null);
     } else {
@@ -82,16 +91,25 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Focus management
+  // Focus trap for accessibility
   const drawerRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (isOpen && drawerRef.current) {
-      const firstFocusable = drawerRef.current.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      firstFocusable?.focus();
-    }
-  }, [isOpen]);
+  useFocusTrap(drawerRef, isOpen);
+  
+  // Screen reader announcement helper
+  const announceToScreenReader = React.useCallback((message: string): void => {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('role', 'status');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.className = 'sr-only';
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+    setTimeout(() => {
+      if (document.body.contains(announcement)) {
+        document.body.removeChild(announcement);
+      }
+    }, 1000);
+  }, []);
 
   return (
     <AnimatePresence>
@@ -110,6 +128,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
           {/* Drawer */}
           <m.div
+            ref={drawerRef}
             className="fixed top-0 right-0 bottom-0 w-full max-w-[100vw] xs:max-w-sm sm:max-w-md md:max-w-lg glass shadow-2xl z-50 flex flex-col"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -131,7 +150,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   Your Cart
                 </H3>
                 {items.length > 0 && (
-                  <Body className="text-sm text-charcoal-600 mt-0.5">
+                  <Body 
+                    className="text-sm text-charcoal-600 mt-0.5"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
                     {items.length} {items.length === 1 ? "item" : "items"}
                   </Body>
                 )}
@@ -321,6 +344,10 @@ function CartItem({
           fill
           className="object-cover"
           sizes="(max-width: 640px) 80px, 96px"
+          quality={75}
+          loading="lazy"
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
       </Link>
 
@@ -367,7 +394,11 @@ function CartItem({
             >
               <Minus className="w-3.5 h-3.5 text-charcoal-900" />
             </m.button>
-            <span className="font-sans text-sm font-semibold text-charcoal-900 min-w-[2.5rem] text-center">
+            <span 
+              className="font-sans text-sm font-semibold text-charcoal-900 min-w-[2.5rem] text-center"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               {item.quantity}
             </span>
             <m.button
@@ -429,7 +460,7 @@ function EmptyCartState(): JSX.Element {
       </m.div>
       <H3 className="text-charcoal-900 mb-2 text-xl">Your cart is empty</H3>
       <Body className="text-charcoal-600 mb-6 max-w-sm">
-        Let&apos;s change that. Discover our curated collection of premium pieces for the modern boy.
+        Let&apos;s change that. Discover our curated collection of premium pieces for young legends.
       </Body>
       <Button variant="primary" size="lg" className="w-full sm:w-auto" asChild>
         <Link href="/collections/boys">SHOP BOYS</Link>

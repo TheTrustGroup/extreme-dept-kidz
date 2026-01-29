@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { H1, H2, H3, Body } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
   title: "About Us | Extreme Dept Kidz",
@@ -43,10 +45,32 @@ export const metadata: Metadata = {
  * Luxury lookbook aesthetic with storytelling focus.
  */
 export default function AboutPage(): JSX.Element {
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: "About Us" },
+  ];
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "About Us", url: "/about" },
+  ]);
+
   return (
-    <div className="min-h-screen bg-cream-50">
-      {/* Hero Section */}
-      <section className="relative min-h-[60vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden bg-charcoal-900">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <div className="min-h-screen bg-cream-50">
+        {/* Breadcrumb */}
+        <div className="pt-20 md:pt-24 pb-4">
+          <Container size="lg">
+            <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
+          </Container>
+        </div>
+
+        {/* Hero Section */}
+        <section className="relative min-h-[60vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden bg-charcoal-900">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-charcoal-900/60 via-charcoal-900/50 to-charcoal-900/70" />
         </div>
@@ -265,6 +289,7 @@ export default function AboutPage(): JSX.Element {
         </Container>
       </section>
     </div>
+    </>
   );
 }
 

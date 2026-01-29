@@ -58,7 +58,7 @@ export function EditorialSection(): JSX.Element {
               {/* Body Paragraph */}
               <div className="space-y-[var(--space-4)]">
                 <Body className="text-charcoal-700">
-                  From the playground to the city streets, every piece is crafted for the modern boy who moves with confidence.
+                  From the playground to the city streets, every piece is crafted for young legends who move with confidence.
                 </Body>
                 <Body className="text-charcoal-700">
                   Premium streetwear meets luxury essentials. Our collections celebrate both play and sophistication, designed for young legends who demand quality and style.

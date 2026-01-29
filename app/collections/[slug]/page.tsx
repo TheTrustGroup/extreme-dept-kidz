@@ -5,6 +5,7 @@ import { getAllCategories, getAllProducts, getProductsByCategory } from "@/lib/d
 import { getProductsByCollection } from "@/lib/utils/filter-products";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { unstable_cache } from "next/cache";
+import { generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 import type { Product } from "@/types";
 
 interface CollectionPageProps {
@@ -128,8 +129,22 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     }
 
     const collectionInfo = category
-      ? { name: category.name, description: category.description ?? undefined }
+      ? { 
+          name: category.name, 
+          description: category.description ?? undefined,
+          image: category.image ?? undefined,
+          metadata: category.metadata ? (typeof category.metadata === 'object' ? category.metadata as Record<string, unknown> : undefined) : undefined,
+        }
       : undefined;
+
+    // Generate breadcrumb structured data
+    const breadcrumbSchema = category
+      ? generateBreadcrumbSchema([
+          { name: "Home", url: "/" },
+          { name: "Collections", url: "/collections" },
+          { name: category.name, url: `/collections/${category.slug}` },
+        ])
+      : null;
 
     // Serialize data to prevent hydration issues
     // Convert Dates to strings, ensure numbers are numbers, etc.
@@ -167,8 +182,15 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     // CRITICAL: Streaming SSR with optimized Suspense boundary
     // Uses proper skeleton to prevent layout shift
     return (
-      <Suspense
-        fallback={
+      <>
+        {breadcrumbSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+          />
+        )}
+        <Suspense
+          fallback={
           <div className="min-h-screen bg-cream-50 pt-24 pb-16">
             <div className="container mx-auto px-4">
               <div className="animate-pulse space-y-8">
@@ -196,6 +218,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
           collectionInfo={collectionInfo}
         />
       </Suspense>
+      </>
     );
   } catch (error) {
     console.error(`[CollectionPage] Error loading collection ${slug}:`, error);

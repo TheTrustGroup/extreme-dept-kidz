@@ -15,11 +15,11 @@ export const Typography = React.forwardRef<HTMLElement, TypographyProps>(
     const Component = as || getDefaultElement(variant);
 
     const variants = {
-      h1: "font-serif text-display-2xl font-bold text-charcoal-900 tracking-tight leading-tight",
-      h2: "font-serif text-display-xl font-semibold text-charcoal-900 tracking-tight leading-tight",
-      h3: "font-serif text-display-lg font-semibold text-charcoal-900 tracking-tight leading-snug",
-      h4: "font-serif text-display-md font-medium text-charcoal-800 tracking-tight leading-snug",
-      body: "font-sans text-base text-charcoal-700 leading-relaxed",
+      h1: "font-serif text-[clamp(2rem,5vw,4rem)] md:text-[clamp(3rem,6vw,4rem)] font-bold text-charcoal-900 tracking-tight leading-tight",
+      h2: "font-serif text-[clamp(1.75rem,4vw,3rem)] md:text-[clamp(2.25rem,5vw,3rem)] font-semibold text-charcoal-900 tracking-tight leading-tight",
+      h3: "font-serif text-[clamp(1.125rem,3vw,1.5rem)] md:text-[clamp(1.25rem,3vw,1.5rem)] font-medium text-charcoal-900 tracking-tight leading-snug",
+      h4: "font-serif text-[clamp(1rem,2.5vw,1.25rem)] md:text-[clamp(1.125rem,2.5vw,1.25rem)] font-medium text-charcoal-800 tracking-tight leading-snug",
+      body: "font-sans text-base md:text-[1.125rem] text-charcoal-700 leading-[1.6]",
       caption:
         "font-sans text-sm text-charcoal-600 leading-normal uppercase tracking-wider",
     };
@@ -66,7 +66,7 @@ export const H1 = React.forwardRef<
   <h1
     ref={ref}
     className={cn(
-      "font-serif text-display-2xl font-bold tracking-tight leading-tight text-charcoal-900",
+      "font-serif text-[clamp(2rem,5vw,4rem)] md:text-[clamp(3rem,6vw,4rem)] font-bold tracking-tight leading-tight text-charcoal-900",
       className
     )}
     {...props}
@@ -81,7 +81,7 @@ export const H2 = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "font-serif text-display-xl font-semibold tracking-tight leading-tight text-charcoal-900",
+      "font-serif text-[clamp(1.75rem,4vw,3rem)] md:text-[clamp(2.25rem,5vw,3rem)] font-semibold tracking-tight leading-tight text-charcoal-900",
       className
     )}
     {...props}
@@ -96,7 +96,7 @@ export const H3 = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-serif text-display-lg font-semibold tracking-tight leading-snug text-charcoal-900",
+      "font-serif text-[clamp(1.125rem,3vw,1.5rem)] md:text-[clamp(1.25rem,3vw,1.5rem)] font-medium tracking-tight leading-snug text-charcoal-900",
       className
     )}
     {...props}
@@ -126,7 +126,7 @@ export const Body = React.forwardRef<
   <p
     ref={ref}
     className={cn(
-      "font-sans text-base leading-relaxed text-charcoal-700",
+      "font-sans text-base md:text-[1.125rem] leading-[1.6] text-charcoal-700",
       className
     )}
     {...props}

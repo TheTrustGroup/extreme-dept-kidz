@@ -54,7 +54,7 @@ export function CollectionCard({ collection, index }: CollectionCardProps): JSX.
                 isLCP={false}
                 useIntersectionObserver={true}
                 enablePrefetch={true}
-                quality={85}
+                quality={80}
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 fill
               />

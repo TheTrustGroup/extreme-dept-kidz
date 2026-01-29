@@ -123,7 +123,7 @@ export function ProductGallery({
               sizes="(max-width: 1024px) 100vw, 60vw"
               priority={selectedIndex === 0}
               loading={selectedIndex === 0 ? "eager" : "lazy"}
-              quality={90}
+              quality={80}
               onLightboxOpen={() => setIsLightboxOpen(true)}
             />
 
@@ -204,7 +204,7 @@ export function ProductGallery({
                     isLCP={false}
                     useIntersectionObserver={true}
                     enablePrefetch={false}
-                    quality={80}
+                    quality={75}
                     className="object-cover"
                     fill
                   />
@@ -264,7 +264,7 @@ export function ProductGallery({
                       isLCP={false}
                       useIntersectionObserver={false}
                       enablePrefetch={false}
-                      quality={90}
+                      quality={80}
                       className="object-contain"
                       fill
                     />

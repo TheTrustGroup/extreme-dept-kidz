@@ -2,11 +2,14 @@
 
 import * as React from "react";
 import { Container } from "@/components/ui/container";
-import { H1 } from "@/components/ui/typography";
-import { CheckoutForm } from "@/components/checkout/CheckoutForm";
+import { H1, Body } from "@/components/ui/typography";
+import { CheckoutFormV2 } from "@/components/checkout/CheckoutFormV2";
 import { CheckoutOrderSummary } from "@/components/checkout/CheckoutOrderSummary";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { cn } from "@/lib/utils";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import type { CheckoutFormData } from "@/types/checkout";
 
 const SHIPPING_METHODS = [
@@ -19,10 +22,17 @@ const SHIPPING_METHODS = [
  * Checkout Page Client Component
  */
 export function CheckoutPageClient(): JSX.Element | null {
+  const { theme } = useTheme();
   const items = useCartStore((state) => state.items);
   const router = useRouter();
   const [shippingMethod, setShippingMethod] =
     React.useState<"standard" | "express" | "overnight">("standard");
+
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: "Cart", href: "/cart" },
+    { label: "Checkout" },
+  ];
 
   // Redirect if cart is empty
   React.useEffect(() => {
@@ -87,21 +97,35 @@ export function CheckoutPageClient(): JSX.Element | null {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
+    <div className={cn(
+      "min-h-screen pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16 transition-colors duration-300",
+      theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
+    )}>
       <Container size="lg">
+        {/* Breadcrumb */}
+        <div className="mb-6 sm:mb-8">
+          <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
+        </div>
+
         <div className="mb-6 xs:mb-7 sm:mb-8">
-          <H1 className="text-charcoal-900 text-2xl xs:text-3xl sm:text-4xl font-serif font-bold">
+          <H1 className={cn(
+            "text-2xl xs:text-3xl sm:text-4xl font-serif font-bold",
+            theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+          )}>
             Checkout
           </H1>
-          <p className="mt-2 text-sm text-charcoal-600">
+          <Body className={cn(
+            "mt-2 text-sm",
+            theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+          )}>
             Secure checkout guaranteed. Your information is protected.
-          </p>
+          </Body>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 xs:gap-7 sm:gap-8 lg:gap-10 xl:gap-12">
           {/* Checkout Form */}
           <div className="lg:col-span-2 order-2 lg:order-1">
-            <CheckoutForm
+            <CheckoutFormV2
               onSubmit={handleSubmit}
               onShippingMethodChange={setShippingMethod}
             />

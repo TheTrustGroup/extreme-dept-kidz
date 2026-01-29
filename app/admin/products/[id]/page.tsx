@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { FloatingInput, FloatingTextarea } from "@/components/ui/floating-input";
 import { useToast } from "@/components/ui/Toast";

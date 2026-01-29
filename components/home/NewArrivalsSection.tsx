@@ -8,46 +8,152 @@ import { H2 } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
-import { ScrollIndicator } from "@/components/home/ScrollIndicator";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/types";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface NewArrivalsSectionProps {
   products?: Product[];
 }
 
+type FilterType = "all" | "boys" | "girls" | "new";
+
+/**
+ * Placeholder Card Component
+ * Shows "More styles coming soon" message
+ */
+function PlaceholderCard(): JSX.Element {
+  const { theme } = useTheme();
+  
+  return (
+    <div
+      className={cn(
+        "product-card w-full flex flex-col items-center justify-center p-8",
+        "bg-cream-50 border-2 border-dashed rounded-xl",
+        theme === "dark" && "bg-dark-surface border-dark-border-glass"
+      )}
+      style={{
+        aspectRatio: "4 / 5",
+        minHeight: "400px",
+      }}
+    >
+      <div className={cn(
+        "text-center space-y-4",
+        theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+      )}>
+        <div className={cn(
+          "w-16 h-16 mx-auto rounded-full flex items-center justify-center",
+          theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-100"
+        )}>
+          <ChevronRight className={cn(
+            "w-8 h-8 rotate-[-90deg]",
+            theme === "dark" ? "text-dark-text-muted" : "text-charcoal-400"
+          )} />
+        </div>
+        <p className={cn(
+          "font-serif text-lg font-semibold",
+          theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+        )}>
+          More Styles Coming Soon
+        </p>
+        <p className={cn(
+          "text-sm",
+          theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+        )}>
+          Check back for new arrivals
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.Element {
-  const carouselRef = React.useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+  const [activeFilter, setActiveFilter] = React.useState<FilterType>("all");
   
   // Use provided products or fallback to mock data
-  // Show products with "new" tag first, then fallback to most recent products
-  const newArrivals = React.useMemo(() => {
+  // Remove duplicates by product ID or slug
+  const allProducts = React.useMemo(() => {
     const sourceProducts = products || mockProducts;
     
-    // First, try to get products with "new" tag
-    const taggedNew = sourceProducts.filter((product) => product.tags?.includes("new"));
+    // Remove duplicates by ID and slug
+    const uniqueProducts = sourceProducts.filter((product, index, self) =>
+      index === self.findIndex((p) => p.id === product.id || p.slug === product.slug)
+    );
     
-    // If we have products with "new" tag, use those
-    if (taggedNew.length > 0) {
-      return taggedNew.slice(0, 8);
-    }
-    
-    // Otherwise, show the most recent products (sorted by createdAt if available, otherwise by order in array)
-    const sorted = [...sourceProducts].sort((a, b) => {
-      // Sort by createdAt if available (newest first)
+    // Sort by newest first (products with "new" tag or recent createdAt)
+    return [...uniqueProducts].sort((a, b) => {
+      const aIsNew = a.tags?.includes("new") ? 1 : 0;
+      const bIsNew = b.tags?.includes("new") ? 1 : 0;
+      if (aIsNew !== bIsNew) return bIsNew - aIsNew;
+      
       if (a.createdAt && b.createdAt) {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
-      // Fallback: keep original order (newest products are typically added last)
       return 0;
     });
-    
-    return sorted.slice(0, 8);
   }, [products]);
+
+  // Filter products based on active filter
+  const filteredProducts = React.useMemo(() => {
+    switch (activeFilter) {
+      case "boys":
+        return allProducts.filter((p) => p.category.slug === "boys" || p.category.name.toLowerCase() === "boys");
+      case "girls":
+        return allProducts.filter((p) => p.category.slug === "girls" || p.category.name.toLowerCase() === "girls");
+      case "new":
+        return allProducts.filter((p) => p.tags?.includes("new"));
+      case "all":
+      default:
+        return allProducts;
+    }
+  }, [allProducts, activeFilter]);
+
+  // Get products to display (4-6 products)
+  const displayedProducts = React.useMemo(() => {
+    const count = filteredProducts.length >= 6 ? 6 : filteredProducts.length >= 4 ? filteredProducts.length : 4;
+    return filteredProducts.slice(0, count);
+  }, [filteredProducts]);
+
+  // Fill with placeholders if needed
+  const productsToShow = React.useMemo(() => {
+    const placeholdersNeeded = Math.max(0, 4 - displayedProducts.length);
+    return [
+      ...displayedProducts,
+      ...Array.from({ length: placeholdersNeeded }, (_, i) => ({ id: `placeholder-${i}`, isPlaceholder: true }))
+    ];
+  }, [displayedProducts]);
+
+  // Get "View All" link based on filter
+  const getViewAllLink = (): string => {
+    switch (activeFilter) {
+      case "boys":
+        return "/collections/boys";
+      case "girls":
+        return "/collections/girls";
+      case "new":
+        return "/collections/new-arrivals";
+      case "all":
+      default:
+        return "/collections/new-arrivals";
+    }
+  };
+
+  const filters: Array<{ id: FilterType; label: string }> = [
+    { id: "all", label: "All" },
+    { id: "boys", label: "Boys" },
+    { id: "girls", label: "Girls" },
+    { id: "new", label: "New Arrivals" },
+  ];
 
   return (
     <section 
-      className="section reveal bg-cream-50 [data-theme='dark']:bg-dark-bg-primary"
+      className={cn(
+        "section reveal transition-colors duration-300",
+        theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
+      )}
       aria-labelledby="new-arrivals-heading"
     >
       <Container size="lg">
@@ -63,7 +169,10 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
             >
               <H2 
                 id="new-arrivals-heading"
-                className="text-charcoal-900"
+                className={cn(
+                  "transition-colors duration-300",
+                  theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                )}
               >
                 JUST DROPPED
               </H2>
@@ -80,7 +189,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
                 className="hidden sm:flex items-center gap-2 min-h-[44px] touch-manipulation"
                 asChild
               >
-                <Link href="/collections/new-arrivals" aria-label="View all new arrivals">
+                <Link href={getViewAllLink()} aria-label={`View all ${activeFilter === "all" ? "new arrivals" : activeFilter} products`}>
                   <span>View All</span>
                   <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </Link>
@@ -88,78 +197,81 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
             </m.div>
           </div>
 
-          {/* Horizontal Scrollable Carousel (Desktop) / Grid (Mobile) */}
-          <div className="relative" role="region" aria-label="New arrivals products">
-            {/* Desktop: Horizontal Scroll */}
-            <div 
-              ref={carouselRef}
-              // Design System: Consistent spacing using 8px base scale
-              className="hidden lg:flex overflow-x-auto scrollbar-hide pb-[var(--space-6)] -mx-[var(--space-4)] px-[var(--space-4)] gap-[var(--space-6)]"
-              data-scroll-container
-              style={{
-                WebkitOverflowScrolling: 'touch',
-                transform: 'translateZ(0)',
-                willChange: 'scroll-position',
-                contain: 'layout style paint',
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(28, 28, 28, 0.3) transparent', // brand-text with 30% opacity
-              }}
-              role="list"
-              aria-label="New arrivals carousel"
-            >
-              {newArrivals.length > 0 ? (
-                newArrivals.map((product, index) => (
-                  <m.div
-                    key={product.id}
-                    initial={{ opacity: 0, x: 30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                    // Fixed width to prevent layout shift
-                    className="flex-shrink-0 w-[280px]"
-                    role="listitem"
-                  >
-                    <ProductCard product={product} />
-                  </m.div>
-                ))
-              ) : (
-                <div className="text-center py-16 text-charcoal-600" role="status" aria-live="polite">
-                  <p>New arrivals coming soon</p>
-                </div>
-              )}
-            </div>
-            
-            {/* Scroll Indicators - Design System: Tier 3 */}
-            <ScrollIndicator containerRef={carouselRef} className="hidden lg:block" />
+          {/* Filter Buttons */}
+          <m.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="flex flex-wrap items-center gap-[var(--space-2)] sm:gap-[var(--space-3)]"
+            role="tablist"
+            aria-label="Filter products"
+          >
+            {filters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setActiveFilter(filter.id)}
+                className={cn(
+                  "px-4 py-2 rounded-lg font-sans text-sm font-semibold uppercase tracking-wider transition-all duration-300",
+                  "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                  activeFilter === filter.id
+                    ? theme === "dark"
+                      ? "bg-accent-primary text-dark-bg-primary focus:ring-accent-primary"
+                      : "bg-navy-900 text-cream-50 focus:ring-navy-500"
+                    : theme === "dark"
+                      ? "bg-dark-surface text-dark-text-secondary hover:bg-dark-bg-secondary hover:text-dark-text-primary focus:ring-accent-primary"
+                      : "bg-cream-100 text-charcoal-700 hover:bg-cream-200 hover:text-charcoal-900 focus:ring-navy-500"
+                )}
+                role="tab"
+                aria-selected={activeFilter === filter.id}
+                aria-controls={`filter-${filter.id}`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </m.div>
 
-            {/* Mobile/Tablet: Grid - Touch-friendly spacing */}
-            <div 
-              // Design System: Consistent spacing using 8px base scale
-              className="lg:hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[var(--space-4)] sm:gap-[var(--space-5)] md:gap-[var(--space-6)]"
-              role="list"
-              aria-label="New arrivals grid"
-            >
-              {newArrivals.length > 0 ? (
-                newArrivals.slice(0, 6).map((product, index) => (
+          {/* Products Grid - Responsive: Mobile 2 cols, Tablet 3 cols, Desktop 4 cols */}
+          <div 
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[var(--space-4)] sm:gap-[var(--space-5)] lg:gap-[var(--space-6)]"
+            role="list"
+            aria-label={`${activeFilter === "all" ? "New arrivals" : activeFilter} products`}
+          >
+            {productsToShow.map((item, index) => {
+              if ('isPlaceholder' in item && item.isPlaceholder) {
+                return (
                   <m.div
-                    key={product.id}
+                    key={item.id}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
+                    viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: index * 0.05 }}
-                    // Prevent layout shift with consistent structure
                     className="w-full"
                     role="listitem"
                   >
-                    <ProductCard product={product} />
+                    <PlaceholderCard />
                   </m.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-16 text-charcoal-600" role="status" aria-live="polite">
-                  <p>New arrivals coming soon</p>
-                </div>
-              )}
-            </div>
+                );
+              }
+
+              const product = item as Product;
+              return (
+                <m.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  className="w-full"
+                  role="listitem"
+                >
+                  <ProductCard 
+                    product={product} 
+                    priority={index < 2} // Prioritize first 2 products for LCP
+                  />
+                </m.div>
+              );
+            })}
           </div>
 
           {/* Mobile View All Button - Touch-friendly */}
@@ -170,8 +282,8 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
               className="min-h-[48px] w-full sm:w-auto touch-manipulation" 
               asChild
             >
-              <Link href="/collections/new-arrivals" aria-label="View all new arrivals">
-                View All New Arrivals
+              <Link href={getViewAllLink()} aria-label={`View all ${activeFilter === "all" ? "new arrivals" : activeFilter} products`}>
+                View All {activeFilter === "all" ? "New Arrivals" : filters.find(f => f.id === activeFilter)?.label}
                 <ChevronRight className="w-4 h-4 ml-2" aria-hidden="true" />
               </Link>
             </Button>

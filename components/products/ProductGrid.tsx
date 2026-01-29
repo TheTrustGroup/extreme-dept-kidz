@@ -5,6 +5,7 @@ import { m } from "framer-motion";
 import type { Product } from "@/types";
 import { ProductCard } from "./ProductCard";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import { ProductGridSkeleton } from "@/components/ui/ProductGridSkeleton";
 import { cn } from "@/lib/utils";
 import { H3, Body } from "@/components/ui/typography";
 
@@ -77,11 +78,11 @@ export function ProductGrid({
         "grid",
         getGridCols(columns),
         // Consistent spacing using 8px base scale
-        "gap-[var(--space-5)]", // 20px mobile
+        "gap-[var(--space-4)]", // 16px mobile
         "sm:gap-[var(--space-6)]", // 24px small
         "md:gap-[var(--space-6)]", // 24px tablet
         "lg:gap-[var(--space-7)]", // 32px desktop
-        "xl:gap-[var(--space-8)]", // 40px large desktop
+        "xl:gap-[var(--space-7)]", // 32px large desktop (consistent)
         // Performance: Grid optimization
         "items-stretch",
         // CRITICAL FIX: Ensure grid has proper layout flow
@@ -97,12 +98,20 @@ export function ProductGrid({
         isolation: "isolate"
       }}
     >
-      {isLoading || products.length === 0 ? (
+      {isLoading ? (
         // Loading state - show skeleton cards with proper dimensions to prevent layout shift
         // SSR-safe: Same skeleton count on server and client
         Array.from({ length: columns * 2 }).map((_, index) => (
           <SkeletonCard key={`skeleton-${index}`} />
         ))
+      ) : products.length === 0 ? (
+        // Empty state
+        <div className="col-span-full py-16 text-center">
+          <H3 className="text-charcoal-900 dark:text-dark-text-primary mb-4">No Items Match Your Selection</H3>
+          <Body className="text-charcoal-600 dark:text-dark-text-secondary max-w-md mx-auto">
+            Refine your filters to discover more pieces, or explore our complete collection of premium designs.
+          </Body>
+        </div>
       ) : (
         // Product cards with stagger animation
         // SSR-safe: Deterministic rendering order based on products array

@@ -8,14 +8,14 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
 import { StickyAddToCart } from "@/components/product/StickyAddToCart";
 import { CompleteTheLook } from "@/components/product/CompleteTheLook";
-import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { ProductRecommendations } from "@/components/product/ProductRecommendations";
 import { Reviews } from "@/components/product/Reviews";
 import { useProductPurchase } from "@/lib/hooks/use-product-purchase";
-import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/types";
 
 interface ProductPageClientProps {
   product: Product;
+  allProducts?: Product[];
 }
 
 /**
@@ -25,7 +25,7 @@ interface ProductPageClientProps {
  * Uses shared purchase state to prevent duplication between
  * ProductInfo and StickyAddToCart components.
  */
-export function ProductPageClient({ product }: ProductPageClientProps): JSX.Element {
+export function ProductPageClient({ product, allProducts = [] }: ProductPageClientProps): JSX.Element {
   // Shared purchase state for ProductInfo and StickyAddToCart
   const purchaseState = useProductPurchase(product);
 
@@ -43,9 +43,9 @@ export function ProductPageClient({ product }: ProductPageClientProps): JSX.Elem
     <>
       <div className="min-h-screen bg-dark-bg-primary [data-theme='light']:bg-cream-50 pt-20 md:pt-24 pb-20 lg:pb-16 transition-colors duration-300" style={{ contain: "layout style paint" }}>
         <Container size="lg">
-          {/* Breadcrumb */}
-          <div className="mb-6 sm:mb-8">
-            <Breadcrumb items={breadcrumbItems} />
+          {/* Breadcrumb - Below header, before page title */}
+          <div className="mb-6 sm:mb-8 mt-6 sm:mt-8">
+            <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
           </div>
 
           {/* Main Product Section */}
@@ -76,11 +76,12 @@ export function ProductPageClient({ product }: ProductPageClientProps): JSX.Elem
         </Container>
       </div>
 
-      {/* Related Products - Below fold, can stream */}
+      {/* Product Recommendations - Below fold, can stream */}
       <Suspense fallback={<div className="h-96 bg-cream-50 animate-pulse" />}>
-        <RelatedProducts
+        <ProductRecommendations
           currentProduct={product}
-          allProducts={mockProducts}
+          allProducts={allProducts}
+          type="you-may-also-like"
           limit={4}
         />
       </Suspense>

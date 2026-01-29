@@ -10,6 +10,8 @@ interface ActiveFiltersProps {
   filters: FilterState;
   onRemoveCategory: (category: string) => void;
   onRemoveSize: (size: string) => void;
+  onRemoveAgeRange?: (ageRange: string) => void;
+  onRemoveColor?: (color: string) => void;
   onClearPrice: () => void;
   onClearStock: () => void;
   onClearAll: () => void;
@@ -19,6 +21,8 @@ export function ActiveFilters({
   filters,
   onRemoveCategory,
   onRemoveSize,
+  onRemoveAgeRange,
+  onRemoveColor,
   onClearPrice,
   onClearStock,
   onClearAll,
@@ -34,6 +38,15 @@ export function ActiveFilters({
     });
   });
 
+  // Add age range filters
+  filters.ageRanges.forEach((ageRange) => {
+    activeFilters.push({
+      id: `age-${ageRange}`,
+      label: `Age: ${ageRange} years`,
+      onRemove: () => onRemoveAgeRange?.(ageRange),
+    });
+  });
+
   // Add size filters
   filters.sizes.forEach((size) => {
     activeFilters.push({
@@ -43,8 +56,17 @@ export function ActiveFilters({
     });
   });
 
+  // Add color filters
+  filters.colors.forEach((color) => {
+    activeFilters.push({
+      id: `color-${color}`,
+      label: `Color: ${color.charAt(0).toUpperCase() + color.slice(1)}`,
+      onRemove: () => onRemoveColor?.(color),
+    });
+  });
+
   // Add price filter
-  if (filters.priceRange.min !== 0 || filters.priceRange.max !== 18000) {
+  if (filters.priceRange.min !== 0 || filters.priceRange.max !== 100000) {
     activeFilters.push({
       id: "price",
       label: `${formatPrice(filters.priceRange.min)} - ${formatPrice(filters.priceRange.max)}`,

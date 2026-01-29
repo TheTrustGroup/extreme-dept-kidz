@@ -6,7 +6,7 @@ import { TrendingUp, Package, Users, DollarSign, AlertTriangle } from "lucide-re
 import { getDashboardStats } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
 import { AdminH1, AdminH2, AdminH3, AdminBody, AdminBodySmall } from "@/components/admin/AdminTypography";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
 
 interface MetricCardProps {

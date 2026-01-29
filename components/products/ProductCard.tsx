@@ -3,12 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { m } from "framer-motion";
-import { ShoppingBag } from "lucide-react";
+import { Eye, Heart } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { useCartStore } from "@/lib/stores/cart-store";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { WishlistButton } from "@/components/WishlistButton";
+import { QuickViewModal } from "./QuickViewModal";
 
 interface ProductCardProps {
   product: Product;
@@ -20,9 +21,8 @@ interface ProductCardProps {
 /**
  * ProductCard Component
  * 
- * Luxury product card with hover effects and quick view.
- * Displays product image, name, and price with smooth transitions.
- * Optimized with React.memo for performance.
+ * Improved product card with Quick View, wishlist, hover effects, and size availability.
+ * Entire card is clickable except Quick View and Wishlist buttons.
  */
 export const ProductCard = React.memo(function ProductCard({ 
   product, 
@@ -30,14 +30,15 @@ export const ProductCard = React.memo(function ProductCard({
   priority = false,
   fetchPriority = "low"
 }: ProductCardProps): JSX.Element {
+  const { theme } = useTheme();
   const [isHovered, setIsHovered] = React.useState(false);
-  const addToCart = useCartStore((state) => state.addItem);
+  const [isQuickViewOpen, setIsQuickViewOpen] = React.useState(false);
 
-  // Get primary image - CRITICAL: Always ensure we have a valid image
+  // Get primary and secondary images
   const primaryImage = product.images?.find((img) => (img as ProductImage).isPrimary) || product.images?.[0];
   const secondaryImage = product.images?.[1];
   
-  // CRITICAL FIX: Ensure we have a valid image URL - prevent blank cards
+  // Ensure we have a valid image URL
   if (!primaryImage?.url) {
     console.warn(`Product ${product.id} has no valid image`);
   }
@@ -45,306 +46,302 @@ export const ProductCard = React.memo(function ProductCard({
   // Check if product is on sale
   const isOnSale = product.originalPrice && product.originalPrice > product.price;
   
-  // Check if product is new (created within last 30 days)
-  const isNew = product.createdAt 
+  // Check if product is new (has "new" tag or created within last 30 days)
+  const isNew = product.tags?.includes("new") || (product.createdAt 
     ? new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
-    : false;
+    : false);
 
-  const handleQuickAdd = (e: React.MouseEvent): void => {
+  // Get available sizes for hover display
+  const availableSizes = product.sizes?.filter(s => s.inStock) || [];
+  const sizeLabels = availableSizes.map(s => s.size).slice(0, 5); // Show up to 5 sizes
+
+  const handleQuickViewClick = (e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
-    if (product.inStock) {
-      // Use default size or first available size
-      const defaultSize = product.sizes && product.sizes.length > 0 
-        ? product.sizes[0].size 
-        : "One Size";
-      addToCart(product, defaultSize);
-    }
+    setIsQuickViewOpen(true);
   };
 
+  const handleWishlistClick = (e: React.MouseEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   return (
-    <Link
-      href={`/products/${product.slug}`}
-      className={cn(
-        "group block focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2",
-        "w-full h-full",
-        className
-      )}
-      style={{
-        // CRITICAL FIX: Ensure link is fully clickable
-        display: "block",
-        opacity: 1,
-        visibility: "visible",
-        pointerEvents: "auto",
-        cursor: "pointer",
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsHovered(true)}
-      onBlur={() => setIsHovered(false)}
-      aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
-    >
-      <m.article
+    <>
+      <div
         className={cn(
-          "product-card w-full flex flex-col",
-          "group-hover:border-cream-300/80",
-          "micro-interaction" // Luxury micro-interactions
+          "group relative w-full",
+          className
         )}
-        aria-label={product.name}
-        style={{
-          // MOBILE-FIRST LAYOUT FIX: Fixed card heights with min-height reservation
-          aspectRatio: "3 / 4",
-          // Mobile-first: Reserve minimum height to prevent layout shift
-          minHeight: "420px", // Minimum height reservation
-          height: "auto", // Allow natural height based on aspect ratio
-          maxHeight: "520px", // Maximum height constraint
-          // Ensure visibility - prevent invisible but clickable bug
-          opacity: 1,
-          visibility: "visible",
-          // Prevent stacking context issues
-          isolation: "isolate",
-          // Ensure proper clickable area
-          pointerEvents: "auto",
-          cursor: "pointer"
-        }}
-        whileHover={{ 
-          y: -6,
-          scale: 1.02,
-          transition: { 
-            duration: 0.3, 
-            ease: [0.25, 0.46, 0.45, 0.94] // Premium easing
-          }
-        }}
-        whileTap={{ 
-          scale: 0.98,
-          transition: { 
-            duration: 0.1,
-            ease: [0.4, 0, 1, 1] // Active easing
-          }
-        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Image Container - PRODUCT CARD REBUILD: Fixed image ratio */}
-        <div 
-          className="product-image flex-shrink-0" 
-          style={{ 
-            position: "relative",
-            width: "100%",
-            aspectRatio: "3 / 4", // Fixed image ratio: 3:4
-            overflow: "hidden",
-            borderRadius: "20px",
-            isolation: "isolate",
-            zIndex: 1,
-            marginBottom: 0 // Uniform vertical rhythm: no extra margin
-          }}
+        {/* Clickable Link Wrapper - Entire card except buttons */}
+        <Link
+          href={`/products/${product.slug}`}
+          className={cn(
+            "block focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-xl",
+            "w-full h-full"
+          )}
+          aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
         >
-          {/* Primary Image - CRITICAL FIX: Always render, ensure no blank cards */}
-          {primaryImage?.url ? (
-            <OptimizedImage
-              src={primaryImage.url}
-              alt={primaryImage.alt || `${product.name} - ${product.category.name}`}
-              variant="product-card"
-              isLCP={priority}
-              useIntersectionObserver={!priority}
-              enablePrefetch={true}
-              quality={priority ? 90 : undefined}
-              blurVariant="product-card"
-              className={cn(
-                // CRITICAL: Strict image styling - ensure visibility
-                "object-cover w-full h-full",
-                // Luxury: Ultra smooth transitions
-                "transition-opacity duration-[var(--duration-image-swap)] ease-[var(--ease-premium)]",
-                isHovered && secondaryImage ? "opacity-0" : "opacity-100"
-              )}
-              style={{
-                objectFit: "cover",
-                width: "100%",
-                height: "100%",
-                // CRITICAL: Ensure image is always visible
-                opacity: isHovered && secondaryImage ? 0 : 1,
-                visibility: 'visible',
-                display: 'block',
-              }}
-              fill
-            />
-          ) : (
-            // Fallback placeholder if no image URL
+          <m.article
+            className={cn(
+              "product-card w-full flex flex-col relative overflow-hidden",
+              "bg-cream-50 rounded-xl",
+              theme === "dark" && "bg-dark-surface",
+              "transition-all duration-300"
+            )}
+            aria-label={product.name}
+            style={{
+              aspectRatio: "4 / 5", // Changed to 4:5 aspect ratio
+              minHeight: "400px",
+            }}
+            whileHover={{ 
+              scale: 1.02,
+              transition: { 
+                duration: 0.3, 
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }
+            }}
+            whileTap={{ 
+              scale: 0.98,
+              transition: { 
+                duration: 0.1,
+                ease: [0.4, 0, 1, 1]
+              }
+            }}
+          >
+            {/* Image Container */}
             <div 
-              className="w-full h-full bg-cream-100 flex items-center justify-center"
-              style={{
-                aspectRatio: "3 / 4",
-                minHeight: "100%",
-              }}
-            >
-              <span className="text-charcoal-400 text-sm">No Image</span>
-            </div>
-          )}
-
-          {/* Secondary Image (on hover) - CRITICAL FIX: Always render if exists */}
-          {secondaryImage?.url && (
-            <OptimizedImage
-              src={secondaryImage.url}
-              alt={secondaryImage.alt || `${product.name} - alternate view - ${product.category.name}`}
-              variant="product-card"
-              isLCP={false}
-              useIntersectionObserver={true}
-              enablePrefetch={false}
-              quality={85}
-              blurVariant="product-card"
-              className={cn(
-                // CRITICAL: Strict image styling - ensure visibility
-                "object-cover w-full h-full",
-                // Luxury: Ultra smooth transitions
-                "transition-opacity duration-[var(--duration-image-swap)] ease-[var(--ease-premium)]",
-                isHovered ? "opacity-100" : "opacity-0"
-              )}
+              className="relative w-full flex-shrink-0 overflow-hidden"
               style={{ 
-                position: "absolute",
-                top: 0,
-                left: 0,
-                objectFit: "cover",
-                width: "100%",
-                height: "100%",
-                // CRITICAL: Ensure image is always visible when hovered
-                opacity: isHovered ? 1 : 0,
-                visibility: 'visible',
-                display: 'block',
+                aspectRatio: "4 / 5",
+                borderRadius: "12px 12px 0 0",
               }}
-              fill
-            />
-          )}
-
-          {/* Badges - Z-INDEX FIX: Overlays at z-index 2 */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2" style={{ zIndex: 2 }}>
-            {isNew && (
-              <m.span
-                className={cn(
-                  "inline-flex items-center",
-                  // Design System: 6px 12px padding, 24px height, 12px border radius
-                  "px-3 py-1.5 h-6",
-                  "bg-charcoal-900 text-cream-50",
-                  "rounded-full",
-                  // Typography (Design System: Inter, 11px, Semibold, Uppercase, 1px letter-spacing)
-                  "font-sans text-[11px] font-semibold uppercase tracking-widest"
-                )}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  duration: 0.4,
-                  ease: [0.34, 1.56, 0.64, 1], // Bounce easing for badges
-                  delay: 0.1
-                }}
-                whileHover={{ scale: 1.05 }}
-              >
-                NEW
-              </m.span>
-            )}
-            {isOnSale && (
-              <m.span
-                className={cn(
-                  "inline-flex items-center",
-                  // Design System: 6px 12px padding, 24px height, 12px border radius
-                  "px-3 py-1.5 h-6",
-                  "bg-navy-900 text-cream-50",
-                  "rounded-full",
-                  // Typography (Design System: Inter, 11px, Semibold, Uppercase, 1px letter-spacing)
-                  "font-sans text-[11px] font-semibold uppercase tracking-widest"
-                )}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  duration: 0.4,
-                  ease: [0.34, 1.56, 0.64, 1], // Bounce easing for badges
-                  delay: 0.1
-                }}
-                whileHover={{ scale: 1.05 }}
-              >
-                SALE
-              </m.span>
-            )}
-          </div>
-
-          {/* Wishlist Icon - Z-INDEX FIX: Overlays at z-index 2 */}
-          <div className="absolute top-3 right-3" style={{ zIndex: 2 }}>
-            <WishlistButton product={product} size="md" />
-          </div>
-
-          {/* Out of Stock Overlay - Z-INDEX FIX: Overlays at z-index 2 */}
-          {!product.inStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-cream-50/90" style={{ zIndex: 2 }}>
-              <span
-                className={cn(
-                  // Typography (Design System: Playfair Display, 18px, Medium, Uppercase, 1px letter-spacing)
-                  "font-serif text-lg font-medium text-charcoal-600 uppercase tracking-wide"
-                )}
-              >
-                Out of Stock
-              </span>
-            </div>
-          )}
-
-        </div>
-
-        {/* Quick Add to Cart Button - PRODUCT CARD REBUILD: Consistent padding */}
-        {product.inStock && (
-          <div style={{ padding: '0 16px 16px 16px' }}> {/* Consistent padding: 16px */}
-            <m.button
-              onClick={handleQuickAdd}
-              className={cn(
-                "w-full flex items-center justify-center gap-2",
-                "h-11 min-h-[44px] px-4 py-2.5",
-                "bg-navy-900 text-cream-50 rounded-lg",
-                "font-sans text-sm font-semibold uppercase tracking-wide",
-                "hover:bg-navy-800 active:bg-navy-700",
-                "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
-                "transition-colors duration-200",
-                "touch-manipulation"
-              )}
-              aria-label={`Quick add ${product.name} to cart`}
             >
-              <ShoppingBag className="w-4 h-4" aria-hidden="true" />
-              <span>Add to Cart</span>
-            </m.button>
-          </div>
-        )}
+              {/* Primary Image */}
+              {primaryImage?.url ? (
+                <OptimizedImage
+                  src={primaryImage.url}
+                  alt={primaryImage.alt || `${product.name} - ${product.category.name}`}
+                  variant="product-card"
+                  isLCP={priority}
+                  useIntersectionObserver={!priority}
+                  enablePrefetch={true}
+                  quality={80}
+                  blurVariant="product-card"
+                  className={cn(
+                    "object-cover w-full h-full transition-opacity duration-500 ease-in-out",
+                    isHovered && secondaryImage ? "opacity-0" : "opacity-100"
+                  )}
+                  fill
+                />
+              ) : (
+                <div className="w-full h-full bg-cream-100 flex items-center justify-center">
+                  <span className={cn(
+                    "text-sm",
+                    theme === "dark" ? "text-dark-text-muted" : "text-charcoal-400"
+                  )}>No Image</span>
+                </div>
+              )}
 
-        {/* Product Info - PRODUCT CARD REBUILD: Uniform vertical rhythm & consistent padding */}
-        <div className="product-card-content">
-          {/* Product Name - PRODUCT CARD REBUILD: Clamp titles, max 2 lines */}
-          <h3 className="product-title" style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            lineHeight: '1.4',
-            minHeight: '2.8em', // Fixed height for 2 lines (1.4 * 2)
-            maxHeight: '2.8em',
-          }}>
-            {product.name}
-          </h3>
+              {/* Secondary Image (on hover) */}
+              {secondaryImage?.url && (
+                <OptimizedImage
+                  src={secondaryImage.url}
+                  alt={secondaryImage.alt || `${product.name} - alternate view`}
+                  variant="product-card"
+                  isLCP={false}
+                  useIntersectionObserver={true}
+                  enablePrefetch={false}
+                  quality={80}
+                  blurVariant="product-card"
+                  className={cn(
+                    "absolute inset-0 object-cover w-full h-full transition-opacity duration-500 ease-in-out",
+                    isHovered ? "opacity-100" : "opacity-0"
+                  )}
+                  fill
+                />
+              )}
 
-          {/* Price Section - PRODUCT CARD REBUILD: Uniform spacing */}
-          <div className="flex items-baseline gap-2" style={{ marginTop: 0 }}>
-            {/* Current Price */}
-            <span className="product-price">
-              {formatPrice(product.price)}
-            </span>
-            {/* Original Price */}
-            {isOnSale && product.originalPrice && (
-              <span className="font-sans text-sm font-normal text-charcoal-500 line-through">
-                {formatPrice(product.originalPrice)}
-              </span>
+              {/* Badges - Top Left */}
+              <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+                {isNew && (
+                  <m.span
+                    className={cn(
+                      "inline-flex items-center px-3 py-1 h-6",
+                      "bg-charcoal-900 text-cream-50 rounded-full",
+                      "font-sans text-[11px] font-semibold uppercase tracking-widest"
+                    )}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    NEW
+                  </m.span>
+                )}
+                {isOnSale && (
+                  <m.span
+                    className={cn(
+                      "inline-flex items-center px-3 py-1 h-6",
+                      "bg-navy-900 text-cream-50 rounded-full",
+                      "font-sans text-[11px] font-semibold uppercase tracking-widest"
+                    )}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    SALE
+                  </m.span>
+                )}
+              </div>
+
+              {/* Wishlist Button - Top Right */}
+              <div 
+                className="absolute top-3 right-3 z-10"
+                onClick={handleWishlistClick}
+              >
+                <WishlistButton product={product} size="md" />
+              </div>
+
+              {/* Size Availability Overlay - Shows on hover */}
+              {isHovered && availableSizes.length > 0 && (
+                <m.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.3 }}
+                  className={cn(
+                    "absolute bottom-3 left-3 right-3",
+                    "bg-white/95 backdrop-blur-sm rounded-lg p-2",
+                    theme === "dark" && "bg-dark-surface/95"
+                  )}
+                >
+                  <p className={cn(
+                    "text-xs font-semibold uppercase tracking-wider mb-1",
+                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                  )}>
+                    Available Sizes
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {sizeLabels.map((size) => (
+                      <span
+                        key={size}
+                        className={cn(
+                          "px-2 py-0.5 text-[10px] font-medium rounded",
+                          theme === "dark"
+                            ? "bg-accent-primary/20 text-accent-primary"
+                            : "bg-navy-900/10 text-navy-900"
+                        )}
+                      >
+                        {size}
+                      </span>
+                    ))}
+                    {availableSizes.length > 5 && (
+                      <span className={cn(
+                        "px-2 py-0.5 text-[10px] font-medium",
+                        theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+                      )}>
+                        +{availableSizes.length - 5}
+                      </span>
+                    )}
+                  </div>
+                </m.div>
+              )}
+
+              {/* Out of Stock Overlay */}
+              {!product.inStock && (
+                <div className={cn(
+                  "absolute inset-0 flex items-center justify-center",
+                  "bg-cream-50/90 backdrop-blur-sm",
+                  theme === "dark" && "bg-dark-bg-primary/90"
+                )}>
+                  <span className={cn(
+                    "font-serif text-lg font-medium uppercase tracking-wide",
+                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-600"
+                  )}>
+                    Out of Stock
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Product Info */}
+            <div className="flex-1 flex flex-col p-4 gap-2">
+              {/* Category/Collection Tag */}
+              <p className={cn(
+                "font-sans text-[11px] font-medium uppercase tracking-widest",
+                theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+              )}>
+                {product.category.name}
+                {product.tags?.includes("new") && " • New"}
+              </p>
+
+              {/* Product Name */}
+              <h3 className={cn(
+                "font-serif text-lg font-semibold line-clamp-2",
+                theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+              )}>
+                {product.name}
+              </h3>
+
+              {/* Price */}
+              <div className="flex items-baseline gap-2 mt-auto">
+                <span className={cn(
+                  "font-serif text-xl font-semibold",
+                  theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                )}>
+                  {formatPrice(product.price)}
+                </span>
+                {isOnSale && product.originalPrice && (
+                  <span className={cn(
+                    "font-sans text-sm line-through",
+                    theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
+                  )}>
+                    {formatPrice(product.originalPrice)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Quick View Button - Shows on hover */}
+            {isHovered && product.inStock && (
+              <m.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute bottom-20 left-4 right-4 z-10"
+              >
+                <button
+                  onClick={handleQuickViewClick}
+                  className={cn(
+                    "w-full flex items-center justify-center gap-2",
+                    "h-11 px-4 py-2.5 rounded-lg",
+                    "bg-navy-900 text-cream-50",
+                    "font-sans text-sm font-semibold uppercase tracking-wide",
+                    "hover:bg-navy-800 transition-colors",
+                    "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
+                    "shadow-lg"
+                  )}
+                  aria-label={`Quick view ${product.name}`}
+                >
+                  <Eye className="w-4 h-4" aria-hidden="true" />
+                  <span>Quick View</span>
+                </button>
+              </m.div>
             )}
-          </div>
+          </m.article>
+        </Link>
+      </div>
 
-          {/* Category Label - PRODUCT CARD REBUILD: Uniform spacing */}
-          <p className="font-sans text-[11px] font-medium text-charcoal-600 uppercase tracking-widest" style={{ marginTop: 0 }}>
-            {product.category.name}
-          </p>
-        </div>
-      </m.article>
-    </Link>
+      {/* Quick View Modal */}
+      <QuickViewModal
+        product={product}
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+      />
+    </>
   );
 }, (prevProps, nextProps) => {
   // Custom comparison for memoization
@@ -353,4 +350,3 @@ export const ProductCard = React.memo(function ProductCard({
          prevProps.product.inStock === nextProps.product.inStock &&
          prevProps.className === nextProps.className;
 });
-

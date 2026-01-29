@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
+import { SingleImageUpload } from '@/components/admin/SingleImageUpload';
 
 export default function NewCategoryPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function NewCategoryPage() {
     name: '',
     slug: '',
     description: '',
+    image: '',
     isActive: true,
   });
 
@@ -24,6 +26,7 @@ export default function NewCategoryPage() {
       ...formData,
       slug: formData.slug || undefined, // Convert empty string to undefined
       description: formData.description || undefined,
+      image: formData.image || undefined, // Convert empty string to undefined
     };
   };
 
@@ -160,6 +163,12 @@ export default function NewCategoryPage() {
             rows={4}
           />
         </div>
+
+        <SingleImageUpload
+          imageUrl={formData.image || null}
+          onChange={(url) => setFormData({ ...formData, image: url || '' })}
+          label="Category Image (Optional)"
+        />
 
         <div className="flex items-center">
           <input

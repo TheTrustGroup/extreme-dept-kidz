@@ -5,7 +5,7 @@ import { BarChart3, TrendingUp, DollarSign, ShoppingBag } from "lucide-react";
 import { getDashboardStats } from "@/lib/admin-api";
 import { formatPrice } from "@/lib/utils";
 import { H1 } from "@/components/ui/typography";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { RevenueChart } from "@/components/admin/analytics/RevenueChart";
 import { OrderTrendsChart } from "@/components/admin/analytics/OrderTrendsChart";
 

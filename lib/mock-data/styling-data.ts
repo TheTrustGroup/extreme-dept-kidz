@@ -252,7 +252,7 @@ export const styleLooks: StyleLook[] = [
   {
     id: "look-14",
     name: "Modern Classic",
-    description: "Contemporary style with classic appeal. Perfect for the modern boy.",
+    description: "Contemporary style with classic appeal. Perfect for young legends.",
     occasion: "Everyday",
     season: "all-season",
     ageRange: "7-12",
@@ -455,7 +455,7 @@ export const styleLooks: StyleLook[] = [
   {
     id: "look-25",
     name: "Modern Street",
-    description: "Contemporary street style. Bold and confident for the modern boy.",
+    description: "Contemporary street style. Bold and confident for young legends.",
     occasion: "Everyday",
     season: "all-season",
     ageRange: "7-12",

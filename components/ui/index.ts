@@ -16,8 +16,8 @@ export type { ContainerProps } from "./container";
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card";
 export type { CardProps, CardHeaderProps, CardTitleProps, CardDescriptionProps, CardContentProps, CardFooterProps } from "./card";
 
-export { Skeleton } from "./skeleton";
-export type { SkeletonProps } from "./skeleton";
+export { Skeleton } from "./Skeleton";
+export type { SkeletonProps } from "./Skeleton";
 
 export { SkeletonCard } from "./SkeletonCard";
 export type { SkeletonCardProps } from "./SkeletonCard";

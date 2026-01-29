@@ -77,7 +77,7 @@ export function ConfirmDialog({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={(e) => e.stopPropagation()}
               className={cn(
                 "glass max-w-md w-full p-[var(--space-6)] pointer-events-auto",
@@ -93,7 +93,7 @@ export function ConfirmDialog({
                     <Button
                       variant="ghost"
                       onClick={onCancel}
-                      className="text-gray-700 hover:text-gray-900"
+                      className="text-charcoal-700 hover:text-charcoal-900"
                     >
                       {cancelText}
                     </Button>
@@ -107,7 +107,7 @@ export function ConfirmDialog({
                 </div>
                 <button
                   onClick={onCancel}
-                  className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  className="flex-shrink-0 text-charcoal-400 hover:text-charcoal-600 transition-colors p-1"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />

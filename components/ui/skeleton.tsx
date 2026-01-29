@@ -14,7 +14,7 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
   ({ className, variant = "default", ...props }, ref) => {
-    const baseStyles = "animate-shimmer bg-gradient-to-r from-cream-200 via-cream-100 to-cream-200 bg-[length:200%_100%]";
+    const baseStyles = "skeleton-shimmer bg-gradient-to-r from-cream-200 via-cream-100 to-cream-200 bg-[length:200%_100%] animate-shimmer";
     
     const variants = {
       default: "rounded-lg",
@@ -35,5 +35,3 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
 Skeleton.displayName = "Skeleton";
 
 export { Skeleton };
-
-

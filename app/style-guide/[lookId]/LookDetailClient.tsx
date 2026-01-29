@@ -83,9 +83,9 @@ export function LookDetailClient({ look }: LookDetailClientProps): JSX.Element {
     <>
       <div className="min-h-screen bg-cream-50 pt-20 md:pt-24 pb-16">
         <Container size="lg">
-          {/* Breadcrumb */}
-          <div className="mb-8">
-            <Breadcrumb items={breadcrumbItems} />
+          {/* Breadcrumb - Below header, before page title */}
+          <div className="mb-8 mt-6 sm:mt-8">
+            <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
           </div>
 
           {/* Back Link */}

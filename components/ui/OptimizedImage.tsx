@@ -47,7 +47,7 @@ interface OptimizedImageProps extends Omit<ImageProps, 'src' | 'alt' | 'loading'
   prefetchDistance?: number;
   /**
    * Image quality (1-100)
-   * Default: 85 (desktop), 75 (mobile), 90 (LCP)
+   * Default: Hero: 85, Product: 80, Thumbnail: 75, LCP: 85
    */
   quality?: number;
   /**
@@ -199,12 +199,27 @@ export function OptimizedImage({
     }
   };
 
-  // Get optimized quality
+  // Get optimized quality based on variant and priority
   const getQuality = (): number => {
     if (quality !== undefined) return quality;
-    if (isLCP) return 90;
-    if (isMobile) return 75;
-    return 85;
+    
+    // Variant-based quality settings
+    switch (variant) {
+      case 'hero':
+        return 85; // Hero images: quality 85
+      case 'product-card':
+      case 'product-detail':
+        return 80; // Product images: quality 80
+      case 'thumbnail':
+        return 75; // Thumbnails: quality 75
+      case 'gallery':
+        return 80; // Gallery images: quality 80
+      default:
+        // Fallback based on LCP and device
+        if (isLCP) return 85; // LCP images: quality 85
+        if (isMobile) return 75; // Mobile: quality 75
+        return 80; // Desktop default: quality 80
+    }
   };
 
   // Get fetch priority
@@ -282,10 +297,10 @@ export function OptimizedImage({
         />
       ) : null}
       
-      {/* Placeholder - only show when image is not loaded yet */}
+      {/* Placeholder with shimmer effect - only show when image is not loaded yet */}
       {showPlaceholder && (
         <div
-          className={cn("absolute inset-0 bg-cream-100 animate-pulse", className)}
+          className={cn("absolute inset-0 bg-cream-100 skeleton-shimmer", className)}
           style={{
             contain: 'layout style paint',
             width: '100%',
@@ -293,7 +308,9 @@ export function OptimizedImage({
             zIndex: 0,
           }}
           aria-label="Loading image"
-        />
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-cream-200 via-cream-100 to-cream-200 bg-[length:200%_100%] animate-shimmer" />
+        </div>
       )}
       
       {/* Error fallback - show if image fails to load */}

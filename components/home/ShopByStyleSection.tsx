@@ -73,7 +73,7 @@ export function ShopByStyleSection(): JSX.Element | null {
               Shop by Style
             </H2>
             <Body className="mt-[var(--space-4)] sm:mt-[var(--space-6)] text-charcoal-600">
-              Curated collections for the modern boy
+              Curated collections for young legends
             </Body>
           </m.div>
 
@@ -128,7 +128,7 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
             "relative overflow-hidden rounded-xl",
             "bg-cream-100 shadow-md",
             "aspect-[4/5]",
-            "transition-all duration-500"
+            "transition-all duration-300"
           )}
           whileHover={{ scale: 1.02, y: -8 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
@@ -139,7 +139,7 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
               <Image
                 src={category.image}
                 loading="lazy"
-                quality={85}
+                quality={80}
                 alt={`${category.name} style category - ${category.name} products`}
                 fill
                 className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
@@ -158,7 +158,7 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/80 via-charcoal-900/40 to-transparent" />
             {/* Hover Overlay */}
             <m.div
-              className="absolute inset-0 bg-navy-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              className="absolute inset-0 bg-navy-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               aria-hidden="true"
             />
           </div>
@@ -177,7 +177,7 @@ function StyleCategoryCard({ category, index }: StyleCategoryCardProps): JSX.Ele
 
           {/* Hover Shadow Effect */}
           <m.div
-            className="absolute inset-0 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500"
+            className="absolute inset-0 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300"
             style={{
               boxShadow:
                 "0 25px 50px -12px rgba(28, 28, 28, 0.4), 0 0 0 1px rgba(28, 28, 28, 0.1)", // brand-text shadows

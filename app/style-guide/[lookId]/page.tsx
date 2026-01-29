@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LookDetailClient } from "./LookDetailClient";
 import { styleLooks } from "@/lib/mock-data/styling-data";
+import { generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 
 interface LookDetailPageProps {
   params: {
@@ -56,5 +57,19 @@ export default function LookDetailPage({ params }: LookDetailPageProps): JSX.Ele
     notFound();
   }
 
-  return <LookDetailClient look={look} />;
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Style Guide", url: "/style-guide" },
+    { name: look.name, url: `/style-guide/${look.id}` },
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <LookDetailClient look={look} />
+    </>
+  );
 }
