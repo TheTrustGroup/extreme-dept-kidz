@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
-import { withCors } from "@/lib/utils/cors";
+import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
@@ -142,6 +142,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Warehouse expects a raw array for (response || []).map(...) compatibility
+    if (isWarehouseRequest(request)) {
+      return withCors(request, NextResponse.json(orders));
+    }
     return withCors(request, apiSuccess(
       {
         orders,

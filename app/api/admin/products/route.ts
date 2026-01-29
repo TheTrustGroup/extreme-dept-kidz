@@ -7,7 +7,7 @@ import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { revalidateAllCollectionPages, revalidateCollectionPage, revalidateProduct, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
-import { withCors } from "@/lib/utils/cors";
+import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
@@ -195,6 +195,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Warehouse expects a raw array for (response || []).map(...) compatibility
+    if (isWarehouseRequest(request)) {
+      return withCors(request, NextResponse.json(filteredProducts));
+    }
     return withCors(request, apiSuccess(
       {
         products: filteredProducts,

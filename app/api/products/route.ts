@@ -14,7 +14,7 @@ import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { unstable_cache } from "next/cache";
-import { withCors } from "@/lib/utils/cors";
+import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 
 /**
  * Transform Prisma product to application Product type
@@ -140,6 +140,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const total = products.length;
     const paginatedProducts = products.slice(offset, offset + limit);
 
+    // Warehouse expects a raw array for (response || []).map(...) compatibility
+    if (isWarehouseRequest(request)) {
+      return withCors(request, NextResponse.json(paginatedProducts));
+    }
     return withCors(request, apiSuccess(
       {
         products: paginatedProducts,
@@ -164,9 +168,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Even on error, try to return mock data as fallback
     try {
       const fallbackProducts = await getAllProducts();
+      const fallbackSlice = fallbackProducts.slice(0, 20);
+      if (isWarehouseRequest(request)) {
+        return withCors(request, NextResponse.json(fallbackSlice));
+      }
       return withCors(request, apiSuccess(
         {
-          products: fallbackProducts.slice(0, 20),
+          products: fallbackSlice,
           pagination: {
             total: fallbackProducts.length,
             limit: 20,
