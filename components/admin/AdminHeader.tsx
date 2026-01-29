@@ -99,7 +99,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   }, [pathname]);
 
   return (
-    <header className="admin-header-glass sticky top-0 z-30" style={{ isolation: 'isolate' }}>
+    <header className="admin-header-glass sticky top-0" style={{ zIndex: 10, isolation: 'isolate', position: 'relative' }}>
       {/* Database Status Banner - Wrapped in error boundary */}
       <div className="admin-section-sm px-[var(--admin-space-4)] lg:px-[var(--admin-space-6)] border-b border-cream-200/50 bg-white/30 backdrop-blur-sm">
         <React.Suspense fallback={null}>
@@ -175,16 +175,14 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
             {showNotifications && (
               <>
-                {/* Backdrop - click outside to close */}
+                {/* Backdrop - positioned relative to header, not viewport */}
                 <div
                   className="fixed bg-transparent"
                   onClick={() => setShowNotifications(false)}
                   style={{ 
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 1
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 9
                   }}
                 />
                 <m.div
@@ -192,11 +190,13 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-80 rounded-xl overflow-hidden"
+                  className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-80 rounded-xl overflow-hidden shadow-xl"
                   style={{ 
                     position: 'absolute',
-                    zIndex: 2,
-                    top: '100%'
+                    zIndex: 11,
+                    top: '100%',
+                    left: 'auto',
+                    right: 0
                   }}
                 >
                     <div className="admin-section-sm border-b border-cream-200/50 bg-cream-50/80 backdrop-blur-sm">
@@ -265,16 +265,14 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
               {showUserMenu && (
                 <>
-                  {/* Backdrop - click outside to close */}
+                  {/* Backdrop - positioned relative to header, not viewport */}
                   <div
                     className="fixed bg-transparent"
                     onClick={() => setShowUserMenu(false)}
                     style={{ 
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      zIndex: 1
+                      position: 'fixed',
+                      inset: 0,
+                      zIndex: 9
                     }}
                   />
                   <m.div
@@ -282,11 +280,13 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-56 rounded-xl overflow-hidden"
+                    className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-56 rounded-xl overflow-hidden shadow-xl"
                     style={{ 
                       position: 'absolute',
-                      zIndex: 2,
-                      top: '100%'
+                      zIndex: 11,
+                      top: '100%',
+                      left: 'auto',
+                      right: 0
                     }}
                   >
                     <div className="admin-section-sm bg-gradient-to-r from-navy-50/80 to-navy-100/80 backdrop-blur-sm border-b border-cream-200/50">

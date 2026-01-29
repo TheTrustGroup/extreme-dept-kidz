@@ -666,10 +666,12 @@
   border-bottom: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
   box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06));
   transition: all var(--admin-transition-base, 200ms) cubic-bezier(0.4, 0, 0.2, 1);
-  /* Create stacking context to contain dropdowns */
+  /* Create stacking context to contain dropdowns - LOW z-index to stay below browser UI */
   isolation: isolate;
   position: relative;
-  z-index: 30;
+  z-index: 10 !important;
+  /* Ensure header stays within admin container */
+  contain: layout style paint;
 }
 
 /* Premium Button Styles - Enhanced */
@@ -712,15 +714,18 @@
 /* Premium Dropdown/Modal Styles */
 /* Admin Dropdown - Ensure it stays within admin interface */
 .admin-dropdown {
-  /* Remove isolation - let it inherit parent stacking context */
   backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
   background: var(--admin-glass-bg-strong, rgba(255, 255, 255, 0.95));
   border: 1px solid var(--admin-glass-border, rgba(0, 0, 0, 0.06));
   box-shadow: var(--admin-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04));
   transition: all var(--admin-transition-smooth, 300ms) cubic-bezier(0.4, 0, 0.2, 1);
-  /* Ensure dropdown doesn't escape admin container */
+  /* CRITICAL: Ensure dropdown stays within admin container and below browser UI */
   contain: layout style paint;
+  /* Force z-index to be relative to parent, not viewport */
+  position: absolute !important;
+  /* Prevent any z-index inheritance issues */
+  will-change: transform, opacity;
 }
 
 /* Responsive Breakpoints - Mobile First Approach */
