@@ -14,6 +14,7 @@ import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { unstable_cache } from "next/cache";
+import { withCors } from "@/lib/utils/cors";
 
 /**
  * Transform Prisma product to application Product type
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const total = products.length;
     const paginatedProducts = products.slice(offset, offset + limit);
 
-    return apiSuccess(
+    return withCors(request, apiSuccess(
       {
         products: paginatedProducts,
         pagination: {
@@ -156,14 +157,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         staleWhileRevalidate: 300, // Serve stale for 5 minutes while revalidating
         tags: [CACHE_TAGS.products, category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections],
       }
-    );
+    ));
   } catch (error) {
     logger.error("❌ Error fetching products:", error);
     
     // Even on error, try to return mock data as fallback
     try {
       const fallbackProducts = await getAllProducts();
-      return apiSuccess(
+      return withCors(request, apiSuccess(
         {
           products: fallbackProducts.slice(0, 20),
           pagination: {
@@ -175,13 +176,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
         "Products fetched successfully (using fallback data)",
         { warning: "Using fallback data due to database error" }
-      );
+      ));
     } catch (fallbackError) {
-      return apiError(
+      return withCors(request, apiError(
         "Unable to fetch products. Please try again later.",
         500,
         error instanceof Error ? error.message : "Unknown error"
-      );
+      ));
     }
   }
 }

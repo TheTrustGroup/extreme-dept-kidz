@@ -30,14 +30,16 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const origin = request.headers.get('Origin') || '';
 
-  // CORS: allow warehouse app to call admin API (login, orders, me, etc.)
+  // CORS: allow warehouse app to call API (login, orders, me, products, etc.)
   const isAdminApi =
     pathname === '/api/admin/auth/login' ||
     pathname === '/admin/api/login' ||
     pathname.startsWith('/api/admin/') ||
     pathname.startsWith('/admin/api/') ||
     pathname === '/api/orders' ||
-    pathname.startsWith('/api/orders/');
+    pathname.startsWith('/api/orders/') ||
+    pathname === '/api/products' ||
+    pathname.startsWith('/api/products/');
   if (isAdminApi && origin === WAREHOUSE_ORIGIN) {
     // Preflight: respond 204 with CORS headers only
     if (request.method === 'OPTIONS') {
@@ -130,11 +132,13 @@ export function middleware(request: NextRequest) {
 // Match all static assets and image routes, plus admin API for CORS
 export const config = {
   matcher: [
-    // CORS for warehouse: admin API and orders
+    // CORS for warehouse: admin API, orders, public products
     '/api/admin/:path*',
     '/admin/api/:path*',
     '/api/orders',
     '/api/orders/:path*',
+    '/api/products',
+    '/api/products/:path*',
     /*
      * Match all request paths except:
      * - api routes

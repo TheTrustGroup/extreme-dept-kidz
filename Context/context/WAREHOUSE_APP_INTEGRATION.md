@@ -30,9 +30,10 @@ fetch('/api/admin/inventory', { credentials: 'include' })
 ```javascript
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://extremedeptkidz.com';
 
-fetch(`${API_BASE}/api/admin/products`, { credentials: 'include' })
+fetch(`${API_BASE}/api/products`, { credentials: 'include' })      // public products (Inventory)
+fetch(`${API_BASE}/api/admin/products`, { credentials: 'include' })  // admin products
 fetch(`${API_BASE}/api/admin/inventory`, { credentials: 'include' })
-fetch(`${API_BASE}/api/orders`, { credentials: 'include' })  // orders list (rewrites to admin orders)
+fetch(`${API_BASE}/api/orders`, { credentials: 'include' })         // orders list (rewrites to admin orders)
 ```
 
 ### 3. Login and “current user”
@@ -67,6 +68,7 @@ CORS is already configured on the main site for origin `https://warehouse.extrem
 
 - `/api/admin/auth/login` and `/admin/api/login`
 - `/admin/api/me` (rewrites to `/api/admin/auth/me`)
+- `/api/products` (public products – used by warehouse Inventory)
 - `/api/admin/products`
 - `/api/admin/inventory`
 - `/api/admin/inventory/analytics`
