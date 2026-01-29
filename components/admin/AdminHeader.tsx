@@ -99,7 +99,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   }, [pathname]);
 
   return (
-    <header className="admin-header-glass sticky top-0 z-30">
+    <header className="admin-header-glass sticky top-0 z-30" style={{ isolation: 'isolate' }}>
       {/* Database Status Banner - Wrapped in error boundary */}
       <div className="admin-section-sm px-[var(--admin-space-4)] lg:px-[var(--admin-space-6)] border-b border-cream-200/50 bg-white/30 backdrop-blur-sm">
         <React.Suspense fallback={null}>
@@ -154,7 +154,10 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
           </button>
 
           {/* Notifications */}
-          <div className="relative flex-shrink-0" style={{ position: 'relative' }}>
+          <div 
+            className="relative flex-shrink-0" 
+            style={{ position: 'relative', isolation: 'isolate' }}
+          >
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-[var(--admin-space-2)] text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-all duration-200 relative active:scale-95"
@@ -172,10 +175,17 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
             {showNotifications && (
               <>
+                {/* Backdrop - click outside to close */}
                 <div
-                  className="fixed inset-0 z-[29]"
+                  className="fixed bg-transparent"
                   onClick={() => setShowNotifications(false)}
-                  style={{ zIndex: 29 }}
+                  style={{ 
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 1
+                  }}
                 />
                 <m.div
                   initial={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -185,7 +195,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                   className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-80 rounded-xl overflow-hidden"
                   style={{ 
                     position: 'absolute',
-                    zIndex: 31,
+                    zIndex: 2,
                     top: '100%'
                   }}
                 >
@@ -198,9 +208,9 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                         <AdminBodySmall className="text-charcoal-600">No new notifications</AdminBodySmall>
                       </div>
                     </div>
-                </m.div>
-              </>
-            )}
+                  </m.div>
+                </>
+              )}
           </div>
 
           {/* Sign Out Button - CRITICAL: Always visible on admin pages */}
@@ -231,7 +241,10 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
           {/* User Menu */}
           {user && (
-            <div className="relative flex-shrink-0 z-10" style={{ position: 'relative' }}>
+            <div 
+              className="relative flex-shrink-0 z-10" 
+              style={{ position: 'relative', isolation: 'isolate' }}
+            >
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg hover:bg-cream-100/70 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-cream-200/50 min-w-0"
@@ -252,10 +265,17 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
               {showUserMenu && (
                 <>
+                  {/* Backdrop - click outside to close */}
                   <div
-                    className="fixed inset-0 z-[29]"
+                    className="fixed bg-transparent"
                     onClick={() => setShowUserMenu(false)}
-                    style={{ zIndex: 29 }}
+                    style={{ 
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 1
+                    }}
                   />
                   <m.div
                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -265,7 +285,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                     className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-56 rounded-xl overflow-hidden"
                     style={{ 
                       position: 'absolute',
-                      zIndex: 31,
+                      zIndex: 2,
                       top: '100%'
                     }}
                   >
