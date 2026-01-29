@@ -5,12 +5,15 @@
  * 
  * Role Hierarchy (from lowest to highest):
  * - viewer (1): Read-only access
+ * - driver (1): Read-only / delivery
+ * - warehouse (2): Can manage inventory
+ * - cashier (2): Can manage POS/orders
  * - manager (2): Can manage orders and inventory
  * - admin (3): Can manage products and users
  * - super_admin (4): Full system access
  */
 
-export type AdminRole = 'super_admin' | 'admin' | 'manager' | 'viewer';
+export type AdminRole = 'super_admin' | 'admin' | 'manager' | 'cashier' | 'warehouse' | 'driver' | 'viewer';
 
 /**
  * Role hierarchy mapping
@@ -18,6 +21,9 @@ export type AdminRole = 'super_admin' | 'admin' | 'manager' | 'viewer';
  */
 const ROLE_HIERARCHY: Record<AdminRole, number> = {
   viewer: 1,
+  driver: 1,
+  warehouse: 2,
+  cashier: 2,
   manager: 2,
   admin: 3,
   super_admin: 4,

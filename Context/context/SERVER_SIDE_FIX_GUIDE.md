@@ -148,6 +148,50 @@ If the real path is different (e.g. `/api/login` or `/auth/login`), either:
 
 ---
 
+## 2b. Endpoint – GET /admin/api/me (current user with role)
+
+The warehouse app calls this (with credentials/cookies) to get the current user and **role** for UI (menus, actions).
+
+- **URL:** `GET https://extremedeptkidz.com/admin/api/me`
+- **Headers:** `Accept: application/json`, plus session cookie or `Authorization` if you use it.
+
+The server must:
+
+1. Respond to `GET /admin/api/me` (or the path your admin actually uses).
+2. Authenticate the request (cookie or token).
+3. Return JSON with the user object including **role**, e.g. `{ "success": true, "data": { "user": { "id", "email", "name", "role": "manager" } } }` or `{ "user": { "id", "email", "name", "role": "manager" } }`.
+
+The warehouse app uses `role` (e.g. `manager`, `cashier`, `warehouse`, `driver`, `viewer`) to show/hide features. Ensure the `role` field is returned.
+
+---
+
+## 2c. Products (and orders) API – CORS and shape
+
+So Inventory and POS use real data:
+
+- **Products:** Expose **GET /admin/api/products** (or **GET /api/products**) and **allow CORS** from `https://warehouse.extremedeptkidz.com` with credentials.  
+  Response: **array** of products. Each product should include at least: **id**, **name**, **sku**, **category** (object or name), **quantity** (or total stock), **sellingPrice** (or **price**). Optional: **costPrice**, **location**, **supplier** (can be null if not in your schema).
+
+- **Orders (optional):** If the warehouse app uses the Orders page, expose your orders API (e.g. **GET /api/orders** or **GET /admin/api/orders**) and allow CORS for the warehouse origin for that route too.
+
+---
+
+## 2d. Role users to create in the database
+
+In your main store **admin / user** table, create one user per role with these logins. Set each user’s **role** in the DB to the matching value.
+
+| Role      | Email                         | Password  |
+|-----------|-------------------------------|-----------|
+| manager   | manager@extremedeptkidz.com   | EDK-!@#   |
+| cashier   | cashier@extremedeptkidz.com   | EDK-!@#   |
+| warehouse | warehouse@extremedeptkidz.com  | EDK-!@#   |
+| driver    | driver@extremedeptkidz.com    | EDK-!@#   |
+| viewer    | viewer@extremedeptkidz.com    | EDK-!@#   |
+
+Keep your existing admin user (e.g. super_admin) as is. Ensure **GET /admin/api/me** returns the user with **role** so the warehouse app can show the right menus/actions.
+
+---
+
 ## 3. Reachability – Quick checks
 
 Run these from your machine (or the server).
@@ -197,6 +241,9 @@ Expected: `401` or `422` with a JSON body (not connection error, not CORS error 
 - [ ] OPTIONS requests return **200/204** with CORS headers
 - [ ] `POST /admin/api/login` exists (or equivalent and documented)
 - [ ] Login accepts JSON `{ "email", "password" }`
+- [ ] `GET /admin/api/me` exists and returns user with **role**
+- [ ] Role users created (manager, cashier, warehouse, driver, viewer) per table in 2d
+- [ ] Products API exposed and CORS allowed for warehouse origin (and orders if used)
 - [ ] curl from the same network reaches the API (no timeout / connection refused)
 
 ---
@@ -218,7 +265,9 @@ Expected: `401` or `422` with a JSON body (not connection error, not CORS error 
 |------|--------|
 | Warehouse app URL | `https://warehouse.extremedeptkidz.com` |
 | API base | `https://extremedeptkidz.com` |
-| Login endpoint | `POST /admin/api/login` |
+| Login | `POST /admin/api/login` |
+| Current user (with role) | `GET /admin/api/me` |
+| Products | `GET /admin/api/products` or `GET /api/products` |
 | Required CORS origin | `https://warehouse.extremedeptkidz.com` |
 | Credentials | `true` |
 

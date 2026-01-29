@@ -1,65 +1,100 @@
 # Hand This to Your Backend / Server Person
 
-**Goal:** So that **warehouse.extremedeptkidz.com** can log in without "Load failed", the server at **extremedeptkidz.com** must do two things.
+**Goal:** So **warehouse.extremedeptkidz.com** can log in, call the API, and use real products/orders with correct roles.
 
 ---
 
-## 1. Enable CORS for the warehouse domain
+## 1. CORS and auth
 
-Allow the warehouse app origin and credentials.
+Someone with access to **extremedeptkidz.com** must:
 
-- **Origin to allow:** `https://warehouse.extremedeptkidz.com`
-- **Credentials:** `true`
-- **Methods:** `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`
-- **Headers:** `Content-Type`, `Accept`, `Authorization`
+- **Allow CORS** for `https://warehouse.extremedeptkidz.com` **with credentials** (so the browser allows login and API calls).  
+  → Use **SERVER_SIDE_FIX_GUIDE.md** for your stack (Laravel, Node, Nginx, etc.).
 
-**Full instructions (Laravel, Node, Nginx, Vercel, Apache):**  
-→ Open **`SERVER_SIDE_FIX_GUIDE.md`** in this repo and use the section that matches your stack.
+- **Expose (or keep) these endpoints:**
+  - **POST /admin/api/login** — email + password → user/session (JSON body: `{ "email", "password" }`).
+  - **GET /admin/api/me** — current user, including **role** (e.g. `"role": "manager"`). The warehouse app uses this to show/hide features.
 
----
-
-## 2. Expose a login API the app can call
-
-The warehouse app calls:
-
-- **URL:** `POST https://extremedeptkidz.com/admin/api/login`
-- **Body (JSON):** `{ "email": "user@example.com", "password": "..." }`
-- **Response (JSON):** e.g. `{ "user": { ... }, "token": "..." }` or session cookie + user object
-
-If your real login is at a different path (e.g. `/api/login`), either:
-
-- Add a route that handles `POST /admin/api/login` and forwards to your existing login, or  
-- Tell the frontend team the correct URL so they can update the app.
+**One-page summary:** this file. **Full CORS/endpoint details:** SERVER_SIDE_FIX_GUIDE.md.
 
 ---
 
-## 3. Test after changes
+## 2. Create the role users
 
-Run in terminal (from this project folder):
+In your main store **admin / user database**:
 
-```bash
-./test-cors-and-login.sh
-```
+- **Admin:** Keep your current admin email and password as they are.
+- **Other roles:** Create one user per role with the logins below. Set each user’s **role** in the DB to the matching value (manager, cashier, etc.).
 
-Or manually:
+| Role      | Email                         | Password  |
+|-----------|-------------------------------|-----------|
+| manager   | manager@extremedeptkidz.com   | EDK-!@#   |
+| cashier   | cashier@extremedeptkidz.com   | EDK-!@#   |
+| warehouse | warehouse@extremedeptkidz.com  | EDK-!@#   |
+| driver    | driver@extremedeptkidz.com    | EDK-!@#   |
+| viewer    | viewer@extremedeptkidz.com    | EDK-!@#   |
 
-```bash
-# CORS preflight
-curl -X OPTIONS "https://extremedeptkidz.com/admin/api/login" \
-  -H "Origin: https://warehouse.extremedeptkidz.com" \
-  -H "Access-Control-Request-Method: POST" \
-  -v
-
-# Login (expect 401/422 with JSON)
-curl -X POST "https://extremedeptkidz.com/admin/api/login" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"test"}' \
-  -v
-```
+- Ensure **GET /admin/api/me** returns the user with **role** (e.g. `"role": "manager"`). The warehouse app uses that to show/hide features.
 
 ---
 
-**Files to share:**
+## 3. Products (and orders) API
 
-- **SERVER_SIDE_FIX_GUIDE.md** – Full CORS and endpoint instructions
-- **HAND_TO_BACKEND.md** – This one-page summary
+So Inventory and POS use real data:
+
+- **Products:** Implement or expose something like **GET /admin/api/products** (or GET /api/products) and **allow CORS** from the warehouse origin.  
+  Response: array of products with at least: **id**, **name**, **sku**, **category**, **quantity**, **sellingPrice**, **costPrice**, **location**, **supplier**.  
+  → SERVER_SIDE_FIX_GUIDE.md and BACKEND_REQUIREMENTS.md (if present) have the full expected shape.
+
+- **Orders (optional):** If you use the Orders page, expose your orders API and allow CORS for the warehouse domain for that route too.
+
+---
+
+## 4. Verify
+
+1. Log in at **warehouse.extremedeptkidz.com** with **admin** (your existing credentials).
+2. Log in with **manager@extremedeptkidz.com** / **EDK-!@#** and check that the right menus/actions appear.
+3. In the warehouse app: **Settings → User Management** — the “Logins for other roles” table should match the users you created in the backend.
+
+---
+
+## Quick reference
+
+| Item | Value |
+|------|--------|
+| Warehouse app URL | `https://warehouse.extremedeptkidz.com` |
+| API base | `https://extremedeptkidz.com` |
+| Login | `POST /admin/api/login` |
+| Current user | `GET /admin/api/me` |
+| Products | `GET /admin/api/products` (or `/api/products`) |
+| Required CORS origin | `https://warehouse.extremedeptkidz.com` |
+| Credentials | `true` |
+
+**Files to share:** SERVER_SIDE_FIX_GUIDE.md, this file (HAND_TO_BACKEND.md).
+
+---
+
+## If the API is this Next.js app (extremedeptkidz.com)
+
+CORS and the endpoints **POST /admin/api/login**, **GET /admin/api/me**, **GET /admin/api/products**, and orders are already configured (rewrites + middleware + API routes).
+
+To **create the role users** in this repo:
+
+1. **Apply schema change** (adds `cashier`, `warehouse`, `driver` to AdminRole):
+   ```bash
+   npx prisma migrate dev --name add_warehouse_admin_roles
+   ```
+   If the DB is elsewhere or you prefer to run SQL by hand, run this in your DB (PostgreSQL 10+):
+   ```sql
+   ALTER TYPE "AdminRole" ADD VALUE IF NOT EXISTS 'cashier';
+   ALTER TYPE "AdminRole" ADD VALUE IF NOT EXISTS 'warehouse';
+   ALTER TYPE "AdminRole" ADD VALUE IF NOT EXISTS 'driver';
+   ```
+   Then run `npx prisma generate`.
+
+2. **Seed the five role users** (manager, cashier, warehouse, driver, viewer with password EDK-!@#):
+   ```bash
+   npx tsx scripts/seed-warehouse-role-users.ts
+   ```
+
+After that, **GET /admin/api/me** will return each user with their **role**; the warehouse app can use it for menus and permissions.

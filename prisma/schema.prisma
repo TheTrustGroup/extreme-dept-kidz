@@ -323,6 +323,9 @@ enum AdminRole {
   super_admin
   admin
   manager
+  cashier
+  warehouse
+  driver
   viewer
 }
 
