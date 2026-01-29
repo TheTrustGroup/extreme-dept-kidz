@@ -12,6 +12,8 @@ const nextConfig = {
       { source: '/admin/api/login', destination: '/api/admin/auth/login' },
       { source: '/admin/api/me', destination: '/api/admin/auth/me' },
       { source: '/api/orders', destination: '/api/admin/orders' },
+      { source: '/admin/api/products', destination: '/api/admin/products' },
+      { source: '/admin/api/products/:path*', destination: '/api/admin/products/:path*' },
     ];
   },
   

@@ -68,7 +68,8 @@ CORS is already configured on the main site for origin `https://warehouse.extrem
 
 - `/api/admin/auth/login` and `/admin/api/login`
 - `/admin/api/me` (rewrites to `/api/admin/auth/me`)
-- `/api/products` (public products – used by warehouse Inventory)
+- `/api/products` (public products)
+- `/admin/api/products` and `/admin/api/products/:id` (rewrite to `/api/admin/products`, used by warehouse Inventory)
 - `/api/admin/products`
 - `/api/admin/inventory`
 - `/api/admin/inventory/analytics`
