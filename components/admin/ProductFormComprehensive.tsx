@@ -134,6 +134,7 @@ export function ProductFormComprehensive({
   const [savingDraft, setSavingDraft] = React.useState(false);
   const [deleteConfirm, setDeleteConfirm] = React.useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = React.useState<"idle" | "saving" | "saved">("idle");
+  const [imageUploading, setImageUploading] = React.useState(false);
   const [imageOrder, setImageOrder] = React.useState<number[]>([]);
 
   // Watch form values
@@ -187,7 +188,7 @@ export function ProductFormComprehensive({
     if (!isDirty) return;
 
     const autoSaveInterval = setInterval(async () => {
-      if (saving || savingDraft) return;
+      if (saving || savingDraft || imageUploading) return;
 
       setAutoSaveStatus("saving");
       try {
@@ -259,7 +260,7 @@ export function ProductFormComprehensive({
     }, 30000); // 30 seconds
 
     return () => clearInterval(autoSaveInterval);
-  }, [isDirty, saving, savingDraft, watchedValues, isNew, productId, router, reset]);
+  }, [isDirty, saving, savingDraft, imageUploading, watchedValues, isNew, productId, router, reset]);
 
   // Initialize image order
   React.useEffect(() => {
@@ -663,6 +664,7 @@ export function ProductFormComprehensive({
               onChange={(urls) => setValue("images", urls, { shouldDirty: true })}
               maxImages={10}
               disabled={saving}
+              onUploadingChange={setImageUploading}
             />
 
             {images.length > 0 && (
@@ -1046,7 +1048,7 @@ export function ProductFormComprehensive({
                 type="button"
                 variant="secondary"
                 onClick={() => saveDraft()}
-                disabled={saving || savingDraft}
+                disabled={saving || savingDraft || imageUploading}
               >
                 {savingDraft ? (
                   <>
@@ -1077,7 +1079,7 @@ export function ProductFormComprehensive({
               <Button
                 type="submit"
                 variant="primary"
-                disabled={saving || savingDraft}
+                disabled={saving || savingDraft || imageUploading}
                 className="shadow-md hover:shadow-lg"
               >
                 {saving ? (

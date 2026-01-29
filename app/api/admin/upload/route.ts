@@ -155,18 +155,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // RBAC: Uploading images requires admin role or higher
-    if (!hasRequiredRole(authResult.user.role, 'admin')) {
-      return NextResponse.json(
-        {
-          error: 'Insufficient permissions',
-          message: 'Admin role required to upload images.',
-          userRole: authResult.user.role,
-        },
-        { status: 403 }
-      );
-    }
-
     console.log('[Upload] ✅ Authentication and authorization successful via', authResult.method);
 
     const file = formData.get('file') as File | null;

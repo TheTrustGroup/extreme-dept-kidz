@@ -13,6 +13,8 @@ interface ImageUploadProps {
   onChange: (urls: string[]) => void;
   maxImages?: number;
   disabled?: boolean;
+  /** Notify parent when upload starts/finishes so form can disable submit during upload */
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
 /**
@@ -26,12 +28,17 @@ export function ImageUpload({
   onChange,
   maxImages = 10,
   disabled = false,
+  onUploadingChange,
 }: ImageUploadProps): JSX.Element {
   const { showToast } = useToast();
   const { checkAuth, isAuthenticated } = useAdminAuth();
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    onUploadingChange?.(uploading);
+  }, [uploading, onUploadingChange]);
 
   const handleFileSelect = async (files: FileList | File[] | null): Promise<void> => {
     if (!files || files.length === 0) return;
@@ -276,17 +283,23 @@ export function ImageUpload({
           console.log('[ImageUpload] ✅ Upload successful, response:', responseData);
         }
 
-        // Ensure we get a valid URL string - accept relative paths, absolute URLs, and data URLs
-        const url = responseData?.url || responseData?.urls?.[0];
-        if (!url) {
+        // Ensure we get a valid URL string - accept multiple response shapes (API, proxy, or wrapped)
+        const rawUrl =
+          responseData?.url ??
+          responseData?.urls?.[0] ??
+          responseData?.data?.url ??
+          responseData?.data?.urls?.[0] ??
+          (typeof responseData?.file === "string" ? responseData.file : undefined) ??
+          (typeof responseData?.path === "string" && (responseData.path.startsWith("/") || responseData.path.startsWith("http")) ? responseData.path : undefined);
+        if (!rawUrl) {
           if (process.env.NODE_ENV === 'development') {
             console.error('[ImageUpload] Invalid response format - no URL field:', responseData);
           }
           throw new Error("Server returned invalid response format. Expected 'url' field.");
         }
-        
+
         // Convert to string and validate
-        const urlString = String(url).trim();
+        const urlString = String(rawUrl).trim();
         if (urlString.length === 0) {
           throw new Error("Server returned empty URL");
         }
@@ -311,50 +324,57 @@ export function ImageUpload({
         return urlString;
       });
 
-      const urls = await Promise.all(uploadPromises);
-      
-      // Filter out any null/undefined URLs and ensure they're strings
-      const validUrls = urls
-        .filter(url => url != null && url !== '')
-        .map(url => String(url).trim())
-        .filter(url => url.length > 0);
-      
-      // Check if we got any valid URLs
-      if (validUrls.length === 0) {
-        // This is a critical error - uploads succeeded but no URLs were returned
-        const errorMsg = urls.length === 0 
-          ? "Upload completed but no images were returned. Please try again."
-          : `Upload completed but ${urls.length} image(s) failed to process. Please try again.`;
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[ImageUpload] ❌ No valid URLs returned after upload:', {
-            totalFiles: files.length,
-            urlsReceived: urls,
-            validUrls: validUrls,
+      // Use allSettled so we add every successful URL even if some uploads fail (partial success)
+      const results = await Promise.allSettled(uploadPromises);
+
+      const validUrls: string[] = [];
+      const errors: string[] = [];
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value != null && String(result.value).trim()) {
+          validUrls.push(String(result.value).trim());
+        } else if (result.status === 'rejected') {
+          errors.push(result.reason?.message ?? `File ${index + 1} failed`);
+        }
+      });
+
+      // Always update UI with any successful URLs so "something happens" and state stays in sync
+      if (validUrls.length > 0) {
+        const allUrls = [...images, ...validUrls];
+        onChange(allUrls);
+        const failedCount = errors.length;
+        if (failedCount > 0) {
+          showToast({
+            type: "info",
+            title: "Partial upload",
+            message: `${validUrls.length} image(s) added. ${failedCount} failed: ${errors[0]}${failedCount > 1 ? ` (+${failedCount - 1} more)` : ''}`,
+            duration: 5000,
+          });
+        } else {
+          showToast({
+            type: "success",
+            title: "Images Uploaded",
+            message: `Successfully uploaded ${validUrls.length} image${validUrls.length > 1 ? 's' : ''}`,
           });
         }
-        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[ImageUpload] ✅ Added', validUrls.length, 'image(s):', validUrls);
+        }
+      }
+
+      if (validUrls.length === 0) {
+        const errorMsg =
+          errors.length > 0
+            ? errors[0]
+            : "Upload completed but no images were returned. Please try again.";
         showToast({
           type: "error",
           title: "Upload Failed",
           message: errorMsg,
+          duration: 5000,
         });
-        return; // Exit early - don't update state
-      }
-      
-      // Success - combine existing images with new ones
-      const allUrls = [...images, ...validUrls];
-      onChange(allUrls);
-      
-      // Show success feedback
-      showToast({
-        type: "success",
-        title: "Images Uploaded",
-        message: `Successfully uploaded ${validUrls.length} image${validUrls.length > 1 ? 's' : ''}`,
-      });
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[ImageUpload] ✅ Successfully added', validUrls.length, 'image(s):', validUrls);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[ImageUpload] ❌ No valid URLs:', { totalFiles: files.length, errors, results });
+        }
       }
     } catch (error) {
       // Enhanced error logging
