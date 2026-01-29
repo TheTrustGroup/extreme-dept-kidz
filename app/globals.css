@@ -60,7 +60,9 @@ input[type="range"]::-moz-range-track {
 /* CRITICAL: Performance optimizations for ultra-fast rendering */
 /* COLOR SYSTEM NORMALIZATION: Force sRGB color scheme for pixel-perfect consistency across browsers */
 html {
-  scroll-behavior: smooth;
+  /* Removed smooth scroll-behavior - causes "static" feeling between scrolls */
+  /* Use instant scrolling for better performance and responsiveness */
+  scroll-behavior: auto;
   /* CRITICAL: Enable hardware acceleration for smooth scrolling */
   -webkit-overflow-scrolling: touch;
   /* CRITICAL: Optimize font rendering */

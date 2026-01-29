@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { m } from "framer-motion";
-import { useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,16 +13,8 @@ const HERO_IMAGE = "/Extreme 1.png";
 export function HeroSection(): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // CRITICAL: Parallax scroll effect - Optimized with passive listeners and GPU acceleration
-  // Performance: Use passive scroll listener with requestAnimationFrame throttling
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-    layoutEffect: false, // Performance: Use effect instead of layoutEffect for better performance
-  });
-
-  // Performance: Throttle transform updates with useTransform (already optimized by framer-motion)
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  // Removed parallax effect for better scroll performance
+  // Parallax was causing "static" feeling between scrolls
 
   // Fade-in animation variants – smooth, staggered reveal on load
   const containerVariants = {
@@ -59,17 +50,8 @@ export function HeroSection(): JSX.Element {
       }}
       aria-label="Hero section"
     >
-      {/* Hero Image with Parallax - GPU-accelerated */}
-      <m.div
-        className="absolute inset-0 z-0 overflow-hidden"
-        style={{ 
-          y,
-          // CRITICAL: GPU acceleration for smooth parallax
-          transform: 'translateZ(0)',
-          willChange: 'transform',
-          backfaceVisibility: 'hidden',
-        }}
-      >
+      {/* Hero Image - Static for better scroll performance */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
         <div 
           className="absolute inset-0 w-full h-full"
           style={{
@@ -151,7 +133,7 @@ export function HeroSection(): JSX.Element {
             aria-hidden="true"
           />
         </div>
-      </m.div>
+      </div>
 
       {/* Hero Content - Perfectly centered vertically and horizontally */}
       <m.div
@@ -255,38 +237,6 @@ export function HeroSection(): JSX.Element {
           </m.div>
           </div>
         </div>
-      </m.div>
-
-      {/* Scroll Indicator */}
-      <m.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2, duration: 0.6 }}
-        style={{
-          filter: "var(--hero-scroll-indicator-shadow)", // COLOR SYSTEM NORMALIZATION: Uses CSS variable
-        }}
-        aria-hidden="true"
-      >
-        <m.div
-          className="w-6 h-10 border-2 border-cream-50/90 rounded-full flex items-start justify-center p-2 bg-charcoal-900/20 backdrop-blur-md"
-          animate={{ y: [0, 8, 0] }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <m.div
-            className="w-1.5 h-1.5 bg-cream-50 rounded-full"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </m.div>
       </m.div>
     </section>
   );
