@@ -154,7 +154,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
           </button>
 
           {/* Notifications */}
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0" style={{ position: 'relative' }}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-[var(--admin-space-2)] text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-100 rounded-lg transition-all duration-200 relative active:scale-95"
@@ -173,15 +173,21 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
             {showNotifications && (
               <>
                 <div
-                  className="fixed inset-0 z-40"
+                  className="fixed inset-0 z-[29]"
                   onClick={() => setShowNotifications(false)}
+                  style={{ zIndex: 29 }}
                 />
                 <m.div
                   initial={{ opacity: 0, y: -10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="admin-dropdown admin-floating absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-80 rounded-xl overflow-hidden z-50"
+                  className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-80 rounded-xl overflow-hidden"
+                  style={{ 
+                    position: 'absolute',
+                    zIndex: 31,
+                    top: '100%'
+                  }}
                 >
                     <div className="admin-section-sm border-b border-cream-200/50 bg-cream-50/80 backdrop-blur-sm">
                       <AdminBody className="font-semibold text-charcoal-900">Notifications</AdminBody>
@@ -225,7 +231,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
 
           {/* User Menu */}
           {user && (
-            <div className="relative flex-shrink-0 z-10">
+            <div className="relative flex-shrink-0 z-10" style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg hover:bg-cream-100/70 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-cream-200/50 min-w-0"
@@ -247,15 +253,21 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
               {showUserMenu && (
                 <>
                   <div
-                    className="fixed inset-0 z-40"
+                    className="fixed inset-0 z-[29]"
                     onClick={() => setShowUserMenu(false)}
+                    style={{ zIndex: 29 }}
                   />
                   <m.div
                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="admin-dropdown admin-floating absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-56 rounded-xl overflow-hidden z-50"
+                    className="admin-dropdown absolute right-0 mt-[var(--admin-space-2)] w-[calc(100vw-2rem)] sm:w-56 rounded-xl overflow-hidden"
+                    style={{ 
+                      position: 'absolute',
+                      zIndex: 31,
+                      top: '100%'
+                    }}
                   >
                     <div className="admin-section-sm bg-gradient-to-r from-navy-50/80 to-navy-100/80 backdrop-blur-sm border-b border-cream-200/50">
                       <AdminBodySmall className="font-semibold text-charcoal-900">{user.name}</AdminBodySmall>

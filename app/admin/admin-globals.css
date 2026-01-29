@@ -706,7 +706,9 @@
 }
 
 /* Premium Dropdown/Modal Styles */
+/* Admin Dropdown - Ensure it stays within admin interface */
 .admin-dropdown {
+  isolation: isolate; /* Create new stacking context */
   backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--admin-glass-blur, 12px)) saturate(180%);
   background: var(--admin-glass-bg-strong, rgba(255, 255, 255, 0.95));
