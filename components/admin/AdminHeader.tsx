@@ -197,33 +197,31 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
             )}
           </div>
 
-          {/* Sign Out Button - CRITICAL: Always visible when user exists, never hidden */}
-          {/* Ensure it renders even if user state is temporarily null by checking isAuthenticated as fallback */}
-          {(user || isAuthenticated) && (
-            <button
-              onClick={async () => {
-                try {
-                  await logout();
-                } catch (error) {
-                  console.error("Logout error:", error);
-                  // Force redirect even if logout fails
-                  window.location.replace('/admin/login');
-                }
-              }}
-              className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg text-charcoal-700 hover:text-red-600 hover:bg-red-50/80 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200/50 shadow-sm hover:shadow-md flex-shrink-0 z-10"
-              aria-label="Sign out"
-              title="Sign out"
-              style={{ 
-                minWidth: 'auto',
-                visibility: 'visible',
-                opacity: 1,
-                display: 'flex'
-              }}
-            >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-              <AdminBodySmall className="font-medium hidden md:inline ml-[var(--admin-space-1)]">Sign out</AdminBodySmall>
-            </button>
-          )}
+          {/* Sign Out Button - CRITICAL: Always visible on admin pages */}
+          {/* Show logout button if user exists OR if we're on an admin page (always show it) */}
+          <button
+            onClick={async () => {
+              try {
+                await logout();
+              } catch (error) {
+                console.error("Logout error:", error);
+                // Force redirect even if logout fails
+                window.location.replace('/admin/login');
+              }
+            }}
+            className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg text-charcoal-700 hover:text-red-600 hover:bg-red-50/80 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200/50 shadow-sm hover:shadow-md flex-shrink-0 z-10"
+            aria-label="Sign out"
+            title="Sign out"
+            style={{ 
+              minWidth: 'auto',
+              visibility: 'visible',
+              opacity: 1,
+              display: 'flex'
+            }}
+          >
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <AdminBodySmall className="font-medium hidden md:inline ml-[var(--admin-space-1)]">Sign out</AdminBodySmall>
+          </button>
 
           {/* User Menu */}
           {user && (

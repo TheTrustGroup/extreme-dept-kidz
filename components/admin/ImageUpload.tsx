@@ -6,6 +6,7 @@ import { X, Upload, MoveLeft, MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
+import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 
 interface ImageUploadProps {
   images: string[];
@@ -27,6 +28,7 @@ export function ImageUpload({
   disabled = false,
 }: ImageUploadProps): JSX.Element {
   const { showToast } = useToast();
+  const { checkAuth, isAuthenticated } = useAdminAuth();
   const [uploading, setUploading] = React.useState(false);
   const [dragActive, setDragActive] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -41,6 +43,20 @@ export function ImageUpload({
         message: `Maximum ${maxImages} images allowed`,
       });
       return;
+    }
+
+    // Verify authentication before uploading
+    // Check if we're authenticated, and refresh if needed
+    if (!isAuthenticated) {
+      const authValid = await checkAuth();
+      if (!authValid) {
+        showToast({
+          type: "error",
+          title: "Authentication Required",
+          message: "Please refresh the page and log in again to upload images.",
+        });
+        return;
+      }
     }
 
     // Authentication is handled by httpOnly cookie sent automatically with credentials: 'include'
@@ -96,8 +112,11 @@ export function ImageUpload({
         const formData = new FormData();
         formData.append("file", file);
         
-        // No token needed - httpOnly cookie is sent automatically with credentials: 'include'
-        const headers: HeadersInit = {};
+        // Ensure cookies are sent with the request
+        // httpOnly cookie is sent automatically with credentials: 'include'
+        const headers: HeadersInit = {
+          // Don't set Content-Type - browser will set it with boundary for FormData
+        };
 
         if (process.env.NODE_ENV === 'development') {
           console.log('[ImageUpload] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)}KB)`);
@@ -239,7 +258,9 @@ export function ImageUpload({
           
           // Provide specific error messages based on status code
           if (response.status === 401) {
-            throw new Error("Authentication failed. Please refresh the page and log in again.");
+            const errorDetails = responseData?.diagnostic || {};
+            const errorMsg = responseData?.message || "Authentication failed. Please refresh the page and log in again.";
+            throw new Error(`${errorMsg} ${errorDetails.hasCookie ? '(Cookie found but invalid)' : '(No authentication cookie)'}`);
           } else if (response.status === 400) {
             throw new Error(errorMessage || "Invalid file. Please check the file type and size.");
           } else if (response.status === 413) {
