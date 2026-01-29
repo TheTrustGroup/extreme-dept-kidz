@@ -258,7 +258,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                     </div>
                     <div className="admin-rhythm-sm p-[var(--admin-space-1)]">
                       <Link
-                        href="/admin/settings/profile"
+                        href="/admin/settings"
                         className="block px-[var(--admin-space-3)] py-[var(--admin-space-2)] text-charcoal-700 hover:bg-cream-100/70 backdrop-blur-sm rounded-lg transition-all duration-200 hover:shadow-sm"
                         onClick={() => setShowUserMenu(false)}
                       >
