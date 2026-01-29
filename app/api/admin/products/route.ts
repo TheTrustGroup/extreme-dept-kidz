@@ -7,19 +7,20 @@ import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { revalidateAllCollectionPages, revalidateCollectionPage, revalidateProduct, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { withCors } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // RBAC: Viewing products requires viewer role or higher
   const auth = await authenticateAndAuthorize(request, 'viewer');
-  if (auth.error) return auth.error;
+  if (auth.error) return withCors(request, auth.error);
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 }));
   }
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { searchParams } = new URL(request.url);
@@ -194,7 +195,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const totalPages = Math.ceil(total / limit);
 
-    return apiSuccess(
+    return withCors(request, apiSuccess(
       {
         products: filteredProducts,
         count: filteredProducts.length,
@@ -203,23 +204,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         totalPages,
       },
       'Products fetched successfully'
-    );
+    ));
   } catch (error) {
     logger.error("❌ GET /api/admin/products error:", error);
-    return apiError(
+    return withCors(request, apiError(
       "Failed to fetch products",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // RBAC: Creating products requires admin role or higher
   const auth = await authenticateAndAuthorize(request, 'admin');
-  if (auth.error) return auth.error;
+  if (auth.error) return withCors(request, auth.error);
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to create products.' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to create products.' }, { status: 403 }));
   }
 
   try {
@@ -244,11 +245,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (process.env.NODE_ENV === 'development') {
         logger.error('Product validation failed:', validation.errors);
       }
-      return apiValidationError(validation.errors);
+      return withCors(request, apiValidationError(validation.errors));
     }
 
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     // Use validated data (after transforms)
@@ -257,7 +258,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Get category ID from validated data
     const categoryId = validatedData.categoryId;
     if (!categoryId) {
-      return apiError("Category is required", 400, "Please provide a valid category ID");
+      return withCors(request, apiError("Category is required", 400, "Please provide a valid category ID"));
     }
 
     // Verify category exists
@@ -265,7 +266,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       where: { id: categoryId },
     });
     if (!category) {
-      return apiError("Category not found", 404, `Category with ID "${categoryId}" does not exist`);
+      return withCors(request, apiError("Category not found", 404, `Category with ID "${categoryId}" does not exist`));
     }
 
     // Normalize images - validated data already has array of URL strings (schema transforms both formats to strings)
@@ -304,11 +305,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : parseFloat(String(validatedData.price));
     
     if (isNaN(priceValue) || priceValue <= 0) {
-      return apiError(
+      return withCors(request, apiError(
         "Invalid price",
         400,
         "Price must be a positive number"
-      );
+      ));
     }
     
     const price = Math.round(priceValue * 100);
@@ -332,11 +333,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       where: { slug },
     });
     if (existingProduct) {
-      return apiError(
+      return withCors(request, apiError(
         "Product with this slug already exists",
         409,
         `A product with slug "${slug}" already exists. Please use a different slug.`
-      );
+      ));
     }
 
     // Create product using Prisma
@@ -458,18 +459,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     }, request);
 
-    return apiSuccess(
+    return withCors(request, apiSuccess(
       product,
       'Product created successfully',
       { statusCode: 201 }
-    );
+    ));
   } catch (error) {
     logger.error("❌ POST /api/admin/products error:", error);
     
-    return apiError(
+    return withCors(request, apiError(
       "Failed to create product",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }

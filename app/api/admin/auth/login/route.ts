@@ -1,19 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-
-/** CORS origin for warehouse app – add headers so cross-origin response is allowed */
-const WAREHOUSE_ORIGIN = 'https://warehouse.extremedeptkidz.com';
-
-function withCors(request: NextRequest, response: NextResponse): NextResponse {
-  const origin = request.headers.get('Origin');
-  if (origin === WAREHOUSE_ORIGIN) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization');
-  }
-  return response;
-}
+import { withCors } from '@/lib/utils/cors';
 import { verifyPassword } from '@/lib/auth/password';
 import { generateToken } from '@/lib/auth/jwt';
 import { checkRateLimit, getClientIP } from '@/lib/auth/rate-limit';
