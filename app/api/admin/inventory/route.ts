@@ -3,19 +3,20 @@ import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { withCors } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // RBAC: Viewing inventory requires manager role or higher
   const auth = await authenticateAndAuthorize(request, 'manager');
-  if (auth.error) return auth.error;
+  if (auth.error) return withCors(request, auth.error);
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Manager role required to view inventory.' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Manager role required to view inventory.' }, { status: 403 }));
   }
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const variants = await prisma.productVariant.findMany({
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       imageUrl: v.product.images[0]?.url,
     }));
 
-    return apiSuccess(
+    return withCors(request, apiSuccess(
       {
         variants: tableVariants,
         count: variants.length,
@@ -77,13 +78,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         outOfStock: variants.filter(v => v.stock === 0).length,
       },
       "Inventory fetched successfully"
-    );
+    ));
   } catch (error) {
     logger.error("Failed to fetch inventory:", error);
-    return apiError(
+    return withCors(request, apiError(
       "Failed to fetch inventory",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
