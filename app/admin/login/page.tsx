@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { H1, Body } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
@@ -13,6 +14,7 @@ import { LazyMotion, m, domAnimation } from "framer-motion";
  * Premium login interface for admin dashboard access.
  */
 export default function AdminLoginPage(): JSX.Element {
+  const searchParams = useSearchParams();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
@@ -51,8 +53,13 @@ export default function AdminLoginPage(): JSX.Element {
         return;
       }
 
-      // Success - redirect to admin
-      window.location.href = '/admin';
+      // Success - redirect back to requested page or admin
+      const from = searchParams.get('from');
+      const redirectTo =
+        from && from.startsWith('/admin') && !from.startsWith('/admin/login')
+          ? from
+          : '/admin';
+      window.location.href = redirectTo;
     } catch (fetchError) {
       // Network error or other fetch failures
       console.error('Login fetch error:', fetchError);

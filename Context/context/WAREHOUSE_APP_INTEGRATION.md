@@ -76,3 +76,20 @@ CORS is already configured on the main site for origin `https://warehouse.extrem
 - `/api/orders` (rewrites to `/api/admin/orders`)
 
 So once the warehouse calls **https://extremedeptkidz.com** with credentials, the browser will allow the response.
+
+---
+
+## Troubleshooting: "Something went wrong" + React error #310
+
+**Symptom:** Warehouse app shows "Something went wrong" and the console reports **Minified React error #310** (and "Error caught by boundary").
+
+**Meaning:** React #310 = **"Rendered more hooks than during the previous render."** That’s a **Rules of Hooks** violation: the same component is calling a different number of hooks on different renders.
+
+**Fix (in the warehouse app codebase):**
+
+1. **No conditional hooks** – Don’t call hooks inside `if`, `else`, or after an early `return`. Call all hooks at the top level of the component, in the same order every time.
+2. **No hooks in loops** – Don’t call hooks inside `for`/`map`/`forEach`; only in the component body.
+3. **Data-dependent rendering** – If you do something like “if we have products, render ComponentA (3 hooks), else render ComponentB (5 hooks)”, the *parent* is fine, but each of ComponentA/ComponentB must always call the same hooks. The bug is usually in a *child* that calls hooks conditionally on the new API data (e.g. one branch uses `useState`/`useEffect`, another doesn’t).
+4. **Debug:** Run the warehouse app locally with **development** React (no minification) so the full error and component stack point to the exact component and hook. Fix that component so hooks are unconditional and in a fixed order.
+
+This error comes from the **warehouse** frontend (React), not from the main site API. The main site already returns arrays for warehouse requests; the warehouse app must follow the Rules of Hooks.

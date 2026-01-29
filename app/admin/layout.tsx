@@ -24,6 +24,7 @@ interface AdminLayoutProps {
  * Premium design with background image support.
  */
 export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [checkingAuth, setCheckingAuth] = React.useState(true);
   const pathname = usePathname();
@@ -47,16 +48,20 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
     checkAuth()
       .then((authenticated) => {
         if (!authenticated) {
-          console.warn("[AdminLayout] Auth check failed, but middleware allowed access");
+          setCheckingAuth(false);
+          // Redirect to login so user doesn't see 401s on every API call
+          router.replace(`/admin/login?from=${encodeURIComponent(pathname)}`);
+          return;
         }
         setCheckingAuth(false);
       })
       .catch((error) => {
         console.error("[AdminLayout] Auth check error:", error);
-        // Don't block rendering - middleware already validated cookie
+        // On auth errors, redirect to login
+        router.replace(`/admin/login?from=${encodeURIComponent(pathname)}`);
         setCheckingAuth(false);
       });
-  }, [pathname, checkAuth]);
+  }, [pathname, checkAuth, router]);
 
   // Don't render layout on public pages (login, forgot-password, reset-password)
   const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
