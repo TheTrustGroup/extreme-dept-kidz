@@ -515,6 +515,11 @@ body {
 
 /* CRITICAL: Theme-aware body styles - optimized for zero layout shift */
 /* COLOR SYSTEM NORMALIZATION: Use brand tokens */
+/* Smooth theme switch — no flash, no visibility issues */
+html {
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
 body {
   font-family: var(--font-sans);
   line-height: 1.6;
@@ -524,9 +529,17 @@ body {
   /* Default: Light theme (primary) - COLOR SYSTEM NORMALIZATION: Use brand tokens */
   background-color: var(--brand-bg);
   color: var(--brand-text);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  /* Smooth theme switch — coordinated with html */
+  transition: background-color 0.35s ease, color 0.35s ease;
   /* CRITICAL: Optimize paint performance */
   will-change: contents;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition-duration: 0.15s;
+  }
 }
 
 /* Light theme (primary) - COLOR SYSTEM NORMALIZATION: Use brand tokens */

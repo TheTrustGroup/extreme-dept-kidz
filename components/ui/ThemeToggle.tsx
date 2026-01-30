@@ -11,109 +11,91 @@ interface ThemeToggleProps {
   size?: "sm" | "md" | "lg";
 }
 
+const containerClasses = { sm: "w-12 h-6", md: "w-14 h-7", lg: "w-16 h-8" };
+const sizeClasses = { sm: "w-5 h-5", md: "w-6 h-6", lg: "w-7 h-7" };
+const knobX = { sm: { light: 2, dark: 20 }, md: { light: 2, dark: 28 }, lg: { light: 2, dark: 36 } };
+
 /**
- * ThemeToggle Component
- * 
- * Premium theme switcher with smooth animations.
- * Toggles between dark (primary) and light (secondary) themes.
+ * ThemeToggle — Smooth light/dark switch, no visibility or layout issues.
+ * Placeholder matches button size to prevent CLS; respects reduced motion.
  */
 export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
+    setPrefersReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }, []);
 
   if (!mounted) {
-    // Prevent hydration mismatch
     return (
       <div
         className={cn(
-          "relative rounded-full bg-cream-200 p-1",
-          size === "sm" && "w-12 h-6",
-          size === "md" && "w-14 h-7",
-          size === "lg" && "w-16 h-8",
+          "relative rounded-full bg-cream-200 p-1 inline-block",
+          containerClasses[size],
           className
         )}
-        aria-label="Theme toggle"
+        aria-hidden="true"
       />
     );
   }
 
   const isDark = theme === "dark";
 
-  const sizeClasses = {
-    sm: "w-5 h-5",
-    md: "w-6 h-6",
-    lg: "w-7 h-7",
-  };
-
-  const containerClasses = {
-    sm: "w-12 h-6",
-    md: "w-14 h-7",
-    lg: "w-16 h-8",
-  };
-
   return (
     <motion.button
       onClick={toggleTheme}
       className={cn(
-        "relative rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
-        isDark
-          ? "bg-dark-surface border-dark-border-glass focus:ring-accent-primary focus:ring-offset-dark-bg-primary"
-          : "bg-cream-200 border-cream-300 focus:ring-navy-500 focus:ring-offset-cream-50",
+        "relative rounded-full inline-flex items-center overflow-visible",
+        "transition-colors duration-300 ease-out",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy-500 dark:focus-visible:ring-accent-primary dark:focus-visible:ring-offset-dark-bg-primary",
+        isDark ? "bg-dark-surface" : "bg-cream-200",
         containerClasses[size],
         className
       )}
       whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: prefersReducedMotion ? 0.05 : 0.2, ease: "easeOut" }}
       aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
       aria-pressed={isDark}
       title={isDark ? "Switch to light theme" : "Switch to dark theme"}
       type="button"
     >
-      {/* Toggle Track */}
-      <motion.div
+      <span className="sr-only">{isDark ? "Switch to light mode" : "Switch to dark mode"}</span>
+      {/* Track — smooth color transition with theme */}
+      <span
         className={cn(
-          "absolute inset-0 rounded-full flex items-center transition-colors duration-300",
+          "absolute inset-0 rounded-full transition-colors duration-300 ease-out",
           isDark ? "bg-dark-bg-secondary" : "bg-cream-100"
         )}
+        aria-hidden="true"
       />
-
-      {/* Icon Container - Clean single icon */}
-      <motion.div
+      {/* Knob — smooth slide, reduced motion uses instant */}
+      <motion.span
         className={cn(
-          "absolute top-0.5 flex items-center justify-center rounded-full",
-          "backdrop-blur-sm border transition-colors duration-300",
+          "absolute top-0.5 flex items-center justify-center rounded-full border transition-colors duration-300 ease-out",
           isDark
-            ? "bg-dark-surface border-dark-border-glass text-accent-primary shadow-dark-soft"
-            : "bg-cream-50 border-cream-200 text-charcoal-900 shadow-glass",
+            ? "bg-dark-surface border-dark-border-glass text-accent-primary"
+            : "bg-cream-50 border-cream-200 text-charcoal-900",
           sizeClasses[size]
         )}
         initial={false}
-        animate={{
-          x: isDark
-            ? size === "sm"
-              ? 20
-              : size === "md"
-                ? 28
-                : 36
-            : 2,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 500,
-          damping: 30,
-        }}
+        animate={{ x: isDark ? knobX[size].dark : knobX[size].light }}
+        transition={
+          prefersReducedMotion
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 500, damping: 30 }
+        }
+        aria-hidden="true"
       >
         {isDark ? (
           <Moon className={cn("w-3.5 h-3.5", size === "lg" && "w-4 h-4")} strokeWidth={2} />
         ) : (
           <Sun className={cn("w-3.5 h-3.5", size === "lg" && "w-4 h-4")} strokeWidth={2} />
         )}
-      </motion.div>
+      </motion.span>
     </motion.button>
   );
 }

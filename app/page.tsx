@@ -19,11 +19,7 @@ import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
 import { RealtimeTest } from "@/components/debug/RealtimeTest";
 
 // Hero, TrustBar, and "Just dropped" in main bundle so below-hero is never blank
-
-const ShopByStyleSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
-  ssr: true, // SSR enabled for streaming
-  loading: () => <StreamingSkeleton variant="section" height="h-96" />,
-});
+// Shop by Style removed for world-class simplicity — Just dropped + Shop by Category
 
 const ShopByCategory = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByCategory })), {
   ssr: true, // SSR enabled for streaming
@@ -144,18 +140,10 @@ export default async function Home(props: HomeProps) {
         
         {/* Just dropped: server-rendered, URL-based filter — reliability, speed, clarity */}
         <JustDroppedSection products={filteredForJustDropped} currentFilter={currentFilter} />
-        {/* Girls section: client for filter tabs; data from server */}
+        {/* Shop Girls: only when we have girls products — clear purpose, no empty block */}
         <GirlsCollectionSection products={products} />
 
-        {/* Shop by Style Section - Above fold, category navigation */}
-        <Suspense 
-          fallback={<StreamingSkeleton variant="section" height="h-96" />}
-          key="shop-by-style"
-        >
-          <ShopByStyleSection />
-        </Suspense>
-
-        {/* Shop by Category Section - Real categories from database */}
+        {/* Shop by Category — Real categories from database */}
         <Suspense 
           fallback={<StreamingSkeleton variant="section" height="h-96" />}
           key="shop-by-category"
