@@ -15,6 +15,8 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+let supabaseClient: ReturnType<typeof createClient>;
+
 if (!supabaseUrl || !supabaseAnonKey) {
   // Only throw error in production - in development, allow graceful degradation
   if (process.env.NODE_ENV === 'production') {
@@ -24,21 +26,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
     );
   }
   
-  // In development, return a mock client that won't crash
+  // In development, create a mock client that won't crash
   console.warn(
     '[Supabase] Missing environment variables. ' +
     'Realtime features will be disabled. ' +
     'Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local'
   );
   
-  // Return a mock client that won't crash but won't work
-  return createClient('https://placeholder.supabase.co', 'placeholder-key');
+  // Create a mock client that won't crash but won't work
+  supabaseClient = createClient('https://placeholder.supabase.co', 'placeholder-key');
+} else {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    realtime: {
+      params: {
+        eventsPerSecond: 10, // Rate limit for Realtime events
+      },
+    },
+  });
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  realtime: {
-    params: {
-      eventsPerSecond: 10, // Rate limit for Realtime events
-    },
-  },
-});
+export const supabase = supabaseClient;
