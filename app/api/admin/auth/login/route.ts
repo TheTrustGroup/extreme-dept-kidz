@@ -249,13 +249,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const errorCode = (error as any).code;
       const errorMeta = (error as any).meta;
       
+      // Log full error details for debugging
       logger.error(`[Login] ❌ Database query failed:`, {
         name: errorName,
         message: errorMessage,
         code: errorCode,
         meta: errorMeta,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        stack: error.stack,
+        email: trimmedEmail,
+        normalizedEmail,
         requestId,
+        prismaAvailable: !!prisma,
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
       });
       
       // Check for specific Prisma connection errors (P1000 auth, P1001 unreachable, P1002 timeout)
@@ -296,15 +301,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         userMessage = 'Database query error. Please check the request and try again.';
       }
       
-      return withCors(request, apiError(
-        userMessage,
-        500,
-        process.env.NODE_ENV === 'development' 
-          ? `${errorName}${errorCode ? ` (${errorCode})` : ''}: ${errorMessage}${errorMeta ? ` | Meta: ${JSON.stringify(errorMeta)}` : ''}`
-          : connectionHint || `Check ${diagnosticUrl} for detailed diagnostics. Error: ${errorCode || errorName}`,
-        undefined,
-        requestId
-      ));
+      // Include error code in details for production debugging
+      const errorDetails = errorCode 
+        ? `${errorName} (${errorCode}): ${errorMessage}`
+        : `${errorName}: ${errorMessage}`;
+      
+      try {
+        return withCors(request, apiError(
+          userMessage,
+          500,
+          // Always include error code/details for debugging (not sensitive)
+          errorDetails + (errorMeta ? ` | Meta: ${JSON.stringify(errorMeta)}` : ''),
+          errorCode || 'DATABASE_ERROR',
+          requestId
+        ));
+      } catch (corsError) {
+        // If withCors fails, return error directly
+        logger.error('[Login] ❌ Failed to wrap response with CORS:', corsError);
+        return apiError(
+          userMessage,
+          500,
+          errorDetails,
+          errorCode || 'DATABASE_ERROR',
+          requestId
+        );
+      }
     }
 
     if (!user) {
@@ -497,18 +518,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       logger.warn('[Login] ⚠️ Failed to log activity:', activityError);
     }
 
-    return withCors(request, response);
+    try {
+      return withCors(request, response);
+    } catch (corsError) {
+      logger.error('[Login] ❌ Failed to wrap success response with CORS:', corsError);
+      // Return response without CORS if wrapping fails
+      return response;
+    }
   } catch (error) {
     logger.error('[Login] ❌ Unexpected error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorName = error instanceof Error ? error.name : 'UnknownError';
+    const errorCode = (error as any).code;
     
     // Log full error details for debugging
     logger.error('[Login] ❌ Error details:', {
       message: errorMessage,
       stack: errorStack,
-      name: error instanceof Error ? error.name : undefined,
+      name: errorName,
+      code: errorCode,
       type: typeof error,
+      requestId,
     });
     
     // Check if it's a known configuration error
@@ -548,11 +579,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       userFriendlyError = 'Unable to connect to server. Please check your internet connection.';
     }
     
-    return withCors(request, apiError(
-      userFriendlyError,
-      500,
-      shouldShowDetails ? errorMessage : undefined,
-      isConfigError ? 'CONFIG_ERROR' : isJsonError ? 'JSON_ERROR' : isNetworkError ? 'NETWORK_ERROR' : 'INTERNAL_ERROR'
-    ));
+    // Build error details
+    const errorDetails = errorCode 
+      ? `${errorName} (${errorCode}): ${errorMessage}`
+      : `${errorName}: ${errorMessage}`;
+    
+    try {
+      return withCors(request, apiError(
+        userFriendlyError,
+        500,
+        shouldShowDetails ? errorDetails : undefined,
+        isConfigError ? 'CONFIG_ERROR' : isJsonError ? 'JSON_ERROR' : isNetworkError ? 'NETWORK_ERROR' : 'INTERNAL_ERROR',
+        requestId
+      ));
+    } catch (corsError) {
+      // If withCors fails, return error directly
+      logger.error('[Login] ❌ Failed to wrap error response with CORS:', corsError);
+      return apiError(
+        userFriendlyError,
+        500,
+        shouldShowDetails ? errorDetails : undefined,
+        isConfigError ? 'CONFIG_ERROR' : isJsonError ? 'JSON_ERROR' : isNetworkError ? 'NETWORK_ERROR' : 'INTERNAL_ERROR',
+        requestId
+      );
+    }
   }
 }
