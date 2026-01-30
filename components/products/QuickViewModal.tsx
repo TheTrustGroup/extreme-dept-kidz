@@ -196,9 +196,9 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                 )} />
               </button>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 overflow-y-auto max-h-[90vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 p-4 sm:p-6 overflow-y-auto max-h-[90vh]">
                 {/* Image Carousel */}
-                <div className="relative aspect-square rounded-lg overflow-hidden bg-cream-100 group">
+                <div className="relative aspect-square rounded-xl overflow-hidden bg-cream-100 dark:bg-dark-surface group">
                   {currentImage?.url ? (
                     <>
                       <OptimizedImage
@@ -289,69 +289,63 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                   )}
                 </div>
 
-                {/* Product Info */}
-                <div className="flex flex-col gap-4">
+                {/* Product Info — World-class kids brand: clear hierarchy, size → qty → Add to Bag → View full details */}
+                <div className="flex flex-col gap-6 min-h-0">
+                  {/* Title + Category + Price */}
                   <div>
+                    <p className={cn(
+                      "text-xs font-medium uppercase tracking-widest mb-1",
+                      theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+                    )}>
+                      {product.category?.name ?? "Product"}
+                    </p>
                     <h2
                       id="quick-view-title"
                       className={cn(
-                        "text-2xl font-serif font-bold mb-2",
+                        "text-xl sm:text-2xl font-serif font-bold mb-2",
                         theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
                       )}
                     >
                       {product.name}
                     </h2>
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <span className={cn(
+                        "text-xl font-serif font-semibold",
+                        theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                      )}>
+                        {formatPrice(product.price)}
+                      </span>
+                      {isOnSale && product.originalPrice && (
+                        <span className={cn(
+                          "text-base line-through",
+                          theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
+                        )}>
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Short Description — optional, compact */}
+                  {shortDescription && (
                     <p className={cn(
-                      "text-sm uppercase tracking-wider mb-4",
+                      "text-sm leading-relaxed line-clamp-3",
                       theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
                     )}>
-                      {product.category.name}
+                      {shortDescription}
                     </p>
-                  </div>
-
-                  {/* Price */}
-                  <div className="flex items-baseline gap-3">
-                    <span className={cn(
-                      "text-2xl font-serif font-semibold",
-                      theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                    )}>
-                      {formatPrice(product.price)}
-                    </span>
-                    {isOnSale && product.originalPrice && (
-                      <span className={cn(
-                        "text-lg line-through",
-                        theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
-                      )}>
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Short Description */}
-                  {shortDescription && (
-                    <div>
-                      <p className={cn(
-                        "text-sm leading-relaxed",
-                        theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
-                      )}>
-                        {shortDescription}
-                      </p>
-                    </div>
                   )}
 
-                  {/* Size Selection */}
+                  {/* Size — prominent, required for Add to Bag */}
                   {product.sizes && product.sizes.length > 0 && (
                     <div>
-                      <label 
-                        htmlFor="size-selection"
-                        className={cn(
-                          "block text-sm font-semibold mb-2",
-                          theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                        )}
-                      >
-                        Size
-                      </label>
-                      <div 
+                      <p className={cn(
+                        "text-sm font-semibold mb-2",
+                        theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                      )}>
+                        Size {!selectedSize && <span className="font-normal text-charcoal-500 dark:text-dark-text-muted">— Select size</span>}
+                      </p>
+                      <div
                         id="size-selection"
                         role="radiogroup"
                         aria-label="Select size"
@@ -364,18 +358,15 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                             disabled={!size.inStock}
                             role="radio"
                             aria-checked={selectedSize === size.size}
-                            aria-label={`Size ${size.size}${!size.inStock ? ' - Out of stock' : ''}`}
+                            aria-label={`Size ${size.size}${!size.inStock ? " — Out of stock" : ""}`}
                             className={cn(
-                              "px-4 py-2 rounded-lg border-2 transition-colors min-w-[44px] min-h-[44px]",
+                              "min-w-[44px] min-h-[44px] px-4 rounded-lg border-2 font-medium transition-colors",
                               "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
                               selectedSize === size.size
-                                ? "bg-navy-900 text-cream-50 border-navy-900"
+                                ? "bg-navy-900 text-cream-50 border-navy-900 dark:bg-accent-primary dark:border-accent-primary dark:text-dark-bg-primary"
                                 : size.inStock
-                                  ? theme === "dark"
-                                    ? "bg-dark-surface text-dark-text-primary border-dark-border-glass hover:border-accent-primary"
-                                    : "bg-white text-charcoal-900 border-cream-300 hover:border-navy-900"
-                                  : "bg-cream-100 text-charcoal-400 border-cream-200 cursor-not-allowed opacity-50",
-                              theme === "dark" && selectedSize !== size.size && size.inStock && "bg-dark-surface"
+                                  ? "bg-white dark:bg-dark-surface text-charcoal-900 dark:text-dark-text-primary border-cream-300 dark:border-dark-border-glass hover:border-navy-900 dark:hover:border-accent-primary"
+                                  : "bg-cream-100 dark:bg-dark-bg-secondary text-charcoal-400 dark:text-dark-text-muted border-cream-200 dark:border-dark-border-glass cursor-not-allowed opacity-60"
                             )}
                           >
                             {size.size}
@@ -385,83 +376,64 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                     </div>
                   )}
 
-                  {/* Quantity Selector */}
+                  {/* Quantity — compact row */}
                   <div>
-                    <label 
-                      htmlFor="quantity-display"
-                      className={cn(
-                        "block text-sm font-semibold mb-2",
-                        theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                      )}
-                    >
+                    <p className={cn(
+                      "text-sm font-semibold mb-2",
+                      theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                    )}>
                       Quantity
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "flex items-center gap-1 border-2 rounded-lg",
-                        theme === "dark"
-                          ? "border-dark-border-glass bg-dark-surface"
-                          : "border-cream-300 bg-white"
-                      )}>
-                        <m.button
-                          onClick={() => handleQuantityChange(quantity - 1)}
-                          disabled={quantity <= 1}
-                          className={cn(
-                            "p-2 hover:bg-cream-100 transition-colors duration-200 rounded-l",
-                            "disabled:opacity-50 disabled:cursor-not-allowed",
-                            "focus:outline-none focus:ring-2 focus:ring-navy-500",
-                            theme === "dark" && "hover:bg-dark-bg-secondary"
-                          )}
-                          aria-label="Decrease quantity"
-                          whileHover={{ scale: quantity > 1 ? 1.05 : 1 }}
-                          whileTap={{ scale: quantity > 1 ? 0.95 : 1 }}
-                        >
-                          <span className={cn(
-                            "text-lg font-semibold",
-                            theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                          )}>−</span>
-                        </m.button>
-                        <span 
-                          id="quantity-display"
-                          className={cn(
-                            "font-sans text-base font-semibold min-w-[3rem] text-center",
-                            theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                          )}
-                          aria-live="polite"
-                          aria-atomic="true"
-                        >
-                          {quantity}
-                        </span>
-                        <m.button
-                          onClick={() => handleQuantityChange(quantity + 1)}
-                          disabled={quantity >= 10}
-                          className={cn(
-                            "p-2 hover:bg-cream-100 transition-colors duration-200 rounded-r",
-                            "disabled:opacity-50 disabled:cursor-not-allowed",
-                            "focus:outline-none focus:ring-2 focus:ring-navy-500",
-                            theme === "dark" && "hover:bg-dark-bg-secondary"
-                          )}
-                          aria-label="Increase quantity"
-                          whileHover={{ scale: quantity < 10 ? 1.05 : 1 }}
-                          whileTap={{ scale: quantity < 10 ? 0.95 : 1 }}
-                        >
-                          <span className={cn(
-                            "text-lg font-semibold",
-                            theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                          )}>+</span>
-                        </m.button>
-                      </div>
+                    </p>
+                    <div className={cn(
+                      "inline-flex items-center border-2 rounded-lg overflow-hidden",
+                      theme === "dark" ? "border-dark-border-glass bg-dark-surface" : "border-cream-300 bg-white"
+                    )}>
+                      <button
+                        type="button"
+                        onClick={() => handleQuantityChange(quantity - 1)}
+                        disabled={quantity <= 1}
+                        className={cn(
+                          "min-h-[44px] min-w-[44px] flex items-center justify-center font-semibold text-lg",
+                          "hover:bg-cream-100 dark:hover:bg-dark-bg-secondary disabled:opacity-50 disabled:cursor-not-allowed",
+                          "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-navy-500",
+                          theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                        )}
+                        aria-label="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <span
+                        id="quantity-display"
+                        className="min-w-[2.5rem] text-center font-semibold text-charcoal-900 dark:text-dark-text-primary"
+                        aria-live="polite"
+                      >
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleQuantityChange(quantity + 1)}
+                        disabled={quantity >= 10}
+                        className={cn(
+                          "min-h-[44px] min-w-[44px] flex items-center justify-center font-semibold text-lg",
+                          "hover:bg-cream-100 dark:hover:bg-dark-bg-secondary disabled:opacity-50 disabled:cursor-not-allowed",
+                          "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-navy-500",
+                          theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                        )}
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-col gap-3 pt-4">
+                  {/* Add to Bag — primary CTA, full width, prominent */}
+                  <div className="flex flex-col gap-3 pt-2">
                     <Button
                       onClick={handleAddToCart}
                       disabled={!product.inStock || !selectedSize}
                       variant="primary"
                       size="lg"
-                      className="w-full"
+                      className="w-full min-h-[48px] font-semibold uppercase tracking-wide"
                     >
                       Add to Bag
                     </Button>
@@ -469,24 +441,17 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                       href={`/products/${product.slug}`}
                       onClick={onClose}
                       className={cn(
-                        "text-center py-3 px-4 rounded-lg border-2 transition-colors duration-200",
-                        "font-sans font-semibold uppercase tracking-wide text-sm",
-                        theme === "dark"
-                          ? "border-dark-border-glass text-dark-text-primary hover:bg-dark-surface hover:border-accent-primary"
-                          : "border-cream-300 text-charcoal-900 hover:bg-cream-100 hover:border-navy-900",
-                        "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
+                        "text-center text-sm font-medium underline underline-offset-2 py-2",
+                        theme === "dark" ? "text-dark-text-secondary hover:text-dark-text-primary" : "text-charcoal-600 hover:text-charcoal-900",
+                        "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded"
                       )}
                     >
-                      View Full Details
+                      View full details
                     </Link>
                   </div>
 
-                  {/* Stock Status */}
                   {!product.inStock && (
-                    <p className={cn(
-                      "text-sm font-medium",
-                      theme === "dark" ? "text-red-400" : "text-red-600"
-                    )}>
+                    <p className={cn("text-sm font-medium", theme === "dark" ? "text-red-400" : "text-red-600")}>
                       Out of Stock
                     </p>
                   )}

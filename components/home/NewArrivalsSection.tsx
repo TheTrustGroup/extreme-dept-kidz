@@ -151,7 +151,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
   return (
     <section 
       className={cn(
-        "section reveal transition-colors duration-300",
+        "section reveal transition-colors duration-300 min-h-[320px] py-10 sm:py-12",
         theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
       )}
       aria-labelledby="new-arrivals-heading"

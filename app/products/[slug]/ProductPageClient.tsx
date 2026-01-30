@@ -48,13 +48,12 @@ export function ProductPageClient({ product, allProducts = [], completeLooks = [
   // Shared purchase state for ProductInfo and StickyAddToCart
   const purchaseState = useProductPurchase(product);
 
+  const category = product.category ?? { name: "Product", slug: "all" };
+  const images = product.images ?? [];
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Collections", href: "/collections" },
-    {
-      label: product.category.name,
-      href: `/collections/${product.category.slug}`,
-    },
+    { label: category.name, href: `/collections/${category.slug}` },
     { label: product.name },
   ];
 
@@ -72,7 +71,7 @@ export function ProductPageClient({ product, allProducts = [], completeLooks = [
             {/* Product Gallery - Sticky on Desktop */}
             <div className="lg:sticky lg:top-24 lg:self-start">
               <ProductGallery
-                images={product.images}
+                images={images}
                 productName={product.name}
               />
             </div>

@@ -196,44 +196,44 @@ export const ProductCard = React.memo(function ProductCard({
             </div>
           </div>
 
-          {/* Info — Spacing rhythm: gap-2/3 (8/12px), p-2/4 (8/16px). No overlap. */}
-          <div className="product-card-info flex flex-col gap-2 sm:gap-3 p-2 sm:p-4 rounded-b-xl bg-cream-50 border border-t-0 border-cream-200/80 dark:bg-dark-surface dark:border-dark-border-glass">
-          <p
-            className={cn(
-              "text-[10px] sm:text-[11px] font-medium uppercase tracking-widest hidden sm:block",
-              theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
-            )}
-          >
-            {product.category.name}
-            {product.tags?.includes("new") && " • New"}
-          </p>
-          <h3
-            className={cn(
-              "product-card-title font-serif text-sm sm:text-lg font-semibold line-clamp-2",
-              theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-            )}
-          >
-            {product.name}
-          </h3>
-          <p
-            className={cn(
-              "product-card-price font-serif text-base sm:text-xl font-semibold mt-0.5",
-              theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-            )}
-          >
-            {formatPrice(product.price)}
-            {isOnSale && product.originalPrice && (
-              <span
-                className={cn(
-                  "ml-2 font-sans text-sm font-normal line-through",
-                  theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
-                )}
-              >
-                {formatPrice(product.originalPrice)}
-              </span>
-            )}
-          </p>
-        </div>
+          {/* Info — World-class kids brand: category → name → price, clear hierarchy */}
+          <div className="product-card-info flex flex-col gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-b-xl bg-cream-50 border border-t-0 border-cream-200/80 dark:bg-dark-surface dark:border-dark-border-glass">
+            <p
+              className={cn(
+                "text-[10px] sm:text-[11px] font-medium uppercase tracking-widest",
+                theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+              )}
+            >
+              {product.category?.name ?? "Product"}
+              {product.tags?.includes("new") && " · New"}
+            </p>
+            <h3
+              className={cn(
+                "product-card-title font-serif text-sm sm:text-base font-semibold line-clamp-2 leading-snug",
+                theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+              )}
+            >
+              {product.name}
+            </h3>
+            <p
+              className={cn(
+                "product-card-price font-serif text-base sm:text-lg font-semibold mt-0.5",
+                theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+              )}
+            >
+              {formatPrice(product.price)}
+              {isOnSale && product.originalPrice && (
+                <span
+                  className={cn(
+                    "ml-2 font-sans text-sm font-normal line-through",
+                    theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
+                  )}
+                >
+                  {formatPrice(product.originalPrice)}
+                </span>
+              )}
+            </p>
+          </div>
         </Link>
       </div>
 

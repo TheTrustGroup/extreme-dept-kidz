@@ -31,41 +31,41 @@ export async function generateMetadata({
     };
   }
 
-  const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
+  const images = product.images ?? [];
+  const primaryImage = images.find((img) => img.isPrimary) ?? images[0];
+  const imageUrl = primaryImage?.url;
 
-  return {
+  const metadata: Metadata = {
     title: `${product.name} | Extreme Dept Kidz`,
-    description: product.description,
+    description: product.description ?? undefined,
     keywords: [
       product.name,
-      product.category.name,
+      product.category?.name ?? "Product",
       "luxury kids fashion",
       "premium children's clothing",
-      ...(product.tags || []),
+      ...(product.tags ?? []),
     ],
-    openGraph: {
-      title: `${product.name} | Extreme Dept Kidz`,
-      description: product.description,
-      type: "website",
-      images: [
-        {
-          url: primaryImage.url,
-          width: 1200,
-          height: 1200,
-          alt: product.name,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${product.name} | Extreme Dept Kidz`,
-      description: product.description,
-      images: [primaryImage.url],
-    },
     alternates: {
       canonical: `https://extremedeptkidz.com/products/${product.slug}`,
     },
   };
+
+  if (imageUrl) {
+    metadata.openGraph = {
+      title: `${product.name} | Extreme Dept Kidz`,
+      description: product.description ?? undefined,
+      type: "website",
+      images: [{ url: imageUrl, width: 1200, height: 1200, alt: product.name }],
+    };
+    metadata.twitter = {
+      card: "summary_large_image",
+      title: `${product.name} | Extreme Dept Kidz`,
+      description: product.description ?? undefined,
+      images: [imageUrl],
+    };
+  }
+
+  return metadata;
 }
 
 /**

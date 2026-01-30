@@ -31,7 +31,8 @@ export function ProductGallery({
   const [touchStart, setTouchStart] = React.useState<number | null>(null);
   const [touchEnd, setTouchEnd] = React.useState<number | null>(null);
 
-  const selectedImage = images[selectedIndex] || images[0];
+  const selectedImage = images[selectedIndex] ?? images[0];
+  const hasImages = Array.isArray(images) && images.length > 0;
 
   // Minimum swipe distance
   const minSwipeDistance = 50;
@@ -117,16 +118,21 @@ export function ProductGallery({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
+            {hasImages && selectedImage ? (
             <ZoomableImage
               src={selectedImage.url}
-              alt={selectedImage.alt || `${productName} - Image ${selectedIndex + 1}`}
+              alt={selectedImage.alt ?? `${productName} - Image ${selectedIndex + 1}`}
               sizes="(max-width: 1024px) 100vw, 60vw"
               priority={selectedIndex === 0}
               loading={selectedIndex === 0 ? "eager" : "lazy"}
               quality={80}
               onLightboxOpen={() => setIsLightboxOpen(true)}
             />
-
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-cream-100 text-charcoal-500 text-sm">
+                No Image
+              </div>
+            )}
 
             {/* Navigation Arrows (Desktop) */}
             {images.length > 1 && (

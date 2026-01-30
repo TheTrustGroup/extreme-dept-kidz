@@ -6,17 +6,19 @@ import { getProducts } from "@/lib/data/products";
 import type { Product } from "@/types";
 import { HeroSection } from "@/components/home";
 import { TrustBar } from "@/components/home";
+import { JustDroppedSection } from "@/components/home";
+import { GirlsCollectionSection } from "@/components/home";
 import { StreamingSkeleton } from "@/components/ui/StreamingSkeleton";
+import {
+  sortJustDropped,
+  filterJustDropped,
+  parseJustDroppedFilter,
+} from "@/lib/utils/just-dropped";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
 import { RealtimeTest } from "@/components/debug/RealtimeTest";
 
-// Hero + TrustBar in main bundle so above-the-fold is fast and never static/blank
-
-const HomeProductSectionsWithSWR = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.HomeProductSectionsWithSWR })), {
-  ssr: true, // Render with page so content isn’t blank on first view
-  loading: () => <StreamingSkeleton variant="product-grid" />,
-});
+// Hero, TrustBar, and "Just dropped" in main bundle so below-hero is never blank
 
 const ShopByStyleSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
   ssr: true, // SSR enabled for streaming
@@ -86,11 +88,22 @@ export const metadata: Metadata = {
  * - ShopByCategory: 2x2 category grid
  * - EditorialSection: Split-screen lifestyle editorial
  */
-export default async function Home() {
+interface HomeProps {
+  searchParams?: { filter?: string | string[] } | Promise<{ filter?: string | string[] }>;
+}
+
+export default async function Home(props: HomeProps) {
   const websiteSchema = generateWebsiteSchema();
   const organizationSchema = generateOrganizationSchema();
 
-  // Fetch products from database to display on homepage (fully dynamic SSR)
+  // Resolve searchParams (Next 14 sync; Next 15+ may pass Promise)
+  const rawParams = props.searchParams;
+  const searchParamsResolved =
+    rawParams && typeof (rawParams as Promise<unknown>).then === "function"
+      ? (await (rawParams as Promise<{ filter?: string | string[] }>)) as { filter?: string | string[] }
+      : ((rawParams ?? {}) as { filter?: string | string[] });
+
+  // Fetch products on server — single source of truth
   let products: Product[] = [];
   try {
     products = await getProducts();
@@ -100,6 +113,11 @@ export default async function Home() {
     }
     products = [];
   }
+
+  // Just dropped: server-side filter from URL (?filter=boys|girls|new|all)
+  const currentFilter = parseJustDroppedFilter(searchParamsResolved);
+  const sorted = sortJustDropped(products);
+  const filteredForJustDropped = filterJustDropped(sorted, currentFilter);
 
   const generatedAt = new Date().toISOString();
 
@@ -124,13 +142,10 @@ export default async function Home() {
         {/* Progressive rendering: LCP elements (Hero) render first, rest streams in */}
         {/* Each Suspense boundary enables independent streaming of sections */}
         
-        {/* New Arrivals + Girls sections: SWR for client-side refresh (10s interval, on focus/reconnect) */}
-        <Suspense 
-          fallback={<StreamingSkeleton variant="product-grid" />}
-          key="home-product-sections"
-        >
-          <HomeProductSectionsWithSWR initialProducts={products} />
-        </Suspense>
+        {/* Just dropped: server-rendered, URL-based filter — reliability, speed, clarity */}
+        <JustDroppedSection products={filteredForJustDropped} currentFilter={currentFilter} />
+        {/* Girls section: client for filter tabs; data from server */}
+        <GirlsCollectionSection products={products} />
 
         {/* Shop by Style Section - Above fold, category navigation */}
         <Suspense 
