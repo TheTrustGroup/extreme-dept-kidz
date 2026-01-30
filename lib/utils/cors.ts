@@ -26,16 +26,36 @@ function isAllowedOrigin(origin: string | null): boolean {
 }
 
 /**
+ * Derive request origin from URL when Origin header is missing (same-origin requests).
+ * Ensures API responses always have a valid CORS origin so "access control checks" never fail.
+ */
+function getEffectiveOrigin(request: NextRequest): string | null {
+  const origin = request.headers.get('Origin');
+  if (origin && isAllowedOrigin(origin)) return origin;
+  try {
+    const url = new URL(request.url);
+    const derived = `${url.protocol}//${url.host}`;
+    if (ALLOWED_ORIGINS.has(derived)) return derived;
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      return `${url.protocol}//${url.host}`;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/**
  * Add CORS headers so the main site and warehouse can call API routes.
- * Fixes "Fetch API cannot load ... due to access control checks" when
- * fetching /api/products from extremedeptkidz.com or www.
+ * Always sets CORS when we can derive an allowed origin (fixes "access control checks"
+ * when Origin header is missing on same-origin or RSC fetches).
  */
 export function withCors(
   request: NextRequest,
   response: NextResponse
 ): NextResponse {
-  const origin = request.headers.get('Origin');
-  if (origin && isAllowedOrigin(origin)) {
+  const origin = getEffectiveOrigin(request);
+  if (origin) {
     response.headers.set('Access-Control-Allow-Origin', origin);
     response.headers.set('Access-Control-Allow-Credentials', 'true');
     response.headers.set(

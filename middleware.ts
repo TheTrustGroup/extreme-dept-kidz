@@ -10,6 +10,21 @@ const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:3000',
 ]);
 
+/** Derive effective origin from request when Origin header is missing (same-origin / RSC fetches) */
+function getEffectiveOrigin(request: NextRequest): string | null {
+  const origin = request.headers.get('Origin');
+  if (origin && ALLOWED_ORIGINS.has(origin)) return origin;
+  try {
+    const url = request.nextUrl;
+    const derived = `${url.protocol}//${url.host}`;
+    if (ALLOWED_ORIGINS.has(derived)) return derived;
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return derived;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 /** CORS headers when origin is allowed (credentials: true) */
 function corsHeaders(origin: string): Record<string, string> {
   return {
@@ -63,7 +78,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/orders/') ||
     pathname === '/api/products' ||
     pathname.startsWith('/api/products/');
-  const isAllowedOrigin = origin && ALLOWED_ORIGINS.has(origin);
+  const effectiveOrigin = getEffectiveOrigin(request);
+  const isAllowedOrigin = !!effectiveOrigin;
   
   // Public diagnostic endpoints: allow from anywhere (no CORS restrictions)
   if (isPublicDiagnostic) {
@@ -82,9 +98,9 @@ export function middleware(request: NextRequest) {
     return response;
   }
   
-  if (isApi && isAllowedOrigin) {
+  if (isApi && isAllowedOrigin && effectiveOrigin) {
     if (request.method === 'OPTIONS') {
-      const headers = corsHeaders(origin);
+      const headers = corsHeaders(effectiveOrigin);
       headers['X-Request-ID'] = requestId;
       return new NextResponse(null, {
         status: 204,
@@ -92,7 +108,7 @@ export function middleware(request: NextRequest) {
       });
     }
     const response = NextResponse.next();
-    Object.entries(corsHeaders(origin)).forEach(([key, value]) => {
+    Object.entries(corsHeaders(effectiveOrigin)).forEach(([key, value]) => {
       response.headers.set(key, value);
     });
     response.headers.set('X-Request-ID', requestId);
