@@ -170,23 +170,25 @@ export function apiValidationError(
  * Unauthorized error
  */
 export function apiUnauthorized(
-  message: string = 'Unauthorized'
+  message: string = 'Unauthorized',
+  requestId?: string
 ): NextResponse<ApiErrorResponse> {
-  return apiError(message, 401, undefined, 'UNAUTHORIZED');
+  return apiError(message, 401, undefined, 'UNAUTHORIZED', requestId);
 }
 
 /**
  * Not found error
  */
 export function apiNotFound(
-  resource: string = 'Resource'
+  resource: string = 'Resource',
+  requestId?: string
 ): NextResponse<ApiErrorResponse> {
-  return apiError(`${resource} not found`, 404, undefined, 'NOT_FOUND');
+  return apiError(`${resource} not found`, 404, undefined, 'NOT_FOUND', requestId);
 }
 
 /**
  * Rate limit error
  */
-export function apiRateLimit(): NextResponse<ApiErrorResponse> {
-  return apiError('Too many requests', 429, 'Please try again later', 'RATE_LIMIT');
+export function apiRateLimit(requestId?: string): NextResponse<ApiErrorResponse> {
+  return apiError('Too many requests', 429, 'Please try again later', 'RATE_LIMIT', requestId);
 }

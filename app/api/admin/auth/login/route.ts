@@ -17,6 +17,9 @@ export const dynamic = 'force-dynamic';
 const failedAttempts = new Map<string, number>();
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Extract request ID for tracking
+  const requestId = request.headers.get('X-Request-ID') || undefined;
+  
   try {
     // 0. ENVIRONMENT CHECK - Fail fast if critical env vars are missing
     // Check DATABASE_URL first
@@ -26,7 +29,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'Database configuration error. DATABASE_URL environment variable is not set.',
         500,
         'Please check Vercel environment variables and ensure DATABASE_URL is configured.',
-        'MISSING_DATABASE_URL'
+        'MISSING_DATABASE_URL',
+        requestId
       ));
     }
 
@@ -38,7 +42,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'Authentication configuration error: JWT_SECRET environment variable is not set. Please set JWT_SECRET in your environment variables.',
         500,
         'Set JWT_SECRET in Vercel environment variables (must be at least 32 characters).',
-        'MISSING_JWT_SECRET'
+        'MISSING_JWT_SECRET',
+        requestId
       ));
     }
     
@@ -53,7 +58,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'Authentication configuration error: JWT_SECRET must be at least 32 characters long.',
         500,
         `Current JWT_SECRET length: ${jwtSecret.length} (required: 32+). Update JWT_SECRET in Vercel environment variables.`,
-        'INVALID_JWT_SECRET'
+        'INVALID_JWT_SECRET',
+        requestId
       ));
     }
 
@@ -66,7 +72,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return withCors(request, apiError(
         'Suspicious activity detected',
         403,
-        'Request blocked by security system. If you believe this is an error, please contact support.'
+        'Request blocked by security system. If you believe this is an error, please contact support.',
+        undefined,
+        requestId
       ));
     }
     
@@ -85,7 +93,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (!rateLimit.allowed) {
       const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
-      const response = apiRateLimit();
+      const response = apiRateLimit(requestId);
       response.headers.set('Retry-After', retryAfter.toString());
       response.headers.set('X-RateLimit-Limit', '5');
       response.headers.set('X-RateLimit-Remaining', '0');
@@ -103,7 +111,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'Invalid request format',
         400,
         'Request body must be valid JSON',
-        'INVALID_JSON'
+        'INVALID_JSON',
+        requestId
       ));
     }
 
@@ -115,15 +124,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { email, password } = validation.data;
 
-    if (!prisma) {
-      logger.error('Prisma client is null - DATABASE_URL may not be set');
-      return withCors(request, apiError(
-        'Database connection unavailable. Please check environment variables.',
-        500,
-        'Visit /api/admin/auth/test-db for detailed diagnostics'
-      ));
-    }
-
     // Ensure DB connection is ready (Vercel cold start) - lazy init if needed
     try {
       const { initializeDatabase } = await import('@/lib/db');
@@ -133,10 +133,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Continue - Prisma will attempt connection on first query
     }
 
+    // Check if Prisma client is available
+    if (!prisma) {
+      logger.error('[Login] ❌ Prisma client is not available');
+      return withCors(request, apiError(
+        'Database not available',
+        500,
+        'Database connection failed. Please check DATABASE_URL configuration.',
+        undefined,
+        requestId
+      ));
+    }
+
     // Find user - normalize email for lookup (case-insensitive)
     // Email is stored exactly as provided, but we lookup case-insensitively
     const normalizedEmail = email.toLowerCase().trim();
     const trimmedEmail = email.trim();
+
     let user;
     
     // Retry query up to 3 times for Vercel cold start (connection might not be ready on first request)
@@ -197,7 +210,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
               : 'Database query failed. Please try again.',
             500,
-            process.env.NODE_ENV === 'development' ? errorMessage : connectionHint
+            process.env.NODE_ENV === 'development' ? errorMessage : connectionHint,
+            undefined,
+            requestId
           ));
         }
         
@@ -209,11 +224,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!user) {
       logger.log(`Login attempt failed: User not found for email ${normalizedEmail}`);
       // Don't reveal if user exists (security best practice)
-      return withCors(request, apiUnauthorized('Invalid email or password'));
+      return withCors(request, apiUnauthorized('Invalid email or password', requestId));
     }
 
     if (!user.isActive) {
-      return withCors(request, apiError('Account is inactive', 403));
+      return withCors(request, apiError('Account is inactive', 403, undefined, undefined, requestId));
     }
 
     // Verify password - trim to avoid whitespace issues
@@ -222,7 +237,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check if password hash exists
     if (!user.passwordHash) {
       logger.error('[Login] ❌ No password hash found for user:', user.email);
-      return withCors(request, apiUnauthorized('Invalid email or password'));
+      return withCors(request, apiUnauthorized('Invalid email or password', requestId));
     }
     
     let isValid = false;
@@ -230,11 +245,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       isValid = await verifyPassword(trimmedPassword, user.passwordHash);
     } catch (verifyError) {
       logger.error('[Login] ❌ Password verification error:', verifyError);
-      return apiError(
+      return withCors(request, apiError(
         'Password verification failed',
         500,
-        verifyError instanceof Error ? verifyError.message : 'Unknown error'
-      );
+        verifyError instanceof Error ? verifyError.message : 'Unknown error',
+        undefined,
+        requestId
+      ));
     }
     
     if (!isValid) {
@@ -259,14 +276,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         logger.error('🚨 Account locked due to too many failed attempts:', user.email);
         return withCors(request, apiError(
           'Account temporarily locked due to too many failed attempts',
-          423
+          423,
+          undefined,
+          undefined,
+          requestId
         ));
       }
 
       // Timing attack prevention - delay response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      return withCors(request, apiUnauthorized('Invalid email or password'));
+      return withCors(request, apiUnauthorized('Invalid email or password', requestId));
     }
 
     // Clear failed attempts on successful login
