@@ -52,6 +52,8 @@ export function middleware(request: NextRequest) {
   const requestId = request.headers.get('X-Request-ID') || generateRequestId();
 
   // CORS: allow main site, www, warehouse, and dev to call API (fixes "access control checks" on /api/products)
+  // Special handling for public diagnostic endpoints (no auth required)
+  const isPublicDiagnostic = pathname === '/api/admin/auth/test-db' || pathname === '/api/health';
   const isApi =
     pathname === '/api/admin/auth/login' ||
     pathname === '/admin/api/login' ||
@@ -62,6 +64,24 @@ export function middleware(request: NextRequest) {
     pathname === '/api/products' ||
     pathname.startsWith('/api/products/');
   const isAllowedOrigin = origin && ALLOWED_ORIGINS.has(origin);
+  
+  // Public diagnostic endpoints: allow from anywhere (no CORS restrictions)
+  if (isPublicDiagnostic) {
+    const response = NextResponse.next();
+    response.headers.set('X-Request-ID', requestId);
+    // Allow CORS for diagnostic endpoints
+    if (origin) {
+      Object.entries(corsHeaders(origin)).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+    } else {
+      // No origin (curl, etc.) - allow anyway for diagnostics
+      response.headers.set('Access-Control-Allow-Origin', '*');
+      response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    }
+    return response;
+  }
+  
   if (isApi && isAllowedOrigin) {
     if (request.method === 'OPTIONS') {
       const headers = corsHeaders(origin);
