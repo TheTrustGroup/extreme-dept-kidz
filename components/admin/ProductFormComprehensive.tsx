@@ -17,6 +17,13 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
+  FileText,
+  Image as ImageIcon,
+  DollarSign,
+  Package,
+  Palette,
+  FolderOpen,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FloatingInput, FloatingTextarea } from "@/components/ui/floating-input";
@@ -69,13 +76,13 @@ interface ProductFormComprehensiveProps {
 }
 
 const FORM_SECTIONS = [
-  { id: "basic", label: "Basic Information", icon: "📝" },
-  { id: "images", label: "Images", icon: "🖼️" },
-  { id: "pricing", label: "Pricing", icon: "💰" },
-  { id: "inventory", label: "Inventory", icon: "📦" },
-  { id: "variants", label: "Variants", icon: "🎨" },
-  { id: "categories", label: "Categories", icon: "📂" },
-  { id: "seo", label: "SEO", icon: "🔍" },
+  { id: "basic", label: "Basic Information", icon: FileText },
+  { id: "images", label: "Images", icon: ImageIcon },
+  { id: "pricing", label: "Pricing", icon: DollarSign },
+  { id: "inventory", label: "Inventory", icon: Package },
+  { id: "variants", label: "Variants", icon: Palette },
+  { id: "categories", label: "Categories", icon: FolderOpen },
+  { id: "seo", label: "SEO", icon: Search },
 ] as const;
 
 export function ProductFormComprehensive({
@@ -593,29 +600,32 @@ export function ProductFormComprehensive({
 
   return (
     <div className="flex gap-6 h-[calc(100vh-8rem)]">
-      {/* Sidebar Navigation */}
-      <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 p-4 overflow-y-auto sticky top-0 h-full">
+      {/* Sidebar Navigation - Admin design system */}
+      <aside className="w-64 flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-4 overflow-y-auto sticky top-0 h-full">
         <div className="space-y-1">
-          {FORM_SECTIONS.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => scrollToSection(section.id)}
-              className={cn(
-                "w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-3",
-                activeSection === section.id
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-gray-700 hover:bg-gray-100"
-              )}
-            >
-              <span>{section.icon}</span>
-              {section.label}
-            </button>
-          ))}
+          {FORM_SECTIONS.map((section) => {
+            const Icon = section.icon;
+            return (
+              <button
+                key={section.id}
+                onClick={() => scrollToSection(section.id)}
+                className={cn(
+                  "w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-3",
+                  activeSection === section.id
+                    ? "bg-navy-600 text-white shadow-md"
+                    : "text-charcoal-700 hover:bg-cream-100 border border-transparent"
+                )}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                {section.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Auto-save Status */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="mt-6 pt-6 border-t border-cream-200/50">
+          <div className="flex items-center gap-2 text-xs text-charcoal-600">
             {autoSaveStatus === "saving" && (
               <>
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -642,8 +652,8 @@ export function ProductFormComprehensive({
       <div className="flex-1 overflow-y-auto">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 p-6">
           {/* Basic Information */}
-          <section id="section-basic" className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
+          <section id="section-basic" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-charcoal-900">Basic Information</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
@@ -684,12 +694,12 @@ export function ProductFormComprehensive({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-charcoal-700 mb-2">
                   Status
                 </label>
                 <select
                   {...register("status")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent text-charcoal-900"
                 >
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
@@ -698,7 +708,7 @@ export function ProductFormComprehensive({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-charcoal-700 mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <FloatingTextarea
@@ -725,10 +735,10 @@ export function ProductFormComprehensive({
           </section>
 
           {/* Images Section */}
-          <section id="section-images" className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+          <section id="section-images" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Images</h2>
-              <p className="text-sm text-gray-600">Recommended size: 1200x1200px</p>
+              <h2 className="text-2xl font-bold text-charcoal-900 mb-2">Images</h2>
+              <p className="text-sm text-charcoal-600">Recommended size: 1200x1200px</p>
             </div>
 
             <ImageUpload
@@ -741,15 +751,15 @@ export function ProductFormComprehensive({
 
             {images.length > 0 && (
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Image Order</h3>
+                <h3 className="font-semibold text-charcoal-900">Image Order</h3>
                 <div className="space-y-2">
                   {imageOrder.map((imgIndex, displayIndex) => (
                     <div
                       key={imgIndex}
-                      className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      className="flex items-center gap-4 p-3 border border-cream-200/50 rounded-lg hover:bg-cream-50"
                     >
-                      <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      <GripVertical className="w-5 h-5 text-charcoal-400 cursor-move" />
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-cream-100 flex-shrink-0">
                         <img
                           src={images[imgIndex]}
                           alt={`Product image ${displayIndex + 1}`}
@@ -757,10 +767,10 @@ export function ProductFormComprehensive({
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-charcoal-900">
                           Image {displayIndex + 1}
                           {displayIndex === 0 && (
-                            <span className="ml-2 text-xs text-indigo-600 font-semibold">(Primary)</span>
+                            <span className="ml-2 text-xs text-navy-600 font-semibold">(Primary)</span>
                           )}
                         </p>
                       </div>
@@ -782,8 +792,8 @@ export function ProductFormComprehensive({
           </section>
 
           {/* Pricing Section */}
-          <section id="section-pricing" className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Pricing</h2>
+          <section id="section-pricing" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-charcoal-900">Pricing</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -822,19 +832,19 @@ export function ProductFormComprehensive({
           </section>
 
           {/* Inventory Section */}
-          <section id="section-inventory" className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Inventory</h2>
+          <section id="section-inventory" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-charcoal-900">Inventory</h2>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-cream-50 rounded-lg">
                 <input
                   type="checkbox"
                   {...register("trackInventory")}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+                  className="w-5 h-5 text-navy-600 border-cream-300 rounded focus:ring-2 focus:ring-navy-500"
                 />
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Track Inventory</label>
-                  <p className="text-xs text-gray-500">Enable inventory tracking for this product</p>
+                  <label className="text-sm font-medium text-charcoal-900">Track Inventory</label>
+                  <p className="text-xs text-charcoal-600">Enable inventory tracking for this product</p>
                 </div>
               </div>
 
@@ -861,21 +871,21 @@ export function ProductFormComprehensive({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3 p-4 bg-cream-50 rounded-lg">
                     <input
                       type="checkbox"
                       {...register("allowBackorders")}
-                      className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+                      className="w-5 h-5 text-navy-600 border-cream-300 rounded focus:ring-2 focus:ring-navy-500"
                     />
                     <div>
-                      <label className="text-sm font-medium text-gray-900">Allow Backorders</label>
-                      <p className="text-xs text-gray-500">Allow customers to purchase out-of-stock items</p>
+                      <label className="text-sm font-medium text-charcoal-900">Allow Backorders</label>
+                      <p className="text-xs text-charcoal-600">Allow customers to purchase out-of-stock items</p>
                     </div>
                   </div>
                 </>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4 border-t border-cream-200/50">
                 <div>
                   <FloatingInput
                     type="number"
@@ -917,9 +927,9 @@ export function ProductFormComprehensive({
           </section>
 
           {/* Variants Section */}
-          <section id="section-variants" className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+          <section id="section-variants" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Variants</h2>
+              <h2 className="text-2xl font-bold text-charcoal-900">Variants</h2>
               <Button
                 type="button"
                 variant="secondary"
@@ -936,23 +946,23 @@ export function ProductFormComprehensive({
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-cream-50 border-b border-cream-200/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Size</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Color</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Price</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">SKU</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Stock</th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-700">Size</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-700">Color</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-700">Price</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-700">SKU</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-700">Stock</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-charcoal-700">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-cream-200/50">
                   {variants.map((variant, index) => (
                     <tr key={index}>
                       <td className="px-4 py-3">
                         <select
                           {...register(`variants.${index}.size`)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         >
                           <option value="">Select size</option>
                           {DEFAULT_PRODUCT_SIZES.map((size) => (
@@ -967,7 +977,7 @@ export function ProductFormComprehensive({
                           type="text"
                           {...register(`variants.${index}.color`)}
                           placeholder="Optional"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3">
@@ -976,7 +986,7 @@ export function ProductFormComprehensive({
                           step="0.01"
                           {...register(`variants.${index}.price`, { valueAsNumber: true })}
                           placeholder="Override price"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3">
@@ -984,14 +994,14 @@ export function ProductFormComprehensive({
                           type="text"
                           {...register(`variants.${index}.sku`)}
                           placeholder="Variant SKU"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3">
                         <input
                           type="number"
                           {...register(`variants.${index}.stock`, { valueAsNumber: true })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -1015,16 +1025,16 @@ export function ProductFormComprehensive({
           </section>
 
           {/* Categories Section */}
-          <section id="section-categories" className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Categories & Tags</h2>
+          <section id="section-categories" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-charcoal-900">Categories & Tags</h2>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-charcoal-700 mb-2">
                 Category <span className="text-red-500">*</span>
               </label>
               <select
                 {...register("categoryId")}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
               >
                 <option value="">Select a category</option>
                 {categories.map((cat) => (
@@ -1039,24 +1049,24 @@ export function ProductFormComprehensive({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+              <label className="block text-sm font-medium text-charcoal-700 mb-2">Tags</label>
               <input
                 type="text"
                 placeholder="Enter tags separated by commas (e.g., new, sale, bestseller)"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
                 onChange={(e) => {
                   const tags = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
                   setValue("tags", tags, { shouldDirty: true });
                 }}
                 defaultValue={watch("tags")?.join(", ") || ""}
               />
-              <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+              <p className="text-xs text-charcoal-600 mt-1">Separate multiple tags with commas</p>
             </div>
           </section>
 
           {/* SEO Section */}
-          <section id="section-seo" className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">SEO Settings</h2>
+          <section id="section-seo" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-charcoal-900">SEO Settings</h2>
 
             <div className="space-y-6">
               <div>
@@ -1081,13 +1091,13 @@ export function ProductFormComprehensive({
               </div>
 
               {/* SEO Preview */}
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Search Engine Preview</h3>
+              <div className="border border-cream-200/50 rounded-lg p-4 bg-cream-50">
+                <h3 className="text-sm font-semibold text-charcoal-700 mb-3">Search Engine Preview</h3>
                 <div className="space-y-1">
                   <p className="text-lg text-blue-600 hover:underline cursor-pointer">
                     {metaTitle || "Product Name"}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-charcoal-600">
                     {metaDescription || "Product description will appear here"}
                   </p>
                   <p className="text-sm text-green-700">
@@ -1099,7 +1109,7 @@ export function ProductFormComprehensive({
           </section>
 
           {/* Form Actions */}
-          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 -mx-6 -mb-6 flex items-center justify-between shadow-lg">
+          <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-cream-200/50 p-6 -mx-6 -mb-6 flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-4">
               {!isNew && (
                 <Button
