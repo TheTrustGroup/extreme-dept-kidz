@@ -30,8 +30,9 @@ export default function ProductEditPage(): JSX.Element {
     if (isNew || !productId) return;
     setLoadError(null);
     setLoading(true);
+    const base = typeof window !== "undefined" ? window.location.origin : "";
     try {
-      const res = await fetch(`/api/admin/products/${productId}`, { credentials: "include" });
+      const res = await fetch(`${base}/api/admin/products/${productId}`, { credentials: "include" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setLoadError(err?.error || `Failed to load product (${res.status})`);
@@ -77,7 +78,16 @@ export default function ProductEditPage(): JSX.Element {
       }
     } catch (error) {
       console.error("Failed to load product:", error);
-      setLoadError(error instanceof Error ? error.message : "Failed to load product");
+      const msg = error instanceof Error ? error.message : "Failed to load product";
+      const isNetworkError =
+        msg === "Load failed" ||
+        msg === "Failed to fetch" ||
+        msg.toLowerCase().includes("network");
+      setLoadError(
+        isNetworkError
+          ? "Network error. Check your connection and that the dev server is running, then try again."
+          : msg
+      );
     } finally {
       setLoading(false);
     }

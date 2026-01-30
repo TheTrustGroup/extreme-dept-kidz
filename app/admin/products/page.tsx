@@ -101,11 +101,12 @@ export default function ProductsPage(): JSX.Element {
     outOfStock: 0,
   });
 
-  // Load categories
+  // Load categories (use same-origin base so fetch works behind proxy / different port)
   React.useEffect(() => {
     async function loadCategories(): Promise<void> {
       try {
-        const res = await fetch("/api/admin/categories", { credentials: 'include' });
+        const base = typeof window !== "undefined" ? window.location.origin : "";
+        const res = await fetch(`${base}/api/admin/categories`, { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           const cats = data.data?.categories || data.categories || [];
@@ -146,8 +147,9 @@ export default function ProductsPage(): JSX.Element {
         params.set('stockStatus', 'outOfStock');
       }
 
-      const response = await fetch(`/api/admin/products?${params.toString()}`, {
-        credentials: 'include',
+      const base = typeof window !== "undefined" ? window.location.origin : "";
+      const response = await fetch(`${base}/api/admin/products?${params.toString()}`, {
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -177,7 +179,8 @@ export default function ProductsPage(): JSX.Element {
   // Load stats - consolidated single API call
   const loadStats = React.useCallback(async (): Promise<void> => {
     try {
-      const res = await fetch('/api/admin/products/stats', { credentials: 'include' });
+      const base = typeof window !== "undefined" ? window.location.origin : "";
+      const res = await fetch(`${base}/api/admin/products/stats`, { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         const statsData = data.data || data;

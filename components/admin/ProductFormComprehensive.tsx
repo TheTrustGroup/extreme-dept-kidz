@@ -154,11 +154,12 @@ export function ProductFormComprehensive({
   const metaDescription = watch("metaDescription");
   const shortDescription = watch("shortDescription");
 
-  // Load categories
+  // Load categories (use same-origin base so fetch works behind proxy / different port)
   React.useEffect(() => {
     async function loadCategories(): Promise<void> {
       try {
-        const res = await fetch("/api/admin/categories", { credentials: 'include' });
+        const base = typeof window !== "undefined" ? window.location.origin : "";
+        const res = await fetch(`${base}/api/admin/categories`, { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           const cats = data.data?.categories || data.categories || [];
