@@ -8,17 +8,19 @@ import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { MobileNav } from "./MobileNav";
-import { MegaMenu } from "./MegaMenu";
 import { TopBar } from "./TopBar";
-import { SearchOverlay } from "./SearchOverlay";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { useCartStore } from "@/lib/stores/cart-store";
-import { CartPreviewDropdown } from "@/components/cart/CartPreviewDropdown";
 import { AccountDropdown } from "@/components/auth/AccountDropdown";
 import { SignInModal } from "@/components/auth/SignInModal";
 import { CreateAccountModal } from "@/components/auth/CreateAccountModal";
+
+// Lazy load heavy header components for better initial bundle size
+const MegaMenu = React.lazy(() => import("./MegaMenu").then(m => ({ default: m.MegaMenu })));
+const SearchOverlay = React.lazy(() => import("./SearchOverlay").then(m => ({ default: m.SearchOverlay })));
+const CartPreviewDropdown = React.lazy(() => import("@/components/cart/CartPreviewDropdown").then(m => ({ default: m.CartPreviewDropdown })));
 
 interface HeaderProps {
   cartItemCount?: number;
@@ -165,8 +167,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                   <NavLink href={link.href} isEmphasized={link.label === "BOYS"} isActive={pathname === link.href}>
                     {link.label}
                   </NavLink>
-                  {link.hasMegaMenu && (
-                    <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
+                  {link.hasMegaMenu && isMegaMenuOpen && (
+                    <React.Suspense fallback={null}>
+                      <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
+                    </React.Suspense>
                   )}
                 </div>
               ))}
@@ -342,15 +346,23 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
         onSearchOpen={() => setIsSearchOpen(true)}
       />
 
-      {/* Search Overlay */}
-      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      {/* Search Overlay - Lazy loaded */}
+      {isSearchOpen && (
+        <React.Suspense fallback={null}>
+          <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+        </React.Suspense>
+      )}
 
-      {/* Cart Preview Dropdown */}
-      <CartPreviewDropdown
-        isOpen={isCartPreviewOpen}
-        onClose={() => setIsCartPreviewOpen(false)}
-        triggerRef={cartIconRef}
-      />
+      {/* Cart Preview Dropdown - Lazy loaded */}
+      {isCartPreviewOpen && (
+        <React.Suspense fallback={null}>
+          <CartPreviewDropdown
+            isOpen={isCartPreviewOpen}
+            onClose={() => setIsCartPreviewOpen(false)}
+            triggerRef={cartIconRef}
+          />
+        </React.Suspense>
+      )}
 
       {/* Sign In Modal */}
       <SignInModal

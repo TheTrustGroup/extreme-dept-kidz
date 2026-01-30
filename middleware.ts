@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { randomBytes } from 'crypto';
 
 /** CORS: allowed origins (main site, www, warehouse, dev) */
 const ALLOWED_ORIGINS = new Set([
@@ -22,9 +23,17 @@ function corsHeaders(origin: string): Record<string, string> {
 }
 
 /**
+ * Generate a unique request ID for tracking
+ */
+function generateRequestId(): string {
+  return randomBytes(16).toString('hex');
+}
+
+/**
  * Middleware for Asset Pipeline Optimization
  * 
  * Enforces:
+ * - Request ID tracking for all requests
  * - CORS for warehouse.extremedeptkidz.com (admin API login)
  * - CDN caching headers
  * - Compression (Brotli/gzip)
@@ -35,6 +44,9 @@ function corsHeaders(origin: string): Record<string, string> {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const origin = request.headers.get('Origin') || '';
+  
+  // Generate or use existing request ID
+  const requestId = request.headers.get('X-Request-ID') || generateRequestId();
 
   // CORS: allow main site, www, warehouse, and dev to call API (fixes "access control checks" on /api/products)
   const isApi =
@@ -62,6 +74,12 @@ export function middleware(request: NextRequest) {
   }
 
   const response = NextResponse.next();
+  
+  // Add request ID to response headers for tracking
+  response.headers.set('X-Request-ID', requestId);
+  
+  // Add request ID to request headers so API routes can access it
+  request.headers.set('X-Request-ID', requestId);
 
   // CRITICAL FIX: Enhanced CDN caching for static assets
   // Images, fonts, and static files get immutable cache headers

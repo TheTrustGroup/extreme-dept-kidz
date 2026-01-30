@@ -39,6 +39,7 @@ interface ApiErrorResponse {
  * Success response
  * 
  * Performance: Adds cache headers for ISR compatibility
+ * Includes request ID from headers for tracking
  */
 export function apiSuccess<T>(
   data: T,
@@ -48,6 +49,7 @@ export function apiSuccess<T>(
     cache?: 'no-store' | 'force-cache' | 'product' | 'looks' | number; // 'product'|'looks' = use cache-constants
     staleWhileRevalidate?: number; // Stale-while-revalidate window in seconds
     tags?: string[]; // Revalidation tags
+    requestId?: string; // Request ID for tracking
   }
 ): NextResponse<ApiSuccessResponse<T>> {
   const headers = new Headers();
@@ -87,6 +89,8 @@ export function apiSuccess<T>(
     headers.set('Vercel-CDN-Cache-Control', cc);
   }
   
+  const requestId = options?.requestId;
+  
   return NextResponse.json(
     {
       success: true,
@@ -94,6 +98,7 @@ export function apiSuccess<T>(
       message,
       metadata: {
         timestamp: new Date().toISOString(),
+        ...(requestId && { requestId }),
         ...metadata,
       },
     },
@@ -103,12 +108,14 @@ export function apiSuccess<T>(
 
 /**
  * Error response
+ * Includes request ID from headers for tracking
  */
 export function apiError(
   error: string,
   status: number = 500,
   details?: string,
-  code?: string
+  code?: string,
+  requestId?: string
 ): NextResponse<ApiErrorResponse> {
   // Never expose sensitive errors in production
   const isProduction = process.env.NODE_ENV === 'production';
@@ -136,6 +143,7 @@ export function apiError(
     code,
     metadata: {
       timestamp: new Date().toISOString(),
+      ...(requestId && { requestId }),
     },
   };
   const res = NextResponse.json(body, { status });

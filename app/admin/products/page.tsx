@@ -174,32 +174,23 @@ export default function ProductsPage(): JSX.Element {
     }
   }, [search, filters, sortBy, sortOrder, page, quickFilter, showToast]);
 
-  // Load stats
+  // Load stats - consolidated single API call
   const loadStats = React.useCallback(async (): Promise<void> => {
     try {
-      const [allRes, publishedRes, draftsRes, lowStockRes, outOfStockRes] = await Promise.all([
-        fetch('/api/admin/products?limit=1', { credentials: 'include' }),
-        fetch('/api/admin/products?status=active&limit=1', { credentials: 'include' }),
-        fetch('/api/admin/products?status=draft&limit=1', { credentials: 'include' }),
-        fetch('/api/admin/products?stockStatus=lowStock&limit=1', { credentials: 'include' }),
-        fetch('/api/admin/products?stockStatus=outOfStock&limit=1', { credentials: 'include' }),
-      ]);
-
-      const [allData, publishedData, draftsData, lowStockData, outOfStockData] = await Promise.all([
-        allRes.json().catch(() => ({ data: { total: 0 } })),
-        publishedRes.json().catch(() => ({ data: { total: 0 } })),
-        draftsRes.json().catch(() => ({ data: { total: 0 } })),
-        lowStockRes.json().catch(() => ({ data: { total: 0 } })),
-        outOfStockRes.json().catch(() => ({ data: { total: 0 } })),
-      ]);
-
-      setStats({
-        all: allData.data?.total || 0,
-        published: publishedData.data?.total || 0,
-        drafts: draftsData.data?.total || 0,
-        lowStock: lowStockData.data?.total || 0,
-        outOfStock: outOfStockData.data?.total || 0,
-      });
+      const res = await fetch('/api/admin/products/stats', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        const statsData = data.data || data;
+        setStats({
+          all: statsData.all || 0,
+          published: statsData.published || 0,
+          drafts: statsData.drafts || 0,
+          lowStock: statsData.lowStock || 0,
+          outOfStock: statsData.outOfStock || 0,
+        });
+      } else {
+        console.error("Failed to load stats:", res.statusText);
+      }
     } catch (error) {
       console.error("Failed to load stats:", error);
     }
