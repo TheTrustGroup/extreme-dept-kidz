@@ -371,20 +371,26 @@ export const useAdminAuth = create<AdminAuthState>()(
             headers['Authorization'] = `Bearer ${token}`;
           }
           
-          const response = await fetch("/api/admin/auth/me", {
-            headers,
-            credentials: 'include', // Include cookies (this is the key!)
-            cache: 'no-store', // Prevent caching
-          });
+          const doFetch = () =>
+            fetch("/api/admin/auth/me", {
+              headers,
+              credentials: 'include',
+              cache: 'no-store',
+            });
+
+          let response = await doFetch();
+
+          // On 401, retry once after short delay (cookie may not have been sent yet)
+          if (response.status === 401) {
+            await new Promise((r) => setTimeout(r, 300));
+            response = await doFetch();
+          }
 
           if (!response.ok) {
-            // Only clear auth if it's a 401 (unauthorized), not other errors
             if (response.status === 401) {
               console.warn('[Auth] 401 Unauthorized - clearing auth state');
               set({ isAuthenticated: false, user: null, token: null });
-              lastAuthCheck = 0; // Reset on auth failure
-              
-              // Clear cookie
+              lastAuthCheck = 0;
               if (typeof window !== 'undefined') {
                 document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
               }

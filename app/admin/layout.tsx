@@ -28,28 +28,30 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [checkingAuth, setCheckingAuth] = React.useState(true);
   const pathname = usePathname();
-  const { checkAuth, user } = useAdminAuth();
+  const { checkAuth, user, isAuthenticated } = useAdminAuth();
 
   // Enable keyboard shortcuts (must be called unconditionally)
   useAdminKeyboards();
 
-  // CRITICAL: Initialize user state on mount
-  // Middleware validates the cookie, but we need to fetch user info for UI
+  // CRITICAL: Only verify auth when we don't already have a user (e.g. full load/refresh).
+  // Skipping checkAuth on in-admin navigation prevents 401-then-redirect when cookie is delayed.
   React.useEffect(() => {
-    // Don't check auth on public pages (login, forgot-password, reset-password)
     const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
     if (publicRoutes.includes(pathname)) {
       setCheckingAuth(false);
       return;
     }
 
-    // Initialize user state from cookie (middleware already validated it)
-    // This ensures the sign out button and user menu show up
+    // Already have user from a previous check — trust session for this navigation (no API call).
+    if (user && isAuthenticated) {
+      setCheckingAuth(false);
+      return;
+    }
+
     checkAuth()
       .then((authenticated) => {
         if (!authenticated) {
           setCheckingAuth(false);
-          // Redirect to login so user doesn't see 401s on every API call
           router.replace(`/admin/login?from=${encodeURIComponent(pathname)}`);
           return;
         }
@@ -57,11 +59,10 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       })
       .catch((error) => {
         console.error("[AdminLayout] Auth check error:", error);
-        // On auth errors, redirect to login
         router.replace(`/admin/login?from=${encodeURIComponent(pathname)}`);
         setCheckingAuth(false);
       });
-  }, [pathname, checkAuth, router]);
+  }, [pathname, checkAuth, router, user, isAuthenticated]);
 
   // Don't render layout on public pages (login, forgot-password, reset-password)
   const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];

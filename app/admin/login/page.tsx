@@ -54,14 +54,12 @@ export default function AdminLoginPage(): JSX.Element {
       }
 
       // Success - give the browser time to commit Set-Cookie before navigation.
-      // Immediate redirect can cause the next page to load without the cookie,
-      // which triggers 401 on /api/admin/auth/me and logs the user out.
       const from = searchParams.get('from');
       const redirectTo =
         from && from.startsWith('/admin') && !from.startsWith('/admin/login')
           ? from
           : '/admin';
-      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 100)));
+      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 250)));
       window.location.href = redirectTo;
     } catch (fetchError) {
       // Network error or other fetch failures

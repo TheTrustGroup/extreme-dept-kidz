@@ -480,30 +480,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     response.headers.set('X-XSS-Protection', '1; mode=block');
 
     // Set cookie for middleware authentication
-    // CRITICAL: Cookie must be set correctly for authentication to work
+    // CRITICAL: Do not set domain - cookie for exact host is most reliable (avoids 401 on nav)
     try {
       const isProduction = process.env.NODE_ENV === 'production';
-      const hostname = request.nextUrl?.hostname || '';
-      const isProductionHost = isProduction && hostname && hostname !== 'localhost' && !hostname.endsWith('.local');
-      const cookieOptions: Parameters<NextResponse['cookies']['set']>[2] = {
-        httpOnly: true, // Prevents XSS attacks
-        secure: isProduction, // HTTPS only in production
-        sameSite: 'lax', // Allow cookie on same-site top-level navigations (fixes post-login redirect)
+      response.cookies.set('admin-token', token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/', // Available site-wide
-      };
-      // In production, set domain so cookie is sent for both www and non-www
-      if (isProductionHost && hostname) {
-        const rootDomain = hostname.startsWith('www.') ? hostname.slice(4) : hostname;
-        cookieOptions.domain = rootDomain ? '.' + rootDomain : undefined;
-      }
-      response.cookies.set('admin-token', token, cookieOptions);
+        path: '/',
+      });
       
       // Generate and set CSRF token cookie
       const csrfToken = generateCSRFToken();
       setCSRFTokenCookie(response, csrfToken);
       
-      logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: lax${cookieOptions.domain ? `, domain: ${cookieOptions.domain}` : ''})`);
+      logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly, secure: ${isProduction}, sameSite: lax)`);
       logger.log(`[Login] ✅ CSRF token generated and set`);
     } catch (cookieError) {
       logger.error('[Login] ❌ Failed to set cookie:', cookieError);

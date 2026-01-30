@@ -52,24 +52,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     path: '/admin',
   });
 
-  // Also clear with root domain if in production (match login cookie domain)
-  if (process.env.NODE_ENV === 'production') {
-    const host = request.headers.get('host')?.split(':')[0];
-    if (host && !host.includes('localhost')) {
-      const rootDomain = host.startsWith('www.') ? host.slice(4) : host;
-      if (rootDomain) {
-        response.cookies.set('admin-token', '', {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'lax',
-          maxAge: 0,
-          expires: new Date(0),
-          path: '/',
-          domain: '.' + rootDomain,
-        });
-      }
-    }
-  }
+  // Cookie is set without domain (exact host); path=/ clear above is sufficient
   
   console.log('[Logout] Cookie cleared in response headers');
 
