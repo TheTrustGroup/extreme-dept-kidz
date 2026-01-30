@@ -235,6 +235,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
         : undefined;
 
+      // Include diagnostic URL in error response for easier troubleshooting
+      const diagnosticUrl = `${request.nextUrl.origin}/api/admin/auth/test-db`;
+      
       return withCors(request, apiError(
         isConnectionError 
           ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
@@ -242,7 +245,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         500,
         process.env.NODE_ENV === 'development' 
           ? `${errorName}${errorCode ? ` (${errorCode})` : ''}: ${errorMessage}${errorMeta ? ` | Meta: ${JSON.stringify(errorMeta)}` : ''}`
-          : connectionHint,
+          : connectionHint || `Check ${diagnosticUrl} for detailed diagnostics`,
         undefined,
         requestId
       ));

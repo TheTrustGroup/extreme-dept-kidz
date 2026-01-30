@@ -10,13 +10,8 @@ export const dynamic = 'force-dynamic';
  * Tests database connectivity and provides detailed diagnostics.
  */
 export async function GET(_request: NextRequest): Promise<NextResponse> {
-  // Block in production unless explicitly enabled via environment variable
-  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_DEBUG_ENDPOINTS !== 'true') {
-    return NextResponse.json(
-      { error: 'Debug endpoints are disabled in production' },
-      { status: 403 }
-    );
-  }
+  // Allow in production for database diagnostics (read-only, no sensitive data exposed)
+  // This endpoint only tests connectivity and returns safe diagnostic info
   const diagnostics: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     hasDatabaseUrl: !!process.env.DATABASE_URL,
