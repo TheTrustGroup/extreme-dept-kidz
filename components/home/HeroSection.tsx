@@ -68,7 +68,7 @@ export function HeroSection(): JSX.Element {
         <div className="max-w-3xl mx-auto text-center">
           <m.h1
             className={cn(
-              "font-serif font-bold text-cream-50",
+              "heading-xl font-serif font-bold text-cream-50",
               "text-3xl sm:text-4xl md:text-5xl lg:text-6xl",
               "leading-[1.1] tracking-tight",
               "mb-4 md:mb-5"

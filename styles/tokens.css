@@ -113,14 +113,14 @@
   --radius-card: 16px;
   --radius-card-lg: 20px;
 
-  /* PHASE 6 — Global glass token (Cards, Header, Filters, Modals, Side panels) */
-  --glass-bg: rgba(255, 255, 255, 0.08);
+  /* PHASE 6 + Polish — Global glass: soft premium blur (not harsh glow) */
+  --glass-bg: rgba(255, 255, 255, 0.06);
   --glass-blur-global: 14px;
-  --glass-border-global: rgba(255, 255, 255, 0.12);
+  --glass-border-global: rgba(255, 255, 255, 0.10);
   --glass-radius-global: 16px;
   /* Light theme: .glass on light backgrounds */
-  --glass-bg-light-mode: rgba(254, 253, 251, 0.75);
-  --glass-border-light-mode: rgba(250, 247, 237, 0.6);
+  --glass-bg-light-mode: rgba(254, 253, 251, 0.72);
+  --glass-border-light-mode: rgba(250, 247, 237, 0.55);
 }
 
 /* sRGB Color Scheme Normalization */

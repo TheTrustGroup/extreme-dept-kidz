@@ -196,8 +196,8 @@ export const ProductCard = React.memo(function ProductCard({
             </div>
           </div>
 
-          {/* Info — PHASE 7: minimal text on mobile, 44px touch targets */}
-          <div className="product-card-info flex flex-col gap-1 sm:gap-1.5 p-2 sm:p-4 rounded-b-xl bg-cream-50 border border-t-0 border-cream-200/80 dark:bg-dark-surface dark:border-dark-border-glass">
+          {/* Info — Spacing rhythm: gap-2/3 (8/12px), p-2/4 (8/16px). No overlap. */}
+          <div className="product-card-info flex flex-col gap-2 sm:gap-3 p-2 sm:p-4 rounded-b-xl bg-cream-50 border border-t-0 border-cream-200/80 dark:bg-dark-surface dark:border-dark-border-glass">
           <p
             className={cn(
               "text-[10px] sm:text-[11px] font-medium uppercase tracking-widest hidden sm:block",
