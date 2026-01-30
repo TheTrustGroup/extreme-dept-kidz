@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -396,13 +397,15 @@ export function Footer(): JSX.Element {
                 SHOP
               </h4>
               <ul className="space-y-[var(--space-3)]">
+                <FooterNavLink href="/collections/all">All Products</FooterNavLink>
                 <FooterNavLink href="/collections/boys">Boys</FooterNavLink>
                 <FooterNavLink href="/collections/girls">Girls</FooterNavLink>
                 <FooterNavLink href="/collections/new-arrivals">New Arrivals</FooterNavLink>
                 <FooterNavLink href="/collections">Collections</FooterNavLink>
                 {/* TODO: Gift Cards functionality needs to be implemented - create gift card purchase and redemption system */}
                 {/* <FooterNavLink href="#">Gift Cards</FooterNavLink> */}
-                <FooterNavLink href="/collections?sort=price-low">Sale</FooterNavLink>
+                {/* When you add a "Sale" category in Admin → Categories (slug: sale), change to /collections/sale */}
+                <FooterNavLink href="/collections/all?sort=price-low">Sale</FooterNavLink>
               </ul>
             </m.nav>
 
@@ -529,12 +532,15 @@ interface FooterNavLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElemen
 
 function FooterNavLink({ className, children, icon: Icon, href, ...props }: FooterNavLinkProps): JSX.Element {
   const { theme } = useTheme();
+  const pathname = usePathname();
   const Component = href?.startsWith("/") ? Link : "a";
   const linkProps = href?.startsWith("/") 
     ? { href } 
     : { href: href || "#" };
+  const isCurrentPage = typeof href === "string" && href.startsWith("/") && pathname === href;
   return (
     <Component
+      aria-current={isCurrentPage ? "page" : undefined}
       className={cn(
         "font-sans text-sm transition-colors duration-200 relative group",
         "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:rounded px-1",

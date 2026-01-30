@@ -117,8 +117,7 @@ export function HeroSection(): JSX.Element {
                   }
                 }}
                 onLoad={() => {
-                  // Ensure image is visible after load
-                  console.log('Hero image loaded successfully');
+                  // Image visible after load (no console in production)
                 }}
               />
             </div>
@@ -186,6 +185,22 @@ export function HeroSection(): JSX.Element {
               className="flex flex-col sm:flex-row items-center justify-center gap-[var(--space-4)] sm:gap-[var(--space-5)]"
               variants={itemVariants}
             >
+            <Button
+              variant="primary"
+              size="lg"
+              className={cn(
+                "w-full max-w-[240px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
+                "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
+                "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
+                "active:scale-[0.98] transition-all duration-300 ease-out",
+                "text-sm sm:text-base md:text-lg",
+                "px-[var(--space-6)] py-[var(--space-4)]",
+                "shadow-glass min-h-[44px] border border-cream-200/50"
+              )}
+              asChild
+            >
+              <Link href="/collections/all" aria-label="Shop all products">SHOP ALL</Link>
+            </Button>
             <Button
               variant="primary"
               size="lg"

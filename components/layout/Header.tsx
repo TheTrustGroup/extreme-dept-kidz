@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -68,7 +69,9 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
     };
   }, []);
 
+  const pathname = usePathname();
   const navLinks = [
+    { label: "ALL", href: "/collections/all" },
     { label: "BOYS", href: "/collections/boys", hasMegaMenu: true },
     { label: "NEW ARRIVALS", href: "/collections/new-arrivals" },
     { label: "GIRLS", href: "/collections/girls" },
@@ -156,7 +159,7 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                   onMouseEnter={() => link.hasMegaMenu && setIsMegaMenuOpen(true)}
                   onMouseLeave={() => link.hasMegaMenu && setIsMegaMenuOpen(false)}
                 >
-                  <NavLink href={link.href} isEmphasized={link.label === "BOYS"}>
+                  <NavLink href={link.href} isEmphasized={link.label === "BOYS"} isActive={pathname === link.href}>
                     {link.label}
                   </NavLink>
                   {link.hasMegaMenu && (
@@ -355,17 +358,19 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
   );
 }
 
-// NavLink Component with premium hover underline effect
+// NavLink Component with premium hover underline effect and aria-current for a11y
 interface NavLinkProps {
   href: string;
   children: React.ReactNode;
   isEmphasized?: boolean;
+  isActive?: boolean;
 }
 
-function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.Element {
+function NavLink({ href, children, isEmphasized = false, isActive = false }: NavLinkProps): JSX.Element {
   const { theme } = useTheme();
+  const active = isActive || isEmphasized;
   return (
-    <Link href={href} className="relative inline-block group/nav">
+    <Link href={href} className="relative inline-block group/nav" aria-current={isActive ? "page" : undefined}>
       <m.span
         className={cn(
           "font-sans text-xs font-medium uppercase tracking-wider",
@@ -373,10 +378,10 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
           "transition-all duration-[var(--duration-nav-hover)] ease-[var(--ease-premium)]",
           "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 focus:rounded-lg",
           theme === "dark"
-            ? isEmphasized
+            ? active
               ? "text-accent-primary font-semibold"
               : "text-dark-text-primary group-hover/nav:text-accent-primary group-hover/nav:bg-dark-surface"
-            : isEmphasized
+            : active
               ? "text-navy-900 font-semibold"
               : "text-charcoal-700 group-hover/nav:text-charcoal-900 group-hover/nav:bg-cream-200/50"
         )}
@@ -395,10 +400,10 @@ function NavLink({ href, children, isEmphasized = false }: NavLinkProps): JSX.El
           className={cn(
             "absolute bottom-[var(--space-2)] left-[var(--space-2)] right-[var(--space-2)] h-[2px] rounded-full transition-all duration-[var(--duration-nav-hover)] ease-[var(--ease-premium)] origin-center",
             theme === "dark"
-              ? isEmphasized
+              ? active
                 ? "bg-accent-primary scale-x-100"
                 : "bg-accent-primary scale-x-0 group-hover/nav:scale-x-100"
-              : isEmphasized
+              : active
                 ? "bg-navy-900 scale-x-100"
                 : "bg-navy-900 scale-x-0 group-hover/nav:scale-x-100"
           )}

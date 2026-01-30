@@ -200,8 +200,11 @@ export async function PUT(
     // Revalidate cache to show updated product immediately
     try {
       const { revalidateProduct, revalidateCategoryChange, revalidateAllCollectionPages } = await import('@/lib/utils/cache-revalidation');
-      
-      // Use efficient tag-based revalidation
+      // When slug changed: revalidate OLD slug so /products/old-slug shows notFound, not stale content
+      if (existingProduct?.slug && existingProduct.slug !== product.slug) {
+        revalidatePath(`/products/${existingProduct.slug}`, 'page');
+        revalidateTag(CACHE_TAGS.product(existingProduct.slug));
+      }
       revalidateProduct(product.slug, product.id);
       
       // CRITICAL FIX: Revalidate complete-looks cache when products are updated
@@ -302,23 +305,21 @@ export async function DELETE(
 
     // Revalidate cache after deletion
     try {
-      // CRITICAL: Revalidate tags so frontend and API caches show updated product list
+      // CRITICAL: Revalidate the deleted product's detail page so /products/[slug] shows notFound, not stale cache
+      revalidatePath(`/products/${existing.slug}`, 'page');
+      revalidateTag(CACHE_TAGS.product(existing.slug));
+      // Revalidate tags so frontend and API caches show updated product list
       revalidateTag(CACHE_TAGS.products);
       revalidateTag(CACHE_TAGS.homepage);
       revalidateTag(CACHE_TAGS.collections);
       revalidateTag(CACHE_TAGS.categories);
-      // CRITICAL FIX: Revalidate complete-looks cache when products are deleted
       revalidateTag(CACHE_TAGS.completeLooks);
       revalidateTag(CACHE_TAGS.completeLookProduct(id));
-      
-      // Revalidate product and collection pages
       revalidatePath('/products');
       revalidatePath('/collections');
       revalidatePath('/');
       revalidatePath('/admin/products');
       revalidatePath('/api/products');
-      
-      // Also revalidate all collection pages
       await revalidateAllCollectionPages();
     } catch (revalidateError) {
       logger.error('Failed to revalidate cache:', revalidateError);

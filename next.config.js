@@ -223,13 +223,13 @@ const nextConfig = {
           },
         ],
       },
-      // Product detail: slightly longer CDN cache, browser still revalidates
+      // Product detail: align with list pages so list/detail stay in sync and 404s don't stick (SEV-1 fix)
       {
         source: "/products/:path*",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+            value: "public, max-age=0, s-maxage=10, stale-while-revalidate=59",
           },
         ],
       },

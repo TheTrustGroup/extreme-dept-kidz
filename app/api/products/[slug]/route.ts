@@ -20,7 +20,7 @@ export async function GET(
   try {
     const { slug } = await params;
     
-    // Use DB abstraction layer (with automatic fallback to mock data)
+    // Use DB abstraction layer (production: no mock; throws if DB unavailable)
     const product = await getProductBySlug(slug);
 
     if (!product) {
@@ -31,7 +31,7 @@ export async function GET(
   } catch (error) {
     logger.error("❌ Error fetching product:", error);
     
-    // Try fallback to mock data
+    // Retry once (same DB call; no mock in production)
     try {
       const { slug } = await params;
       const fallbackProduct = await getProductBySlug(slug);

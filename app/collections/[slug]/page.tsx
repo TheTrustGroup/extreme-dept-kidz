@@ -23,6 +23,14 @@ export async function generateMetadata({
 }: CollectionPageProps): Promise<Metadata> {
   try {
     const { slug } = await params;
+    if (slug === 'all') {
+      return {
+        title: 'All Products | Extreme Dept Kidz',
+        description: 'Browse all premium kids fashion. New arrivals, boys, girls, and essentials.',
+        keywords: ['all products', 'kids fashion', 'premium children\'s clothing', 'luxury kids fashion'],
+        alternates: { canonical: 'https://extremedeptkidz.com/collections/all' },
+      };
+    }
     const categories = await getAllCategories();
     const category = categories.find((c) => c.slug === slug && c.isActive);
 
@@ -60,6 +68,65 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
   const { slug } = await params;
 
   try {
+    // "All" collection: show all products (no category filter)
+    if (slug === 'all') {
+      const getCachedAllProducts = unstable_cache(
+        async () => getAllProducts(),
+        ['products-all'],
+        { tags: [CACHE_TAGS.products, CACHE_TAGS.collections], revalidate: 10 }
+      );
+      const products = await getCachedAllProducts();
+      const collectionInfo = {
+        name: 'All Products',
+        description: 'Browse all products',
+        image: undefined as string | undefined,
+        metadata: undefined as Record<string, unknown> | undefined,
+      };
+      const breadcrumbSchema = generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Collections', url: '/collections' },
+        { name: 'All Products', url: '/collections/all' },
+      ]);
+      const serializedProducts = products.map((product) => ({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: typeof product.price === 'number' ? product.price : Number(product.price),
+        originalPrice: product.originalPrice ? (typeof product.originalPrice === 'number' ? product.originalPrice : Number(product.originalPrice)) : undefined,
+        sku: product.sku,
+        inStock: Boolean(product.inStock),
+        category: {
+          id: product.category.id,
+          name: product.category.name,
+          slug: product.category.slug,
+        },
+        images: product.images.map((img) => ({
+          url: img.url,
+          alt: img.alt,
+          isPrimary: Boolean(img.isPrimary),
+        })),
+        sizes: product.sizes.map((size) => ({
+          size: size.size,
+          inStock: Boolean(size.inStock),
+        })),
+        tags: product.tags || [],
+        weight: product.weight,
+        dimensions: product.dimensions,
+        metadata: product.metadata,
+        createdAt: product.createdAt ? (typeof product.createdAt === 'string' ? product.createdAt : product.createdAt.toISOString()) : undefined,
+        updatedAt: product.updatedAt ? (typeof product.updatedAt === 'string' ? product.updatedAt : product.updatedAt.toISOString()) : undefined,
+      }));
+      return (
+        <>
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+          <Suspense fallback={<div className="min-h-screen bg-cream-50 pt-24 pb-16"><div className="container mx-auto px-4 animate-pulse space-y-8"><div className="h-8 bg-cream-200 rounded w-1/3" /><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">{Array.from({ length: 8 }).map((_, i) => (<div key={i} className="space-y-4"><div className="aspect-square bg-cream-200 rounded-lg" /><div className="h-4 bg-cream-200 rounded w-3/4" /><div className="h-4 bg-cream-200 rounded w-1/2" /></div>))}</div></div></div>}>
+            <CollectionPageClient params={{ slug }} products={serializedProducts} collectionInfo={collectionInfo} />
+          </Suspense>
+        </>
+      );
+    }
+
     // Use unstable_cache with tags for efficient cache invalidation
     // CRITICAL: Cache keys must match the tags used in revalidation
     const getCachedCategories = unstable_cache(
@@ -110,19 +177,29 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       console.log(`[CollectionPage] Products from getProductsByCategory:`, productsByCategory.length);
     }
 
-    if (products.length === 0 && !category) {
+    // When no products from category: use tag/collection fallback (e.g. new-arrivals by "new" tag)
+    // Also when slug is new-arrivals and category has 0 products (products assigned to Boys only)
+    if (products.length === 0) {
       try {
         const all = await getAllProducts();
-        products = getProductsByCollection(all, slug);
+        const fallbackProducts = getProductsByCollection(all, slug);
+        if (fallbackProducts.length > 0) {
+          products = fallbackProducts;
+        } else if (slug === 'new-arrivals' && all.length > 0) {
+          // New Arrivals with 0 tagged "new": show all products (newest first) so page isn't empty
+          products = [...all].sort((a, b) => {
+            const aT = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bT = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bT - aT;
+          });
+        }
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[CollectionPage] Fallback products from getProductsByCollection:`, products.length);
+          console.log(`[CollectionPage] Fallback products for ${slug}:`, products.length);
         }
       } catch (fallbackError) {
-        // CRITICAL: Only log errors in development to prevent console errors in production
         if (process.env.NODE_ENV === 'development') {
           console.error(`[CollectionPage] Error fetching fallback products for ${slug}:`, fallbackError);
         }
-        // Continue with empty products array
         products = [];
       }
     }

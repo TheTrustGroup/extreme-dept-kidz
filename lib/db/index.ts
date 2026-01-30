@@ -199,9 +199,14 @@ async function executeQuery<T>(
 
   // If using mock data (development only), return immediately
   if (DB_CONFIG.type === 'mock' || !DB_CONFIG.enabled) {
-    // During build time, allow fallback to mock data even in production mode
     if (isProduction && !isBuildTime) {
       const error = new Error(`Cannot use mock data in production. Query: ${queryName}`);
+      logger.error(error.message);
+      throw error;
+    }
+    // Production build: never bake mock into static output; fail so build has real DB
+    if (isBuildTime && isProduction) {
+      const error = new Error(`Production build requires DATABASE_URL. Cannot use mock. Query: ${queryName}`);
       logger.error(error.message);
       throw error;
     }
@@ -277,7 +282,11 @@ async function executeQuery<T>(
   // All retries failed
   const error = new Error(`Database query failed after ${DB_CONFIG.retryAttempts} attempts. Query: ${queryName}. Error: ${lastError?.message}`);
   
-  // During build time, allow fallback to mock data to prevent build failures
+  // Production build: never bake mock into static output; fail so build uses real DB
+  if (isBuildTime && isProduction) {
+    logger.error(`[Build] ${queryName}: Database unavailable during production build. Set DATABASE_URL.`);
+    throw error;
+  }
   if (isBuildTime) {
     logger.warn(`[Build] ${queryName}: Database unavailable during build, using mock data fallback`);
     dbConnected = false;
@@ -285,7 +294,6 @@ async function executeQuery<T>(
     return fallbackData;
   }
   
-  // In production runtime, throw error instead of falling back
   if (isProduction) {
     logger.error(error.message);
     throw error;

@@ -78,14 +78,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           }, request);
         }
 
-        // Revalidate cache
+        // Revalidate cache: list tags + each deleted product's detail page so "no longer available" is correct
+        revalidateTag(CACHE_TAGS.products);
+        revalidateTag(CACHE_TAGS.homepage);
+        revalidateTag(CACHE_TAGS.collections);
+        revalidateTag(CACHE_TAGS.categories);
+        for (const product of products) {
+          revalidatePath(`/products/${product.slug}`, 'page');
+          revalidateTag(CACHE_TAGS.product(product.slug));
+          revalidateTag(CACHE_TAGS.completeLookProduct(product.id));
+        }
         revalidatePath('/products');
         revalidatePath('/collections');
         revalidatePath('/');
         revalidatePath('/admin/products');
-        for (const id of ids) {
-          revalidateTag(CACHE_TAGS.completeLookProduct(id));
-        }
         break;
 
       case 'activate':

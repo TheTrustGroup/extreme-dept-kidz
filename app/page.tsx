@@ -97,7 +97,7 @@ export default async function Home() {
   let products: Product[] = [];
   try {
     // Use unstable_cache for ISR with tag-based revalidation
-    // getAllProducts will fallback to mock data during build if DB unavailable
+    // Production build requires DATABASE_URL; no mock baked into static output
     const getCachedProducts = unstable_cache(
       async () => getAllProducts(),
       ['homepage-products'],
@@ -109,7 +109,7 @@ export default async function Home() {
     
     products = await getCachedProducts();
   } catch (error) {
-    // Fallback: Continue with empty array - components will use mock data as fallback
+    // Fallback: Continue with empty array - sections show empty (no mock in production)
     // This should rarely happen now that getAllProducts handles build-time failures
     // Performance: Error logging handled by error boundary
     if (process.env.NODE_ENV === 'development') {

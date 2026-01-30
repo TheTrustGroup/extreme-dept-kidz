@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { label: "All", href: "/collections" },
+  { label: "All", href: "/collections/all" },
   { label: "Boys", href: "/collections/boys" },
   { label: "Girls", href: "/collections/girls" },
   { label: "New Arrivals", href: "/collections/new-arrivals" },
@@ -36,7 +36,7 @@ export function CollectionQuickTabs({ className }: CollectionQuickTabsProps): JS
       {TABS.map((tab) => {
         const isActive =
           pathname === tab.href ||
-          (tab.href !== "/collections" && pathname?.startsWith(tab.href));
+          (tab.href !== "/collections/all" && pathname?.startsWith(tab.href));
         return (
           <Link
             key={tab.href}

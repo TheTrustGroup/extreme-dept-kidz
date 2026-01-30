@@ -156,8 +156,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#1A1A2E" media="(prefers-color-scheme: dark)" />
         <meta name="background-color" content="#F5F1E8" />
         
-        {/* iOS PWA: Apple mobile web app meta tags */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        {/* PWA: Mobile web app capable (standard; avoids deprecation warning) */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        {/* iOS PWA: Apple-specific (legacy; keep for older Safari) */}
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Extreme Dept Kidz" />
         

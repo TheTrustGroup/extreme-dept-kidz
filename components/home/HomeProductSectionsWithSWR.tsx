@@ -14,8 +14,9 @@ interface ProductsApiResponse {
   };
 }
 
+// cache: 'no-store' so list always revalidates; avoids stale list vs fresh detail mismatch
 const fetcher = (url: string): Promise<ProductsApiResponse> =>
-  fetch(url).then((r) => r.json());
+  fetch(url, { cache: "no-store" }).then((r) => r.json());
 
 interface HomeProductSectionsWithSWRProps {
   initialProducts: Product[];

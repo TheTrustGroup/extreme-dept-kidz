@@ -91,7 +91,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // CRITICAL: Use cached query with ISR (short revalidate for product visibility sync)
     const getCachedProducts = unstable_cache(
       async () => {
-        // Get products using DB abstraction layer (with automatic fallback to mock)
+        // Get products using DB abstraction layer (production: no mock fallback)
         return category 
           ? await getProductsByCategory(category)
           : await getAllProducts();
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     let products = await getCachedProducts();
 
-    // Apply filters (client-side filtering for mock data compatibility)
+    // Apply filters (in-memory; category/API already filtered by DB when category param set)
     if (inStock) {
       products = products.filter(p => p.inStock);
     }
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     logger.error("❌ Error fetching products:", error);
     
-    // Even on error, try to return mock data as fallback
+    // On error, retry once (no mock in production; getAllProducts throws if DB unavailable)
     try {
       const fallbackProducts = await getAllProducts();
       const fallbackSlice = fallbackProducts.slice(0, 20);

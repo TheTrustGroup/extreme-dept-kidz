@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
-import { mockProducts } from "@/lib/mock-data";
 import type { Product } from "@/types";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -73,10 +72,9 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
   const { theme } = useTheme();
   const [activeFilter, setActiveFilter] = React.useState<FilterType>("all");
   
-  // Use provided products or fallback to mock data
-  // Remove duplicates by product ID or slug
+  // Use provided products only; never mock in production (empty array if undefined)
   const allProducts = React.useMemo(() => {
-    const sourceProducts = products || mockProducts;
+    const sourceProducts = Array.isArray(products) ? products : [];
     
     // Remove duplicates by ID and slug
     const uniqueProducts = sourceProducts.filter((product, index, self) =>
@@ -96,13 +94,15 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
     });
   }, [products]);
 
-  // Filter products based on active filter
+  // Filter products based on active filter (safe for missing category)
   const filteredProducts = React.useMemo(() => {
+    const slug = (p: Product) => p.category?.slug ?? "";
+    const name = (p: Product) => (p.category?.name ?? "").toLowerCase();
     switch (activeFilter) {
       case "boys":
-        return allProducts.filter((p) => p.category.slug === "boys" || p.category.name.toLowerCase() === "boys");
+        return allProducts.filter((p) => slug(p) === "boys" || name(p) === "boys");
       case "girls":
-        return allProducts.filter((p) => p.category.slug === "girls" || p.category.name.toLowerCase() === "girls");
+        return allProducts.filter((p) => slug(p) === "girls" || name(p) === "girls");
       case "new":
         return allProducts.filter((p) => p.tags?.includes("new"));
       case "all":

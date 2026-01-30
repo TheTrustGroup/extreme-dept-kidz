@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { X, User, ShoppingBag, Search, HeadphonesIcon } from "lucide-react";
@@ -19,6 +20,7 @@ interface MobileNavProps {
 }
 
 const navLinks = [
+  { label: "ALL", href: "/collections/all" },
   { label: "BOYS", href: "/collections/boys", isEmphasized: true },
   { label: "NEW ARRIVALS", href: "/collections/new-arrivals" },
   { label: "GIRLS", href: "/collections/girls" },
@@ -49,6 +51,7 @@ export function MobileNav({
   cartItemCount = 0,
   onSearchOpen,
 }: MobileNavProps) {
+  const pathname = usePathname();
   const { open: openCart } = useCartDrawer();
   const { theme } = useTheme();
   const drawerRef = React.useRef<HTMLDivElement>(null);
@@ -300,13 +303,14 @@ export function MobileNav({
                     >
                       <Link
                         href={link.href}
+                        aria-current={pathname === link.href ? "page" : undefined}
                         className={cn(
                           "flex items-center font-serif text-xl sm:text-2xl font-semibold transition-colors duration-300 py-[var(--space-2)] focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg px-[var(--space-2)] -mx-[var(--space-2)] min-h-[44px]",
                           theme === "dark"
-                            ? link.isEmphasized
+                            ? link.isEmphasized || pathname === link.href
                               ? "text-accent-primary font-semibold"
                               : "text-dark-text-primary hover:text-accent-primary"
-                            : link.isEmphasized
+                            : link.isEmphasized || pathname === link.href
                               ? "text-navy-900 font-semibold"
                               : "text-charcoal-900 hover:text-navy-900",
                           theme === "dark"

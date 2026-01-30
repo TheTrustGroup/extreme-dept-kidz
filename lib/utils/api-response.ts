@@ -50,11 +50,9 @@ export function apiSuccess<T>(
   } else if (options?.cache === 'force-cache') {
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (typeof options?.cache === 'number') {
-    // CRITICAL: Stale-while-revalidate for enterprise performance
-    // Default: 5x cache duration for stale window (e.g., 60s cache = 300s stale)
-    const staleWindow = options.staleWhileRevalidate || options.cache * 5;
-    const cacheControl = `public, s-maxage=${options.cache}, stale-while-revalidate=${staleWindow}`;
-    
+    // CRITICAL: max-age=0 so browser always revalidates (no stale list/detail mismatch); CDN uses s-maxage
+    const staleWindow = options.staleWhileRevalidate ?? options.cache * 5;
+    const cacheControl = `public, max-age=0, s-maxage=${options.cache}, stale-while-revalidate=${staleWindow}`;
     headers.set('Cache-Control', cacheControl);
     headers.set('CDN-Cache-Control', cacheControl);
     headers.set('Vercel-CDN-Cache-Control', cacheControl);
