@@ -120,6 +120,9 @@ export async function retry<T>(
  * 
  * Combines retry logic with a timeout to prevent hanging requests.
  * 
+ * Note: For Prisma queries, we use Promise.race with a timeout promise
+ * instead of AbortController, as Prisma doesn't support AbortSignal.
+ * 
  * @example
  * const result = await retryWithTimeout(
  *   () => fetch('https://api.example.com/data'),
@@ -133,26 +136,22 @@ export async function retryWithTimeout<T>(
 ): Promise<T> {
   return retry(
     async () => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      // For Prisma queries, use Promise.race instead of AbortController
+      // Prisma doesn't support AbortSignal, so we race against a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs);
+      });
 
       try {
-        // If fn returns a Response (fetch), use AbortController
-        const result = await fn();
-        
-        // Check if result is a Response and if it was aborted
-        if (result instanceof Response && result.type === 'error') {
-          throw new Error('Request timeout');
-        }
-        
+        const result = await Promise.race([fn(), timeoutPromise]);
         return result;
       } catch (error) {
-        if (controller.signal.aborted) {
-          throw new Error(`Operation timed out after ${timeoutMs}ms`);
+        // Re-throw timeout errors as-is
+        if (error instanceof Error && error.message.includes('timed out')) {
+          throw error;
         }
+        // Re-throw other errors
         throw error;
-      } finally {
-        clearTimeout(timeoutId);
       }
     },
     retryOptions
