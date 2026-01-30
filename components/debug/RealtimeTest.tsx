@@ -28,6 +28,12 @@ export function RealtimeTest(): JSX.Element {
   const [lastChange, setLastChange] = useState<string>('');
 
   useEffect(() => {
+    // Skip if Supabase is not configured (build time or missing env vars)
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      setStatus('⚠️ Supabase not configured');
+      return;
+    }
+
     // Initial fetch
     const fetchProducts = async () => {
       try {
