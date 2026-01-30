@@ -155,8 +155,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     try {
       // Use retryPrismaQuery for better timeout and retry handling
       // Try exact match first (for case-sensitive storage like Admin@extremedeptkidz.com)
+      // We already checked prisma is not null above, so use non-null assertion
       user = await retryPrismaQuery(
-        () => prisma.adminUser.findUnique({
+        () => prisma!.adminUser.findUnique({
           where: { email: trimmedEmail },
           select: {
             id: true,
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (!user) {
         // Get all admin users and find case-insensitive match
         user = await retryPrismaQuery(
-          () => prisma.adminUser.findMany({
+          () => prisma!.adminUser.findMany({
             where: { isActive: true },
           }).then(admins => admins.find(u => u.email.toLowerCase() === normalizedEmail) || null),
           { 
