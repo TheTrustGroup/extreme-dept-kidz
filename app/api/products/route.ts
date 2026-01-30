@@ -9,13 +9,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
-import { getAllProducts, getProductsByCategory, getDatabaseStatus } from "@/lib/db";
+import { getDatabaseStatus } from "@/lib/db";
+import { getProducts, getProductsByCategory } from "@/lib/data/products";
 import type { Product } from "@/types";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
-import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
-import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
-import { unstable_cache } from "next/cache";
 import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 
 function generateETag(payload: unknown): string {
@@ -72,9 +70,8 @@ function transformProduct(prismaProduct: {
   };
 }
 
-// CRITICAL: ISR aligned with cache-constants so admin-uploaded products appear quickly
-export const dynamic = 'auto';
-export const revalidate = CACHE_REVALIDATE_PRODUCTS;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -89,25 +86,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // CRITICAL: Use cached query with ISR (short revalidate for product visibility sync)
-    const getCachedProducts = unstable_cache(
-      async () => {
-        // Get products using DB abstraction layer (production: no mock fallback)
-        return category 
-          ? await getProductsByCategory(category)
-          : await getAllProducts();
-      },
-      [`products-${category || 'all'}-${collection || 'all'}`],
-      {
-        tags: [
-          CACHE_TAGS.products,
-          category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections,
-        ],
-        revalidate: CACHE_REVALIDATE_PRODUCTS,
-      }
-    );
-
-    let products = await getCachedProducts();
+    // Single source: lib/data/products (server only)
+    let products = category
+      ? await getProductsByCategory(category)
+      : await getProducts();
 
     // Apply filters (in-memory; category/API already filtered by DB when category param set)
     if (inStock) {
@@ -173,19 +155,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       data,
       "Products fetched successfully",
       undefined,
-      {
-        cache: "product", // Align with cache-constants (s-maxage=10, SWR=59)
-        tags: [CACHE_TAGS.products, category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections],
-      }
+      { cache: "no-store" }
     );
     res.headers.set("ETag", etag);
     return withCors(request, res);
   } catch (error) {
     logger.error("❌ Error fetching products:", error);
     
-    // On error, retry once (no mock in production; getAllProducts throws if DB unavailable)
+    // On error, retry once (getProducts from lib/data/products)
     try {
-      const fallbackProducts = await getAllProducts();
+      const fallbackProducts = await getProducts();
       const fallbackSlice = fallbackProducts.slice(0, 20);
       if (isWarehouseRequest(request)) {
         return withCors(request, NextResponse.json(fallbackSlice));

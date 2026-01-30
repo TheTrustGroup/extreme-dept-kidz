@@ -199,55 +199,46 @@ const nextConfig = {
     return config;
   },
   
-  // Headers for Performance & Security
-  // CRITICAL: Values must match lib/utils/cache-constants.ts (CACHE_SMAXAGE_PRODUCTS=10, CACHE_SWR_PRODUCTS=59)
+  // Headers: no edge caching for dynamic pages/API (full SSR, zero stale content)
   async headers() {
-    const productPageCache = "public, max-age=0, s-maxage=10, stale-while-revalidate=59";
+    const noStore = "no-store, no-cache, must-revalidate, max-age=0";
     return [
-      // Homepage: short CDN cache, browser revalidates; explicit CDN headers for edge
-      {
-        source: "/",
-        headers: [
-          { key: "Cache-Control", value: productPageCache },
-          { key: "CDN-Cache-Control", value: productPageCache },
-          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
-        ],
-      },
-      // Collection pages: same as homepage for consistent product lists
-      {
-        source: "/collections/:path*",
-        headers: [
-          { key: "Cache-Control", value: productPageCache },
-          { key: "CDN-Cache-Control", value: productPageCache },
-          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
-        ],
-      },
-      // Product detail: align with list pages (SEV-1); explicit CDN headers
-      {
-        source: "/products/:path*",
-        headers: [
-          { key: "Cache-Control", value: productPageCache },
-          { key: "CDN-Cache-Control", value: productPageCache },
-          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
-        ],
-      },
-      // API: product/catalog — short cache so admin changes propagate (align with cache-constants)
-      {
-        source: "/api/products",
-        headers: [
-          { key: "Cache-Control", value: productPageCache },
-          { key: "CDN-Cache-Control", value: productPageCache },
-          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
-        ],
-      },
-      {
-        source: "/api/products/:path*",
-        headers: [
-          { key: "Cache-Control", value: productPageCache },
-          { key: "CDN-Cache-Control", value: productPageCache },
-          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
-        ],
-      },
+      // Homepage, collections, products, product API: no cache
+      { source: "/", headers: [
+        { key: "Cache-Control", value: noStore },
+        { key: "CDN-Cache-Control", value: noStore },
+        { key: "Vercel-CDN-Cache-Control", value: noStore },
+      ]},
+      { source: "/collections/:path*", headers: [
+        { key: "Cache-Control", value: noStore },
+        { key: "CDN-Cache-Control", value: noStore },
+        { key: "Vercel-CDN-Cache-Control", value: noStore },
+      ]},
+      { source: "/products/:path*", headers: [
+        { key: "Cache-Control", value: noStore },
+        { key: "CDN-Cache-Control", value: noStore },
+        { key: "Vercel-CDN-Cache-Control", value: noStore },
+      ]},
+      { source: "/api/products", headers: [
+        { key: "Cache-Control", value: noStore },
+        { key: "CDN-Cache-Control", value: noStore },
+        { key: "Vercel-CDN-Cache-Control", value: noStore },
+      ]},
+      { source: "/api/products/:path*", headers: [
+        { key: "Cache-Control", value: noStore },
+        { key: "CDN-Cache-Control", value: noStore },
+        { key: "Vercel-CDN-Cache-Control", value: noStore },
+      ]},
+      { source: "/api/complete-looks", headers: [
+        { key: "Cache-Control", value: noStore },
+        { key: "CDN-Cache-Control", value: noStore },
+        { key: "Vercel-CDN-Cache-Control", value: noStore },
+      ]},
+      { source: "/api/search", headers: [
+        { key: "Cache-Control", value: noStore },
+        { key: "CDN-Cache-Control", value: noStore },
+        { key: "Vercel-CDN-Cache-Control", value: noStore },
+      ]},
       {
         source: "/:path*",
         headers: [
@@ -370,10 +361,7 @@ const nextConfig = {
       {
         source: "/_next/data/:path*",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
-          },
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
         ],
       },
     ];

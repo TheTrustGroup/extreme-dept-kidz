@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useFocusTrap } from "@/lib/hooks/use-keyboard-navigation";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import Link from "next/link";
 
 interface QuickViewModalProps {
@@ -25,6 +26,7 @@ interface QuickViewModalProps {
  */
 export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps): JSX.Element {
   const { theme } = useTheme();
+  const isMobile = useIsMobile();
   const addToCart = useCartStore((state) => state.addItem);
   const [selectedSize, setSelectedSize] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
@@ -152,15 +154,17 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
             aria-hidden="true"
           />
 
-          {/* Modal */}
+          {/* Modal — PHASE 7: bottom-sheet on mobile, centered on desktop */}
           <m.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
+            animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
             className={cn(
-              "fixed inset-0 z-[9999] flex items-center justify-center p-4",
-              "pointer-events-none"
+              "fixed z-[9999] pointer-events-none",
+              isMobile
+                ? "inset-x-0 bottom-0 top-auto flex flex-col justify-end"
+                : "inset-0 flex items-center justify-center p-4"
             )}
             role="dialog"
             aria-modal="true"
@@ -169,18 +173,16 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
             <div
               ref={modalRef}
               className={cn(
-                "relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-xl",
-                "bg-cream-50 shadow-2xl pointer-events-auto",
-                theme === "dark" && "bg-dark-bg-primary"
+                "relative w-full max-h-[90vh] overflow-hidden glass shadow-2xl pointer-events-auto",
+                isMobile ? "max-w-none rounded-t-2xl rounded-b-none" : "max-w-4xl rounded-xl"
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
+              {/* Close Button — 44px touch target on mobile */}
               <button
                 onClick={onClose}
                 className={cn(
-                  "absolute top-4 right-4 z-10",
-                  "w-10 h-10 flex items-center justify-center rounded-full",
+                  "absolute top-4 right-4 z-10 min-h-[44px] min-w-[44px] touch-target-min flex items-center justify-center rounded-full",
                   "bg-white/90 backdrop-blur-sm",
                   "hover:bg-white transition-colors",
                   "focus:outline-none focus:ring-2 focus:ring-navy-500",
@@ -216,10 +218,9 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                           <button
                             onClick={handlePreviousImage}
                             className={cn(
-                              "absolute left-2 top-1/2 -translate-y-1/2 z-10",
-                              "w-10 h-10 flex items-center justify-center rounded-full",
+                              "absolute left-2 top-1/2 -translate-y-1/2 z-10 min-h-[44px] min-w-[44px] touch-target-min flex items-center justify-center rounded-full",
                               "bg-white/90 backdrop-blur-sm shadow-lg",
-                              "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                              "opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200",
                               "hover:bg-white focus:outline-none focus:ring-2 focus:ring-navy-500",
                               theme === "dark" && "bg-dark-surface/90 hover:bg-dark-bg-secondary"
                             )}
@@ -235,10 +236,9 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                           <button
                             onClick={handleNextImage}
                             className={cn(
-                              "absolute right-2 top-1/2 -translate-y-1/2 z-10",
-                              "w-10 h-10 flex items-center justify-center rounded-full",
+                              "absolute right-2 top-1/2 -translate-y-1/2 z-10 min-h-[44px] min-w-[44px] touch-target-min flex items-center justify-center rounded-full",
                               "bg-white/90 backdrop-blur-sm shadow-lg",
-                              "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                              "opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200",
                               "hover:bg-white focus:outline-none focus:ring-2 focus:ring-navy-500",
                               theme === "dark" && "bg-dark-surface/90 hover:bg-dark-bg-secondary"
                             )}

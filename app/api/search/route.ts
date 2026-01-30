@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProducts } from '@/lib/db';
+import { searchProducts } from '@/lib/data/products';
 import { apiSuccess, apiError } from '@/lib/utils/api-response';
 import { logger } from '@/lib/utils/logger';
 
@@ -17,32 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch products from database
-    const products = await getAllProducts();
-
-    // Search in product name, description, tags, and category
-    const results = products
-      .filter((product) => {
-        const searchableText = [
-          product.name,
-          product.description,
-          ...(product.tags || []),
-          product.category.name,
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-
-        return searchableText.includes(query);
-      })
-      .map((product) => ({
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        price: product.price,
-        image: product.images?.find(img => img.isPrimary)?.url || product.images?.[0]?.url || '/placeholder.jpg',
-        category: product.category.name,
-      }));
+    const results = await searchProducts(query);
 
     return apiSuccess(
       {

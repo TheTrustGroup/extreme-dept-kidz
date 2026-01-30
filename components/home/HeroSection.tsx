@@ -7,16 +7,10 @@ import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Hero background image
 const HERO_IMAGE = "/Extreme 1.png";
 
+/** PHASE 4 — Hero: Headline, value prop, Primary CTA, optional Secondary CTA, Hero Image. No UI overload. */
 export function HeroSection(): JSX.Element {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  // Removed parallax effect for better scroll performance
-  // Parallax was causing "static" feeling between scrolls
-
-  // Fade-in animation variants – smooth, staggered reveal on load
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -24,236 +18,109 @@ export function HeroSection(): JSX.Element {
       transition: {
         duration: 0.6,
         ease: [0.25, 0.46, 0.45, 0.94],
-        staggerChildren: 0.14,
-        delayChildren: 0.08,
+        staggerChildren: 0.12,
+        delayChildren: 0.06,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 24 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+      transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
     },
   };
 
   return (
     <section
-      ref={containerRef}
-      className="relative flex items-center justify-center overflow-hidden"
-      style={{
-        isolation: "isolate",
-        minHeight: "calc(100vh - 2rem - 3.5rem)", // Full viewport minus TopBar (2rem) + Header (3.5rem mobile)
-        paddingTop: "calc(2rem + 3.5rem)", // Account for fixed header
-      }}
+      className="relative flex items-center justify-center overflow-hidden min-h-[calc(100vh-4.5rem)] pt-[4.5rem] md:min-h-[calc(100vh-4.5rem)]"
       aria-label="Hero section"
     >
-      {/* Hero Image - Static for better scroll performance */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div 
-          className="absolute inset-0 w-full h-full"
-          style={{
-            isolation: "isolate",
-            contain: "layout style paint",
-            minHeight: "100%",
-          }}
-        >
-          {/* Hero Background Image - CRITICAL FIX: Cross-browser compatibility (Safari, Chrome, Firefox, iOS, Android) */}
-          {/* COLOR SYSTEM NORMALIZATION: Use brand-text for background */}
-          <div 
-            className="absolute inset-0 w-full h-full overflow-hidden" 
-            style={{ 
-              backgroundColor: 'var(--brand-text)',
-              // CRITICAL: Ensure container is always visible
-              opacity: 1,
-              visibility: 'visible',
-              display: 'block',
-            }}
-          >
-            <div 
-              className="relative w-full h-full"
-              style={{
-                // CRITICAL: Cross-browser height fixes
-                // Standard viewport height (mobile-first)
-                minHeight: 'calc(100vh - 2rem - 3.5rem)',
-                // CRITICAL: Ensure proper positioning
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-              }}
-            >
-              <Image
-                src={HERO_IMAGE}
-                alt="Hero background - Extreme Dept Kidz"
-                fill
-                priority
-                quality={85}
-                className="object-cover"
-                style={{
-                  objectPosition: "center center",
-                  // CRITICAL FIX: Ensure hero image is always visible - cross-browser
-                  opacity: 1,
-                  visibility: 'visible',
-                  display: 'block',
-                  // CRITICAL: Ensure proper z-index
-                  zIndex: 0,
-                } as React.CSSProperties}
-                sizes="100vw"
-                aria-hidden="true"
-                // CRITICAL: Cross-browser loading attributes
-                loading="eager"
-                fetchPriority="high"
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                // CRITICAL: Error handling
-                onError={(e) => {
-                  console.error('Hero image failed to load:', HERO_IMAGE);
-                  // Fallback: ensure container is still visible
-                  const target = e.target as HTMLImageElement;
-                  if (target) {
-                    target.style.opacity = '0.5';
-                  }
-                }}
-                onLoad={() => {
-                  // Image visible after load (no console in production)
-                }}
-              />
-            </div>
-          </div>
-          
-          {/* Soft gradient overlay – premium, breathable depth - COLOR SYSTEM NORMALIZATION */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "var(--hero-gradient-overlay)", // COLOR SYSTEM NORMALIZATION: Uses brand-text CSS variable
-            }}
-            aria-hidden="true"
+      {/* Hero Image */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[var(--brand-text)]">
+          <Image
+            src={HERO_IMAGE}
+            alt=""
+            fill
+            priority
+            quality={85}
+            className="object-cover object-center"
+            sizes="100vw"
+            loading="eager"
+            fetchPriority="high"
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
           />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/50" aria-hidden />
       </div>
 
-      {/* Hero Content - Perfectly centered vertically and horizontally */}
+      {/* Content */}
       <m.div
-        className="relative z-10 w-full flex items-center justify-center"
+        className="relative z-10 w-full flex items-center justify-center px-4 py-12 md:py-16"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        style={{
-          minHeight: "100%",
-          paddingTop: "var(--space-6)",
-          paddingBottom: "var(--space-6)",
-        }}
       >
-        <div className="container w-full">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Key message – Premium Streetwear for Young Legends */}
-            <m.h1
-              className={cn(
-                "font-serif font-bold text-cream-50",
-                "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl",
-                "leading-[1.08] tracking-tight",
-                "drop-shadow-2xl mb-[var(--space-6)]"
-              )}
-              variants={itemVariants}
-              style={{
-                textShadow: "var(--hero-text-shadow)", // COLOR SYSTEM NORMALIZATION: Uses CSS variable
-              }}
-            >
-              Premium Streetwear for Young Legends
-            </m.h1>
+        <div className="max-w-3xl mx-auto text-center">
+          <m.h1
+            className={cn(
+              "font-serif font-bold text-cream-50",
+              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl",
+              "leading-[1.1] tracking-tight",
+              "mb-4 md:mb-5"
+            )}
+            variants={itemVariants}
+            style={{ textShadow: "var(--hero-text-shadow)" }}
+          >
+            Premium Streetwear for Young Legends
+          </m.h1>
 
-            {/* Supporting line – elegant, refined */}
-            <m.p
-              className={cn(
-                "font-serif font-medium text-cream-100/95",
-                "text-lg sm:text-xl md:text-2xl lg:text-3xl",
-                "leading-snug tracking-tight max-w-2xl mx-auto",
-                "drop-shadow-lg mb-[var(--space-10)]"
-              )}
-              variants={itemVariants}
-              style={{
-                textShadow: "var(--hero-text-shadow-subtle)", // COLOR SYSTEM NORMALIZATION: Uses CSS variable
-              }}
-            >
-              Elevated style for young legends. Built for adventure, designed for life.
-            </m.p>
+          <m.p
+            className={cn(
+              "font-sans text-cream-100/95 text-base md:text-lg lg:text-xl max-w-xl mx-auto",
+              "leading-snug mb-8 md:mb-10"
+            )}
+            variants={itemVariants}
+            style={{ textShadow: "var(--hero-text-shadow-subtle)" }}
+          >
+            Elevated style for young legends. Built for adventure, designed for life.
+          </m.p>
 
-            {/* CTA Buttons - Perfectly centered */}
-            <m.div
-              className="flex flex-col sm:flex-row items-center justify-center gap-[var(--space-4)] sm:gap-[var(--space-5)]"
-              variants={itemVariants}
-            >
+          <m.div
+            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4"
+            variants={itemVariants}
+          >
             <Button
               variant="primary"
               size="lg"
               className={cn(
-                "w-full max-w-[240px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
-                "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
-                "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
-                "active:scale-[0.98] transition-all duration-300 ease-out",
-                "text-sm sm:text-base md:text-lg",
-                "px-[var(--space-6)] py-[var(--space-4)]",
-                "shadow-glass min-h-[44px] border border-cream-200/50"
+                "min-w-[140px] md:min-w-[160px]",
+                "bg-cream-50 text-charcoal-900 border border-cream-200/50",
+                "hover:bg-cream-50 hover:shadow-lg"
               )}
               asChild
             >
-              <Link href="/collections/all" aria-label="Shop all products">SHOP ALL</Link>
-            </Button>
-            <Button
-              variant="primary"
-              size="lg"
-              className={cn(
-                "w-full max-w-[240px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
-                "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
-                "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
-                "active:scale-[0.98] transition-all duration-300 ease-out",
-                "text-sm sm:text-base md:text-lg",
-                "px-[var(--space-6)] py-[var(--space-4)]",
-                "shadow-glass min-h-[44px] border border-cream-200/50"
-              )}
-              asChild
-            >
-              <Link href="/collections/boys" aria-label="Shop boys collection">SHOP BOYS</Link>
-            </Button>
-            <Button
-              variant="primary"
-              size="lg"
-              className={cn(
-                "w-full max-w-[240px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
-                "bg-cream-50/95 text-charcoal-900 backdrop-blur-sm",
-                "hover:bg-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
-                "active:scale-[0.98] transition-all duration-300 ease-out",
-                "text-sm sm:text-base md:text-lg",
-                "px-[var(--space-6)] py-[var(--space-4)]",
-                "shadow-glass min-h-[44px] border border-cream-200/50"
-              )}
-              asChild
-            >
-              <Link href="/collections/girls" aria-label="Shop girls collection">SHOP GIRLS</Link>
+              <Link href="/collections/all">Shop All</Link>
             </Button>
             <Button
               variant="secondary"
               size="lg"
               className={cn(
-                "w-full max-w-[240px] sm:w-auto sm:min-w-[160px] md:min-w-[180px]",
-                "bg-cream-50/10 border-2 border-cream-50 text-cream-50 backdrop-blur-md",
-                "hover:bg-cream-50 hover:text-charcoal-900 hover:border-cream-50 hover:shadow-glass-lg hover:scale-[1.02]",
-                "active:scale-[0.98] transition-all duration-300 ease-out",
-                "text-sm sm:text-base md:text-lg",
-                "px-[var(--space-6)] py-[var(--space-4)]",
-                "min-h-[44px]"
+                "min-w-[140px] md:min-w-[160px]",
+                "bg-transparent border-2 border-cream-50 text-cream-50",
+                "hover:bg-cream-50 hover:text-charcoal-900"
               )}
               asChild
             >
-              <Link href="/collections/new-arrivals" aria-label="View new arrivals">NEW ARRIVALS</Link>
+              <Link href="/collections/new-arrivals">New Arrivals</Link>
             </Button>
           </m.div>
-          </div>
         </div>
       </m.div>
     </section>
   );
 }
-

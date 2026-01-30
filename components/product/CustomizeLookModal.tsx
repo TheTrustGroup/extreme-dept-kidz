@@ -10,6 +10,7 @@ import { productStylingData } from "@/lib/mock-data/styling-data";
 import { useStylingStore } from "@/lib/stores/styling-store";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/typography";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { cn, formatPrice } from "@/lib/utils";
 
 interface CustomizeLookModalProps {
@@ -28,6 +29,7 @@ export function CustomizeLookModal({
   isOpen,
   onClose,
 }: CustomizeLookModalProps): JSX.Element {
+  const isMobile = useIsMobile();
   const { customizedProducts, customizeProduct, resetCustomization } = useStylingStore();
   const [expandedCategories, setExpandedCategories] = React.useState<Set<string>>(new Set());
 
@@ -106,14 +108,20 @@ export function CustomizeLookModal({
             aria-hidden="true"
           />
 
-          {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          {/* Modal — PHASE 7: bottom-sheet on mobile */}
+          <div className={cn(
+            "fixed z-50 pointer-events-none",
+            isMobile ? "inset-x-0 bottom-0 top-auto flex flex-col justify-end" : "inset-0 flex items-center justify-center p-4"
+          )}>
             <m.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
+              animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+              exit={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="bg-cream-50 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
+              className={cn(
+                "glass shadow-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto",
+                isMobile ? "max-w-none rounded-t-2xl rounded-b-none" : "max-w-3xl rounded-xl"
+              )}
               role="dialog"
               aria-modal="true"
               aria-labelledby="customize-modal-title"
@@ -125,7 +133,7 @@ export function CustomizeLookModal({
                 </H3>
                 <button
                   onClick={onClose}
-                  className="p-2 text-charcoal-600 hover:text-charcoal-900 transition-colors rounded-lg hover:bg-cream-200"
+                  className="min-h-[44px] min-w-[44px] touch-target-min flex items-center justify-center p-2 text-charcoal-600 hover:text-charcoal-900 transition-colors rounded-lg hover:bg-cream-200"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />

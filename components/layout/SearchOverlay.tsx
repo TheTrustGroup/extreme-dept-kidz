@@ -113,7 +113,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps): JSX.Elem
     }
   }, [selectedIndex]);
 
-  // Debounced search
+  // Debounced search via server action — no client fetch to /api/search
   React.useEffect(() => {
     if (!searchQuery || searchQuery.length < 2) {
       setResults([]);
@@ -129,9 +129,8 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps): JSX.Elem
 
     const timeoutId = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
-        const data = await response.json();
-        const searchResults = data.data?.results || data.results || [];
+        const { searchProductsAction } = await import("@/app/actions/search");
+        const searchResults = await searchProductsAction(searchQuery);
         setAllResults(searchResults);
         setResults(searchResults.slice(0, MAX_RESULTS));
       } catch (error) {
@@ -201,12 +200,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps): JSX.Elem
             aria-modal="true"
             aria-label="Search products"
           >
-            <div className={cn(
-              "w-full max-w-2xl pointer-events-auto",
-              theme === "dark" ? "bg-dark-surface" : "bg-cream-50",
-              "rounded-xl shadow-2xl border",
-              theme === "dark" ? "border-dark-border-glass" : "border-cream-200"
-            )}>
+            <div className="w-full max-w-2xl pointer-events-auto glass rounded-xl shadow-2xl">
               {/* Search Input */}
               <div className={cn(
                 "flex items-center gap-4 p-6 border-b",

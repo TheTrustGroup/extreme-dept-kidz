@@ -7,7 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getProductBySlug, getDatabaseStatus } from "@/lib/db";
+import { getDatabaseStatus } from "@/lib/db";
+import { getProductBySlug } from "@/lib/data/products";
 import { apiSuccess, apiError, apiNotFound } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 

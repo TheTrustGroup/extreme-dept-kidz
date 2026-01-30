@@ -6,7 +6,8 @@ import Link from "next/link";
 import { m } from "framer-motion";
 import { Shirt, ShoppingBag, Edit3 } from "lucide-react";
 import type { Product } from "@/types";
-import { getCompleteLooksForProduct, getProductById, calculateBundleDiscount } from "@/lib/utils/styling-utils";
+import type { StyleLook } from "@/types/styling";
+import { calculateBundleDiscount } from "@/lib/utils/styling-utils";
 import { useStylingStore } from "@/lib/stores/styling-store";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { useCartStore } from "@/lib/stores/cart-store";
@@ -18,17 +19,25 @@ import { CompleteTheLookSizeModal } from "./CompleteTheLookSizeModal";
 import { CustomizeLookModal } from "./CustomizeLookModal";
 import { useToast } from "@/components/ui/Toast";
 
+/** Server-passed looks from lib/data/complete-looks (no client fetch). */
 interface CompleteTheLookProps {
   currentProduct: Product;
+  /** Looks fetched on server and passed as props — no client-side product fetching */
+  initialLooks?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    products?: Array<{ product?: Product; productId?: string }>;
+    items?: Array<{ product?: Product; productId?: string }>;
+    [key: string]: any;
+  }>;
 }
 
 /**
  * CompleteTheLook Component
- * 
- * Premium "Complete The Look" section showing curated outfit combinations.
- * Appears on product detail pages below product info.
+ * Data is passed from server (product page) via initialLooks — no fetch.
  */
-export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.Element | null {
+export function CompleteTheLook({ currentProduct, initialLooks = [] }: CompleteTheLookProps): JSX.Element | null {
   const [selectedLookIndex, setSelectedLookIndex] = React.useState(0);
   const [isSizeModalOpen, setIsSizeModalOpen] = React.useState(false);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = React.useState(false);
@@ -37,76 +46,22 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
   const { setCurrentLook, addCompleteLookToCart } = useStylingStore();
   const { addItem } = useCartStore();
 
-  // Fetch complete looks for this product from API
-  const [looks, setLooks] = React.useState<any[]>([]);
-  const [loadingLooks, setLoadingLooks] = React.useState(true);
+  const looks = initialLooks;
 
-  React.useEffect(() => {
-    async function fetchLooks() {
-      try {
-        // CRITICAL FIX: Add cache control and error handling
-        const response = await fetch(`/api/complete-looks?productId=${currentProduct.id}`, {
-          // Performance: Use cache for better performance
-          cache: 'default',
-          // Add timeout to prevent hanging requests
-          signal: AbortSignal.timeout(10000), // 10 second timeout
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          // CRITICAL FIX: Handle various response formats
-          const looksList = data.data?.looks || data.looks || data.data?.data?.looks || [];
-          setLooks(looksList);
-        } else {
-          // CRITICAL FIX: Handle non-OK responses gracefully
-          if (process.env.NODE_ENV === 'development') {
-            // Performance: Removed console.warn for production
-            // console.warn(`Complete looks API returned ${response.status} for product ${currentProduct.id}`);
-          }
-          // Fallback to empty array instead of mock data for production
-          setLooks([]);
-        }
-      } catch (error) {
-        // CRITICAL FIX: Better error handling
-        if (error instanceof Error && error.name === 'AbortError') {
-          if (process.env.NODE_ENV === 'development') {
-            // Performance: Removed console.warn for production
-            // console.warn('Complete looks request timed out');
-          }
-        } else if (process.env.NODE_ENV === 'development') {
-          console.error('Error fetching complete looks:', error);
-        }
-        // CRITICAL FIX: Fallback to empty array in production, mock data only in development
-        if (process.env.NODE_ENV === 'development') {
-          setLooks(getCompleteLooksForProduct(currentProduct.id));
-        } else {
-          setLooks([]);
-        }
-      } finally {
-        setLoadingLooks(false);
-      }
-    }
-    fetchLooks();
-  }, [currentProduct.id]);
-
-  // Get selected look (hooks must be called before early return)
   const selectedLook = React.useMemo(() => {
     return looks[selectedLookIndex] || null;
   }, [looks, selectedLookIndex]);
 
-  // Get all products in the look (hooks must be called before early return)
   const lookProducts = React.useMemo(() => {
     if (!selectedLook) return [];
-    // Handle both API format (products array with product object) and mock format
     if (selectedLook.products && Array.isArray(selectedLook.products)) {
       return selectedLook.products
-        .map((p: any) => p.product || getProductById(p.productId))
-        .filter((p: any): p is Product => p !== undefined);
+        .map((p: any) => p.product)
+        .filter((p: any): p is Product => p != null);
     }
-    // Fallback for mock data format
     return (selectedLook as any).items
-      ?.map((item: any) => item.product || getProductById(item.productId))
-      .filter((p: any): p is Product => p !== undefined) || [];
+      ?.map((item: any) => item.product)
+      .filter((p: any): p is Product => p != null) || [];
   }, [selectedLook]);
 
   // Calculate pricing (hooks must be called before early return)
@@ -117,33 +72,22 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
     return calculateBundleDiscount(lookProducts, selectedLook);
   }, [lookProducts, selectedLook]);
 
-  // If no looks available, don't render
-  if (loadingLooks) {
-    return (
-      <section className="py-12 md:py-16 lg:py-20 bg-cream-50 border-t border-cream-200">
-        <Container size="lg">
-          <div className="text-center text-charcoal-600">Loading complete looks...</div>
-        </Container>
-      </section>
-    );
-  }
-
   if (!looks || looks.length === 0 || !selectedLook) {
     return null;
   }
 
   const handleAddCompleteLook = (): void => {
-    setCurrentLook(selectedLook);
+    setCurrentLook(selectedLook as unknown as StyleLook);
     setIsSizeModalOpen(true);
   };
 
   const handleCustomize = (): void => {
-    setCurrentLook(selectedLook);
+    setCurrentLook(selectedLook as unknown as StyleLook);
     setIsCustomizeModalOpen(true);
   };
 
   const handleSizeModalConfirm = (sizes: Record<string, string>): void => {
-    const result = addCompleteLookToCart(selectedLook, sizes);
+    const result = addCompleteLookToCart(selectedLook as unknown as StyleLook, sizes);
     setIsSizeModalOpen(false);
     
     if (result.success) {
@@ -411,7 +355,7 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
 
       {/* Size Selection Modal */}
       <CompleteTheLookSizeModal
-        look={selectedLook}
+        look={selectedLook as unknown as StyleLook}
         isOpen={isSizeModalOpen}
         onClose={() => setIsSizeModalOpen(false)}
         onConfirm={handleSizeModalConfirm}
@@ -419,7 +363,7 @@ export function CompleteTheLook({ currentProduct }: CompleteTheLookProps): JSX.E
 
       {/* Customize Modal */}
       <CustomizeLookModal
-        look={selectedLook}
+        look={selectedLook as unknown as StyleLook}
         isOpen={isCustomizeModalOpen}
         onClose={() => setIsCustomizeModalOpen(false)}
       />

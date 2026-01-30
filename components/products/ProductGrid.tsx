@@ -60,14 +60,15 @@ export function ProductGrid({
   // Desktop (1024px+): 3 columns
   // Large Desktop (1280px+): 4 columns
   // Extra Large (1536px+): 5-6 columns
+  // PHASE 7 — Mobile-first: 2-col grid on mobile
   const getGridCols = (cols: number): string => {
     const gridMap: Record<number, string> = {
       1: "grid-cols-1",
-      2: "grid-cols-1 md:grid-cols-2", // 768px+
-      3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3", // 768px+ / 1024px+
-      4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", // 768px+ / 1024px+ / 1280px+
-      5: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5", // 768px+ / 1024px+ / 1280px+ / 1536px+
-      6: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6", // 768px+ / 1024px+ / 1280px+ / 1536px+
+      2: "grid-cols-2",
+      3: "grid-cols-2 lg:grid-cols-3",
+      4: "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+      5: "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+      6: "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6",
     };
     return gridMap[cols] || gridMap[4];
   };
@@ -78,11 +79,7 @@ export function ProductGrid({
         "grid",
         getGridCols(columns),
         // Consistent spacing using 8px base scale
-        "gap-[var(--space-4)]", // 16px mobile
-        "sm:gap-[var(--space-6)]", // 24px small
-        "md:gap-[var(--space-6)]", // 24px tablet
-        "lg:gap-[var(--space-7)]", // 32px desktop
-        "xl:gap-[var(--space-7)]", // 32px large desktop (consistent)
+        "gap-2 sm:gap-3 md:gap-[var(--space-4)] lg:gap-[var(--space-6)]", // tight on mobile for 2-col
         // Performance: Grid optimization
         "items-stretch",
         // CRITICAL FIX: Ensure grid has proper layout flow
@@ -90,11 +87,8 @@ export function ProductGrid({
         className
       )}
       style={{
-        // Performance: Prevent layout shift
         contain: "layout style paint",
-        // MOBILE-FIRST LAYOUT FIX: Min-height reservation for grid container
-        minHeight: "420px", // Reserve space for at least one card
-        // Prevent stacking context issues
+        minHeight: "280px", // Lower on mobile 2-col so cards fit
         isolation: "isolate"
       }}
     >
@@ -138,15 +132,11 @@ export function ProductGrid({
               // MOBILE-FIRST LAYOUT FIX: Prevent layout shift with min-height reservation
               className="w-full flex"
               style={{
-                // CRITICAL FIX: Ensure products are always visible, even during animation
                 opacity: 1,
                 visibility: "visible",
-                // MOBILE-FIRST LAYOUT FIX: Fixed card heights with min-height reservation
-                minHeight: "420px", // Match ProductCard min-height
+                minHeight: "280px",
                 height: "auto",
-                // Prevent stacking context issues
                 isolation: "isolate",
-                // Ensure clickable area
                 pointerEvents: "auto"
               }}
             >

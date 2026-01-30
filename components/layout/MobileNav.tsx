@@ -145,15 +145,12 @@ export function MobileNav({
             aria-hidden="true"
           />
 
-          {/* Drawer - Higher z-index than backdrop and header */}
+          {/* Drawer — Phase 6 global glass */}
           <m.div
             ref={drawerRef}
             className={cn(
-              "fixed top-0 right-0 bottom-0 w-full max-w-md shadow-2xl focus:outline-none transition-colors duration-300",
-              "z-[1002]",
-              theme === "dark"
-                ? "bg-dark-bg-primary"
-                : "bg-cream-50"
+              "fixed top-0 right-0 bottom-0 w-full max-w-md glass shadow-2xl focus:outline-none transition-colors duration-300",
+              "z-[1002]"
             )}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}

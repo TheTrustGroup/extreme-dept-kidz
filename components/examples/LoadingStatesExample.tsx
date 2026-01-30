@@ -31,17 +31,12 @@ export function ProductGridWithLoadingExample(): JSX.Element {
   const [error, setError] = React.useState<Error | null>(null);
 
   React.useEffect(() => {
-    // Simulate API call
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data.products || []);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        setError(err);
-        setIsLoading(false);
-      });
+    // Example: simulate loading (no client fetch — product data is server-only)
+    const t = setTimeout(() => {
+      setProducts([]);
+      setIsLoading(false);
+    }, 800);
+    return () => clearTimeout(t);
   }, []);
 
   if (error) {
@@ -174,7 +169,7 @@ export function ImageWithErrorFallbackExample(): JSX.Element {
   return (
     <div className="w-full aspect-square">
       <ImagePlaceholder
-        src="/api/products/image.jpg"
+        src="/placeholder.jpg"
         alt="Product image"
         fill
         showPulse={true}
@@ -193,15 +188,9 @@ export function NetworkErrorExample(): JSX.Element {
   const [hasError, setHasError] = React.useState(false);
 
   React.useEffect(() => {
-    // Simulate network error
-    fetch("/api/products")
-      .then((res) => {
-        if (!res.ok) throw new Error("Network error");
-        return res.json();
-      })
-      .catch(() => {
-        setHasError(true);
-      });
+    // Example: simulate network error (no client fetch)
+    const t = setTimeout(() => setHasError(true), 500);
+    return () => clearTimeout(t);
   }, []);
 
   if (hasError) {

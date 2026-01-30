@@ -5,13 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import {
-  CACHE_DEFAULT_SMAXAGE,
-  CACHE_DEFAULT_SWR,
-  CACHE_NO_STORE,
-  productCacheControl,
-  looksCacheControl,
-} from '@/lib/utils/cache-constants';
+import { CACHE_NO_STORE } from '@/lib/utils/cache-constants';
 
 interface ApiSuccessResponse<T = any> {
   success: true;
@@ -57,36 +51,16 @@ export function apiSuccess<T>(
   // Performance: Set cache headers for ISR; align with cache-constants for product/catalog
   if (options?.cache === 'no-store') {
     headers.set('Cache-Control', 'no-store');
-  } else if (options?.cache === 'force-cache') {
-    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-  } else if (typeof options?.cache === 'number') {
-    const staleWindow = options.staleWhileRevalidate ?? options.cache * 5;
-    const cacheControl = `public, max-age=0, s-maxage=${options.cache}, stale-while-revalidate=${staleWindow}`;
-    headers.set('Cache-Control', cacheControl);
-    headers.set('CDN-Cache-Control', cacheControl);
-    headers.set('Vercel-CDN-Cache-Control', cacheControl);
-  } else if (options?.cache === 'product') {
-    // Product/catalog API: same TTL as pages (cache-constants)
-    const cc = productCacheControl();
-    headers.set('Cache-Control', cc);
-    headers.set('CDN-Cache-Control', cc);
-    headers.set('Vercel-CDN-Cache-Control', cc);
-  } else if (options?.cache === 'looks') {
-    const cc = looksCacheControl();
-    headers.set('Cache-Control', cc);
-    headers.set('CDN-Cache-Control', cc);
-    headers.set('Vercel-CDN-Cache-Control', cc);
+  } else if (options?.cache === 'force-cache' || typeof options?.cache === 'number') {
+    // No edge caching: treat as no-store
+    headers.set('Cache-Control', 'no-store');
+  } else if (options?.cache === 'product' || options?.cache === 'looks') {
+    // No edge caching: force dynamic
+    headers.set('Cache-Control', 'no-store');
   } else if (options?.tags && options.tags.length > 0) {
-    // Tagged responses: use default short cache to avoid surprise staleness
-    const cc = `public, max-age=0, s-maxage=${CACHE_DEFAULT_SMAXAGE}, stale-while-revalidate=${CACHE_DEFAULT_SWR}`;
-    headers.set('Cache-Control', cc);
-    headers.set('CDN-Cache-Control', cc);
-    headers.set('Vercel-CDN-Cache-Control', cc);
+    headers.set('Cache-Control', 'no-store');
   } else {
-    const cc = `public, max-age=0, s-maxage=${CACHE_DEFAULT_SMAXAGE}, stale-while-revalidate=${CACHE_DEFAULT_SWR}`;
-    headers.set('Cache-Control', cc);
-    headers.set('CDN-Cache-Control', cc);
-    headers.set('Vercel-CDN-Cache-Control', cc);
+    headers.set('Cache-Control', 'no-store');
   }
   
   const requestId = options?.requestId;

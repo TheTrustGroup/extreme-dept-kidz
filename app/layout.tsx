@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import { Playfair_Display, Inter } from "next/font/google";
 import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
@@ -30,11 +33,11 @@ const playfair = Playfair_Display({
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap", // Show fallback immediately, swap when font loads
+  display: "swap",
   weight: ["300", "400", "500", "600", "700"],
-  preload: true, // Preload critical font
-  fallback: ["system-ui", "arial"], // System fallback for instant text display
-  adjustFontFallback: true, // Optimize fallback font metrics
+  preload: true,
+  fallback: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "SF Pro Display", "system-ui", "sans-serif"],
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {

@@ -29,7 +29,8 @@ export const metadata: Metadata = {
 
 const FALLBACK_COLLECTION_IMAGE = "/4677.png";
 
-export const dynamic = "force-dynamic";
+/** PHASE 9 — Safe ISR: Collections index revalidates every 60s. */
+export const revalidate = 60;
 
 /**
  * Collections Index Page

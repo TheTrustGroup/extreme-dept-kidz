@@ -7,33 +7,26 @@ export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Container Component
- * 
- * Refactored to match Figma design system specifications:
- * - Max-width: 1280px (lg size) - Design System standard
- * - Padding: 16px (mobile), 24px (tablet), 32px (desktop)
- * - Centered with auto margins
+ * Container — PHASE 2: Mobile-first, precise spacing, zero overlap.
+ * Max-width 1280px (lg). Intentional padding: 16px → 24px → 32px.
  */
 const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
   ({ className, size = "lg", as, children, ...props }, ref) => {
     const Component = as || "div";
 
-    // Size variants (Design System: 1280px max-width for standard sections)
     const sizes = {
-      sm: "max-w-2xl", // 672px - Narrow content
-      md: "max-w-4xl", // 896px - Medium content
-      lg: "max-w-[1280px]", // 1280px - Design System standard (was max-w-6xl)
-      xl: "max-w-7xl", // 1280px - Same as lg but using Tailwind class
-      full: "max-w-full", // Full width
+      sm: "max-w-2xl",
+      md: "max-w-4xl",
+      lg: "max-w-[1280px]",
+      xl: "max-w-7xl",
+      full: "max-w-full",
     };
 
-    // Base styles - Using spacing scale
     const baseStyles = cn(
       "mx-auto w-full",
-      // Padding using spacing scale
-      "px-[var(--space-4)]", // 16px mobile
-      "md:px-[var(--space-6)]", // 24px tablet
-      "lg:px-[var(--space-7)]" // 32px desktop
+      "px-[var(--space-inline,1rem)]",
+      "md:px-[var(--space-block,1.5rem)]",
+      "lg:px-8"
     );
 
     return (

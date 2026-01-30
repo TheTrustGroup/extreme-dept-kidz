@@ -511,7 +511,6 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
           try {
             window.localStorage.setItem("products_updated", Date.now().toString());
           } catch (_) {}
-          fetch("/api/products?revalidate=true", { method: "GET" }).catch(() => {});
         }
         // Refresh the products list page to show the new product
         router.push("/admin/products");

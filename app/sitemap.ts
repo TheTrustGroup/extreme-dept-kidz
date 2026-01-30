@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getAllProducts, getAllCategories } from "@/lib/db";
+import { getAllCategories } from "@/lib/db";
+import { getProducts } from "@/lib/data/products";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://extremedeptkidz.com";
 
@@ -31,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let productPages: MetadataRoute.Sitemap = [];
   try {
-    const products = await getAllProducts();
+    const products = await getProducts();
     productPages = products.map((p) => ({
       url: `${SITE_URL}/products/${p.slug}`,
       lastModified: p.updatedAt || p.createdAt || new Date(),

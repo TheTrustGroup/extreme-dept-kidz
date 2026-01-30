@@ -13,9 +13,28 @@ import { Reviews } from "@/components/product/Reviews";
 import { useProductPurchase } from "@/lib/hooks/use-product-purchase";
 import type { Product } from "@/types";
 
+/** Shape matching lib/data/complete-looks getCompleteLooksForProduct */
+export interface CompleteLookForProduct {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  mainImage: string | null;
+  totalPrice: number;
+  bundlePrice: number;
+  savings: number;
+  bundleDiscount: number | null;
+  featured: boolean;
+  tags: string[];
+  ageRange: string | null;
+  products: Array<{ productId: string; product: any; required: boolean; isOptional: boolean }>;
+  items: Array<{ productId: string; product: any; required: boolean }>;
+}
+
 interface ProductPageClientProps {
   product: Product;
   allProducts?: Product[];
+  completeLooks?: CompleteLookForProduct[];
 }
 
 /**
@@ -25,7 +44,7 @@ interface ProductPageClientProps {
  * Uses shared purchase state to prevent duplication between
  * ProductInfo and StickyAddToCart components.
  */
-export function ProductPageClient({ product, allProducts = [] }: ProductPageClientProps): JSX.Element {
+export function ProductPageClient({ product, allProducts = [], completeLooks = [] }: ProductPageClientProps): JSX.Element {
   // Shared purchase state for ProductInfo and StickyAddToCart
   const purchaseState = useProductPurchase(product);
 
@@ -66,7 +85,7 @@ export function ProductPageClient({ product, allProducts = [] }: ProductPageClie
 
           {/* Complete The Look Section - Below fold, can stream */}
           <Suspense fallback={<div className="h-96 bg-cream-50 animate-pulse" />}>
-            <CompleteTheLook currentProduct={product} />
+            <CompleteTheLook currentProduct={product} initialLooks={completeLooks} />
           </Suspense>
 
           {/* Reviews Section - Below fold, can stream */}

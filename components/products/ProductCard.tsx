@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { m } from "framer-motion";
-import { Eye, Heart } from "lucide-react";
+import { Eye } from "lucide-react";
 import type { Product, ProductImage } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -19,52 +18,37 @@ interface ProductCardProps {
 }
 
 /**
- * ProductCard Component
- * 
- * Improved product card with Quick View, wishlist, hover effects, and size availability.
- * Entire card is clickable except Quick View and Wishlist buttons.
+ * ProductCard — Phase 5: Strict vertical stacking, zero overlap.
+ * Structure: product-card > image-wrap (image + Quick View) > info (name, price).
+ * No absolute elements outside image-wrap. No z-index stacking. Responsive.
  */
-export const ProductCard = React.memo(function ProductCard({ 
-  product, 
+export const ProductCard = React.memo(function ProductCard({
+  product,
   className,
   priority = false,
-  fetchPriority = "low"
+  fetchPriority = "low",
 }: ProductCardProps): JSX.Element {
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = React.useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = React.useState(false);
-  // Mobile/touch: show Quick View and sizes without hover (no hover on touch devices)
-  const [isMobileOrTouch, setIsMobileOrTouch] = React.useState(false);
-  React.useEffect(() => {
-    const check = (): void => {
-      setIsMobileOrTouch(window.innerWidth < 1024);
-    };
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-  const showQuickViewAndSizes = isHovered || isMobileOrTouch;
 
-  // Get primary and secondary images
-  const primaryImage = product.images?.find((img) => (img as ProductImage).isPrimary) || product.images?.[0];
+  const primaryImage =
+    product.images?.find((img) => (img as ProductImage).isPrimary) ||
+    product.images?.[0];
   const secondaryImage = product.images?.[1];
-  
-  // Ensure we have a valid image URL
+
   if (!primaryImage?.url) {
     console.warn(`Product ${product.id} has no valid image`);
   }
 
-  // Check if product is on sale
-  const isOnSale = product.originalPrice && product.originalPrice > product.price;
-  
-  // Check if product is new (has "new" tag or created within last 30 days)
-  const isNew = product.tags?.includes("new") || (product.createdAt 
-    ? new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
-    : false);
-
-  // Get available sizes for hover display
-  const availableSizes = product.sizes?.filter(s => s.inStock) || [];
-  const sizeLabels = availableSizes.map(s => s.size).slice(0, 5); // Show up to 5 sizes
+  const isOnSale =
+    product.originalPrice && product.originalPrice > product.price;
+  const isNew =
+    product.tags?.includes("new") ||
+    (product.createdAt
+      ? new Date(product.createdAt).getTime() >
+        Date.now() - 30 * 24 * 60 * 60 * 1000
+      : false);
 
   const handleQuickViewClick = (e: React.MouseEvent): void => {
     e.preventDefault();
@@ -80,58 +64,18 @@ export const ProductCard = React.memo(function ProductCard({
   return (
     <>
       <div
-        className={cn(
-          "group relative w-full",
-          className
-        )}
+        className={cn("product-card w-full flex flex-col", className)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Clickable Link Wrapper - Entire card except buttons */}
         <Link
           href={`/products/${product.slug}`}
-          className={cn(
-            "block focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-xl",
-            "w-full h-full"
-          )}
+          className="block w-full focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-xl"
           aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
         >
-          <m.article
-            className={cn(
-              "product-card w-full flex flex-col relative overflow-hidden",
-              "bg-cream-50 rounded-xl",
-              theme === "dark" && "bg-dark-surface",
-              "transition-all duration-300"
-            )}
-            aria-label={product.name}
-            style={{
-              aspectRatio: "4 / 5", // Changed to 4:5 aspect ratio
-              minHeight: "400px",
-            }}
-            whileHover={{ 
-              scale: 1.02,
-              transition: { 
-                duration: 0.3, 
-                ease: [0.25, 0.46, 0.45, 0.94]
-              }
-            }}
-            whileTap={{ 
-              scale: 0.98,
-              transition: { 
-                duration: 0.1,
-                ease: [0.4, 0, 1, 1]
-              }
-            }}
-          >
-            {/* Image Container */}
-            <div 
-              className="relative w-full flex-shrink-0 overflow-hidden"
-              style={{ 
-                aspectRatio: "4 / 5",
-                borderRadius: "12px 12px 0 0",
-              }}
-            >
-              {/* Primary Image */}
+          {/* Image wrap: image + overlays only (badges, wishlist, quick view, out of stock) */}
+          <div className="product-card-image-wrap relative w-full overflow-hidden rounded-t-xl bg-cream-100">
+            <div className="relative w-full" style={{ aspectRatio: "4 / 5" }}>
               {primaryImage?.url ? (
                 <OptimizedImage
                   src={primaryImage.url}
@@ -143,21 +87,22 @@ export const ProductCard = React.memo(function ProductCard({
                   quality={80}
                   blurVariant="product-card"
                   className={cn(
-                    "object-cover w-full h-full transition-opacity duration-500 ease-in-out",
+                    "absolute inset-0 w-full h-full object-cover transition-opacity duration-300",
                     isHovered && secondaryImage ? "opacity-0" : "opacity-100"
                   )}
                   fill
                 />
               ) : (
-                <div className="w-full h-full bg-cream-100 flex items-center justify-center">
-                  <span className={cn(
-                    "text-sm",
+                <div
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center text-sm",
                     theme === "dark" ? "text-dark-text-muted" : "text-charcoal-400"
-                  )}>No Image</span>
+                  )}
+                >
+                  No Image
                 </div>
               )}
 
-              {/* Secondary Image (on hover) */}
               {secondaryImage?.url && (
                 <OptimizedImage
                   src={secondaryImage.url}
@@ -169,184 +114,129 @@ export const ProductCard = React.memo(function ProductCard({
                   quality={80}
                   blurVariant="product-card"
                   className={cn(
-                    "absolute inset-0 object-cover w-full h-full transition-opacity duration-500 ease-in-out",
+                    "absolute inset-0 w-full h-full object-cover transition-opacity duration-300",
                     isHovered ? "opacity-100" : "opacity-0"
                   )}
                   fill
                 />
               )}
 
-              {/* Badges - Top Left */}
-              <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+              {/* Badges — inside image-wrap only */}
+              <div className="absolute top-2 left-2 flex flex-col gap-1.5">
                 {isNew && (
-                  <m.span
+                  <span
                     className={cn(
-                      "inline-flex items-center px-3 py-1 h-6",
-                      "bg-charcoal-900 text-cream-50 rounded-full",
-                      "font-sans text-[11px] font-semibold uppercase tracking-widest"
+                      "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
+                      "bg-charcoal-900 text-cream-50"
                     )}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.1 }}
                   >
-                    NEW
-                  </m.span>
+                    New
+                  </span>
                 )}
                 {isOnSale && (
-                  <m.span
+                  <span
                     className={cn(
-                      "inline-flex items-center px-3 py-1 h-6",
-                      "bg-navy-900 text-cream-50 rounded-full",
-                      "font-sans text-[11px] font-semibold uppercase tracking-widest"
+                      "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
+                      "bg-navy-900 text-cream-50"
                     )}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.1 }}
                   >
-                    SALE
-                  </m.span>
+                    Sale
+                  </span>
                 )}
               </div>
 
-              {/* Wishlist Button - Top Right */}
-              <div 
-                className="absolute top-3 right-3 z-10"
+              {/* Wishlist — inside image-wrap only */}
+              <div
+                className="absolute top-2 right-2"
                 onClick={handleWishlistClick}
+                role="presentation"
               >
                 <WishlistButton product={product} size="lg" />
               </div>
 
-              {/* Size Availability Overlay - Shows on hover (desktop) or always (mobile/touch) */}
-              {showQuickViewAndSizes && availableSizes.length > 0 && (
-                <m.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.3 }}
-                  className={cn(
-                    "absolute bottom-3 left-3 right-3",
-                    "bg-white/95 backdrop-blur-sm rounded-lg p-2",
-                    theme === "dark" && "bg-dark-surface/95"
-                  )}
-                >
-                  <p className={cn(
-                    "text-xs font-semibold uppercase tracking-wider mb-1",
-                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                  )}>
-                    Available Sizes
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {sizeLabels.map((size) => (
-                      <span
-                        key={size}
-                        className={cn(
-                          "px-2 py-0.5 text-[10px] font-medium rounded",
-                          theme === "dark"
-                            ? "bg-accent-primary/20 text-accent-primary"
-                            : "bg-navy-900/10 text-navy-900"
-                        )}
-                      >
-                        {size}
-                      </span>
-                    ))}
-                    {availableSizes.length > 5 && (
-                      <span className={cn(
-                        "px-2 py-0.5 text-[10px] font-medium",
-                        theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
-                      )}>
-                        +{availableSizes.length - 5}
-                      </span>
+              {/* Quick View — inside image-wrap only, over image */}
+              {product.inStock && (
+                <div className="absolute bottom-2 left-2 right-2 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleQuickViewClick}
+                    className={cn(
+                      "flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] w-full max-w-[180px] touch-target-min",
+                      "px-4 py-2.5 rounded-lg",
+                      "bg-navy-900 text-cream-50",
+                      "text-sm font-semibold uppercase tracking-wide",
+                      "hover:bg-navy-800 transition-colors",
+                      "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
+                      "shadow-md"
                     )}
-                  </div>
-                </m.div>
+                    aria-label={`Quick view ${product.name}`}
+                  >
+                    <Eye className="w-4 h-4 shrink-0" aria-hidden />
+                    <span>Quick View</span>
+                  </button>
+                </div>
               )}
 
-              {/* Out of Stock Overlay */}
+              {/* Out of stock — inside image-wrap only */}
               {!product.inStock && (
-                <div className={cn(
-                  "absolute inset-0 flex items-center justify-center",
-                  "bg-cream-50/90 backdrop-blur-sm",
-                  theme === "dark" && "bg-dark-bg-primary/90"
-                )}>
-                  <span className={cn(
-                    "font-serif text-lg font-medium uppercase tracking-wide",
-                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-600"
-                  )}>
+                <div
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "font-serif text-sm font-medium uppercase tracking-wide text-white"
+                    )}
+                  >
                     Out of Stock
                   </span>
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Product Info */}
-            <div className="flex-1 flex flex-col p-4 gap-2">
-              {/* Category/Collection Tag */}
-              <p className={cn(
-                "font-sans text-[11px] font-medium uppercase tracking-widest",
-                theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
-              )}>
-                {product.category.name}
-                {product.tags?.includes("new") && " • New"}
-              </p>
-
-              {/* Product Name */}
-              <h3 className={cn(
-                "font-serif text-lg font-semibold line-clamp-2",
-                theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-              )}>
-                {product.name}
-              </h3>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-2 mt-auto">
-                <span className={cn(
-                  "font-serif text-xl font-semibold",
-                  theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                )}>
-                  {formatPrice(product.price)}
-                </span>
-                {isOnSale && product.originalPrice && (
-                  <span className={cn(
-                    "font-sans text-sm line-through",
-                    theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
-                  )}>
-                    {formatPrice(product.originalPrice)}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Quick View Button - Shows on hover (desktop) or always (mobile/touch) */}
-            {showQuickViewAndSizes && product.inStock && (
-              <m.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute bottom-20 left-4 right-4 z-10"
-              >
-                <button
-                  onClick={handleQuickViewClick}
-                  className={cn(
-                    "w-full flex items-center justify-center gap-2 min-h-[44px]",
-                    "h-11 px-4 py-2.5 rounded-lg",
-                    "bg-navy-900 text-cream-50",
-                    "font-sans text-sm font-semibold uppercase tracking-wide",
-                    "hover:bg-navy-800 transition-colors",
-                    "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
-                    "shadow-lg"
-                  )}
-                  aria-label={`Quick view ${product.name}`}
-                >
-                  <Eye className="w-4 h-4" aria-hidden="true" />
-                  <span>Quick View</span>
-                </button>
-              </m.div>
+          {/* Info — PHASE 7: minimal text on mobile, 44px touch targets */}
+          <div className="product-card-info flex flex-col gap-1 sm:gap-1.5 p-2 sm:p-4 rounded-b-xl bg-cream-50 border border-t-0 border-cream-200/80 dark:bg-dark-surface dark:border-dark-border-glass">
+          <p
+            className={cn(
+              "text-[10px] sm:text-[11px] font-medium uppercase tracking-widest hidden sm:block",
+              theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
             )}
-          </m.article>
+          >
+            {product.category.name}
+            {product.tags?.includes("new") && " • New"}
+          </p>
+          <h3
+            className={cn(
+              "product-card-title font-serif text-sm sm:text-lg font-semibold line-clamp-2",
+              theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+            )}
+          >
+            {product.name}
+          </h3>
+          <p
+            className={cn(
+              "product-card-price font-serif text-base sm:text-xl font-semibold mt-0.5",
+              theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+            )}
+          >
+            {formatPrice(product.price)}
+            {isOnSale && product.originalPrice && (
+              <span
+                className={cn(
+                  "ml-2 font-sans text-sm font-normal line-through",
+                  theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
+                )}
+              >
+                {formatPrice(product.originalPrice)}
+              </span>
+            )}
+          </p>
+        </div>
         </Link>
       </div>
 
-      {/* Quick View Modal */}
       <QuickViewModal
         product={product}
         isOpen={isQuickViewOpen}
@@ -355,9 +245,10 @@ export const ProductCard = React.memo(function ProductCard({
     </>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison for memoization
-  return prevProps.product.id === nextProps.product.id &&
-         prevProps.product.price === nextProps.product.price &&
-         prevProps.product.inStock === nextProps.product.inStock &&
-         prevProps.className === nextProps.className;
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.product.price === nextProps.product.price &&
+    prevProps.product.inStock === nextProps.product.inStock &&
+    prevProps.className === nextProps.className
+  );
 });

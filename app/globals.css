@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * PHASE 2 — DESIGN SYSTEM
+ * Ultra modern · Soft glassmorphism · Premium fashion (Apple × Gentle Monster × Off-White × Arc'teryx)
+ * Mobile-first · Zero overlap · Zero clutter · Visual breathing room · Strong hierarchy · Precise spacing
+ */
+
 /* Price Range Slider Styles */
 input[type="range"] {
   -webkit-appearance: none;
@@ -116,7 +122,7 @@ html {
   --spacing-3xl: 6rem;     /* 96px */
   --spacing-4xl: 8rem;     /* 128px */
 
-  /* Granular spacing system */
+  /* PHASE 3 — Master Layout: Global spacing scale */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -125,13 +131,25 @@ html {
   --space-6: 24px;
   --space-7: 32px;
   --space-8: 40px;
-  --space-9: 48px;
-  --space-10: 64px;
+  --space-9: 56px;
+  --space-10: 72px;
+  /* Extended for section/layout (backward compat) */
   --space-11: 80px;
   --space-12: 96px;
   --space-13: 128px;
 
-  /* Typography scale */
+  /* PHASE 3 — Typography system (px) */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 44px;
+  --text-5xl: 56px;
+
+  /* Legacy typography scale (rem, kept for compatibility) */
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -157,15 +175,14 @@ html {
   --ease-natural: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-productive: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Glassmorphism design tokens - COLOR SYSTEM NORMALIZATION: Use brand tokens */
-  /* Using rgba() with brand token values for cross-browser compatibility */
-  --glass-bg-light: rgba(250, 249, 247, 0.72); /* brand-bg with 72% opacity */
-  --glass-bg-strong: rgba(250, 249, 247, 0.88); /* brand-bg with 88% opacity */
-  --glass-border: rgba(250, 247, 237, 0.6); /* cream-200 with 60% opacity */
-  --glass-shadow: 0 8px 32px rgba(28, 28, 28, 0.08); /* brand-text with 8% opacity */
-  --glass-shadow-elevated: 0 12px 40px rgba(28, 28, 28, 0.12); /* brand-text with 12% opacity */
-  --glass-blur: 12px;
-  --glass-blur-strong: 20px;
+  /* Glassmorphism — PHASE 2: Soft, premium (Apple × Gentle Monster × Arc'teryx) */
+  --glass-bg-light: var(--glass-soft-bg, rgba(254, 253, 251, 0.65));
+  --glass-bg-strong: var(--glass-soft-bg-strong, rgba(254, 253, 251, 0.82));
+  --glass-border: var(--glass-soft-border, rgba(250, 247, 237, 0.5));
+  --glass-shadow: var(--glass-soft-shadow, 0 4px 24px rgba(28, 28, 28, 0.06));
+  --glass-shadow-elevated: var(--glass-soft-shadow-elevated, 0 8px 32px rgba(28, 28, 28, 0.08));
+  --glass-blur: var(--glass-soft-blur, 16px);
+  --glass-blur-strong: var(--glass-soft-blur-strong, 24px);
 
   /* Warm accent – soft pastels for emotional appeal - COLOR SYSTEM NORMALIZATION */
   --accent-blush: rgba(201, 161, 74, 0.15); /* brand-secondary with 15% opacity */
@@ -177,9 +194,9 @@ html {
   --hero-text-shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.8), 0 2px 16px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 0, 0, 0.35);
   --hero-scroll-indicator-shadow: drop-shadow(0 2px 8px rgba(28, 28, 28, 0.8));
 
-  /* Typography system – font families (map to layout-loaded vars) */
+  /* PHASE 3 — Font stack: Inter + SF Pro fallback */
   --font-serif: var(--font-playfair), Georgia, serif;
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
 
   /* Type scale – size / line-height / letter-spacing */
   --text-caption: 0.75rem;
@@ -499,7 +516,7 @@ body {
 /* CRITICAL: Theme-aware body styles - optimized for zero layout shift */
 /* COLOR SYSTEM NORMALIZATION: Use brand tokens */
 body {
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.6;
   overflow-x: hidden;
   /* CRITICAL: Prevent layout thrashing */
@@ -813,21 +830,18 @@ textarea:focus-visible {
   color: var(--color-navy-900);
 }
 
-/* Glassmorphism utility classes - Theme-aware (Light theme is primary) */
-/* Performance: Optimized for smooth scrolling with reduced blur on mobile */
+/* PHASE 2 — Ultra modern glassmorphism: soft blur, minimal noise, premium feel */
 .glass-panel {
-  backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   transition: background-color var(--duration-card-hover) var(--ease-premium),
               border-color var(--duration-card-hover) var(--ease-premium),
               box-shadow var(--duration-card-hover) var(--ease-premium);
-  /* Performance: Only animate properties that change */
   will-change: background-color, border-color;
-  /* Light theme (primary) - with fallbacks for cross-browser consistency */
-  background: var(--glass-bg-light, rgba(254, 253, 251, 0.72));
-  border: 1px solid var(--glass-border, rgba(250, 247, 237, 0.6));
-  box-shadow: var(--glass-shadow, 0 8px 32px rgba(26, 26, 26, 0.08));
-  /* Performance: GPU acceleration + containment */
+  background: var(--glass-bg-light);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-glass, 20px);
   transform: translateZ(0);
   contain: layout style paint;
 }
@@ -845,13 +859,11 @@ textarea:focus-visible {
   transition: background-color var(--duration-card-hover) var(--ease-premium),
               border-color var(--duration-card-hover) var(--ease-premium),
               box-shadow var(--duration-card-hover) var(--ease-premium);
-  /* Performance: Only animate properties that change */
   will-change: background-color, border-color;
-  /* Light theme (primary) */
   background: var(--glass-bg-strong);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-elevated);
-  /* Performance: GPU acceleration + containment */
+  border-radius: var(--radius-glass-lg, 24px);
   transform: translateZ(0);
   contain: layout style paint;
 }
@@ -864,18 +876,16 @@ textarea:focus-visible {
 }
 
 .glass-card {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   transition: background-color var(--duration-card-hover) var(--ease-premium),
               border-color var(--duration-card-hover) var(--ease-premium),
               box-shadow var(--duration-card-hover) var(--ease-premium);
-  /* Performance: Only animate properties that change */
   will-change: background-color, border-color;
-  /* Light theme (primary) */
-  background: rgba(254, 253, 251, 0.85);
-  border: 1px solid rgba(250, 247, 237, 0.8);
-  box-shadow: 0 4px 24px rgba(26, 26, 26, 0.06);
-  /* Performance: GPU acceleration + containment */
+  background: var(--glass-bg-light);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-card, 16px);
   transform: translateZ(0);
   contain: layout style paint;
 }
@@ -887,49 +897,89 @@ textarea:focus-visible {
   box-shadow: var(--shadow-soft);
 }
 
-/* Enhanced glass utility class with saturation - Optimized */
+/* PHASE 6 — Global glass token: Cards, Header, Filters, Modals, Side panels */
 .glass {
-  backdrop-filter: blur(var(--glass-blur-md)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-md)) saturate(140%);
-  border-radius: var(--radius-lg);
-  transition: background-color var(--duration-card-hover) var(--ease-premium),
-              border-color var(--duration-card-hover) var(--ease-premium),
-              box-shadow var(--duration-card-hover) var(--ease-premium);
-  /* Performance: Only animate properties that change */
-  will-change: background-color, border-color;
-  /* Light theme (primary) */
-  background: var(--glass-bg-light);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  /* Performance: GPU acceleration + containment */
-  transform: translateZ(0);
-  contain: layout style paint;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.08));
+  backdrop-filter: blur(var(--glass-blur-global, 14px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-global, 14px));
+  border: 1px solid var(--glass-border-global, rgba(255, 255, 255, 0.12));
+  border-radius: var(--glass-radius-global, 16px);
+}
+
+[data-theme="light"] .glass,
+.light .glass {
+  background: var(--glass-bg-light-mode, rgba(254, 253, 251, 0.75));
+  border-color: var(--glass-border-light-mode, rgba(250, 247, 237, 0.6));
 }
 
 [data-theme="dark"] .glass,
 .dark .glass {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-glass);
-  box-shadow: var(--shadow-soft);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.08));
+  border-color: var(--glass-border-global, rgba(255, 255, 255, 0.12));
 }
 
-.glass:hover {
-  background: var(--color-surface-strong);
+/* PHASE 7 — Mobile-first: large touch targets (WCAG 2.5.5) */
+.touch-target-min {
+  min-width: 44px;
+  min-height: 44px;
 }
 
-/* Layout utility classes */
+@media (max-width: 767px) {
+  .touch-target-min {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* PHASE 2 — Layout: intentional spacing, breathing room, strong hierarchy */
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding-left: var(--space-inline, 1rem);
+  padding-right: var(--space-inline, 1rem);
 }
 
+@media (min-width: 768px) {
+  .container {
+    padding-left: var(--space-block, 1.5rem);
+    padding-right: var(--space-block, 1.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: var(--space-7);
+    padding-right: var(--space-7);
+  }
+}
+
+/* Section breathing room — mobile-first, calm spacing */
 .section {
-  padding: var(--space-12) 0;
+  padding-top: var(--space-section-mobile);
+  padding-bottom: var(--space-section-mobile);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-top: var(--space-section-tablet);
+    padding-bottom: var(--space-section-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-top: var(--space-section-desktop);
+    padding-bottom: var(--space-section-desktop);
+  }
+}
+
+.section-hero {
+  padding-top: var(--space-section-hero);
+  padding-bottom: var(--space-section-hero);
 }
 
 .stack > * + * {
-  margin-top: var(--space-6);
+  margin-top: var(--space-block);
 }
 
 /* Button utility class with premium interactions - Refined */
@@ -977,73 +1027,80 @@ textarea:focus-visible {
   }
 }
 
-/* Product card utility class - MOBILE-FIRST LAYOUT FIX: Fixed heights with min-height reservation - Cross-browser stabilization */
+/* PHASE 5 + PHASE 6 — Product card: strict vertical stack + global glass token */
 .product-card {
-  position: relative;
-  /* MOBILE-FIRST LAYOUT FIX: Fixed aspect ratio - ENFORCED across all browsers */
-  aspect-ratio: 4 / 5 !important;
-  /* MOBILE-FIRST LAYOUT FIX: Min-height reservation prevents layout shift - ENFORCED */
-  min-height: 400px !important;
-  height: auto;
-  /* MOBILE-FIRST LAYOUT FIX: Max-height constraint - ENFORCED */
-  max-height: 500px !important;
-  /* Remove overflow from card - only on image container */
-  overflow: visible;
-  border-radius: var(--radius-xl, 30px);
-  backdrop-filter: blur(var(--glass-blur-md, 18px));
-  -webkit-backdrop-filter: blur(var(--glass-blur-md, 18px));
-  transition: transform var(--duration-card-hover) var(--ease-natural),
-              box-shadow var(--duration-card-hover) var(--ease-natural),
-              background-color var(--duration-card-hover) var(--ease-natural);
-  will-change: transform, box-shadow;
-  /* Light theme (primary) - COLOR SYSTEM NORMALIZATION: Use CSS variables for pixel-perfect colors */
-  background: var(--glass-bg-light, rgba(254, 253, 251, 0.72));
-  box-shadow: var(--glass-shadow, 0 8px 32px rgba(26, 26, 26, 0.08));
-  /* CRITICAL: Prevent layout shift and forced reflows - Cross-browser */
-  contain: layout style paint;
-  /* CRITICAL FIX: Ensure products are always visible - pixel-perfect rendering */
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: flex !important;
+  display: flex;
   flex-direction: column;
-  /* Ensure proper stacking context */
-  isolation: isolate;
-  /* CRITICAL: GPU acceleration for smooth animations - Cross-browser */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  /* CRITICAL FIX: Ensure clickable area is always accessible */
-  pointer-events: auto;
-  cursor: pointer;
-  /* PRODUCT CARD REBUILD: Prevent margin collapse, uniform spacing */
-  margin: 0;
-  padding: 0;
-  gap: 0; /* Uniform vertical rhythm handled by content gap */
+  width: 100%;
+  border-radius: var(--glass-radius-global, 16px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur-global, 14px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-global, 14px));
+  border: 1px solid var(--glass-border-global);
+  box-shadow: var(--glass-shadow);
+  transition: box-shadow 0.2s ease;
+  overflow: hidden;
 }
 
-/* MOBILE-FIRST LAYOUT FIX: Skeleton card size parity - match ProductCard exactly */
+[data-theme="light"] .product-card,
+.light .product-card {
+  background: var(--glass-bg-light-mode);
+  border-color: var(--glass-border-light-mode);
+}
+
+[data-theme="dark"] .product-card,
+.dark .product-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border-global);
+}
+
 .skeleton-card {
-  /* Match ProductCard dimensions exactly */
   aspect-ratio: 4 / 5;
   min-height: 400px;
   height: auto;
   max-height: 500px;
-  border-radius: var(--radius-xl, 30px);
-  background: var(--glass-bg-light, rgba(254, 253, 251, 0.72));
-  box-shadow: var(--glass-shadow, 0 8px 32px rgba(26, 26, 26, 0.08));
-  /* Prevent layout shift */
+  border-radius: var(--radius-card-lg);
+  background: var(--glass-bg-light);
+  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--glass-border);
   contain: layout style paint;
 }
 
-/* PRODUCT CARD REBUILD: Content container with uniform padding and rhythm */
+/* PHASE 5 — Image wrap: image + Quick View only; no absolute outside */
+.product-card-image-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.product-card-image-wrap img,
+.product-card-image-wrap [data-nimg],
+.product-card-image-wrap .absolute {
+  transition: opacity 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card-image-wrap img,
+  .product-card-image-wrap [data-nimg] {
+    transition: none;
+  }
+}
+
+/* PHASE 5 — Info block: strict vertical stack below image, no absolute */
+.product-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Legacy: product-card-content (if used elsewhere) */
 .product-card-content {
   display: flex;
   flex-direction: column;
-  padding: 16px; /* Consistent padding: 16px uniform */
-  gap: 12px; /* Uniform vertical rhythm: 12px between elements */
+  padding: var(--space-4);
+  gap: var(--space-3);
   flex: 1;
-  min-height: 0; /* Allow flex shrinking */
+  min-height: 0;
 }
 
 [data-theme="dark"] .product-card,
@@ -1052,24 +1109,12 @@ textarea:focus-visible {
   box-shadow: var(--shadow-soft);
 }
 
-/* CRITICAL: Luxury micro-interactions for product cards */
-.product-card {
-  transition: 
-    transform var(--duration-card-hover) var(--ease-premium),
-    box-shadow var(--duration-card-hover) var(--ease-premium),
-    border-color var(--duration-card-hover) var(--ease-premium);
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
 .product-card:hover {
-  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--glass-shadow-elevated);
 }
 
 [data-theme="light"] .product-card:hover,
 .light .product-card:hover {
-  box-shadow: var(--glass-shadow-elevated);
   border-color: var(--color-cream-300);
 }
 
@@ -1078,143 +1123,67 @@ textarea:focus-visible {
   box-shadow: var(--shadow-medium);
 }
 
-/* ROOT FIX: Image container - strict layout constraints - Cross-browser stabilization */
-/* Z-INDEX FIX: Image wrapper at z-index 1 */
+/* Legacy .product-image — map to image-wrap for any remaining usage */
 .product-image {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4 !important; /* CRITICAL: Enforce aspect ratio across browsers */
+  aspect-ratio: 4 / 5;
   overflow: hidden;
-  border-radius: 20px;
-  min-height: 0;
   flex-shrink: 0;
-  /* Prevent margin collapse */
+}
+
+/* PHASE 5 — Product card title & price: responsive, no hover hacks */
+.product-card-title {
+  font-size: clamp(0.875rem, 0.8rem + 0.2vw, 1.125rem);
+  font-weight: 600;
+  line-height: 1.4;
   margin: 0;
   padding: 0;
-  /* Z-INDEX FIX: Image wrapper base layer */
-  z-index: 1;
-  /* CRITICAL: Ensure container is always visible */
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: block !important;
-}
-
-/* ROOT FIX: Product image - strict styling */
-/* Z-INDEX FIX: Images inherit wrapper z-index 1 */
-.product-image img,
-.product-image [data-nimg],
-.product-image > div {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-  transition: transform var(--duration-image-swap) var(--ease-natural),
-              opacity var(--duration-image-swap) var(--ease-natural);
-  will-change: transform, opacity;
-  /* CRITICAL: GPU acceleration for smooth image transitions */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  /* CRITICAL: Prevent forced reflows */
-  contain: layout style paint;
-  /* CRITICAL FIX: Ensure images are always visible */
-  opacity: 1 !important;
-  visibility: visible !important;
-  /* ROOT FIX: Remove any fixed height hacks */
-  position: absolute;
-  top: 0;
-  left: 0;
-  /* Z-INDEX FIX: Images at base layer */
-  z-index: 1;
-}
-
-/* Z-INDEX FIX: Overlays (badges, wishlist, out of stock) at z-index 2 */
-.product-image > [style*="zIndex: 2"],
-.product-image .absolute[style*="zIndex: 2"] {
-  z-index: 2 !important;
-}
-
-/* Z-INDEX FIX: Buttons at z-index 3 */
-.product-image button,
-.product-image [role="button"] {
-  z-index: 3 !important;
-  position: relative;
-}
-
-/* CRITICAL: Ultra smooth image transitions */
-/* ROOT FIX: Image hover effects - maintain strict constraints */
-.product-card:hover .product-image img,
-.product-card:hover .product-image [data-nimg] {
-  transform: scale(1.05) translateZ(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .product-image img {
-    transform: none !important;
-  }
-}
-
-/* PRODUCT CARD REBUILD: Perfect typographic rhythm with clamped titles */
-.product-title {
-  font-size: clamp(0.875rem, 0.8rem + 0.2vw, 0.95rem); /* Responsive clamp */
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  line-height: 1.4; /* Tighter line height for 2-line clamp */
-  color: var(--brand-text, var(--color-charcoal-900));
-  /* PRODUCT CARD REBUILD: Uniform spacing - handled by parent gap */
-  margin: 0;
-  padding: 0;
-  transition: color var(--transition-base) var(--ease-soft-in-out);
-  /* PRODUCT CARD REBUILD: Ensure proper text clamping */
   word-break: break-word;
   hyphens: auto;
 }
 
-.product-card:hover .product-title {
-  color: var(--color-text-primary);
-}
-
-/* PRODUCT CARD REBUILD: Price styling with uniform rhythm */
-.product-price {
-  font-size: clamp(0.9375rem, 0.9rem + 0.1vw, 1rem); /* Responsive clamp */
+.product-card-price {
+  font-size: clamp(0.9375rem, 0.9rem + 0.1vw, 1.25rem);
   font-weight: 600;
   line-height: 1.4;
-  color: var(--brand-secondary, var(--color-honey-500));
-  /* PRODUCT CARD REBUILD: Uniform spacing - handled by parent gap */
   margin: 0;
   padding: 0;
-  transition: 
-    color var(--transition-base) var(--ease-soft-in-out),
-    transform var(--transition-fast) var(--ease-soft-out);
 }
 
-.product-card:hover .product-price {
-  transform: scale(1.02);
+/* Legacy .product-title / .product-price if used elsewhere */
+.product-title {
+  font-size: clamp(0.875rem, 0.8rem + 0.2vw, 0.95rem);
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+  word-break: break-word;
 }
 
-/* ROOT FIX: Removed absolute positioning overlay - product actions moved below image */
+.product-price {
+  font-size: clamp(0.9375rem, 0.9rem + 0.1vw, 1rem);
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+}
 
-/* Reduce animations on mobile for better performance */
+/* Reduce motion on mobile */
 @media (max-width: 1023px) {
   .product-card {
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    transition: box-shadow 0.2s ease-out;
   }
   
-  .product-card:hover {
-    transform: none; /* Disable hover lift on mobile */
-  }
-  
-  .product-image img {
+  .product-card-image-wrap img,
+  .product-card-image-wrap [data-nimg] {
     transition: opacity 0.2s ease-out;
   }
   
-  /* CRITICAL FIX: Removed universal animation override - too broad, causes performance issues */
-  /* Apply reduced motion selectively to specific elements only */
-  
-  /* CRITICAL FIX: Optimize image rendering - remove will-change: auto (redundant) */
   img {
     image-rendering: -webkit-optimize-contrast;
   }
   
-  /* Reduce backdrop-filter on mobile for performance */
   .glass-panel,
   .glass-panel-strong,
   .glass-card {
@@ -1223,34 +1192,32 @@ textarea:focus-visible {
   }
 }
 
+/* PHASE 2/4 — Header: soft glass, blur 16px, minimal border */
+/* PHASE 6 — Header uses global glass token */
 .header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur-global, 14px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-global, 14px));
+  border-bottom: 1px solid var(--glass-border-global);
+  border-radius: 0;
   transition: background-color var(--duration-nav-hover) var(--ease-premium),
-              border-color var(--duration-nav-hover) var(--ease-premium),
-              box-shadow var(--duration-nav-hover) var(--ease-premium);
-  /* Performance: Only animate properties that change */
-  will-change: background-color, border-color;
-  /* Default: Light theme (primary) */
-  background: rgba(254, 253, 251, 0.88);
-  border-bottom: 1px solid rgba(250, 247, 237, 0.5);
-  /* CRITICAL: GPU acceleration + containment for smooth scrolling */
-  transform: translateZ(0);
-  contain: layout style paint;
-  /* CRITICAL: Prevent layout shifts during scroll */
-  backface-visibility: hidden;
-  /* CRITICAL: Optimize for mobile scrolling */
+              border-color var(--duration-nav-hover) var(--ease-premium);
   -webkit-overflow-scrolling: touch;
 }
 
-/* Dark theme override */
+[data-theme="light"] .header,
+.light .header {
+  background: var(--glass-bg-light-mode);
+  border-bottom-color: var(--glass-border-light-mode);
+}
+
 [data-theme="dark"] .header,
 .dark .header {
-  background: rgba(10, 15, 30, 0.6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--glass-bg);
+  border-bottom-color: var(--glass-border-global);
 }
 
 /* Performance: Reduce glassmorphism blur on mobile for better scroll performance */
@@ -1268,8 +1235,8 @@ textarea:focus-visible {
     -webkit-backdrop-filter: blur(6px);
   }
   .glass {
-    backdrop-filter: blur(10px) saturate(120%);
-    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    backdrop-filter: blur(var(--glass-blur-global, 14px));
+    -webkit-backdrop-filter: blur(var(--glass-blur-global, 14px));
   }
   .header {
     backdrop-filter: blur(10px);
@@ -1296,7 +1263,11 @@ textarea:focus-visible {
     background: rgba(254, 253, 251, 0.95);
   }
   .glass {
-    background: var(--glass-bg-light);
+    background: var(--glass-bg-light-mode);
+  }
+  [data-theme="dark"] .glass,
+  .dark .glass {
+    background: var(--glass-bg);
   }
   .header {
     backdrop-filter: none;
@@ -1355,79 +1326,39 @@ textarea:focus-visible {
   touch-action: manipulation;
 }
 
-/* MOBILE-FIRST LAYOUT FIX: Mobile breakpoint (max-width: 767px) - Cross-browser stabilization */
+/* PHASE 5 — Mobile: product card scales with content, image aspect 4/5 */
 @media (max-width: 767px) {
-  .product-card,
-  .skeleton-card {
-    /* MOBILE-FIRST LAYOUT FIX: Maintain strict constraints on mobile - pixel-perfect */
-    aspect-ratio: 3 / 4 !important;
-    min-height: 420px !important; /* Min-height reservation */
-    height: auto;
-    max-height: 520px !important;
-    /* Prevent layout shift - cross-browser */
-    contain: layout style paint;
-    /* Prevent margin collapse */
+  .product-card {
     margin: 0;
-    /* CRITICAL: Ensure cards are always visible */
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: flex !important;
+    display: flex;
     flex-direction: column;
+  }
+  
+  .product-card-image-wrap {
+    aspect-ratio: 4 / 5;
+  }
+  
+  .product-card-image-wrap .relative {
+    aspect-ratio: 4 / 5;
   }
   
   .product-grid,
   [class*="grid"] {
-    /* MOBILE-FIRST LAYOUT FIX: Reserve min-height for grid */
-    min-height: 420px; /* Reserve space for at least one card */
+    min-height: 0;
     height: auto;
-    /* Prevent layout shift */
-    contain: layout style;
   }
   
-  /* MOBILE-FIRST LAYOUT FIX: Ensure images render on mobile with strict constraints - Cross-browser */
   .product-image {
-    aspect-ratio: 3 / 4 !important;
-    border-radius: 20px;
-    min-height: 0; /* Allow flex shrinking */
-    /* CRITICAL: Ensure image container is always visible */
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
+    aspect-ratio: 4 / 5;
+    min-height: 0;
   }
   
   .product-image img,
   .product-image [data-nimg],
   .product-image > div {
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    object-fit: cover !important;
-    width: 100% !important;
-    height: 100% !important;
-    /* Cross-browser: Force rendering */
-    image-rendering: auto;
-    -webkit-image-rendering: auto;
-    -moz-image-rendering: auto;
-  }
-}
-
-/* MOBILE-FIRST LAYOUT FIX: Tablet breakpoint (768px+) */
-@media (min-width: 768px) {
-  .product-card,
-  .skeleton-card {
-    /* Maintain fixed heights on tablet */
-    min-height: 420px;
-    max-height: 520px;
-  }
-}
-
-/* MOBILE-FIRST LAYOUT FIX: Desktop breakpoint (1024px+) */
-@media (min-width: 1024px) {
-  .product-card,
-  .skeleton-card {
-    /* Maintain fixed heights on desktop */
-    min-height: 420px;
-    max-height: 520px;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -1472,17 +1403,11 @@ body {
   overflow: visible;
 }
 
-/* CRITICAL: Fix nested scroll containers */
-/* Prevent scroll jank from nested overflow containers */
+/* Fix nested scroll containers */
+.product-card-image-wrap,
 .product-image,
 .image-container {
-  /* Isolated scroll context */
   isolation: isolate;
-  /* Prevent layout shifts */
-  contain: layout style paint;
-  /* GPU acceleration */
-  transform: translateZ(0);
-  will-change: transform;
 }
 
 /* CRITICAL: Reduce forced reflows */
@@ -1520,10 +1445,7 @@ body {
     -webkit-backdrop-filter: blur(8px);
   }
   
-  /* Disable hover transforms on mobile */
-  .product-card:hover {
-    transform: none;
-  }
+  /* Phase 5: card has no transform hover */
   
   /* Optimize scroll containers */
   [data-scroll-container] {
@@ -1618,11 +1540,6 @@ input[type="submit"] {
 
 /* Cross-browser: Firefox specific fixes */
 @-moz-document url-prefix() {
-  /* Firefox-specific optimizations */
-  .product-card:hover {
-    transform: translateY(-6px) translateZ(0);
-  }
-  
   /* Fix Firefox backdrop-filter */
   .header,
   .glass-panel,

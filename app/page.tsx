@@ -2,13 +2,10 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
 import { generateWebsiteSchema, generateOrganizationSchema } from "@/lib/seo/structured-data";
-import { getAllProducts } from "@/lib/db";
+import { getProducts } from "@/lib/data/products";
 import type { Product } from "@/types";
 import { HeroSection } from "@/components/home";
 import { TrustBar } from "@/components/home";
-import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
-import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
-import { unstable_cache } from "next/cache";
 import { StreamingSkeleton } from "@/components/ui/StreamingSkeleton";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
@@ -46,8 +43,8 @@ const StyleGuideSection = nextDynamic(() => import("@/components/home").then((mo
   loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
 
-// ISR: Align with cache-constants so admin-uploaded products appear quickly
-export const revalidate = CACHE_REVALIDATE_PRODUCTS;
+/** PHASE 9 — Safe ISR: Home revalidates every 60s. Product detail stays dynamic. */
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
@@ -93,40 +90,10 @@ export default async function Home() {
   const websiteSchema = generateWebsiteSchema();
   const organizationSchema = generateOrganizationSchema();
 
-  // Fetch products from database to display on homepage
-  // Performance: Tagged for efficient cache invalidation
-  // Build-time resilient: getAllProducts now handles build-time failures gracefully
+  // Fetch products from database to display on homepage (fully dynamic SSR)
   let products: Product[] = [];
-  const isBuildTime =
-    process.env.NEXT_PHASE === "phase-production-build" ||
-    process.env.npm_lifecycle_event === "build";
   try {
-    // Use unstable_cache for ISR with tag-based revalidation
-    const getCachedProducts = unstable_cache(
-      async () => getAllProducts(),
-      ["homepage-products"],
-      {
-        tags: [CACHE_TAGS.products, CACHE_TAGS.homepage],
-        revalidate: CACHE_REVALIDATE_PRODUCTS,
-      }
-    );
-
-    products = await getCachedProducts();
-
-    // CRITICAL: At runtime, empty cache can be stale (e.g. from build when DB was down).
-    // Bypass cache once and fetch directly so products don't "vanish" on refresh.
-    if (
-      products.length === 0 &&
-      process.env.NODE_ENV === "production" &&
-      !isBuildTime
-    ) {
-      try {
-        const fresh = await getAllProducts();
-        if (fresh.length > 0) products = fresh;
-      } catch {
-        // Keep [] if direct fetch also fails
-      }
-    }
+    products = await getProducts();
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Failed to fetch products for homepage:", error);

@@ -29,15 +29,9 @@ export function CacheDebugPanel({
 
   if (!show || !mounted) return null;
 
-  const handleTestAPI = async (): Promise<void> => {
-    try {
-      const res = await fetch("/api/products");
-      const data = await res.json();
-      const count = data?.data?.products?.length ?? data?.products?.length ?? "?";
-      alert(`API returned ${count} products (status: ${res.status})`);
-    } catch (e) {
-      alert(`API error: ${e instanceof Error ? e.message : "Unknown"}`);
-    }
+  // Product data is server-only — no client fetch. Show server-passed count only.
+  const handleTestAPI = (): void => {
+    alert(`Server-passed product count: ${productsCount} (no client fetch)`);
   };
 
   const handleTestDB = async (): Promise<void> => {

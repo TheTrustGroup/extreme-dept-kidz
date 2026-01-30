@@ -8,7 +8,6 @@
  * - Query batching support
  */
 
-import { unstable_cache } from "next/cache";
 import { logger } from "@/lib/utils/logger";
 
 // Cache configuration

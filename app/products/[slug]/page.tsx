@@ -2,84 +2,28 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProductPageClient } from "./ProductPageClient";
-import { getProductBySlug, getAllProducts } from "@/lib/db";
+import { getProductBySlug, getProducts } from "@/lib/data/products";
+import { getCompleteLooksForProduct } from "@/lib/data/complete-looks";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data";
-import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
-import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
-import { unstable_cache } from "next/cache";
 import type { Product } from "@/types";
 
+/**
+ * PHASE 1 — Bulletproof commerce: product detail is ALWAYS server-rendered.
+ * UI → Server Component → DB only. No ISR, no client fetch, no revalidation.
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface ProductPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }
 
-// ISR: Align with cache-constants so new products show immediately
-export const revalidate = CACHE_REVALIDATE_PRODUCTS;
-
-// Allow dynamic generation for slugs not pre-generated (new products)
-export const dynamicParams = true;
-
-/**
- * Pre-generate a subset of product pages at build; others generated on demand (dynamicParams = true)
- */
-export async function generateStaticParams() {
-  try {
-    const products = await getAllProducts();
-    const slugs = products.slice(0, 50).map((p) => ({ slug: p.slug }));
-    if (process.env.NODE_ENV === "development") {
-      console.log("[ProductPage] generateStaticParams: pre-generating", slugs.length, "product slugs");
-    }
-    return slugs;
-  } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[ProductPage] generateStaticParams failed, all product pages will be generated on demand:", e);
-    }
-    return [];
-  }
-}
-
-/**
- * Fetch product with cache tags so on-demand revalidation (admin create/update) invalidates correctly.
- * SEV-1 FIX: When cache returns null, bypass cache and read from DB once. Prevents false
- * "no longer available" when product was just created but a stale null was cached (e.g. prefetch
- * before create, or revalidation not yet propagated to edge).
- */
-async function getCachedProduct(slug: string): Promise<Product | null> {
-  if (process.env.NODE_ENV === "development") {
-    console.log("[ProductPage] Fetching product with slug:", slug);
-  }
-  const getProduct = unstable_cache(
-    async () => getProductBySlug(slug),
-    ["product", slug],
-    { tags: [CACHE_TAGS.product(slug), CACHE_TAGS.products], revalidate: CACHE_REVALIDATE_PRODUCTS }
-  );
-  let product = await getProduct();
-  // CRITICAL: Bypass stale null — product may have been created after cache was populated
-  if (product === null) {
-    const fresh = await getProductBySlug(slug);
-    if (fresh) {
-      product = fresh;
-      if (process.env.NODE_ENV === "development") {
-        console.log("[ProductPage] Bypassed stale null, product found in DB:", fresh.name);
-      }
-    }
-  }
-  if (process.env.NODE_ENV === "development") {
-    console.log("[ProductPage] Product found:", !!product, product ? product.name : "(none)");
-  }
-  return product;
-}
-
-/**
- * Generate metadata for product page
- */
+/** Generate metadata — direct server fetch, no cache. */
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getCachedProduct(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -125,24 +69,21 @@ export async function generateMetadata({
 }
 
 /**
- * Product Detail Page
- *
- * Premium product page with gallery, info, and related products.
- * Uses same cache tags as list so admin create/update revalidation shows new products immediately.
+ * Product Detail Page — Server Component only.
+ * Product fetched directly here; no ISR, no fallback, no client fetch.
  */
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await getCachedProduct(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[ProductPage] Product not found for slug:", slug);
-    }
     notFound();
   }
 
-  // Fetch all products for recommendations
-  const allProducts = await getAllProducts();
+  const [allProducts, completeLooks] = await Promise.all([
+    getProducts(),
+    getCompleteLooksForProduct(product.id),
+  ]);
 
   // Generate structured data
   const productSchema = generateProductSchema(product);
@@ -185,7 +126,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         }
         key={`product-${product.slug}`}
       >
-        <ProductPageClient product={product} allProducts={allProducts} />
+        <ProductPageClient product={product} allProducts={allProducts} completeLooks={completeLooks} />
       </Suspense>
     </>
   );

@@ -154,7 +154,7 @@ export function StickyAddToCart({ product, className, purchaseState }: StickyAdd
                           key={size.size}
                           onClick={() => handleSizeSelect(size)}
                           className={cn(
-                            "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 min-w-[36px]",
+                            "px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 min-h-[44px] min-w-[44px] touch-target-min",
                             "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-1",
                             isSelected
                               ? "bg-navy-900 text-cream-50 shadow-glass"
@@ -179,7 +179,7 @@ export function StickyAddToCart({ product, className, purchaseState }: StickyAdd
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
                     className={cn(
-                      "p-1.5 rounded transition-colors duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center",
+                      "p-2 rounded transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center touch-target-min",
                       "hover:bg-cream-200 disabled:opacity-50 disabled:cursor-not-allowed",
                       "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-1"
                     )}
@@ -195,7 +195,7 @@ export function StickyAddToCart({ product, className, purchaseState }: StickyAdd
                     onClick={() => handleQuantityChange(1)}
                     disabled={quantity >= 10}
                     className={cn(
-                      "p-1.5 rounded transition-colors duration-200 min-w-[36px] min-h-[36px] flex items-center justify-center",
+                      "p-2 rounded transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center touch-target-min",
                       "hover:bg-cream-200 disabled:opacity-50 disabled:cursor-not-allowed",
                       "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-1"
                     )}

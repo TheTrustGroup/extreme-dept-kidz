@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useFocusTrap } from "@/lib/hooks/use-keyboard-navigation";
+import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { isValidEmail } from "@/lib/utils/validation";
 
 interface CreateAccountModalProps {
@@ -53,6 +54,7 @@ function calculatePasswordStrength(password: string): PasswordStrength {
 
 export function CreateAccountModal({ isOpen, onClose, onSwitchToSignIn }: CreateAccountModalProps): JSX.Element {
   const { theme } = useTheme();
+  const isMobile = useIsMobile();
   const { signup } = useUserAuth();
   const modalRef = React.useRef<HTMLDivElement>(null);
   
@@ -195,12 +197,15 @@ export function CreateAccountModal({ isOpen, onClose, onSwitchToSignIn }: Create
             aria-hidden="true"
           />
 
-          {/* Modal */}
+          {/* Modal — PHASE 7: bottom-sheet on mobile */}
           <m.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none overflow-y-auto"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className={cn(
+              "fixed z-[9999] pointer-events-none overflow-y-auto",
+              isMobile ? "inset-x-0 bottom-0 top-auto flex flex-col justify-end" : "inset-0 flex items-center justify-center p-4"
+            )}
+            initial={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
+            animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
             role="dialog"
             aria-modal="true"
@@ -209,17 +214,16 @@ export function CreateAccountModal({ isOpen, onClose, onSwitchToSignIn }: Create
             <div
               ref={modalRef}
               className={cn(
-                "relative w-full max-w-md my-8 overflow-hidden rounded-xl shadow-2xl pointer-events-auto",
-                theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
+                "relative w-full overflow-hidden glass shadow-2xl pointer-events-auto max-h-[90vh] overflow-y-auto",
+                isMobile ? "max-w-none rounded-t-2xl rounded-b-none" : "max-w-md my-8 rounded-xl"
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
+              {/* Close Button — 44px touch target */}
               <button
                 onClick={onClose}
                 className={cn(
-                  "absolute top-4 right-4 z-10",
-                  "w-10 h-10 flex items-center justify-center rounded-full",
+                  "absolute top-4 right-4 z-10 min-h-[44px] min-w-[44px] touch-target-min flex items-center justify-center rounded-full",
                   "bg-white/90 backdrop-blur-sm",
                   "hover:bg-white transition-colors",
                   "focus:outline-none focus:ring-2 focus:ring-navy-500",

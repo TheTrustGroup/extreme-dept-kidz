@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CollectionPageClient } from "./CollectionPageClient";
-import { getAllCategories, getAllProducts, getProductsByCategory } from "@/lib/db";
+import { getAllCategories } from "@/lib/db";
+import { getProducts, getProductsByCategory } from "@/lib/data/products";
 import { getProductsByCollection } from "@/lib/utils/filter-products";
-import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
-import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
-import { unstable_cache } from "next/cache";
 import { generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 import type { Product } from "@/types";
 
@@ -13,8 +11,8 @@ interface CollectionPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// ISR: Align with cache-constants so admin-uploaded products appear quickly
-export const revalidate = CACHE_REVALIDATE_PRODUCTS;
+/** PHASE 9 — Safe ISR: Collection/category pages revalidate every 60s. Product detail stays dynamic. */
+export const revalidate = 60;
 
 /**
  * Generate metadata from real category (Admin → Categories).
@@ -69,26 +67,9 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
   const { slug } = await params;
 
   try {
-    // "All" collection: show all products (no category filter)
+    // "All" collection: show all products (no category filter) — fully dynamic SSR
     if (slug === 'all') {
-      const isBuildTime =
-        process.env.NEXT_PHASE === 'phase-production-build' ||
-        process.env.npm_lifecycle_event === 'build';
-      const getCachedAllProducts = unstable_cache(
-        async () => getAllProducts(),
-        ['products-all'],
-        { tags: [CACHE_TAGS.products, CACHE_TAGS.collections], revalidate: CACHE_REVALIDATE_PRODUCTS }
-      );
-      let products = await getCachedAllProducts();
-      // Bypass stale empty cache at runtime (same as homepage)
-      if (products.length === 0 && process.env.NODE_ENV === 'production' && !isBuildTime) {
-        try {
-          const fresh = await getAllProducts();
-          if (fresh.length > 0) products = fresh;
-        } catch {
-          // keep []
-        }
-      }
+      const products = await getProducts();
       const collectionInfo = {
         name: 'All Products',
         description: 'Browse all products',
@@ -140,44 +121,10 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       );
     }
 
-    // Use unstable_cache with tags for efficient cache invalidation
-    // CRITICAL: Cache keys must match the tags used in revalidation
-    const getCachedCategories = unstable_cache(
-      async () => {
-        const categories = await getAllCategories();
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[CollectionPage] Fetched ${categories.length} categories for cache`);
-        }
-        return categories;
-      },
-      [`categories-${slug}`],
-      {
-        tags: [CACHE_TAGS.categories, CACHE_TAGS.collections, CACHE_TAGS.category(slug)],
-        revalidate: CACHE_REVALIDATE_PRODUCTS,
-      }
-    );
-
-    const getCachedProducts = unstable_cache(
-      async () => {
-        const products = await getProductsByCategory(slug);
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[CollectionPage] Fetched ${products.length} products for cache (category: ${slug})`);
-          if (products.length > 0) {
-            console.log(`[CollectionPage] Products:`, products.map(p => p.name));
-          }
-        }
-        return products;
-      },
-      [`products-${slug}`],
-      {
-        tags: [CACHE_TAGS.products, CACHE_TAGS.category(slug), CACHE_TAGS.collection(slug)],
-        revalidate: CACHE_REVALIDATE_PRODUCTS,
-      }
-    );
-
+    // Fully dynamic SSR: direct DB calls, no cache
     const [categories, productsByCategory] = await Promise.all([
-      getCachedCategories(),
-      getCachedProducts(),
+      getAllCategories(),
+      getProductsByCategory(slug),
     ]);
 
     const category = categories.find((c) => c.slug === slug && c.isActive);
@@ -194,7 +141,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     // Also when slug is new-arrivals and category has 0 products (products assigned to Boys only)
     if (products.length === 0) {
       try {
-        const all = await getAllProducts();
+        const all = await getProducts();
         const fallbackProducts = getProductsByCollection(all, slug);
         if (fallbackProducts.length > 0) {
           products = fallbackProducts;
