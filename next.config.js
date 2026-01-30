@@ -200,37 +200,52 @@ const nextConfig = {
   },
   
   // Headers for Performance & Security
-  // CRITICAL: Cache-Control for product/collection pages first so all browsers see same content
+  // CRITICAL: Values must match lib/utils/cache-constants.ts (CACHE_SMAXAGE_PRODUCTS=10, CACHE_SWR_PRODUCTS=59)
   async headers() {
+    const productPageCache = "public, max-age=0, s-maxage=10, stale-while-revalidate=59";
     return [
-      // Homepage: short CDN cache, browser revalidates (fixes different users seeing different products)
+      // Homepage: short CDN cache, browser revalidates; explicit CDN headers for edge
       {
         source: "/",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, s-maxage=10, stale-while-revalidate=59",
-          },
+          { key: "Cache-Control", value: productPageCache },
+          { key: "CDN-Cache-Control", value: productPageCache },
+          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
         ],
       },
       // Collection pages: same as homepage for consistent product lists
       {
         source: "/collections/:path*",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, s-maxage=10, stale-while-revalidate=59",
-          },
+          { key: "Cache-Control", value: productPageCache },
+          { key: "CDN-Cache-Control", value: productPageCache },
+          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
         ],
       },
-      // Product detail: align with list pages so list/detail stay in sync and 404s don't stick (SEV-1 fix)
+      // Product detail: align with list pages (SEV-1); explicit CDN headers
       {
         source: "/products/:path*",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, s-maxage=10, stale-while-revalidate=59",
-          },
+          { key: "Cache-Control", value: productPageCache },
+          { key: "CDN-Cache-Control", value: productPageCache },
+          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
+        ],
+      },
+      // API: product/catalog — short cache so admin changes propagate (align with cache-constants)
+      {
+        source: "/api/products",
+        headers: [
+          { key: "Cache-Control", value: productPageCache },
+          { key: "CDN-Cache-Control", value: productPageCache },
+          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
+        ],
+      },
+      {
+        source: "/api/products/:path*",
+        headers: [
+          { key: "Cache-Control", value: productPageCache },
+          { key: "CDN-Cache-Control", value: productPageCache },
+          { key: "Vercel-CDN-Cache-Control", value: productPageCache },
         ],
       },
       {

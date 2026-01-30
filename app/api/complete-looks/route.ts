@@ -4,11 +4,11 @@ import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { CACHE_REVALIDATE_LOOKS } from "@/lib/utils/cache-constants";
 
-// CRITICAL: ISR caching with stale-while-revalidate
-// Allow Next.js to optimize this route
+// CRITICAL: ISR aligned with cache-constants (looks TTL)
 export const dynamic = "auto";
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = CACHE_REVALIDATE_LOOKS;
 
 /**
  * GET /api/complete-looks
@@ -130,13 +130,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           productId ? `complete-looks-product-${productId}` : 'complete-looks-all',
           featured ? 'complete-looks-featured' : 'complete-looks-all',
         ],
-        revalidate: 60,
+        revalidate: CACHE_REVALIDATE_LOOKS,
       }
     );
 
     const transformedLooks = await getCachedLooks();
 
-    // CRITICAL: Edge caching with stale-while-revalidate
+    // CRITICAL: Edge caching aligned with cache-constants (looks TTL)
     return apiSuccess(
       {
         looks: transformedLooks,
@@ -145,11 +145,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       'Complete looks fetched successfully',
       undefined,
       {
-        cache: 60, // Cache for 60 seconds
-        staleWhileRevalidate: 300, // Serve stale for 5 minutes while revalidating
+        cache: 'looks', // Align with cache-constants (s-maxage=60, SWR=300)
         tags: [
           CACHE_TAGS.completeLooks,
           productId ? `complete-looks-product-${productId}` : 'complete-looks-all',
+          featured ? 'complete-looks-featured' : 'complete-looks-all',
         ],
       }
     );

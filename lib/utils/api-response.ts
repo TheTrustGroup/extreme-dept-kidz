@@ -1,9 +1,17 @@
 /**
  * STANDARDIZED API RESPONSES
- * Every API route must use these utilities for consistent responses
+ * Every API route must use these utilities for consistent responses.
+ * Cache headers align with lib/utils/cache-constants.ts for product/catalog consistency.
  */
 
 import { NextResponse } from 'next/server';
+import {
+  CACHE_DEFAULT_SMAXAGE,
+  CACHE_DEFAULT_SWR,
+  CACHE_NO_STORE,
+  productCacheControl,
+  looksCacheControl,
+} from '@/lib/utils/cache-constants';
 
 interface ApiSuccessResponse<T = any> {
   success: true;
@@ -37,33 +45,46 @@ export function apiSuccess<T>(
   message?: string,
   metadata?: Record<string, any>,
   options?: {
-    cache?: 'no-store' | 'force-cache' | number; // number = seconds to cache
+    cache?: 'no-store' | 'force-cache' | 'product' | 'looks' | number; // 'product'|'looks' = use cache-constants
     staleWhileRevalidate?: number; // Stale-while-revalidate window in seconds
     tags?: string[]; // Revalidation tags
   }
 ): NextResponse<ApiSuccessResponse<T>> {
   const headers = new Headers();
   
-  // Performance: Set cache headers for ISR with stale-while-revalidate
+  // Performance: Set cache headers for ISR; align with cache-constants for product/catalog
   if (options?.cache === 'no-store') {
     headers.set('Cache-Control', 'no-store');
   } else if (options?.cache === 'force-cache') {
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
   } else if (typeof options?.cache === 'number') {
-    // CRITICAL: max-age=0 so browser always revalidates (no stale list/detail mismatch); CDN uses s-maxage
     const staleWindow = options.staleWhileRevalidate ?? options.cache * 5;
     const cacheControl = `public, max-age=0, s-maxage=${options.cache}, stale-while-revalidate=${staleWindow}`;
     headers.set('Cache-Control', cacheControl);
     headers.set('CDN-Cache-Control', cacheControl);
     headers.set('Vercel-CDN-Cache-Control', cacheControl);
+  } else if (options?.cache === 'product') {
+    // Product/catalog API: same TTL as pages (cache-constants)
+    const cc = productCacheControl();
+    headers.set('Cache-Control', cc);
+    headers.set('CDN-Cache-Control', cc);
+    headers.set('Vercel-CDN-Cache-Control', cc);
+  } else if (options?.cache === 'looks') {
+    const cc = looksCacheControl();
+    headers.set('Cache-Control', cc);
+    headers.set('CDN-Cache-Control', cc);
+    headers.set('Vercel-CDN-Cache-Control', cc);
   } else if (options?.tags && options.tags.length > 0) {
-    // Default cache with tags: 60s cache, 300s stale
-    headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
-    headers.set('CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
-    headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    // Tagged responses: use default short cache to avoid surprise staleness
+    const cc = `public, max-age=0, s-maxage=${CACHE_DEFAULT_SMAXAGE}, stale-while-revalidate=${CACHE_DEFAULT_SWR}`;
+    headers.set('Cache-Control', cc);
+    headers.set('CDN-Cache-Control', cc);
+    headers.set('Vercel-CDN-Cache-Control', cc);
   } else {
-    // Default: 60s cache with stale-while-revalidate
-    headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    const cc = `public, max-age=0, s-maxage=${CACHE_DEFAULT_SMAXAGE}, stale-while-revalidate=${CACHE_DEFAULT_SWR}`;
+    headers.set('Cache-Control', cc);
+    headers.set('CDN-Cache-Control', cc);
+    headers.set('Vercel-CDN-Cache-Control', cc);
   }
   
   return NextResponse.json(
@@ -108,18 +129,19 @@ export function apiError(
     ? error // Show the actual error message instead of generic "Internal server error"
     : error;
   
-  return NextResponse.json(
-    {
-      success: false,
-      error: errorMessage,
-      details: isProduction && !isConfigurationError ? undefined : details,
-      code,
-      metadata: {
-        timestamp: new Date().toISOString(),
-      },
+  const body: ApiErrorResponse = {
+    success: false,
+    error: errorMessage,
+    details: isProduction && !isConfigurationError ? undefined : details,
+    code,
+    metadata: {
+      timestamp: new Date().toISOString(),
     },
-    { status }
-  );
+  };
+  const res = NextResponse.json(body, { status });
+  // Harden: do not cache error/404 responses at CDN or browser
+  res.headers.set('Cache-Control', CACHE_NO_STORE);
+  return res;
 }
 
 /**

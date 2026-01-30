@@ -7,6 +7,7 @@ import type { Product } from "@/types";
 import { HeroSection } from "@/components/home";
 import { TrustBar } from "@/components/home";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
 import { unstable_cache } from "next/cache";
 import { StreamingSkeleton } from "@/components/ui/StreamingSkeleton";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
@@ -44,8 +45,8 @@ const StyleGuideSection = nextDynamic(() => import("@/components/home").then((mo
   loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
 
-// ISR: Revalidate homepage every 10 seconds so admin-uploaded products appear quickly
-export const revalidate = 10;
+// ISR: Align with cache-constants so admin-uploaded products appear quickly
+export const revalidate = CACHE_REVALIDATE_PRODUCTS;
 
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
@@ -95,25 +96,39 @@ export default async function Home() {
   // Performance: Tagged for efficient cache invalidation
   // Build-time resilient: getAllProducts now handles build-time failures gracefully
   let products: Product[] = [];
+  const isBuildTime =
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.npm_lifecycle_event === "build";
   try {
     // Use unstable_cache for ISR with tag-based revalidation
-    // Production build requires DATABASE_URL; no mock baked into static output
     const getCachedProducts = unstable_cache(
       async () => getAllProducts(),
-      ['homepage-products'],
+      ["homepage-products"],
       {
         tags: [CACHE_TAGS.products, CACHE_TAGS.homepage],
-        revalidate: 10,
+        revalidate: CACHE_REVALIDATE_PRODUCTS,
       }
     );
-    
+
     products = await getCachedProducts();
+
+    // CRITICAL: At runtime, empty cache can be stale (e.g. from build when DB was down).
+    // Bypass cache once and fetch directly so products don't "vanish" on refresh.
+    if (
+      products.length === 0 &&
+      process.env.NODE_ENV === "production" &&
+      !isBuildTime
+    ) {
+      try {
+        const fresh = await getAllProducts();
+        if (fresh.length > 0) products = fresh;
+      } catch {
+        // Keep [] if direct fetch also fails
+      }
+    }
   } catch (error) {
-    // Fallback: Continue with empty array - sections show empty (no mock in production)
-    // This should rarely happen now that getAllProducts handles build-time failures
-    // Performance: Error logging handled by error boundary
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Failed to fetch products for homepage:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to fetch products for homepage:", error);
     }
     products = [];
   }

@@ -5,6 +5,7 @@ import { ProductPageClient } from "./ProductPageClient";
 import { getProductBySlug, getAllProducts } from "@/lib/db";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
 import { unstable_cache } from "next/cache";
 import type { Product } from "@/types";
 
@@ -14,8 +15,8 @@ interface ProductPageProps {
   }>;
 }
 
-// ISR: Revalidate every 10s to match homepage so new products show immediately
-export const revalidate = 10;
+// ISR: Align with cache-constants so new products show immediately
+export const revalidate = CACHE_REVALIDATE_PRODUCTS;
 
 // Allow dynamic generation for slugs not pre-generated (new products)
 export const dynamicParams = true;
@@ -40,7 +41,10 @@ export async function generateStaticParams() {
 }
 
 /**
- * Fetch product with cache tags so on-demand revalidation (admin create/update) invalidates correctly
+ * Fetch product with cache tags so on-demand revalidation (admin create/update) invalidates correctly.
+ * SEV-1 FIX: When cache returns null, bypass cache and read from DB once. Prevents false
+ * "no longer available" when product was just created but a stale null was cached (e.g. prefetch
+ * before create, or revalidation not yet propagated to edge).
  */
 async function getCachedProduct(slug: string): Promise<Product | null> {
   if (process.env.NODE_ENV === "development") {
@@ -49,9 +53,19 @@ async function getCachedProduct(slug: string): Promise<Product | null> {
   const getProduct = unstable_cache(
     async () => getProductBySlug(slug),
     ["product", slug],
-    { tags: [CACHE_TAGS.product(slug), CACHE_TAGS.products], revalidate: 10 }
+    { tags: [CACHE_TAGS.product(slug), CACHE_TAGS.products], revalidate: CACHE_REVALIDATE_PRODUCTS }
   );
-  const product = await getProduct();
+  let product = await getProduct();
+  // CRITICAL: Bypass stale null — product may have been created after cache was populated
+  if (product === null) {
+    const fresh = await getProductBySlug(slug);
+    if (fresh) {
+      product = fresh;
+      if (process.env.NODE_ENV === "development") {
+        console.log("[ProductPage] Bypassed stale null, product found in DB:", fresh.name);
+      }
+    }
+  }
   if (process.env.NODE_ENV === "development") {
     console.log("[ProductPage] Product found:", !!product, product ? product.name : "(none)");
   }

@@ -1,10 +1,11 @@
 /**
  * Cache Revalidation Utilities
- * 
+ *
  * Centralized functions for revalidating Next.js cache paths and tags
  * to ensure products appear immediately after creation/update.
- * 
- * Performance: Uses tag-based revalidation for efficient cache invalidation
+ *
+ * Hardened: All path revalidations use explicit "page" or "layout" type.
+ * TTLs align with lib/utils/cache-constants.ts.
  */
 
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -49,20 +50,20 @@ export async function revalidateAllCollectionPages(): Promise<void> {
     revalidateTag(CACHE_TAGS.categories);
     revalidateTag(CACHE_TAGS.homepage);
 
-    // Revalidate each active category's collection page (path-based)
+    // Revalidate each active category's collection page (path-based, explicit "page")
     for (const category of categories) {
       if (category.slug) {
-        revalidatePath(`/collections/${category.slug}`);
+        revalidatePath(`/collections/${category.slug}`, "page");
         revalidateTag(CACHE_TAGS.collection(category.slug));
         revalidateTag(CACHE_TAGS.category(category.slug));
       }
     }
 
-    // Also revalidate common paths
-    revalidatePath("/collections");
-    revalidatePath("/");
-    revalidatePath("/products");
-    revalidatePath("/api/products");
+    // Also revalidate common paths (explicit type for Full Route Cache)
+    revalidatePath("/collections", "page");
+    revalidatePath("/", "page");
+    revalidatePath("/products", "page");
+    revalidatePath("/api/products", "layout");
 
     logger.log(`[Cache] Revalidated ${categories.length} collection pages (tags + paths)`);
   } catch (error) {
@@ -83,10 +84,10 @@ export function revalidateCollectionPage(slug: string): void {
     revalidateTag(CACHE_TAGS.category(slug));
     revalidateTag(CACHE_TAGS.products);
     
-    // Path-based revalidation (for immediate updates)
-    revalidatePath(`/collections/${slug}`);
-    revalidatePath("/collections");
-    revalidatePath("/");
+    // Path-based revalidation (explicit "page" for immediate CDN purge)
+    revalidatePath(`/collections/${slug}`, "page");
+    revalidatePath("/collections", "page");
+    revalidatePath("/", "page");
     
     logger.log(`[Cache] Revalidated collection page: /collections/${slug} (tags + paths)`);
   } catch (error) {
@@ -129,11 +130,12 @@ export async function revalidateCategoryChange(
 
 /**
  * Revalidate a specific product by slug
- * Use this when a product is updated
+ * Use this when a product is created/updated/deleted.
+ * SEV-1: Explicit 'page' type ensures Full Route Cache and CDN purge for /products/[slug].
  */
 export function revalidateProduct(slug: string, id?: string): void {
   try {
-    // Tag-based revalidation
+    // Tag-based revalidation (invalidates unstable_cache entries)
     revalidateTag(CACHE_TAGS.product(slug));
     if (id) {
       revalidateTag(CACHE_TAGS.productId(id));
@@ -141,10 +143,10 @@ export function revalidateProduct(slug: string, id?: string): void {
     revalidateTag(CACHE_TAGS.products);
     revalidateTag(CACHE_TAGS.homepage);
     
-    // Path-based revalidation
-    revalidatePath(`/products/${slug}`);
-    revalidatePath("/products");
-    revalidatePath("/");
+    // Path-based revalidation — explicit 'page' for product detail and list
+    revalidatePath(`/products/${slug}`, "page");
+    revalidatePath("/products", "page");
+    revalidatePath("/", "page");
     
     logger.log(`[Cache] Revalidated product: ${slug} (tags + paths)`);
   } catch (error) {

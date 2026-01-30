@@ -4,6 +4,7 @@ import { CollectionPageClient } from "./CollectionPageClient";
 import { getAllCategories, getAllProducts, getProductsByCategory } from "@/lib/db";
 import { getProductsByCollection } from "@/lib/utils/filter-products";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
 import { unstable_cache } from "next/cache";
 import { generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 import type { Product } from "@/types";
@@ -12,8 +13,8 @@ interface CollectionPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// ISR: Revalidate collection pages every 10 seconds so admin-uploaded products appear quickly
-export const revalidate = 10;
+// ISR: Align with cache-constants so admin-uploaded products appear quickly
+export const revalidate = CACHE_REVALIDATE_PRODUCTS;
 
 /**
  * Generate metadata from real category (Admin → Categories).
@@ -70,12 +71,24 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
   try {
     // "All" collection: show all products (no category filter)
     if (slug === 'all') {
+      const isBuildTime =
+        process.env.NEXT_PHASE === 'phase-production-build' ||
+        process.env.npm_lifecycle_event === 'build';
       const getCachedAllProducts = unstable_cache(
         async () => getAllProducts(),
         ['products-all'],
-        { tags: [CACHE_TAGS.products, CACHE_TAGS.collections], revalidate: 10 }
+        { tags: [CACHE_TAGS.products, CACHE_TAGS.collections], revalidate: CACHE_REVALIDATE_PRODUCTS }
       );
-      const products = await getCachedAllProducts();
+      let products = await getCachedAllProducts();
+      // Bypass stale empty cache at runtime (same as homepage)
+      if (products.length === 0 && process.env.NODE_ENV === 'production' && !isBuildTime) {
+        try {
+          const fresh = await getAllProducts();
+          if (fresh.length > 0) products = fresh;
+        } catch {
+          // keep []
+        }
+      }
       const collectionInfo = {
         name: 'All Products',
         description: 'Browse all products',
@@ -140,7 +153,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       [`categories-${slug}`],
       {
         tags: [CACHE_TAGS.categories, CACHE_TAGS.collections, CACHE_TAGS.category(slug)],
-        revalidate: 10,
+        revalidate: CACHE_REVALIDATE_PRODUCTS,
       }
     );
 
@@ -158,7 +171,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       [`products-${slug}`],
       {
         tags: [CACHE_TAGS.products, CACHE_TAGS.category(slug), CACHE_TAGS.collection(slug)],
-        revalidate: 10,
+        revalidate: CACHE_REVALIDATE_PRODUCTS,
       }
     );
 

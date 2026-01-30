@@ -14,6 +14,7 @@ import type { Product } from "@/types";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { CACHE_REVALIDATE_PRODUCTS } from "@/lib/utils/cache-constants";
 import { unstable_cache } from "next/cache";
 import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 
@@ -71,9 +72,9 @@ function transformProduct(prismaProduct: {
   };
 }
 
-// CRITICAL: ISR with short revalidate so admin-uploaded products appear quickly
+// CRITICAL: ISR aligned with cache-constants so admin-uploaded products appear quickly
 export const dynamic = 'auto';
-export const revalidate = 10; // Revalidate every 10 seconds
+export const revalidate = CACHE_REVALIDATE_PRODUCTS;
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           CACHE_TAGS.products,
           category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections,
         ],
-        revalidate: 10,
+        revalidate: CACHE_REVALIDATE_PRODUCTS,
       }
     );
 
@@ -173,8 +174,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       "Products fetched successfully",
       undefined,
       {
-        cache: 10, // Short cache so admin-uploaded products appear quickly
-        staleWhileRevalidate: 59, // Serve stale for 59s while revalidating
+        cache: "product", // Align with cache-constants (s-maxage=10, SWR=59)
         tags: [CACHE_TAGS.products, category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections],
       }
     );
