@@ -10,6 +10,7 @@ import { apiSuccess, apiError, apiValidationError, apiRateLimit, apiUnauthorized
 import { adminLoginSchema, validate } from '@/lib/validation/schemas';
 import { logger } from '@/lib/utils/logger';
 import { logActivity, ActivityActions } from '@/lib/services/admin/activity.service';
+import { retryPrismaQuery } from '@/lib/utils/retry';
 
 export const dynamic = 'force-dynamic';
 
@@ -149,17 +150,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Email is stored exactly as provided, but we lookup case-insensitively
     const normalizedEmail = email.toLowerCase().trim();
     const trimmedEmail = email.trim();
-
     let user;
     
-    // Retry query up to 3 times for Vercel cold start (connection might not be ready on first request)
-    const maxRetries = 3;
-    let lastError: Error | null = null;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        // Try exact match first (for case-sensitive storage like Admin@extremedeptkidz.com)
-        user = await prisma.adminUser.findUnique({
+    try {
+      // Use retryPrismaQuery for better timeout and retry handling
+      // Try exact match first (for case-sensitive storage like Admin@extremedeptkidz.com)
+      user = await retryPrismaQuery(
+        () => prisma.adminUser.findUnique({
           where: { email: trimmedEmail },
           select: {
             id: true,
@@ -169,56 +166,65 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             isActive: true,
             tokenVersion: true,
           },
-        });
-        
-        // If not found with exact match, try case-insensitive lookup
-        // This handles both Admin@extremedeptkidz.com and admin@extremedeptkidz.com
-        if (!user) {
-          // Get all admin users and find case-insensitive match
-          const allAdmins = await prisma.adminUser.findMany({
+        }),
+        { 
+          timeoutMs: 5000, // 5 second timeout
+          maxRetries: 3,
+          initialDelayMs: 200,
+        }
+      );
+      
+      // If not found with exact match, try case-insensitive lookup
+      // This handles both Admin@extremedeptkidz.com and admin@extremedeptkidz.com
+      if (!user) {
+        // Get all admin users and find case-insensitive match
+        user = await retryPrismaQuery(
+          () => prisma.adminUser.findMany({
             where: { isActive: true },
-          });
-          user = allAdmins.find(u => u.email.toLowerCase() === normalizedEmail) || null;
-        }
-        
-        // Success - break out of retry loop
-        break;
-      } catch (dbError) {
-        lastError = dbError instanceof Error ? dbError : new Error('Unknown error');
-        logger.error(`[Login] Database query error (attempt ${attempt}/${maxRetries}):`, lastError.message);
-        
-        // If this was the last attempt, handle error
-        if (attempt === maxRetries) {
-          const errorMessage = lastError.message;
-          
-          // Check for specific Prisma connection errors (P1000 auth, P1001 unreachable, P1002 timeout)
-          const isConnectionError = 
-            errorMessage.includes('Can\'t reach database server') ||
-            errorMessage.includes('Authentication failed') ||
-            errorMessage.includes('Connection') ||
-            errorMessage.includes('timeout') ||
-            errorMessage.includes('P1000') || // Prisma auth failed
-            errorMessage.includes('P1001') || // Prisma can't reach server
-            errorMessage.includes('P1002');   // Prisma connection timeout
-          
-          const connectionHint = isConnectionError
-            ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
-            : undefined;
-
-          return withCors(request, apiError(
-            isConnectionError 
-              ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
-              : 'Database query failed. Please try again.',
-            500,
-            process.env.NODE_ENV === 'development' ? errorMessage : connectionHint,
-            undefined,
-            requestId
-          ));
-        }
-        
-        // Wait before retry (exponential backoff: 500ms, 1000ms, 1500ms)
-        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+          }).then(admins => admins.find(u => u.email.toLowerCase() === normalizedEmail) || null),
+          { 
+            timeoutMs: 5000,
+            maxRetries: 3,
+            initialDelayMs: 200,
+          }
+        );
       }
+    } catch (dbError) {
+      const error = dbError instanceof Error ? dbError : new Error('Unknown database error');
+      const errorMessage = error.message;
+      
+      logger.error(`[Login] Database query failed:`, {
+        message: errorMessage,
+        stack: error.stack,
+        requestId,
+      });
+      
+      // Check for specific Prisma connection errors (P1000 auth, P1001 unreachable, P1002 timeout)
+      const isConnectionError = 
+        errorMessage.includes('Can\'t reach database server') ||
+        errorMessage.includes('Authentication failed') ||
+        errorMessage.includes('Connection') ||
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('timed out') ||
+        errorMessage.includes('P1000') || // Prisma auth failed
+        errorMessage.includes('P1001') || // Prisma can't reach server
+        errorMessage.includes('P1002') ||  // Prisma connection timeout
+        errorMessage.includes('ECONNREFUSED') ||
+        errorMessage.includes('ETIMEDOUT');
+      
+      const connectionHint = isConnectionError
+        ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
+        : undefined;
+
+      return withCors(request, apiError(
+        isConnectionError 
+          ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
+          : 'Database query failed. Please try again.',
+        500,
+        process.env.NODE_ENV === 'development' ? errorMessage : connectionHint,
+        undefined,
+        requestId
+      ));
     }
 
     if (!user) {
