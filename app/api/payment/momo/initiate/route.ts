@@ -16,9 +16,9 @@ const paymentSchema = z.object({
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-  // Rate limiting
+  // Rate limiting (Redis-backed with in-memory fallback)
   const rateLimitCheck = createRateLimitMiddleware(RATE_LIMITS.PAYMENT);
-  const rateLimitResponse = rateLimitCheck(request);
+  const rateLimitResponse = await rateLimitCheck(request);
   if (rateLimitResponse) {
     return rateLimitResponse;
   }

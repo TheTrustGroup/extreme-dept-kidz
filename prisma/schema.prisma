@@ -309,6 +309,7 @@ model AdminUser {
   passwordResetToken      String?     // Token for password reset
   passwordResetExpiresAt DateTime?    // Token expiration time
   passwordResetRequestedAt DateTime?  // When reset was requested
+  tokenVersion            Int         @default(0) // Token version for session invalidation
   createdAt               DateTime    @default(now())
   updatedAt               DateTime    @updatedAt
   activityLogs            AdminActivityLog[] // Activity log entries

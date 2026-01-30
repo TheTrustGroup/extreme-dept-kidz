@@ -13,6 +13,7 @@ export interface JWTPayload {
   userId: string;
   email: string;
   role: string;
+  tokenVersion?: number; // Token version for session invalidation
 }
 
 /**

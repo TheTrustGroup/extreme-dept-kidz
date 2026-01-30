@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { csrfProtection } from "@/lib/auth/csrf-middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
-import { revalidateAllCollectionPages, revalidateCollectionPage, revalidateProduct, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { revalidateOnProductMutation } from "@/lib/utils/cache-revalidation";
 import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
 import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 
@@ -221,6 +221,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // CSRF Protection (for state-changing operations)
+  const csrfCheck = csrfProtection(request);
+  if (csrfCheck.error) return csrfCheck.error;
+
   // RBAC: Creating products requires admin role or higher
   const auth = await authenticateAndAuthorize(request, 'admin');
   if (auth.error) return withCors(request, auth.error);
@@ -385,71 +389,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Revalidate cache to ensure product appears immediately
-    try {
-      // Get category slug for specific revalidation
-      const categorySlug = product.category?.slug;
-      
-      // CRITICAL: Revalidate tags FIRST (before paths) to ensure cache invalidation
-      // This must happen before path revalidation for proper cache clearing
-      revalidateTag(CACHE_TAGS.products);
-      revalidateTag(CACHE_TAGS.collections);
-      revalidateTag(CACHE_TAGS.categories);
-      revalidateTag(CACHE_TAGS.homepage);
-      
-      if (categorySlug) {
-        revalidateTag(CACHE_TAGS.category(categorySlug));
-        revalidateTag(CACHE_TAGS.collection(categorySlug));
-      }
-      
-      // Revalidate product-specific tags
-      revalidateProduct(product.slug, product.id);
-      
-      // CRITICAL FIX: Revalidate complete-looks cache when products are created/updated
-      // This ensures "Complete The Look" sections update immediately
-      revalidateTag(CACHE_TAGS.completeLooks);
-      revalidateTag(CACHE_TAGS.completeLookProduct(product.id));
-      
-      // CRITICAL: Revalidate the specific category's collection page
-      if (categorySlug) {
-        revalidateCollectionPage(categorySlug);
-        // Also revalidate the cache key used by unstable_cache
-        revalidatePath(`/collections/${categorySlug}`, 'page');
-        logger.log(`[Cache] Revalidated category collection page: /collections/${categorySlug}`);
-      }
-      
-      // Revalidate all collection pages to ensure product appears everywhere
-      await revalidateAllCollectionPages();
-      
-      // Revalidate admin pages
-      revalidatePath('/admin/products', 'page');
-      revalidatePath('/api/products');
-      
-      // Revalidate homepage and product listing pages
-      revalidatePath('/', 'page');
-      revalidatePath('/products', 'page');
-      revalidatePath('/collections', 'page');
-      
-      logger.log(`[Cache] Product created: ${product.name} - Revalidated cache for category: ${categorySlug || 'unknown'}`);
-      logger.log(`[Cache] Product ID: ${product.id}, Category ID: ${product.categoryId}`);
-      
-      // In development, log detailed cache revalidation info
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Product Creation] Cache revalidation complete:', {
-          productSlug: product.slug,
-          productId: product.id,
-          categorySlug: categorySlug,
-          categoryId: product.categoryId,
-        });
-      }
-    } catch (revalidateError) {
-      logger.error('Failed to revalidate cache:', revalidateError);
-      // Don't fail the request if revalidation fails, but log it
-      if (process.env.NODE_ENV === 'development') {
-        console.error('[Product Creation] Cache revalidation error:', revalidateError);
-        console.error('[Product Creation] Error stack:', revalidateError instanceof Error ? revalidateError.stack : 'No stack trace');
-      }
-    }
+    // Single contract: mutation → revalidate before response (three truths)
+    await revalidateOnProductMutation({
+      type: "create",
+      slug: product.slug,
+      id: product.id,
+      categorySlug: product.category?.slug ?? undefined,
+    });
 
     // Notify frontend via webhook so cache revalidation runs (immediate visibility)
     triggerProductUpdatedWebhook({

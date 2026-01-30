@@ -142,6 +142,9 @@ export async function PUT(
     if (role && isSuperAdmin) updateData.role = role;
     if (typeof isActive === 'boolean' && isSuperAdmin) updateData.isActive = isActive;
 
+    // Track if we need to increment token version (for session invalidation)
+    let shouldInvalidateSessions = false;
+
     // Handle password update
     if (password) {
       const passwordValidation = validatePasswordStrength(password);
@@ -151,6 +154,20 @@ export async function PUT(
         });
       }
       updateData.passwordHash = await hashPassword(password);
+      // Invalidate all sessions when password changes
+      shouldInvalidateSessions = true;
+    }
+
+    // Invalidate sessions on role change (security: privileges changed)
+    if (role && role !== existingUser.role && isSuperAdmin) {
+      shouldInvalidateSessions = true;
+    }
+
+    // Increment token version to invalidate all existing sessions
+    if (shouldInvalidateSessions) {
+      updateData.tokenVersion = {
+        increment: 1,
+      };
     }
 
     // Update user

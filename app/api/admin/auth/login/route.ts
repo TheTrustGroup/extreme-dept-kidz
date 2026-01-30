@@ -3,7 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { withCors } from '@/lib/utils/cors';
 import { verifyPassword } from '@/lib/auth/password';
 import { generateToken } from '@/lib/auth/jwt';
-import { checkRateLimit, getClientIP } from '@/lib/auth/rate-limit';
+import { checkRateLimit, getClientIP } from '@/lib/auth/rate-limit-redis';
+import { generateCSRFToken, setCSRFTokenCookie } from '@/lib/auth/csrf';
 import { detectBot } from '@/lib/security/bot-detector';
 import { apiSuccess, apiError, apiValidationError, apiRateLimit, apiUnauthorized } from '@/lib/utils/api-response';
 import { adminLoginSchema, validate } from '@/lib/validation/schemas';
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 2. RATE LIMITING - 5 attempts per 15 minutes per IP
     const clientIP = getClientIP(request);
-    const rateLimit = checkRateLimit({
+    const rateLimit = await checkRateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
       maxRequests: 5,
       identifier: clientIP,
@@ -147,6 +148,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // Try exact match first (for case-sensitive storage like Admin@extremedeptkidz.com)
         user = await prisma.adminUser.findUnique({
           where: { email: trimmedEmail },
+          select: {
+            id: true,
+            email: true,
+            passwordHash: true,
+            role: true,
+            isActive: true,
+            tokenVersion: true,
+          },
         });
         
         // If not found with exact match, try case-insensitive lookup
@@ -278,13 +287,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Generate token
+    // Generate token (include tokenVersion for session invalidation)
     let token: string;
     try {
       token = generateToken({
         userId: user.id,
         email: user.email,
         role: user.role,
+        tokenVersion: user.tokenVersion ?? 0, // Include token version for session invalidation
       });
       logger.log(`[Login] ✅ Token generated successfully for user ${user.email}`);
     } catch (tokenError) {
@@ -349,11 +359,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       response.cookies.set('admin-token', token, {
         httpOnly: true, // Prevents XSS attacks
         secure: isProduction, // HTTPS only in production
-        sameSite: 'lax', // Works for same-site requests, allows top-level navigation
+        sameSite: 'strict', // Strict CSRF protection (prevents cross-site requests)
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: '/', // Available site-wide
       });
-      logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: lax)`);
+      
+      // Generate and set CSRF token cookie
+      const csrfToken = generateCSRFToken();
+      setCSRFTokenCookie(response, csrfToken);
+      
+      logger.log(`[Login] ✅ Cookie set for user ${user.email} (httpOnly: true, secure: ${isProduction}, sameSite: strict)`);
+      logger.log(`[Login] ✅ CSRF token generated and set`);
     } catch (cookieError) {
       logger.error('[Login] ❌ Failed to set cookie:', cookieError);
       // Don't fail login if cookie setting fails - token is still in response body

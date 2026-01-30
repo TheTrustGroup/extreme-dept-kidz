@@ -1,9 +1,12 @@
 /**
  * ENTERPRISE-GRADE RATE LIMITING
  * Prevents brute force, DDoS, and bot attacks
+ * 
+ * Uses Redis for distributed rate limiting (with in-memory fallback)
  */
 
 import { NextRequest } from 'next/server';
+import { checkRateLimit as checkRateLimitRedis } from '@/lib/auth/rate-limit-redis';
 
 interface RateLimitConfig {
   windowMs: number;  // Time window in milliseconds
@@ -19,6 +22,7 @@ interface RateLimitStore {
   };
 }
 
+// In-memory fallback store (used if Redis unavailable)
 const store: RateLimitStore = {};
 
 // Predefined rate limit tiers
@@ -72,7 +76,7 @@ export const RATE_LIMITS = {
  */
 function getClientId(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
-  const ip = forwarded ? forwarded.split(',')[0] : 
+  const ip = forwarded ? forwarded.split(',')[0].trim() : 
              request.headers.get('x-real-ip') || 
              'unknown';
   
@@ -86,12 +90,32 @@ function getClientId(request: NextRequest): string {
 
 /**
  * Check if request should be rate limited
+ * Uses Redis if available, falls back to in-memory store
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   request: NextRequest,
   config: RateLimitConfig
-): { allowed: boolean; remaining: number; resetTime: number } {
+): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
   const clientId = getClientId(request);
+  
+  // Try Redis first (distributed rate limiting)
+  try {
+    const redisResult = await checkRateLimitRedis({
+      windowMs: config.windowMs,
+      maxRequests: config.maxRequests,
+      identifier: clientId,
+    });
+    
+    // If Redis is working, use its result
+    if (redisResult.resetTime > 0) {
+      return redisResult;
+    }
+  } catch (error) {
+    // Redis failed, fall back to memory
+    console.warn('[RateLimiter] Redis check failed, using memory fallback:', error instanceof Error ? error.message : 'Unknown');
+  }
+
+  // Fallback to in-memory store
   const key = `${clientId}:${config.windowMs}`;
   const now = Date.now();
 
@@ -151,10 +175,11 @@ function cleanupStore() {
 
 /**
  * Middleware factory for rate limiting
+ * Returns async middleware that checks rate limits
  */
 export function createRateLimitMiddleware(config: RateLimitConfig) {
-  return (request: NextRequest) => {
-    const result = checkRateLimit(request, config);
+  return async (request: NextRequest): Promise<Response | null> => {
+    const result = await checkRateLimit(request, config);
     
     if (!result.allowed) {
       const retryAfter = Math.ceil((result.resetTime - Date.now()) / 1000);

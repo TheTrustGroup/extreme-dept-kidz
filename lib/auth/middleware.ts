@@ -77,6 +77,7 @@ export async function authenticateRequest(
         email: true,
         role: true,
         isActive: true,
+        tokenVersion: true,
       },
     });
 
@@ -85,6 +86,18 @@ export async function authenticateRequest(
         user: null,
         error: NextResponse.json(
           { error: 'User not found or inactive' },
+          { status: 401 }
+        ),
+      };
+    }
+
+    // Verify token version matches (session invalidation check)
+    const tokenVersion = payload.tokenVersion ?? 0;
+    if (user.tokenVersion !== tokenVersion) {
+      return {
+        user: null,
+        error: NextResponse.json(
+          { error: 'Session expired. Please log in again.' },
           { status: 401 }
         ),
       };
