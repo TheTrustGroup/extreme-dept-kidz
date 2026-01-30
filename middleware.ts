@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { randomBytes } from 'crypto';
 
 /** CORS: allowed origins (main site, www, warehouse, dev) */
 const ALLOWED_ORIGINS = new Set([
@@ -24,9 +23,13 @@ function corsHeaders(origin: string): Record<string, string> {
 
 /**
  * Generate a unique request ID for tracking
+ * Uses Web Crypto API (available in Edge Runtime)
  */
 function generateRequestId(): string {
-  return randomBytes(16).toString('hex');
+  // Use Web Crypto API for Edge Runtime compatibility
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
 /**
@@ -61,15 +64,18 @@ export function middleware(request: NextRequest) {
   const isAllowedOrigin = origin && ALLOWED_ORIGINS.has(origin);
   if (isApi && isAllowedOrigin) {
     if (request.method === 'OPTIONS') {
+      const headers = corsHeaders(origin);
+      headers['X-Request-ID'] = requestId;
       return new NextResponse(null, {
         status: 204,
-        headers: corsHeaders(origin),
+        headers,
       });
     }
     const response = NextResponse.next();
     Object.entries(corsHeaders(origin)).forEach(([key, value]) => {
       response.headers.set(key, value);
     });
+    response.headers.set('X-Request-ID', requestId);
     return response;
   }
 
@@ -78,8 +84,8 @@ export function middleware(request: NextRequest) {
   // Add request ID to response headers for tracking
   response.headers.set('X-Request-ID', requestId);
   
-  // Add request ID to request headers so API routes can access it
-  request.headers.set('X-Request-ID', requestId);
+  // Note: Cannot modify request headers in middleware, but API routes can read X-Request-ID
+  // from response headers or generate their own if needed
 
   // CRITICAL FIX: Enhanced CDN caching for static assets
   // Images, fonts, and static files get immutable cache headers
