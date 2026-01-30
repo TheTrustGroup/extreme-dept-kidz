@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-/** CORS origin allowed for warehouse app (cross-origin login) */
-const WAREHOUSE_ORIGIN = 'https://warehouse.extremedeptkidz.com';
+/** CORS: allowed origins (main site, www, warehouse, dev) */
+const ALLOWED_ORIGINS = new Set([
+  'https://extremedeptkidz.com',
+  'https://www.extremedeptkidz.com',
+  'https://warehouse.extremedeptkidz.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+]);
 
-/** CORS headers for warehouse origin (credentials: true) */
+/** CORS headers when origin is allowed (credentials: true) */
 function corsHeaders(origin: string): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': origin,
@@ -30,8 +36,8 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const origin = request.headers.get('Origin') || '';
 
-  // CORS: allow warehouse app to call API (login, orders, me, products, etc.)
-  const isAdminApi =
+  // CORS: allow main site, www, warehouse, and dev to call API (fixes "access control checks" on /api/products)
+  const isApi =
     pathname === '/api/admin/auth/login' ||
     pathname === '/admin/api/login' ||
     pathname.startsWith('/api/admin/') ||
@@ -40,8 +46,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/orders/') ||
     pathname === '/api/products' ||
     pathname.startsWith('/api/products/');
-  if (isAdminApi && origin === WAREHOUSE_ORIGIN) {
-    // Preflight: respond 204 with CORS headers only
+  const isAllowedOrigin = origin && ALLOWED_ORIGINS.has(origin);
+  if (isApi && isAllowedOrigin) {
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, {
         status: 204,
