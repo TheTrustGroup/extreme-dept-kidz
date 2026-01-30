@@ -32,9 +32,24 @@ interface SmartImagePrefetchProps {
 }
 
 /**
+ * Connection-aware: skip prefetch on slow networks or when saveData is on.
+ * Reduces contention with LCP/critical requests on 3G and low bandwidth.
+ */
+function shouldPrefetchImages(): boolean {
+  if (typeof navigator === 'undefined') return true;
+  const conn = (navigator as Navigator & { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
+  if (!conn) return true;
+  if (conn.saveData === true) return false;
+  const et = conn.effectiveType;
+  if (et === '2g' || et === 'slow-2g') return false;
+  return true;
+}
+
+/**
  * SmartImagePrefetch Component
- * 
+ *
  * Prefetches product images intelligently based on viewport proximity.
+ * Disables prefetch on 2g/save-data to avoid competing with critical requests (mobile-first).
  */
 export function SmartImagePrefetch({
   imageUrls,
@@ -43,44 +58,42 @@ export function SmartImagePrefetch({
   enabled = true,
 }: SmartImagePrefetchProps): null {
   const prefetchedRef = React.useRef<Set<string>>(new Set());
-  const [prefetchingCount, setPrefetchingCount] = React.useState(0);
+  const prefetchingCountRef = React.useRef(0);
 
   React.useEffect(() => {
     if (!enabled || typeof window === 'undefined' || !('IntersectionObserver' in window)) {
       return;
     }
+    if (!shouldPrefetchImages()) return;
 
     // Create intersection observer for each image
     const observers: IntersectionObserver[] = [];
     const prefetchQueue: string[] = [];
 
     const prefetchImage = (url: string) => {
-      if (prefetchedRef.current.has(url) || prefetchingCount >= maxConcurrent) {
+      if (prefetchedRef.current.has(url) || prefetchingCountRef.current >= maxConcurrent) {
         return;
       }
 
       prefetchedRef.current.add(url);
-      setPrefetchingCount((prev) => prev + 1);
+      prefetchingCountRef.current += 1;
 
-      // Create link element for prefetching
       const link = document.createElement('link');
       link.rel = 'prefetch';
       link.as = 'image';
       link.href = url;
-      
+
       link.onload = () => {
-        setPrefetchingCount((prev) => Math.max(0, prev - 1));
-        // Prefetch next in queue
+        prefetchingCountRef.current = Math.max(0, prefetchingCountRef.current - 1);
         if (prefetchQueue.length > 0) {
           const nextUrl = prefetchQueue.shift();
           if (nextUrl) prefetchImage(nextUrl);
         }
       };
-      
+
       link.onerror = () => {
-        setPrefetchingCount((prev) => Math.max(0, prev - 1));
+        prefetchingCountRef.current = Math.max(0, prefetchingCountRef.current - 1);
         prefetchedRef.current.delete(url);
-        // Prefetch next in queue
         if (prefetchQueue.length > 0) {
           const nextUrl = prefetchQueue.shift();
           if (nextUrl) prefetchImage(nextUrl);
@@ -108,7 +121,7 @@ export function SmartImagePrefetch({
             if (entry.isIntersecting) {
               const imageUrl = entry.target.getAttribute('data-image-url');
               if (imageUrl && !prefetchedRef.current.has(imageUrl)) {
-                if (prefetchingCount < maxConcurrent) {
+                if (prefetchingCountRef.current < maxConcurrent) {
                   prefetchImage(imageUrl);
                 } else {
                   prefetchQueue.push(imageUrl);
@@ -132,7 +145,7 @@ export function SmartImagePrefetch({
       observers.forEach((observer) => observer.disconnect());
       prefetchedRef.current.clear();
     };
-  }, [imageUrls, prefetchDistance, maxConcurrent, enabled, prefetchingCount]);
+  }, [imageUrls, prefetchDistance, maxConcurrent, enabled]);
 
   return null;
 }

@@ -1,7 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
-import { revalidateCategoryChange, revalidateAllCollectionPages, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { revalidateOnProductMutation } from "@/lib/utils/cache-revalidation";
 import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateProductSchema, validate } from "@/lib/validation/schemas";
@@ -197,43 +196,16 @@ export async function PUT(
       },
     });
 
-    // Revalidate cache to show updated product immediately
-    try {
-      const { revalidateProduct, revalidateCategoryChange, revalidateAllCollectionPages } = await import('@/lib/utils/cache-revalidation');
-      // When slug changed: revalidate OLD slug so /products/old-slug shows notFound, not stale content
-      if (existingProduct?.slug && existingProduct.slug !== product.slug) {
-        revalidatePath(`/products/${existingProduct.slug}`, 'page');
-        revalidateTag(CACHE_TAGS.product(existingProduct.slug));
-      }
-      revalidateProduct(product.slug, product.id);
-      
-      // CRITICAL FIX: Revalidate complete-looks cache when products are updated
-      // This ensures "Complete The Look" sections update immediately
-      revalidateTag(CACHE_TAGS.completeLooks);
-      if (product.id) {
-        revalidateTag(CACHE_TAGS.completeLookProduct(product.id));
-      }
-      // Also revalidate for old product ID if it changed
-      if (existingProduct?.id && existingProduct.id !== product.id) {
-        revalidateTag(CACHE_TAGS.completeLookProduct(existingProduct.id));
-      }
-      
-      // Revalidate admin pages
-      revalidatePath('/admin/products');
-      revalidatePath('/api/products');
-      
-      // Revalidate collection pages (handles category changes automatically)
-      await revalidateCategoryChange(
-        existingProduct?.category?.slug,
-        product.category?.slug
-      );
-      
-      // Also ensure all collection pages are fresh
-      await revalidateAllCollectionPages();
-    } catch (revalidateError) {
-      logger.error('Failed to revalidate cache:', revalidateError);
-      // Don't fail the request if revalidation fails
-    }
+    // Single contract: mutation → revalidate before response (three truths)
+    const { revalidateOnProductMutation } = await import('@/lib/utils/cache-revalidation');
+    await revalidateOnProductMutation({
+      type: "update",
+      slug: product.slug,
+      id: product.id,
+      categorySlug: product.category?.slug ?? undefined,
+      oldSlug: existingProduct?.slug !== product.slug ? existingProduct?.slug : undefined,
+      oldCategorySlug: existingProduct?.category?.slug ?? undefined,
+    });
 
     triggerProductUpdatedWebhook({
       productId: product.id,
@@ -303,28 +275,12 @@ export async function DELETE(
       where: { id },
     });
 
-    // Revalidate cache after deletion
-    try {
-      // CRITICAL: Revalidate the deleted product's detail page so /products/[slug] shows notFound, not stale cache
-      revalidatePath(`/products/${existing.slug}`, 'page');
-      revalidateTag(CACHE_TAGS.product(existing.slug));
-      // Revalidate tags so frontend and API caches show updated product list
-      revalidateTag(CACHE_TAGS.products);
-      revalidateTag(CACHE_TAGS.homepage);
-      revalidateTag(CACHE_TAGS.collections);
-      revalidateTag(CACHE_TAGS.categories);
-      revalidateTag(CACHE_TAGS.completeLooks);
-      revalidateTag(CACHE_TAGS.completeLookProduct(id));
-      revalidatePath('/products');
-      revalidatePath('/collections');
-      revalidatePath('/');
-      revalidatePath('/admin/products');
-      revalidatePath('/api/products');
-      await revalidateAllCollectionPages();
-    } catch (revalidateError) {
-      logger.error('Failed to revalidate cache:', revalidateError);
-      // Don't fail the request if revalidation fails
-    }
+    // Single contract: mutation → revalidate before response (three truths)
+    await revalidateOnProductMutation({
+      type: "delete",
+      slug: existing.slug,
+      id: existing.id,
+    });
 
     triggerProductUpdatedWebhook({
       productId: id,

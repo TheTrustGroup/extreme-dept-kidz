@@ -578,8 +578,22 @@ interface FormFieldProps {
   id?: string;
 }
 
-function FormField({ label, error, required, children, id }: FormFieldProps): JSX.Element {
+function FormField({ label, error, required, children, id: idProp }: FormFieldProps): JSX.Element {
   const { theme } = useTheme();
+  const fieldId = React.useId();
+  const errorId = React.useId();
+  const id = idProp ?? fieldId;
+
+  const child = React.Children.only(children) as React.ReactElement<Record<string, unknown>>;
+  const labelledChild = React.isValidElement(child)
+    ? React.cloneElement(child, {
+        id,
+        "aria-invalid": error ? "true" : "false",
+        "aria-describedby": error ? errorId : undefined,
+        "aria-required": required ? "true" : undefined,
+      } as Record<string, unknown>)
+    : children;
+
   return (
     <div>
       <label
@@ -590,11 +604,11 @@ function FormField({ label, error, required, children, id }: FormFieldProps): JS
         )}
       >
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
       </label>
-      {children}
+      {labelledChild}
       {error && (
-        <Body className="text-xs text-red-600 dark:text-red-400 mt-1" role="alert">
+        <Body id={errorId} className="text-xs text-red-600 dark:text-red-400 mt-1" role="alert">
           {error.message as string}
         </Body>
       )}

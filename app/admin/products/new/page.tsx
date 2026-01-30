@@ -1,9 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { H1 } from "@/components/ui/typography";
+import { ProductFormComprehensive } from "@/components/admin/ProductFormComprehensive";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ProductForm } from "@/components/admin/ProductForm";
 
+/**
+ * New Product Page
+ * 
+ * Uses ProductFormComprehensive for unified product creation/editing experience.
+ */
 export default function NewProductPage(): JSX.Element {
   return (
     <ErrorBoundary
@@ -20,9 +26,16 @@ export default function NewProductPage(): JSX.Element {
         </div>
       }
     >
-      <div>
-        <h1 className="text-3xl font-bold text-charcoal-900 mb-8">Add New Product</h1>
-        <ProductForm />
+      <div className="space-y-6">
+        <div>
+          <H1 className="text-gray-900 text-3xl font-bold mb-2">
+            Create Product
+          </H1>
+          <p className="text-gray-600 text-sm">
+            Add a new product to your catalog
+          </p>
+        </div>
+        <ProductFormComprehensive />
       </div>
     </ErrorBoundary>
   );

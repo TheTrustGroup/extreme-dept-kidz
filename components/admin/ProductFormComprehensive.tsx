@@ -245,6 +245,7 @@ export function ProductFormComprehensive({
         if (response.ok) {
           const data = await response.json();
           if (isNew && data.data?.id) {
+            isNavigationSafeRef.current = true; // Mark navigation as safe
             router.replace(`/admin/products/${data.data.id}`);
           } else {
             reset(formData, { keepDirty: false });
@@ -336,6 +337,7 @@ export function ProductFormComprehensive({
           });
         }
         if (isNew && data.data?.id) {
+          isNavigationSafeRef.current = true; // Mark navigation as safe
           router.replace(`/admin/products/${data.data.id}`);
         } else {
           reset(formData, { keepDirty: false });
@@ -415,6 +417,9 @@ export function ProductFormComprehensive({
       const responseData = await response.json().catch(() => ({}));
 
       if (response.ok && responseData.success !== false) {
+        // Mark navigation as safe (bypass unsaved changes warning)
+        isNavigationSafeRef.current = true;
+        
         showToast({
           type: "success",
           title: "Success",
@@ -530,6 +535,61 @@ export function ProductFormComprehensive({
 
     return () => observer.disconnect();
   }, []);
+
+  // Unsaved changes warning - beforeunload (browser navigation)
+  React.useEffect(() => {
+    if (!isDirty) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent): void => {
+      e.preventDefault();
+      e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      return e.returnValue;
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  // Track if navigation is safe (after successful save)
+  const isNavigationSafeRef = React.useRef(false);
+
+  // Intercept Link clicks for unsaved changes warning
+  React.useEffect(() => {
+    if (!isDirty) return;
+
+    const handleLinkClick = (e: MouseEvent): void => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a[href]') as HTMLAnchorElement;
+      
+      if (!link) return;
+      
+      // Allow navigation to same product page
+      if (link.href.includes(`/admin/products/${productId || 'new'}`)) {
+        return;
+      }
+      
+      // Allow navigation if we just saved
+      if (isNavigationSafeRef.current) {
+        isNavigationSafeRef.current = false;
+        return;
+      }
+      
+      // Check if it's an admin route (we want to warn for these)
+      if (link.href.includes('/admin/')) {
+        const confirmed = window.confirm(
+          "You have unsaved changes. Are you sure you want to leave? Your changes will be lost."
+        );
+        
+        if (!confirmed) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    };
+
+    document.addEventListener('click', handleLinkClick, true);
+    return () => document.removeEventListener('click', handleLinkClick, true);
+  }, [isDirty, productId]);
 
   return (
     <div className="flex gap-6 h-[calc(100vh-8rem)]">

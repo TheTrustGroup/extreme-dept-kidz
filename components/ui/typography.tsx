@@ -111,7 +111,7 @@ export const H4 = React.forwardRef<
   <h4
     ref={ref}
     className={cn(
-      "font-serif text-display-md font-medium tracking-tight leading-snug text-charcoal-800",
+      "font-serif text-h4 font-medium tracking-tight leading-snug text-charcoal-800",
       className
     )}
     {...props}

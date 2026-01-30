@@ -12,11 +12,9 @@ export function useAdminKeyboards(): void {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent): void => {
-      // Cmd+K / Ctrl+K: Quick search
+      // Cmd+K / Ctrl+K: Quick search - handled in AdminHeader (setShowSearch(true)); prevent default here so browser doesn't handle it
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        // TODO: Open search modal
-        console.log("Quick search");
       }
 
       // Cmd+N / Ctrl+N: New product

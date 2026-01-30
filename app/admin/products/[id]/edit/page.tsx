@@ -1,19 +1,19 @@
-import { ProductForm } from "@/components/admin/ProductForm";
+import { redirect } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function EditProductPage({ params }: EditProductPageProps): Promise<JSX.Element> {
+/**
+ * Edit Product Page (Legacy Route)
+ * 
+ * Redirects to unified product edit route: /admin/products/[id]
+ * This ensures all product editing uses ProductFormComprehensive.
+ */
+export default async function EditProductPage({ params }: EditProductPageProps): Promise<never> {
   const { id } = await params;
   
-  return (
-    <ErrorBoundary>
-      <div>
-        <h1 className="text-3xl font-bold text-charcoal-900 mb-8">Edit Product</h1>
-        <ProductForm productId={id} />
-      </div>
-    </ErrorBoundary>
-  );
+  // Redirect to unified product edit route
+  redirect(`/admin/products/${id}`);
 }

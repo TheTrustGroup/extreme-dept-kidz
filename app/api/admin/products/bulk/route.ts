@@ -3,8 +3,8 @@ import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
 import { apiError, apiSuccess } from "@/lib/utils/api-response";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import { revalidateOnProductMutation, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 
 /**
  * Bulk Products Actions API
@@ -78,20 +78,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           }, request);
         }
 
-        // Revalidate cache: list tags + each deleted product's detail page so "no longer available" is correct
-        revalidateTag(CACHE_TAGS.products);
-        revalidateTag(CACHE_TAGS.homepage);
-        revalidateTag(CACHE_TAGS.collections);
-        revalidateTag(CACHE_TAGS.categories);
+        // Single contract: each mutation → revalidate before response (three truths)
         for (const product of products) {
-          revalidatePath(`/products/${product.slug}`, 'page');
-          revalidateTag(CACHE_TAGS.product(product.slug));
-          revalidateTag(CACHE_TAGS.completeLookProduct(product.id));
+          await revalidateOnProductMutation({
+            type: "delete",
+            slug: product.slug,
+            id: product.id,
+          });
         }
-        revalidatePath('/products');
-        revalidatePath('/collections');
-        revalidatePath('/');
-        revalidatePath('/admin/products');
         break;
 
       case 'activate':

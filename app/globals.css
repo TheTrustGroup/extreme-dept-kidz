@@ -1781,14 +1781,18 @@ p, .body {
 
 /* Duplicate .sr-only removed - using definition above */
 
-/* Live region for dynamic content announcements */
+/* Live region for dynamic content announcements - visually hidden but announced by screen readers */
 [role="status"],
 [aria-live] {
   position: absolute;
-  left: -10000px;
   width: 1px;
   height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Responsive Design Utilities */

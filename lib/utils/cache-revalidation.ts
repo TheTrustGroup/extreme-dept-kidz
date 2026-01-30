@@ -153,3 +153,57 @@ export function revalidateProduct(slug: string, id?: string): void {
     logger.error(`[Cache] Failed to revalidate product ${slug}:`, error);
   }
 }
+
+/** Params for revalidateOnProductMutation — single contract for all product mutations */
+export type RevalidateProductMutationParams = {
+  type: "create" | "update" | "delete";
+  slug: string;
+  id?: string;
+  categorySlug?: string;
+  /** When type is "update" and slug changed */
+  oldSlug?: string;
+  /** When type is "update" and category changed */
+  oldCategorySlug?: string;
+};
+
+/**
+ * Single contract for product mutations.
+ * Every product create/update/delete MUST call this (before returning success).
+ * Ensures: products mutate frequently → we revalidate; users never see stale → tags + paths purged.
+ */
+export async function revalidateOnProductMutation(params: RevalidateProductMutationParams): Promise<void> {
+  const { type, slug, id, categorySlug, oldSlug, oldCategorySlug } = params;
+  try {
+    // Old slug/category: purge so old URLs and old collection pages don’t serve stale data
+    if (type === "update") {
+      if (oldSlug && oldSlug !== slug) {
+        revalidatePath(`/products/${oldSlug}`, "page");
+        revalidateTag(CACHE_TAGS.product(oldSlug));
+      }
+      if (oldCategorySlug) {
+        revalidateCollectionPage(oldCategorySlug);
+      }
+    }
+
+    // This product + catalog tags and paths
+    revalidateProduct(slug, id);
+    revalidateTag(CACHE_TAGS.completeLooks);
+    if (id) revalidateTag(CACHE_TAGS.completeLookProduct(id));
+
+    // Category/collection for this product
+    if (categorySlug) {
+      revalidateCollectionPage(categorySlug);
+      revalidatePath(`/collections/${categorySlug}`, "page");
+    }
+
+    // All collection pages + list paths
+    await revalidateAllCollectionPages();
+    revalidatePath("/admin/products", "page");
+    revalidatePath("/api/products", "layout");
+
+    logger.log(`[Cache] revalidateOnProductMutation(${type}): ${slug}`);
+  } catch (error) {
+    logger.error(`[Cache] revalidateOnProductMutation failed:`, error);
+    // Don’t throw — mutation already succeeded; log and continue
+  }
+}

@@ -33,6 +33,17 @@ export const ProductCard = React.memo(function ProductCard({
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = React.useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = React.useState(false);
+  // Mobile/touch: show Quick View and sizes without hover (no hover on touch devices)
+  const [isMobileOrTouch, setIsMobileOrTouch] = React.useState(false);
+  React.useEffect(() => {
+    const check = (): void => {
+      setIsMobileOrTouch(window.innerWidth < 1024);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  const showQuickViewAndSizes = isHovered || isMobileOrTouch;
 
   // Get primary and secondary images
   const primaryImage = product.images?.find((img) => (img as ProductImage).isPrimary) || product.images?.[0];
@@ -205,8 +216,8 @@ export const ProductCard = React.memo(function ProductCard({
                 <WishlistButton product={product} size="lg" />
               </div>
 
-              {/* Size Availability Overlay - Shows on hover */}
-              {isHovered && availableSizes.length > 0 && (
+              {/* Size Availability Overlay - Shows on hover (desktop) or always (mobile/touch) */}
+              {showQuickViewAndSizes && availableSizes.length > 0 && (
                 <m.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -305,8 +316,8 @@ export const ProductCard = React.memo(function ProductCard({
               </div>
             </div>
 
-            {/* Quick View Button - Shows on hover */}
-            {isHovered && product.inStock && (
+            {/* Quick View Button - Shows on hover (desktop) or always (mobile/touch) */}
+            {showQuickViewAndSizes && product.inStock && (
               <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

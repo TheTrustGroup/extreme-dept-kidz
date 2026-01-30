@@ -51,8 +51,11 @@ export function HomeProductSectionsWithSWR({
     keepPreviousData: true, // Show previous data while revalidating
   });
 
+  // CRITICAL: Never replace valid initial data with an empty API response.
+  // Empty list from API can be stale cache or transient failure; keep showing server-passed products.
+  const apiProducts = data?.data?.products;
   const products: Product[] =
-    data?.data?.products ?? initialProducts;
+    apiProducts && apiProducts.length > 0 ? apiProducts : initialProducts;
 
   if (error) {
     // On error, still show initial/previous products

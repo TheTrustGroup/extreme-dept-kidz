@@ -4,6 +4,7 @@ import * as React from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useFocusTrap } from "@/lib/hooks/use-keyboard-navigation";
 import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
@@ -29,6 +30,11 @@ export function ConfirmDialog({
   onCancel,
   children,
 }: ConfirmDialogProps): JSX.Element | null {
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+  const titleId = React.useId();
+
+  useFocusTrap(dialogRef, isOpen);
+
   // Handle escape key
   React.useEffect(() => {
     if (!isOpen) return;
@@ -76,6 +82,10 @@ export function ConfirmDialog({
           {/* Dialog */}
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
             <m.div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -87,9 +97,9 @@ export function ConfirmDialog({
               )}
             >
               <div className="flex items-start gap-4">
-                <AlertTriangle className={cn("w-6 h-6 flex-shrink-0 mt-0.5", styles.icon)} />
+                <AlertTriangle className={cn("w-6 h-6 flex-shrink-0 mt-0.5", styles.icon)} aria-hidden="true" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+                  <h3 id={titleId} className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
                   <div className="text-sm text-gray-600 mb-6">
                     {typeof message === 'string' ? <p>{message}</p> : message}
                   </div>

@@ -123,7 +123,7 @@ export default function NotFound(): JSX.Element {
                 Style Guide
               </Link>
               <Link
-                href="/about-us"
+                href="/about"
                 className={cn(
                   "text-sm hover:underline",
                   theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
