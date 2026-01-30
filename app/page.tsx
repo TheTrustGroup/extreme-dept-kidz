@@ -12,6 +12,7 @@ import { unstable_cache } from "next/cache";
 import { StreamingSkeleton } from "@/components/ui/StreamingSkeleton";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
+import { RealtimeTest } from "@/components/debug/RealtimeTest";
 
 // Hero + TrustBar in main bundle so above-the-fold is fast and never static/blank
 
@@ -221,6 +222,9 @@ export default async function Home() {
       </div>
       {/* Temporary: remove after fixing caching */}
       <CacheDebugPanel productsCount={products.length} generatedAt={generatedAt} />
+      
+      {/* Realtime Test Component - Remove after testing */}
+      <RealtimeTest />
     </>
   );
 }
