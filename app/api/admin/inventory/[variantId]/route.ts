@@ -4,6 +4,7 @@ import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/uti
 import { updateInventorySchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { withCors } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
@@ -11,15 +12,21 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ variantId: string }> }
 ): Promise<NextResponse> {
-  // RBAC: Updating inventory requires manager role or higher
-  const auth = await authenticateAndAuthorize(request, 'manager');
-  if (auth.error) return auth.error;
+  // RBAC: Updating inventory requires manager role or higher (warehouse + admin use same DB)
+  const auth = await authenticateAndAuthorize(request, "manager");
+  if (auth.error) return withCors(request, auth.error);
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Manager role required to update inventory.' }, { status: 403 });
+    return withCors(
+      request,
+      NextResponse.json(
+        { error: "Insufficient permissions. Manager role required to update inventory." },
+        { status: 403 }
+      )
+    );
   }
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { variantId } = await params;
@@ -28,7 +35,7 @@ export async function PUT(
     // Validate input
     const validation = validate(updateInventorySchema, { ...body, variantId });
     if (!validation.success) {
-      return apiValidationError(validation.errors);
+      return withCors(request, apiValidationError(validation.errors));
     }
 
     const { quantity, action } = validation.data;
@@ -39,7 +46,7 @@ export async function PUT(
     });
 
     if (!currentVariant) {
-      return apiNotFound("Product variant");
+      return withCors(request, apiNotFound("Product variant"));
     }
 
     const oldStock = currentVariant.stock;
@@ -95,21 +102,27 @@ export async function PUT(
       },
     }, request);
 
-    return apiSuccess(
-      {
-        variant,
-        change: newStock - oldStock,
-        previousStock: oldStock,
-        newStock,
-      },
-      "Inventory updated successfully"
+    return withCors(
+      request,
+      apiSuccess(
+        {
+          variant,
+          change: newStock - oldStock,
+          previousStock: oldStock,
+          newStock,
+        },
+        "Inventory updated successfully"
+      )
     );
   } catch (error) {
     logger.error("Failed to update inventory:", error);
-    return apiError(
-      "Failed to update inventory",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
+    return withCors(
+      request,
+      apiError(
+        "Failed to update inventory",
+        500,
+        error instanceof Error ? error.message : "Unknown error"
+      )
     );
   }
 }

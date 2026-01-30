@@ -6,6 +6,26 @@
 
 ---
 
+## Single database: warehouse and main site use the same DB
+
+- **Main site** (extremedeptkidz.com) and **warehouse** (warehouse.extremedeptkidz.com) both read/write the **same database** via the main site API.
+- The warehouse app has **no** separate database. It must call `NEXT_PUBLIC_API_URL` (main site) for all inventory and product APIs.
+- Inventory lives in **ProductVariant** (main site Prisma). Updates from warehouse go through:
+  - `PUT /api/admin/inventory/[variantId]` — single variant stock update
+  - `POST /api/admin/inventory/sync` — bulk sync by product + sizes (transactional: all-or-nothing)
+- If the warehouse uses the wrong API base URL or omits `credentials: 'include'`, updates can fail silently and look like "lost" data. Always use the checklist below.
+
+---
+
+## Prevent data loss (warehouse inventory)
+
+1. **Warehouse must use main site API URL** — Set `NEXT_PUBLIC_API_URL=https://extremedeptkidz.com` (or your main site URL) in the warehouse app. All fetches must use `${API_BASE}/api/admin/...`.
+2. **Always send credentials** — Use `credentials: 'include'` on every fetch so the auth cookie is sent; otherwise the API returns 401 and the update never persists.
+3. **Handle errors in the warehouse UI** — If the fetch fails (network, 4xx/5xx), show an error and do not assume the update was saved. Let the user retry.
+4. **Main site** — Inventory PUT and sync routes now return CORS headers so the warehouse origin gets a valid response (no silent CORS failure). Sync runs in a **transaction** so partial updates are not committed; either all sizes update or none.
+
+---
+
 ## Fix in the warehouse app
 
 ### 1. Set API base URL
@@ -64,14 +84,16 @@ fetch(`${API_BASE}/admin/api/me`, { credentials: 'include' });
 
 ## Main site (extremedeptkidz.com)
 
-CORS is already configured on the main site for origin `https://warehouse.extremedeptkidz.com` on:
+CORS is already configured on the main site for warehouse origin (`https://warehouse.extremedeptkidz.com` and localhost:3001 when testing) on:
 
 - `/api/admin/auth/login` and `/admin/api/login`
-- `/admin/api/me` (rewrites to `/api/admin/auth/me`)
+- `/api/admin/auth/me` (and `/admin/api/me` rewrite)
 - `/api/products` (public products)
 - `/admin/api/products` and `/admin/api/products/:id` (rewrite to `/api/admin/products`, used by warehouse Inventory)
 - `/api/admin/products`
-- `/api/admin/inventory`
+- `/api/admin/inventory` (GET list)
+- `/api/admin/inventory/[variantId]` (PUT single variant — required for warehouse stock updates)
+- `/api/admin/inventory/sync` (POST bulk sync — transactional, all-or-nothing)
 - `/api/admin/inventory/analytics`
 - `/api/orders` (rewrites to `/api/admin/orders`)
 

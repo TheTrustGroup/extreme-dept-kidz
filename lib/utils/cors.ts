@@ -9,7 +9,9 @@ const ALLOWED_ORIGINS = new Set([
   'https://www.extremedeptkidz.com',
   WAREHOUSE_ORIGIN,
   'http://localhost:3000',
+  'http://localhost:3001', // warehouse app when run locally
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
 ]);
 
 /** True when the request is from the warehouse app (for response-shape compatibility). */

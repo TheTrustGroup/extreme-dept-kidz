@@ -7,7 +7,9 @@ const ALLOWED_ORIGINS = new Set([
   'https://www.extremedeptkidz.com',
   'https://warehouse.extremedeptkidz.com',
   'http://localhost:3000',
+  'http://localhost:3001', // warehouse app when run locally
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
 ]);
 
 /** Derive effective origin from request when Origin header is missing (same-origin / RSC fetches) */
