@@ -161,8 +161,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // We already checked prisma is not null above, so use non-null assertion
       logger.log(`[Login] 🔍 Looking up user with email: ${trimmedEmail}`, { requestId });
       
-      user = await retryPrismaQuery(
-        () => prisma!.adminUser.findUnique({
+      // Try direct query first (without retry wrapper) to see actual error
+      try {
+        user = await prisma!.adminUser.findUnique({
           where: { email: trimmedEmail },
           select: {
             id: true,
@@ -172,32 +173,74 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             isActive: true,
             tokenVersion: true,
           },
-        }),
-        { 
-          timeoutMs: 10000, // Increased to 10 seconds for cold starts
-          maxRetries: 5, // More retries for connection issues
-          initialDelayMs: 500, // Longer initial delay
-        }
-      );
-      
-      logger.log(`[Login] 📧 Exact match result: ${user ? 'found' : 'not found'}`, { requestId });
+        });
+        logger.log(`[Login] 📧 Exact match result: ${user ? 'found' : 'not found'}`, { requestId });
+      } catch (directError) {
+        // If direct query fails, wrap in retry logic
+        logger.warn(`[Login] Direct query failed, using retry:`, directError instanceof Error ? directError.message : 'Unknown');
+        user = await retryPrismaQuery(
+          () => prisma!.adminUser.findUnique({
+            where: { email: trimmedEmail },
+            select: {
+              id: true,
+              email: true,
+              passwordHash: true,
+              role: true,
+              isActive: true,
+              tokenVersion: true,
+            },
+          }),
+          { 
+            timeoutMs: 10000, // Increased to 10 seconds for cold starts
+            maxRetries: 3, // Reduced retries since connection is working
+            initialDelayMs: 200, // Shorter delay
+          }
+        );
+        logger.log(`[Login] 📧 Exact match result (after retry): ${user ? 'found' : 'not found'}`, { requestId });
+      }
       
       // If not found with exact match, try case-insensitive lookup
       // This handles both Admin@extremedeptkidz.com and admin@extremedeptkidz.com
       if (!user) {
         logger.log(`[Login] 🔍 Trying case-insensitive lookup for: ${normalizedEmail}`, { requestId });
-        // Get all admin users and find case-insensitive match
-        user = await retryPrismaQuery(
-          () => prisma!.adminUser.findMany({
+        try {
+          // Get all admin users and find case-insensitive match
+          const allAdmins = await prisma!.adminUser.findMany({
             where: { isActive: true },
-          }).then(admins => admins.find(u => u.email.toLowerCase() === normalizedEmail) || null),
-          { 
-            timeoutMs: 10000,
-            maxRetries: 5,
-            initialDelayMs: 500,
-          }
-        );
-        logger.log(`[Login] 📧 Case-insensitive match result: ${user ? 'found' : 'not found'}`, { requestId });
+            select: {
+              id: true,
+              email: true,
+              passwordHash: true,
+              role: true,
+              isActive: true,
+              tokenVersion: true,
+            },
+          });
+          user = allAdmins.find(u => u.email.toLowerCase() === normalizedEmail) || null;
+          logger.log(`[Login] 📧 Case-insensitive match result: ${user ? 'found' : 'not found'}`, { requestId });
+        } catch (caseError) {
+          logger.warn(`[Login] Case-insensitive lookup failed:`, caseError instanceof Error ? caseError.message : 'Unknown');
+          // Try with retry wrapper
+          user = await retryPrismaQuery(
+            () => prisma!.adminUser.findMany({
+              where: { isActive: true },
+              select: {
+                id: true,
+                email: true,
+                passwordHash: true,
+                role: true,
+                isActive: true,
+                tokenVersion: true,
+              },
+            }).then(admins => admins.find(u => u.email.toLowerCase() === normalizedEmail) || null),
+            { 
+              timeoutMs: 10000,
+              maxRetries: 3,
+              initialDelayMs: 200,
+            }
+          );
+          logger.log(`[Login] 📧 Case-insensitive match result (after retry): ${user ? 'found' : 'not found'}`, { requestId });
+        }
       }
     } catch (dbError) {
       const error = dbError instanceof Error ? dbError : new Error('Unknown database error');
@@ -216,20 +259,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
       
       // Check for specific Prisma connection errors (P1000 auth, P1001 unreachable, P1002 timeout)
+      // Be more specific - don't treat all errors as connection errors
       const isConnectionError = 
-        errorName === 'PrismaClientInitializationError' ||
-        errorName === 'PrismaClientKnownRequestError' ||
         errorCode === 'P1000' || // Prisma auth failed
         errorCode === 'P1001' || // Prisma can't reach server
         errorCode === 'P1002' ||  // Prisma connection timeout
-        errorMessage.includes('Can\'t reach database server') ||
-        errorMessage.includes('Authentication failed') ||
-        errorMessage.includes('Connection') ||
-        errorMessage.includes('timeout') ||
-        errorMessage.includes('timed out') ||
+        (errorName === 'PrismaClientInitializationError' && (
+          errorMessage.includes('Can\'t reach database server') ||
+          errorMessage.includes('Authentication failed')
+        )) ||
         errorMessage.includes('ECONNREFUSED') ||
         errorMessage.includes('ETIMEDOUT') ||
         errorMessage.includes('ENOTFOUND');
+      
+      // Check if it's a query error (not connection error)
+      const isQueryError = 
+        errorCode === 'P2002' || // Unique constraint violation
+        errorCode === 'P2025' || // Record not found
+        errorCode === 'P2014' || // Required relation missing
+        errorMessage.includes('Record to update not found') ||
+        errorMessage.includes('Unique constraint') ||
+        (errorName === 'PrismaClientKnownRequestError' && !isConnectionError);
       
       const connectionHint = isConnectionError
         ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
@@ -238,14 +288,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Include diagnostic URL in error response for easier troubleshooting
       const diagnosticUrl = `${request.nextUrl.origin}/api/admin/auth/test-db`;
       
+      // Provide more specific error messages based on error type
+      let userMessage = 'Database query failed. Please try again.';
+      if (isConnectionError) {
+        userMessage = 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.';
+      } else if (isQueryError) {
+        userMessage = 'Database query error. Please check the request and try again.';
+      }
+      
       return withCors(request, apiError(
-        isConnectionError 
-          ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
-          : 'Database query failed. Please try again.',
+        userMessage,
         500,
         process.env.NODE_ENV === 'development' 
           ? `${errorName}${errorCode ? ` (${errorCode})` : ''}: ${errorMessage}${errorMeta ? ` | Meta: ${JSON.stringify(errorMeta)}` : ''}`
-          : connectionHint || `Check ${diagnosticUrl} for detailed diagnostics`,
+          : connectionHint || `Check ${diagnosticUrl} for detailed diagnostics. Error: ${errorCode || errorName}`,
         undefined,
         requestId
       ));
