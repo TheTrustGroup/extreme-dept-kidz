@@ -13,7 +13,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const verification = await momoService.verifyPayment(referenceId);
+    // Verify payment with retry for transient failures
+    const { retry } = await import('@/lib/utils/retry');
+    const verification = await retry(
+      () => momoService.verifyPayment(referenceId),
+      {
+        maxRetries: 2,
+        initialDelayMs: 500,
+      }
+    );
 
     // TODO: Update order status in database
     // if (verification.verified) {

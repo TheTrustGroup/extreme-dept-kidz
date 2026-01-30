@@ -4,6 +4,7 @@ import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { withCors } from "@/lib/utils/cors";
+import { retryPrismaQuery } from "@/lib/utils/retry";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Calculate all stats in parallel for better performance
+    // Use retry logic for transient failures
+
     const [
       allCount,
       publishedCount,
@@ -38,25 +41,25 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       outOfStockProducts,
     ] = await Promise.all([
       // All products count
-      prisma.product.count(),
+      retryPrismaQuery(() => prisma!.product.count(), { timeoutMs: 5000 }),
       
       // Published (active) products count
-      prisma.product.count({
+      retryPrismaQuery(() => prisma!.product.count({
         where: { inStock: true },
-      }),
+      }), { timeoutMs: 5000 }),
       
       // Draft products count (no images or incomplete data)
-      prisma.product.count({
+      retryPrismaQuery(() => prisma!.product.count({
         where: {
           OR: [
             { images: { none: {} } },
             { name: { equals: '' } },
           ],
         },
-      }),
+      }), { timeoutMs: 5000 }),
       
       // Low stock products (need to calculate total stock per product)
-      prisma.product.findMany({
+      retryPrismaQuery(() => prisma!.product.findMany({
         select: {
           id: true,
           variants: {
@@ -65,10 +68,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             },
           },
         },
-      }),
+      }), { timeoutMs: 5000 }),
       
       // Out of stock products
-      prisma.product.findMany({
+      retryPrismaQuery(() => prisma!.product.findMany({
         where: { inStock: false },
         select: {
           id: true,
@@ -78,7 +81,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             },
           },
         },
-      }),
+      }), { timeoutMs: 5000 }),
     ]);
 
     // Calculate low stock count (total stock > 0 and <= 10)

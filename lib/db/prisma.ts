@@ -63,6 +63,9 @@ function getPrismaClient(): PrismaClientType | null {
           },
         },
       }),
+      // Configure query timeout (5 seconds for DB queries)
+      // Note: Prisma doesn't have a direct timeout option, but we can use $transaction with timeout
+      // For individual queries, we'll handle timeouts via retry utility
     });
 
     // Store in global for development hot-reload

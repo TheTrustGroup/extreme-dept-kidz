@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { retryPrismaQuery } from "@/lib/utils/retry";
 
 export const dynamic = "force-dynamic";
 
@@ -28,8 +29,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Try a simple query to verify database connectivity
-    await prisma.$queryRaw`SELECT 1`;
+    // Try a simple query to verify database connectivity (with retry and timeout)
+    if (!prisma) {
+      throw new Error('Prisma client not available');
+    }
+    await retryPrismaQuery(() => prisma!.$queryRaw`SELECT 1`, { timeoutMs: 3000, maxRetries: 2 });
 
     return NextResponse.json(
       {

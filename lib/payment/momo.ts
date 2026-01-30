@@ -70,10 +70,13 @@ export class MoMoPaymentService {
     ).toString('base64');
 
     try {
-      const response = await fetch(
+      // Use fetch with timeout for external API calls
+      const { fetchWithTimeout } = await import('@/lib/utils/fetch-with-timeout');
+      const response = await fetchWithTimeout(
         `${this.baseUrl}/collection/token/`,
         {
           method: 'POST',
+          timeoutMs: 10000, // 10 second timeout
           headers: {
             'Authorization': `Basic ${credentials}`,
             'Ocp-Apim-Subscription-Key': this.config.subscriptionKey,
@@ -137,10 +140,13 @@ export class MoMoPaymentService {
         orderId: params.orderId,
       });
 
-      const response = await fetch(
+      // Use fetch with timeout for external API calls
+      const { fetchWithTimeout } = await import('@/lib/utils/fetch-with-timeout');
+      const response = await fetchWithTimeout(
         `${this.baseUrl}/collection/v1_0/requesttopay`,
         {
           method: 'POST',
+          timeoutMs: 10000, // 10 second timeout
           headers: {
             'Authorization': `Bearer ${token}`,
             'X-Reference-Id': referenceId,
@@ -187,10 +193,13 @@ export class MoMoPaymentService {
     try {
       const token = await this.getAccessToken();
 
-      const response = await fetch(
+      // Use fetch with timeout for external API calls
+      const { fetchWithTimeout } = await import('@/lib/utils/fetch-with-timeout');
+      const response = await fetchWithTimeout(
         `${this.baseUrl}/collection/v1_0/requesttopay/${referenceId}`,
         {
           method: 'GET',
+          timeoutMs: 10000, // 10 second timeout
           headers: {
             'Authorization': `Bearer ${token}`,
             'X-Target-Environment': this.config.environment,
