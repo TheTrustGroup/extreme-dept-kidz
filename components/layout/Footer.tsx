@@ -121,8 +121,8 @@ export function Footer(): JSX.Element {
       role="contentinfo"
     >
       <div className="container max-w-7xl mx-auto">
-        {/* Top Section - Using spacing scale */}
-        <div className="py-[var(--space-12)] md:py-[var(--space-13)] lg:py-[var(--space-13)]">
+        {/* Top Section — reduced top padding to close gap from last content section */}
+        <div className="pt-[var(--space-6)] pb-[var(--space-12)] md:pt-[var(--space-8)] md:pb-[var(--space-13)] lg:pt-[var(--space-8)] lg:pb-[var(--space-13)]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[var(--space-12)] lg:gap-[var(--space-13)]">
             {/* Brand Section */}
             <m.div
