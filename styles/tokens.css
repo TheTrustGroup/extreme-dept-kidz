@@ -104,6 +104,10 @@
   --space-section-tablet: 5rem;   /* 80px */
   --space-section-desktop: 6rem; /* 96px */
   --space-section-hero: 7rem;    /* 112px */
+  /* Tighter bottom padding for last section before footer (Explore the collection → footer) */
+  --space-before-footer-mobile: var(--space-8);   /* 40px */
+  --space-before-footer-tablet: var(--space-9);   /* 56px */
+  --space-before-footer-desktop: var(--space-10); /* 72px */
   --space-block: var(--space-6); /* 24px */
   --space-inline: var(--space-4); /* 16px */
 

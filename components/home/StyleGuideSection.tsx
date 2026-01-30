@@ -123,7 +123,7 @@ export function StyleGuideSection(): JSX.Element {
   return (
     <section 
       className={cn(
-        "section reveal transition-colors duration-300",
+        "section section-before-footer reveal transition-colors duration-300",
         theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
       )}
       aria-labelledby="style-guide-heading"

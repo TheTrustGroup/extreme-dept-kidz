@@ -986,6 +986,21 @@ textarea:focus-visible {
   }
 }
 
+/* Last section before footer: refined gap so "Explore the collection" → footer feels balanced */
+.section-before-footer {
+  padding-bottom: var(--space-before-footer-mobile);
+}
+@media (min-width: 768px) {
+  .section-before-footer {
+    padding-bottom: var(--space-before-footer-tablet);
+  }
+}
+@media (min-width: 1024px) {
+  .section-before-footer {
+    padding-bottom: var(--space-before-footer-desktop);
+  }
+}
+
 .section-hero {
   padding-top: var(--space-section-hero);
   padding-bottom: var(--space-section-hero);
