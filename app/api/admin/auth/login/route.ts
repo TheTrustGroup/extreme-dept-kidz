@@ -146,26 +146,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ));
     }
 
-    // Ensure Prisma is connected before querying
-    try {
-      await prisma.$connect();
-      logger.log('[Login] ✅ Prisma client connected');
-    } catch (connectError) {
-      const connectErr = connectError instanceof Error ? connectError : new Error('Unknown connection error');
-      logger.error('[Login] ❌ Failed to connect Prisma client:', {
-        message: connectErr.message,
-        stack: connectErr.stack,
-        requestId,
-      });
-      
-      return withCors(request, apiError(
-        'Database connection failed',
-        500,
-        `Unable to establish database connection: ${connectErr.message}`,
-        undefined,
-        requestId
-      ));
-    }
+    // Note: Prisma manages connections automatically - no need to call $connect() explicitly
+    // The first query will establish the connection automatically
 
     // Find user - normalize email for lookup (case-insensitive)
     // Email is stored exactly as provided, but we lookup case-insensitively
@@ -221,13 +203,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const error = dbError instanceof Error ? dbError : new Error('Unknown database error');
       const errorMessage = error.message;
       const errorName = error.name;
+      const errorCode = (error as any).code;
+      const errorMeta = (error as any).meta;
       
       logger.error(`[Login] ❌ Database query failed:`, {
         name: errorName,
         message: errorMessage,
-        stack: error.stack,
-        code: (error as any).code,
-        meta: (error as any).meta,
+        code: errorCode,
+        meta: errorMeta,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
         requestId,
       });
       
@@ -235,20 +219,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const isConnectionError = 
         errorName === 'PrismaClientInitializationError' ||
         errorName === 'PrismaClientKnownRequestError' ||
+        errorCode === 'P1000' || // Prisma auth failed
+        errorCode === 'P1001' || // Prisma can't reach server
+        errorCode === 'P1002' ||  // Prisma connection timeout
         errorMessage.includes('Can\'t reach database server') ||
         errorMessage.includes('Authentication failed') ||
         errorMessage.includes('Connection') ||
         errorMessage.includes('timeout') ||
         errorMessage.includes('timed out') ||
-        errorMessage.includes('P1000') || // Prisma auth failed
-        errorMessage.includes('P1001') || // Prisma can't reach server
-        errorMessage.includes('P1002') ||  // Prisma connection timeout
         errorMessage.includes('ECONNREFUSED') ||
         errorMessage.includes('ETIMEDOUT') ||
-        errorMessage.includes('ENOTFOUND') ||
-        (error as any).code === 'P1001' ||
-        (error as any).code === 'P1002' ||
-        (error as any).code === 'P1000';
+        errorMessage.includes('ENOTFOUND');
       
       const connectionHint = isConnectionError
         ? 'Use the Supabase Transaction pooler (port 6543) in Vercel, not the direct URL (5432). In Supabase: Settings → Database → Connection string → Transaction.'
@@ -259,14 +240,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ? 'Unable to connect to database. Use the Supabase connection pooler (port 6543) in Vercel DATABASE_URL — see Supabase → Settings → Database → Transaction.'
           : 'Database query failed. Please try again.',
         500,
-        process.env.NODE_ENV === 'development' ? `${errorName}: ${errorMessage}` : connectionHint,
+        process.env.NODE_ENV === 'development' 
+          ? `${errorName}${errorCode ? ` (${errorCode})` : ''}: ${errorMessage}${errorMeta ? ` | Meta: ${JSON.stringify(errorMeta)}` : ''}`
+          : connectionHint,
         undefined,
         requestId
       ));
-    } finally {
-      // Disconnect Prisma to free up connection pool (optional, Prisma manages this automatically)
-      // Only disconnect if we're not reusing the connection
-      // prisma.$disconnect().catch(() => {});
     }
 
     if (!user) {
