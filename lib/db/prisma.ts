@@ -53,7 +53,7 @@ function getPrismaClient(): PrismaClientType | null {
     const client = new PrismaClient({
       log:
         process.env.NODE_ENV === "development"
-          ? ["error", "warn"]
+          ? ["error", "warn", "query"]
           : ["error"],
       // Override DATABASE_URL if we modified it for pooler
       ...(isUsingPooler && finalDatabaseUrl !== databaseUrl && {
