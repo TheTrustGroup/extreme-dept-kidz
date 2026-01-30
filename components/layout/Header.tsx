@@ -28,7 +28,9 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
   const { theme } = useTheme();
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const [isMobile, setIsMobile] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768
+  );
   const [isMegaMenuOpen, setIsMegaMenuOpen] = React.useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [isCartPreviewOpen, setIsCartPreviewOpen] = React.useState(false);
@@ -51,9 +53,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
 
     // Keyboard shortcut: Cmd/Ctrl + K to open search
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsSearchOpen(true);
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -266,7 +269,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
               {/* Search Icon */}
               <IconButton 
                 aria-label="Search products" 
-                onClick={() => setIsSearchOpen(true)}
+                onClick={() => {
+                  setIsSearchOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
                 title="Search products (⌘K)"
                 className="relative"
               >
@@ -278,7 +284,10 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                 ref={cartIconRef}
                 aria-label="Shopping Cart"
                 className="relative"
-                onClick={() => setIsCartPreviewOpen(!isCartPreviewOpen)}
+                onClick={() => {
+                  setIsCartPreviewOpen(!isCartPreviewOpen);
+                  if (isCartPreviewOpen === false) setIsMobileMenuOpen(false);
+                }}
               >
                 <ShoppingBag className="w-5 h-5" />
                 {cartItemCount > 0 && (
@@ -298,8 +307,9 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                 )}
               </IconButton>
 
-              {/* Menu Hamburger */}
+              {/* Menu Hamburger - type=button and close other overlays when opening to avoid conflicts */}
               <button
+                type="button"
                 className={cn(
                   "flex items-center justify-center transition-colors duration-300 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-offset-2 p-3 min-h-[44px] min-w-[44px] relative z-[1003]",
                   theme === "dark"
@@ -308,7 +318,14 @@ export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): J
                 )}
                 aria-label="Toggle menu"
                 aria-expanded={isMobileMenuOpen}
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => {
+                  const next = !isMobileMenuOpen;
+                  setIsMobileMenuOpen(next);
+                  if (next) {
+                    setIsCartPreviewOpen(false);
+                    setIsSearchOpen(false);
+                  }
+                }}
               >
                 <Menu className="w-5 h-5 flex-shrink-0" />
               </button>

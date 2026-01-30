@@ -351,22 +351,26 @@ export function Footer(): JSX.Element {
                 </div>
 
                 {/* GDPR Compliance Text */}
-                <p className={cn(
-                  "text-xs leading-relaxed",
+                <div className={cn(
+                  "text-xs leading-relaxed space-y-1",
                   theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
                 )}>
-                  By subscribing, you agree to receive marketing emails from EXTREME DEPT KIDZ. 
-                  You can unsubscribe at any time. We respect your privacy and will never share your email address. 
-                  <Link 
-                    href="/privacy-policy" 
-                    className={cn(
-                      "underline hover:no-underline transition-colors duration-200",
-                      theme === "dark" ? "text-dark-text-secondary hover:text-dark-text-primary" : "text-cream-200/80 hover:text-cream-50"
-                    )}
-                  >
-                    View our Privacy Policy
-                  </Link>.
-                </p>
+                  <p>
+                    By subscribing, you agree to receive marketing emails from EXTREME DEPT KIDZ. 
+                    You can unsubscribe at any time. We respect your privacy and will never share your email address.
+                  </p>
+                  <p>
+                    <Link 
+                      href="/privacy-policy" 
+                      className={cn(
+                        "underline hover:no-underline transition-colors duration-200",
+                        theme === "dark" ? "text-dark-text-secondary hover:text-dark-text-primary" : "text-cream-200/80 hover:text-cream-50"
+                      )}
+                    >
+                      View our Privacy Policy
+                    </Link>
+                  </p>
+                </div>
               </form>
             </m.div>
           </div>

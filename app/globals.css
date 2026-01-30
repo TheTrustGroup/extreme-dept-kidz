@@ -171,10 +171,10 @@ html {
   --accent-blush: rgba(201, 161, 74, 0.15); /* brand-secondary with 15% opacity */
   --accent-warm: rgba(138, 120, 86, 0.12); /* cream-900 with 12% opacity */
   
-  /* Hero gradient overlays - COLOR SYSTEM NORMALIZATION: Use brand-text */
-  --hero-gradient-overlay: linear-gradient(180deg, rgba(28, 28, 28, 0.55) 0%, rgba(28, 28, 28, 0.35) 40%, rgba(28, 28, 28, 0.45) 100%);
-  --hero-text-shadow: 0 4px 20px rgba(28, 28, 28, 0.5), 0 2px 8px rgba(28, 28, 28, 0.4);
-  --hero-text-shadow-subtle: 0 2px 12px rgba(28, 28, 28, 0.5), 0 1px 4px rgba(28, 28, 28, 0.4);
+  /* Hero gradient overlays - stronger for text readability over image */
+  --hero-gradient-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.4) 35%, rgba(0, 0, 0, 0.5) 100%);
+  --hero-text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 0, 0, 0.4);
+  --hero-text-shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.8), 0 2px 16px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 0, 0, 0.35);
   --hero-scroll-indicator-shadow: drop-shadow(0 2px 8px rgba(28, 28, 28, 0.8));
 
   /* Typography system – font families (map to layout-loaded vars) */
