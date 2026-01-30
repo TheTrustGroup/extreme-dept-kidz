@@ -12,9 +12,8 @@ interface CollectionPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// ISR: Revalidate collection pages every 60 seconds, or on-demand via tags
-// This allows products to appear quickly after admin upload while maintaining freshness
-export const revalidate = 60;
+// ISR: Revalidate collection pages every 10 seconds so admin-uploaded products appear quickly
+export const revalidate = 10;
 
 /**
  * Generate metadata from real category (Admin → Categories).
@@ -74,7 +73,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       [`categories-${slug}`],
       {
         tags: [CACHE_TAGS.categories, CACHE_TAGS.collections, CACHE_TAGS.category(slug)],
-        revalidate: 60,
+        revalidate: 10,
       }
     );
 
@@ -92,7 +91,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       [`products-${slug}`],
       {
         tags: [CACHE_TAGS.products, CACHE_TAGS.category(slug), CACHE_TAGS.collection(slug)],
-        revalidate: 60,
+        revalidate: 10,
       }
     );
 

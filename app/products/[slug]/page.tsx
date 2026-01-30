@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { ProductPageClient } from "./ProductPageClient";
 import { getProductBySlug, getAllProducts } from "@/lib/db";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data";
+import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { unstable_cache } from "next/cache";
 import type { Product } from "@/types";
 
 interface ProductPageProps {
@@ -12,9 +14,49 @@ interface ProductPageProps {
   }>;
 }
 
-// ISR: Revalidate product pages every 300 seconds (5 min), or on-demand via tags
-// This allows products to appear quickly while maintaining freshness
-export const revalidate = 300;
+// ISR: Revalidate every 10s to match homepage so new products show immediately
+export const revalidate = 10;
+
+// Allow dynamic generation for slugs not pre-generated (new products)
+export const dynamicParams = true;
+
+/**
+ * Pre-generate a subset of product pages at build; others generated on demand (dynamicParams = true)
+ */
+export async function generateStaticParams() {
+  try {
+    const products = await getAllProducts();
+    const slugs = products.slice(0, 50).map((p) => ({ slug: p.slug }));
+    if (process.env.NODE_ENV === "development") {
+      console.log("[ProductPage] generateStaticParams: pre-generating", slugs.length, "product slugs");
+    }
+    return slugs;
+  } catch (e) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[ProductPage] generateStaticParams failed, all product pages will be generated on demand:", e);
+    }
+    return [];
+  }
+}
+
+/**
+ * Fetch product with cache tags so on-demand revalidation (admin create/update) invalidates correctly
+ */
+async function getCachedProduct(slug: string): Promise<Product | null> {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[ProductPage] Fetching product with slug:", slug);
+  }
+  const getProduct = unstable_cache(
+    async () => getProductBySlug(slug),
+    ["product", slug],
+    { tags: [CACHE_TAGS.product(slug), CACHE_TAGS.products], revalidate: 10 }
+  );
+  const product = await getProduct();
+  if (process.env.NODE_ENV === "development") {
+    console.log("[ProductPage] Product found:", !!product, product ? product.name : "(none)");
+  }
+  return product;
+}
 
 /**
  * Generate metadata for product page
@@ -23,7 +65,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getCachedProduct(slug);
 
   if (!product) {
     return {
@@ -70,14 +112,18 @@ export async function generateMetadata({
 
 /**
  * Product Detail Page
- * 
+ *
  * Premium product page with gallery, info, and related products.
+ * Uses same cache tags as list so admin create/update revalidation shows new products immediately.
  */
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getCachedProduct(slug);
 
   if (!product) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[ProductPage] Product not found for slug:", slug);
+    }
     notFound();
   }
 

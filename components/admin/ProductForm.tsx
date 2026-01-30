@@ -506,13 +506,16 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
           title: productId ? "Product Updated" : "Product Created",
           message: `${formData.name} has been ${productId ? 'updated' : 'created'} successfully`,
         });
+        // Broadcast to other tabs so storefront refreshes and all browsers see new product
+        if (typeof window !== "undefined") {
+          try {
+            window.localStorage.setItem("products_updated", Date.now().toString());
+          } catch (_) {}
+          fetch("/api/products?revalidate=true", { method: "GET" }).catch(() => {});
+        }
         // Refresh the products list page to show the new product
         router.push("/admin/products");
         router.refresh();
-        // Also revalidate the public products pages
-        if (typeof window !== 'undefined') {
-          fetch('/api/products?revalidate=true', { method: 'GET' }).catch(() => {});
-        }
       } else {
         // Extract detailed validation errors if available
         let errorMessage = responseData.error || responseData.message || `HTTP ${response.status}: ${response.statusText}`;

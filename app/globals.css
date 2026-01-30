@@ -755,6 +755,15 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Utility: hide scrollbar but keep scroll (e.g. horizontal tabs) */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Focus styles for accessibility - WCAG 2.1 AA compliant */
 :focus-visible {
   outline: 3px solid var(--color-navy-600);

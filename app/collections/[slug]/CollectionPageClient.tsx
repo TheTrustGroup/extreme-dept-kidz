@@ -25,6 +25,8 @@ import {
 } from "@/lib/utils/filter-products";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import { ComingSoonPage } from "@/components/collections/ComingSoonPage";
+import { CollectionQuickTabs } from "@/components/collections/CollectionQuickTabs";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import type { Product } from "@/types";
 
@@ -430,15 +432,17 @@ export function CollectionPageClient({
           />
 
           {/* Products Section */}
-          {/* CRITICAL FIX: Ensure proper layout flow and visibility */}
           <div className="flex-1 min-w-0" style={{ minHeight: 0, isolation: "isolate" }}>
-            {/* Toolbar */}
-            <ProductToolbar
-              resultCount={sortedProducts.length}
-              sortBy={sortBy}
-              onSortChange={handleSortChange}
-              onFilterClick={() => setIsFilterOpen(true)}
-            />
+            {/* Sticky: Collection tabs + Toolbar (mobile-friendly) */}
+            <div className="sticky top-20 z-30 -mx-4 px-4 sm:mx-0 sm:px-0 bg-cream-50 border-b border-cream-200">
+              <CollectionQuickTabs className="mb-0" />
+              <ProductToolbar
+                resultCount={sortedProducts.length}
+                sortBy={sortBy}
+                onSortChange={handleSortChange}
+                onFilterClick={() => setIsFilterOpen(true)}
+              />
+            </div>
 
             {/* Active Filters */}
             <ActiveFilters
@@ -452,27 +456,27 @@ export function CollectionPageClient({
               onClearAll={handleClearAllFilters}
             />
 
-            {/* Product Grid with Animation */}
-            {/* CRITICAL FIX: Start visible to prevent invisible but clickable bug */}
-            <m.div
-              key={`${sortedProducts.length}-${sortBy}`}
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0 }}
-              className="mt-6 xs:mt-7 sm:mt-8"
-              style={{
-                // Ensure container is always visible
-                opacity: 1,
-                visibility: "visible",
-                minHeight: 0
+            {/* Product Grid with pull-to-refresh on mobile */}
+            <PullToRefresh
+              onRefresh={async () => {
+                router.refresh();
               }}
+              className="mt-6 xs:mt-7 sm:mt-8"
             >
-              <ProductGrid
-                products={sortedProducts}
-                isLoading={isLoading}
-                columns={4}
-              />
-            </m.div>
+              <m.div
+                key={`${sortedProducts.length}-${sortBy}`}
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0 }}
+                style={{ opacity: 1, visibility: "visible", minHeight: 0 }}
+              >
+                <ProductGrid
+                  products={sortedProducts}
+                  isLoading={isLoading}
+                  columns={4}
+                />
+              </m.div>
+            </PullToRefresh>
             
             {/* CRITICAL: Smart prefetching for product images */}
             {/* Prefetches images when they're near viewport for instant loading */}

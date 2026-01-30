@@ -420,7 +420,13 @@ export function ProductFormComprehensive({
           title: "Success",
           message: isNew ? "Product created successfully!" : "Product updated successfully!",
         });
+        if (typeof window !== "undefined") {
+          try {
+            window.localStorage.setItem("products_updated", Date.now().toString());
+          } catch (_) {}
+        }
         router.push("/admin/products");
+        router.refresh();
       } else {
         throw new Error(responseData.error || responseData.message || "Failed to save product");
       }
@@ -453,7 +459,13 @@ export function ProductFormComprehensive({
           title: "Product Deleted",
           message: "Product has been deleted successfully",
         });
+        if (typeof window !== "undefined") {
+          try {
+            window.localStorage.setItem("products_updated", Date.now().toString());
+          } catch (_) {}
+        }
         router.push("/admin/products");
+        router.refresh();
       } else {
         throw new Error("Failed to delete product");
       }

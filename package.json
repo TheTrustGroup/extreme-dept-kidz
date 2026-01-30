@@ -41,7 +41,9 @@
     "fix-all": "tsx scripts/master-fix-all.ts",
     "test-db:legacy": "tsx scripts/test-database-connection.ts",
     "quality-check": "node scripts/quality-check.js",
-    "pre-deploy": "npm run quality-check"
+    "pre-deploy": "npm run quality-check",
+    "generate-client-pdf": "tsx scripts/generate-client-credentials-pdf.ts",
+    "client-links-to-desktop": "node scripts/copy-client-html-to-desktop.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -63,6 +65,7 @@
     "react-intersection-observer": "^10.0.0",
     "recharts": "^3.6.0",
     "resend": "^6.7.0",
+    "swr": "^2.2.5",
     "tailwind-merge": "^2.5.2",
     "web-vitals": "^5.1.0",
     "zod": "^3.23.8",

@@ -200,8 +200,39 @@ const nextConfig = {
   },
   
   // Headers for Performance & Security
+  // CRITICAL: Cache-Control for product/collection pages first so all browsers see same content
   async headers() {
     return [
+      // Homepage: short CDN cache, browser revalidates (fixes different users seeing different products)
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, s-maxage=10, stale-while-revalidate=59",
+          },
+        ],
+      },
+      // Collection pages: same as homepage for consistent product lists
+      {
+        source: "/collections/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, s-maxage=10, stale-while-revalidate=59",
+          },
+        ],
+      },
+      // Product detail: slightly longer CDN cache, browser still revalidates
+      {
+        source: "/products/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+          },
+        ],
+      },
       {
         source: "/:path*",
         headers: [

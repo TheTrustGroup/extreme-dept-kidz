@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { getAllProducts, getProductsByCategory, getDatabaseStatus } from "@/lib/db";
 import type { Product } from "@/types";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
@@ -15,6 +16,12 @@ import { logger } from "@/lib/utils/logger";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { unstable_cache } from "next/cache";
 import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
+
+function generateETag(payload: unknown): string {
+  const str = JSON.stringify(payload);
+  const hash = createHash("md5").update(str).digest("hex");
+  return `W/"${hash}"`;
+}
 
 /**
  * Transform Prisma product to application Product type
@@ -64,10 +71,9 @@ function transformProduct(prismaProduct: {
   };
 }
 
-// CRITICAL: ISR with stale-while-revalidate
-// Allow Next.js to optimize this route
+// CRITICAL: ISR with short revalidate so admin-uploaded products appear quickly
 export const dynamic = 'auto';
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 10; // Revalidate every 10 seconds
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
@@ -82,7 +88,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // CRITICAL: Use cached query with ISR
+    // CRITICAL: Use cached query with ISR (short revalidate for product visibility sync)
     const getCachedProducts = unstable_cache(
       async () => {
         // Get products using DB abstraction layer (with automatic fallback to mock)
@@ -96,7 +102,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           CACHE_TAGS.products,
           category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections,
         ],
-        revalidate: 60,
+        revalidate: 10,
       }
     );
 
@@ -144,24 +150,36 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (isWarehouseRequest(request)) {
       return withCors(request, NextResponse.json(paginatedProducts));
     }
-    return withCors(request, apiSuccess(
-      {
-        products: paginatedProducts,
-        pagination: {
-          total,
-          limit,
-          offset,
-          hasMore: offset + limit < total,
-        },
+
+    const data = {
+      products: paginatedProducts,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total,
       },
+    };
+    const etag = generateETag(data);
+    if (request.headers.get("if-none-match") === etag) {
+      return withCors(
+        request,
+        new NextResponse(null, { status: 304, headers: { ETag: etag } })
+      );
+    }
+
+    const res = apiSuccess(
+      data,
       "Products fetched successfully",
       undefined,
       {
-        cache: 60, // Cache for 60 seconds
-        staleWhileRevalidate: 300, // Serve stale for 5 minutes while revalidating
+        cache: 10, // Short cache so admin-uploaded products appear quickly
+        staleWhileRevalidate: 59, // Serve stale for 59s while revalidating
         tags: [CACHE_TAGS.products, category ? CACHE_TAGS.category(category) : CACHE_TAGS.collections],
       }
-    ));
+    );
+    res.headers.set("ETag", etag);
+    return withCors(request, res);
   } catch (error) {
     logger.error("❌ Error fetching products:", error);
     

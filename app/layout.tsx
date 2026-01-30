@@ -11,6 +11,7 @@ import { LazyWebVitals } from "./LazyWebVitals";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ProductsUpdateListener } from "@/components/ProductsUpdateListener";
 import "./globals.css";
 
 // CRITICAL FIX: Optimize font loading to prevent blocking render
@@ -190,6 +191,7 @@ export default function RootLayout({
           <PageLoadingBar />
           <SkipLinks />
           <Providers>
+            <ProductsUpdateListener />
             <Suspense fallback={<PageLoader />}>
               <ConditionalHeader cartItemCount={0} />
             </Suspense>

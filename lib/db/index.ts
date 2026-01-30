@@ -478,8 +478,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       if (!prisma) {
         throw new Error('Prisma not available - using mock data');
       }
-      
-      const prismaProduct = await prisma.product.findUnique({
+
+      // Try exact slug first (no status filter - product detail shows any product by slug)
+      let prismaProduct = await prisma.product.findUnique({
         where: { slug },
         include: {
           category: true,
@@ -490,6 +491,19 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
           tags: true,
         },
       });
+
+      // Fallback: case-insensitive slug match (e.g. link has different casing)
+      if (!prismaProduct) {
+        prismaProduct = await prisma.product.findFirst({
+          where: { slug: { equals: slug, mode: 'insensitive' } },
+          include: {
+            category: true,
+            images: { orderBy: { order: 'asc' } },
+            variants: true,
+            tags: true,
+          },
+        });
+      }
 
       if (!prismaProduct) {
         return null;

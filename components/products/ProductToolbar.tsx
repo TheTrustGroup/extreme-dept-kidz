@@ -84,9 +84,9 @@ export function ProductToolbar({
             variant="ghost"
             size="sm"
             onClick={onFilterClick}
-            className="lg:hidden flex items-center gap-2 text-charcoal-700 hover:text-charcoal-900"
+            className="lg:hidden flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] px-3 text-charcoal-700 hover:text-charcoal-900"
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-4 h-4 shrink-0" />
             <span className="font-sans text-sm">Filters</span>
           </Button>
         )}
@@ -104,7 +104,7 @@ export function ProductToolbar({
           <button
             onClick={() => setIsSortOpen(!isSortOpen)}
             className={cn(
-              "flex items-center gap-2 px-3 xs:px-4 py-2 w-full xs:w-auto",
+              "flex items-center gap-2 px-3 xs:px-4 py-2 min-h-[44px] w-full xs:w-auto",
               "bg-cream-50 border border-cream-200 rounded-lg",
               "font-sans text-xs xs:text-sm text-charcoal-700",
               "hover:border-charcoal-300 hover:bg-cream-100",
@@ -167,7 +167,7 @@ export function ProductToolbar({
             <button
               onClick={() => onViewModeChange("grid")}
               className={cn(
-                "p-2 rounded transition-colors duration-200",
+                "p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded transition-colors duration-200",
                 "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
                 viewMode === "grid"
                   ? "bg-charcoal-900 text-cream-50"
@@ -180,7 +180,7 @@ export function ProductToolbar({
             <button
               onClick={() => onViewModeChange("list")}
               className={cn(
-                "p-2 rounded transition-colors duration-200",
+                "p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded transition-colors duration-200",
                 "focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2",
                 viewMode === "list"
                   ? "bg-charcoal-900 text-cream-50"

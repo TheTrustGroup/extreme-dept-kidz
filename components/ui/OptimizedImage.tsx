@@ -261,8 +261,20 @@ export function OptimizedImage({
         visibility: 'visible',
       }}
     >
+      {/* Blur placeholder: visible until image has loaded (mobile-friendly) */}
+      {(shouldLoad || isLCP) && (
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${getBlurDataURL()})`,
+            zIndex: 0,
+            opacity: imageLoaded ? 0 : 1,
+            transition: "opacity 0.3s ease-out",
+          }}
+          aria-hidden
+        />
+      )}
       {/* CRITICAL FIX: Always render Image component - never conditionally hide */}
-      {/* Next.js Image handles lazy loading internally, we just need to ensure it renders */}
       {shouldLoad || isLCP ? (
         <Image
           src={src}
@@ -281,15 +293,14 @@ export function OptimizedImage({
           onError={handleImageError}
           onLoad={handleImageLoad}
           className={cn(
-            "object-cover",
+            "object-cover transition-opacity duration-300",
             className,
-            // CRITICAL: Ensure image is always visible
-            imageLoaded ? "opacity-100" : "opacity-100"
+            imageLoaded ? "opacity-100" : "opacity-0"
           )}
           style={{
             ...props.style,
-            // CRITICAL FIX: Ensure images are always visible - pixel-perfect rendering
-            opacity: imageError ? 0.5 : 1,
+            zIndex: 1,
+            opacity: imageError ? 0.5 : undefined,
             visibility: 'visible',
             display: 'block',
           } as React.CSSProperties}

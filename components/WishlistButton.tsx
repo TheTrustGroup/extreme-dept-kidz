@@ -25,9 +25,9 @@ export function WishlistButton({
     toggleItem(product);
   };
 
-  // Minimum 44x44px tap target on mobile (WCAG 2.5.5); lg remains larger
+  // Minimum 44x44px tap target on mobile (WCAG 2.5.5)
   const sizeClasses = {
-    sm: 'w-9 h-9 min-w-[36px] min-h-[36px]',
+    sm: 'w-11 h-11 min-w-[44px] min-h-[44px]',
     md: 'w-11 h-11 min-w-[44px] min-h-[44px]',
     lg: 'w-12 h-12 min-w-[48px] min-h-[48px]',
   };

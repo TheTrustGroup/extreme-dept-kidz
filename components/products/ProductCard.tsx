@@ -202,7 +202,7 @@ export const ProductCard = React.memo(function ProductCard({
                 className="absolute top-3 right-3 z-10"
                 onClick={handleWishlistClick}
               >
-                <WishlistButton product={product} size="md" />
+                <WishlistButton product={product} size="lg" />
               </div>
 
               {/* Size Availability Overlay - Shows on hover */}
@@ -316,7 +316,7 @@ export const ProductCard = React.memo(function ProductCard({
                 <button
                   onClick={handleQuickViewClick}
                   className={cn(
-                    "w-full flex items-center justify-center gap-2",
+                    "w-full flex items-center justify-center gap-2 min-h-[44px]",
                     "h-11 px-4 py-2.5 rounded-lg",
                     "bg-navy-900 text-cream-50",
                     "font-sans text-sm font-semibold uppercase tracking-wide",

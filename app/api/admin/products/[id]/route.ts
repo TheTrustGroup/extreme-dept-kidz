@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { revalidateCategoryChange, revalidateAllCollectionPages, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
 import { updateProductSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
@@ -231,6 +232,13 @@ export async function PUT(
       // Don't fail the request if revalidation fails
     }
 
+    triggerProductUpdatedWebhook({
+      productId: product.id,
+      productSlug: product.slug,
+      action: "updated",
+      categorySlug: product.category?.slug ?? undefined,
+    });
+
     // Log activity
     await logActivity({
       adminUserId: auth.user!.id,
@@ -294,6 +302,11 @@ export async function DELETE(
 
     // Revalidate cache after deletion
     try {
+      // CRITICAL: Revalidate tags so frontend and API caches show updated product list
+      revalidateTag(CACHE_TAGS.products);
+      revalidateTag(CACHE_TAGS.homepage);
+      revalidateTag(CACHE_TAGS.collections);
+      revalidateTag(CACHE_TAGS.categories);
       // CRITICAL FIX: Revalidate complete-looks cache when products are deleted
       revalidateTag(CACHE_TAGS.completeLooks);
       revalidateTag(CACHE_TAGS.completeLookProduct(id));
@@ -303,6 +316,7 @@ export async function DELETE(
       revalidatePath('/collections');
       revalidatePath('/');
       revalidatePath('/admin/products');
+      revalidatePath('/api/products');
       
       // Also revalidate all collection pages
       await revalidateAllCollectionPages();
@@ -310,6 +324,12 @@ export async function DELETE(
       logger.error('Failed to revalidate cache:', revalidateError);
       // Don't fail the request if revalidation fails
     }
+
+    triggerProductUpdatedWebhook({
+      productId: id,
+      productSlug: existing.slug,
+      action: "deleted",
+    });
 
     // Log activity
     await logActivity({

@@ -2,5 +2,34 @@
   "buildCommand": "prisma generate && next build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "headers": [
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=10, stale-while-revalidate=59"
+        }
+      ]
+    },
+    {
+      "source": "/collections/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=10, stale-while-revalidate=59"
+        }
+      ]
+    },
+    {
+      "source": "/products/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=60, stale-while-revalidate=300"
+        }
+      ]
+    }
+  ]
 }

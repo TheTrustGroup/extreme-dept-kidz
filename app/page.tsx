@@ -10,11 +10,13 @@ import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { unstable_cache } from "next/cache";
 import { StreamingSkeleton } from "@/components/ui/StreamingSkeleton";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
+import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
 
 // Hero + TrustBar in main bundle so above-the-fold is fast and never static/blank
 
-const NewArrivalsSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.NewArrivalsSection })), {
+const HomeProductSectionsWithSWR = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.HomeProductSectionsWithSWR })), {
   ssr: true, // Render with page so content isn’t blank on first view
+  loading: () => <StreamingSkeleton variant="product-grid" />,
 });
 
 const ShopByStyleSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByStyleSection })), {
@@ -37,18 +39,13 @@ const EditorialSection = nextDynamic(() => import("@/components/home").then((mod
   loading: () => <StreamingSkeleton variant="section" height="h-[600px]" />,
 });
 
-const GirlsCollectionSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.GirlsCollectionSection })), {
-  ssr: true, // SSR enabled for streaming
-  loading: () => <StreamingSkeleton variant="product-grid" />,
-});
-
 const StyleGuideSection = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.StyleGuideSection })), {
   ssr: true, // SSR enabled for streaming
   loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
 
-// ISR: Revalidate homepage every 60 seconds, or on-demand via tags
-export const revalidate = 60;
+// ISR: Revalidate homepage every 10 seconds so admin-uploaded products appear quickly
+export const revalidate = 10;
 
 export const metadata: Metadata = {
   title: "Extreme Dept Kidz | Luxury Kids Fashion",
@@ -106,7 +103,7 @@ export default async function Home() {
       ['homepage-products'],
       {
         tags: [CACHE_TAGS.products, CACHE_TAGS.homepage],
-        revalidate: 60,
+        revalidate: 10,
       }
     );
     
@@ -120,6 +117,8 @@ export default async function Home() {
     }
     products = [];
   }
+
+  const generatedAt = new Date().toISOString();
 
   return (
     <>
@@ -142,12 +141,12 @@ export default async function Home() {
         {/* Progressive rendering: LCP elements (Hero) render first, rest streams in */}
         {/* Each Suspense boundary enables independent streaming of sections */}
         
-        {/* New Arrivals Section - Above fold, critical for engagement */}
+        {/* New Arrivals + Girls sections: SWR for client-side refresh (10s interval, on focus/reconnect) */}
         <Suspense 
           fallback={<StreamingSkeleton variant="product-grid" />}
-          key="new-arrivals"
+          key="home-product-sections"
         >
-          <NewArrivalsSection products={products} />
+          <HomeProductSectionsWithSWR initialProducts={products} />
         </Suspense>
 
         {/* Shop by Style Section - Above fold, category navigation */}
@@ -182,14 +181,6 @@ export default async function Home() {
           <EditorialSection />
         </Suspense>
 
-        {/* Girls Collection Section - Below fold, can stream */}
-        <Suspense 
-          fallback={<StreamingSkeleton variant="product-grid" />}
-          key="girls-collection"
-        >
-          <GirlsCollectionSection products={products} />
-        </Suspense>
-
         {/* Style Guide Section - Below fold, can stream */}
         <Suspense 
           fallback={<StreamingSkeleton variant="section" height="h-96" />}
@@ -213,6 +204,8 @@ export default async function Home() {
           enabled={products.length > 0}
         />
       </div>
+      {/* Temporary: remove after fixing caching */}
+      <CacheDebugPanel productsCount={products.length} generatedAt={generatedAt} />
     </>
   );
 }

@@ -408,7 +408,7 @@ interface CheckboxProps {
 function Checkbox({ label, checked, onChange }: CheckboxProps): JSX.Element {
   return (
     <m.label
-      className="flex items-center gap-3 cursor-pointer group"
+      className="flex items-center gap-3 min-h-[44px] py-2 cursor-pointer group touch-manipulation"
       whileHover={{ x: 2 }}
       transition={{ duration: 0.2 }}
     >
@@ -416,7 +416,7 @@ function Checkbox({ label, checked, onChange }: CheckboxProps): JSX.Element {
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="w-4 h-4 rounded border-cream-300 text-navy-900 focus:ring-navy-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
+        className="w-5 h-5 rounded border-cream-300 text-navy-900 focus:ring-navy-500 focus:ring-offset-2 cursor-pointer transition-all duration-200 shrink-0"
       />
       <span className="font-sans text-sm text-charcoal-700 group-hover:text-charcoal-900 transition-colors duration-200">
         {label}

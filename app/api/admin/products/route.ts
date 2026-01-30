@@ -7,6 +7,7 @@ import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { revalidateAllCollectionPages, revalidateCollectionPage, revalidateProduct, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
 import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
@@ -422,7 +423,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       
       // Revalidate admin pages
       revalidatePath('/admin/products', 'page');
-      revalidatePath('/api/products', 'layout');
+      revalidatePath('/api/products');
       
       // Revalidate homepage and product listing pages
       revalidatePath('/', 'page');
@@ -449,6 +450,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         console.error('[Product Creation] Error stack:', revalidateError instanceof Error ? revalidateError.stack : 'No stack trace');
       }
     }
+
+    // Notify frontend via webhook so cache revalidation runs (immediate visibility)
+    triggerProductUpdatedWebhook({
+      productId: product.id,
+      productSlug: product.slug,
+      action: "created",
+      categorySlug: product.category?.slug ?? undefined,
+    });
 
     // Log activity
     await logActivity({
