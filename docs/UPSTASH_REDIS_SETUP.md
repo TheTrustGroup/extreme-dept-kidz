@@ -25,7 +25,7 @@ REDIS_URL=rediss://:YOUR_PASSWORD@YOUR_ENDPOINT:YOUR_PORT
 
 **Example:**
 ```bash
-REDIS_URL=rediss://:AXrAASQgYTk5YjE4NzY0NzY2NGM0YjQxODg2YjE4NzY0NzY2NGM0YjQxODg2@sacred-airedale-12556.upstash.io:6379
+REDIS_URL=rediss://:YOUR_PASSWORD@your-endpoint.upstash.io:6379
 ```
 
 ---
@@ -42,7 +42,7 @@ If you only have the REST URL, you have two options:
 
 ### B. Use Upstash REST API (Requires Code Changes)
 If you want to use REST API, you'll need:
-- `UPSTASH_REDIS_REST_URL`: `https://sacred-airedale-12556.upstash.io`
+- `UPSTASH_REDIS_REST_URL`: `https://your-endpoint.upstash.io`
 - `UPSTASH_REDIS_REST_TOKEN`: Your REST token (from Upstash Console)
 
 Then update the rate limiter to use REST API instead of ioredis.
@@ -63,7 +63,7 @@ The current rate limiter (`lib/auth/rate-limit-redis.ts`) uses **ioredis**, whic
 
 2. Add to `.env.local`:
    ```bash
-   REDIS_URL=rediss://:YOUR_PASSWORD@sacred-airedale-12556.upstash.io:6379
+   REDIS_URL=rediss://:YOUR_PASSWORD@your-endpoint.upstash.io:6379
    ```
 
 3. The REST URL you provided (`UPSTASH_REDIS_REST_URL`) can be stored for reference, but the code currently uses `REDIS_URL` with Redis protocol.
