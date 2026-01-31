@@ -77,6 +77,7 @@ export const createProductSchema = z.object({
   slug: z.string().min(1).max(200).optional(),
   sku: z.string().min(1).max(100).optional(),
   inStock: z.boolean().optional(),
+  visibleOnStore: z.boolean().optional(), // Store admin: show/hide product on website
 });
 
 export const updateProductSchema = createProductSchema.partial().extend({

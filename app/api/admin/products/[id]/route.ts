@@ -131,6 +131,7 @@ export async function PUT(
     if (validatedData.sku !== undefined) updateData.sku = validatedData.sku;
     if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId;
     if (validatedData.inStock !== undefined) updateData.inStock = validatedData.inStock;
+    if (validatedData.visibleOnStore !== undefined) updateData.visibleOnStore = validatedData.visibleOnStore;
 
     // Handle images update
     if (validatedData.images !== undefined && Array.isArray(validatedData.images)) {

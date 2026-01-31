@@ -1,12 +1,35 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
-import { X, Upload, MoveLeft, MoveRight } from "lucide-react";
+import { X, Upload, MoveLeft, MoveRight, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+
+/** Renders product image with fallback when URL fails (404 / invalid). Avoids Next/Image breaking the page. */
+function AdminProductImage({ url, alt }: { url: string; alt: string }): JSX.Element {
+  const [errored, setErrored] = React.useState(false);
+  React.useEffect(() => {
+    setErrored(false);
+  }, [url]);
+  return (
+    <div className="absolute inset-0">
+      {errored || !url ? (
+        <div className="w-full h-full flex items-center justify-center bg-cream-200 text-charcoal-500">
+          <ImageIcon className="w-10 h-10" aria-hidden />
+        </div>
+      ) : (
+        <img
+          src={url}
+          alt={alt}
+          className="w-full h-full object-cover"
+          onError={() => setErrored(true)}
+        />
+      )}
+    </div>
+  );
+}
 
 interface ImageUploadProps {
   images: string[];
@@ -538,39 +561,20 @@ export function ImageUpload({
         )}
       </div>
 
-      {/* Image Grid */}
+      {/* Image Grid - use img with onError fallback so 404/invalid URLs don't break the page */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {images.map((url, index) => (
             <div
-              key={url}
+              key={`${url}-${index}`}
               className="relative aspect-square group bg-cream-100 rounded-lg overflow-hidden"
             >
-              {/* Use regular img tag for base64 data URLs, Next Image for regular URLs */}
-              {url.startsWith('data:') ? (
-                <img
-                  src={url}
-                  alt={`Product image ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Image
-                  src={url}
-                  alt={`Product image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                />
-              )}
-
-              {/* Primary Badge */}
+              <AdminProductImage url={url} alt={`Product image ${index + 1}`} />
               {index === 0 && (
                 <div className="absolute top-2 left-2 bg-navy-900 text-cream-50 text-xs px-2 py-1 rounded font-semibold">
                   Primary
                 </div>
               )}
-
-              {/* Action Buttons Overlay */}
               <div className="absolute inset-0 bg-charcoal-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 {index > 0 && (
                   <Button

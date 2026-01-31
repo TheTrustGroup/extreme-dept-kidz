@@ -322,11 +322,9 @@ export async function getAllProducts(): Promise<Product[]> {
         throw new Error('Prisma not available - using mock data');
       }
       
-      // CRITICAL: Optimized query with selective field fetching
-      // Only fetch necessary fields to reduce payload size
+      // Storefront: only products published to website (visibleOnStore). Warehouse-only items stay hidden.
       const prismaProducts = await prisma.product.findMany({
-        // Return all products - visibility is controlled by inStock flag and variant stock levels
-        // Products are visible on the website regardless of stock status
+        where: { visibleOnStore: true },
         select: {
           id: true,
           name: true,
@@ -487,14 +485,12 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
         throw new Error('Prisma not available - using mock data');
       }
 
-      // Try exact slug first (no status filter - product detail shows any product by slug)
-      let prismaProduct = await prisma.product.findUnique({
-        where: { slug },
+      // Storefront: only products published to website (visibleOnStore)
+      let prismaProduct = await prisma.product.findFirst({
+        where: { slug, visibleOnStore: true },
         include: {
           category: true,
-          images: {
-            orderBy: { order: 'asc' },
-          },
+          images: { orderBy: { order: 'asc' } },
           variants: true,
           tags: true,
         },
@@ -503,7 +499,10 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
       // Fallback: case-insensitive slug match (e.g. link has different casing)
       if (!prismaProduct) {
         prismaProduct = await prisma.product.findFirst({
-          where: { slug: { equals: slug, mode: 'insensitive' } },
+          where: {
+            slug: { equals: slug, mode: 'insensitive' },
+            visibleOnStore: true,
+          },
           include: {
             category: true,
             images: { orderBy: { order: 'asc' } },
@@ -584,8 +583,7 @@ export async function getProductsByCategory(category: string): Promise<Product[]
       const prismaProducts = await prisma.product.findMany({
         where: {
           categoryId: categoryRecord.id,
-          // Only include products that are in stock or have variants in stock
-          // This ensures we show all products, not just in-stock ones
+          visibleOnStore: true,
         },
         include: {
           category: true,

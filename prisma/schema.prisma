@@ -67,6 +67,7 @@ model Product {
   width         Float? // Width in cm
   height        Float? // Height in cm
   inStock       Boolean             @default(true) // Computed from variants
+  visibleOnStore Boolean            @default(true) // Store admin: hide warehouse-only from website
   metadata      Json? // Additional product metadata
   categoryId    String
   category      Category            @relation(fields: [categoryId], references: [id])
@@ -82,6 +83,7 @@ model Product {
   @@index([slug])
   @@index([categoryId])
   @@index([inStock])
+  @@index([visibleOnStore])
   @@index([sku])
 }
 
