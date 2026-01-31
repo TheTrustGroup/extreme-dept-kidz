@@ -21,8 +21,8 @@ export async function GET(
   try {
     const { slug } = await params;
     
-    // Use DB abstraction layer (production: no mock; throws if DB unavailable)
-    const product = await getProductBySlug(slug);
+    // Use DB abstraction layer; storefront: only products visible on website
+    const product = await getProductBySlug(slug, { storefrontOnly: true });
 
     if (!product) {
       return apiNotFound("Product");
@@ -35,7 +35,7 @@ export async function GET(
     // Retry once (same DB call; no mock in production)
     try {
       const { slug } = await params;
-      const fallbackProduct = await getProductBySlug(slug);
+      const fallbackProduct = await getProductBySlug(slug, { storefrontOnly: true });
       if (fallbackProduct) {
         return apiSuccess(
           fallbackProduct,

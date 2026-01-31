@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let productPages: MetadataRoute.Sitemap = [];
   try {
-    const products = await getProducts();
+    const products = await getProducts({ storefrontOnly: true });
     productPages = products.map((p) => ({
       url: `${SITE_URL}/products/${p.slug}`,
       lastModified: p.updatedAt || p.createdAt || new Date(),

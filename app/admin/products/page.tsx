@@ -904,6 +904,7 @@ export default function ProductsPage(): JSX.Element {
                     <th className="px-4 py-4 text-left text-sm font-semibold text-gray-700">Stock</th>
                     <th className="px-4 py-4 text-left text-sm font-semibold text-gray-700">Price</th>
                     <th className="px-4 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                    <th className="px-4 py-4 text-left text-sm font-semibold text-gray-700">Store</th>
                     <th className="px-4 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
@@ -913,6 +914,7 @@ export default function ProductsPage(): JSX.Element {
                     const totalStock = product.totalStock ?? product.sizes.reduce((sum, size) => sum + (size.quantity || 0), 0);
                     const isSelected = selectedProducts.has(product.id);
                     const status = getProductStatus(product);
+                    const visibleOnStore = (product as { visibleOnStore?: boolean }).visibleOnStore !== false;
 
                     return (
                       <m.tr
@@ -993,6 +995,14 @@ export default function ProductsPage(): JSX.Element {
                               {status.label}
                             </span>
                           </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={cn(
+                            "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
+                            visibleOnStore ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                          )}>
+                            {visibleOnStore ? "Visible" : "Hidden"}
+                          </span>
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { X } from "lucide-react";
-import { api } from "@/lib/utils/api-client";
 
 interface DatabaseStatus {
   connected: boolean;
@@ -54,43 +53,28 @@ export function DatabaseStatus(): JSX.Element | null {
   const checkStatus = async (): Promise<void> => {
     try {
       setError(null);
-      
-      // Use fetch directly to have more control over error handling
-      const response = await fetch('/api/admin/products', {
-        method: 'GET',
-        credentials: 'include',
-      });
+      // Use /api/health so DB status does not depend on /api/admin/products (avoids 500 when products route fails)
+      const response = await fetch('/api/health', { method: 'GET', credentials: 'include' });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      
-      // Extract dbStatus from response
-      const dbStatus = data.dbStatus;
-      
-      if (dbStatus && typeof dbStatus === 'object') {
-        setStatus(dbStatus);
-      } else {
-        // If no dbStatus in response, assume connected (optimistic fallback)
-        console.warn('[DatabaseStatus] No dbStatus in response, assuming connected');
-        setStatus({
-          connected: true,
-          type: 'postgres',
-          error: null,
-          mockMode: false,
-          enabled: true,
-        });
-      }
-    } catch (error) {
-      console.error("[DatabaseStatus] Failed to check DB status:", error);
-      setError(error instanceof Error ? error.message : 'Failed to check status');
-      
-      // Set optimistic status - don't show error to user, just show as connected
-      // This prevents the status check from breaking the admin dashboard
+      const healthy = data?.status === 'healthy' && data?.checks?.database === 'connected';
+
       setStatus({
-        connected: true, // Optimistic: assume connected if check fails
+        connected: healthy,
+        type: 'postgres',
+        error: healthy ? null : (data?.error ?? data?.message ?? null),
+        mockMode: false,
+        enabled: true,
+      });
+    } catch (err) {
+      console.error("[DatabaseStatus] Failed to check DB status:", err);
+      setError(err instanceof Error ? err.message : 'Failed to check status');
+      setStatus({
+        connected: true,
         type: 'postgres',
         error: null,
         mockMode: false,

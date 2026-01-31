@@ -23,7 +23,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlug(slug, { storefrontOnly: true });
 
   if (!product) {
     return {
@@ -74,14 +74,14 @@ export async function generateMetadata({
  */
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlug(slug, { storefrontOnly: true });
 
   if (!product) {
     notFound();
   }
 
   const [allProducts, completeLooks] = await Promise.all([
-    getProducts(),
+    getProducts({ storefrontOnly: true }),
     getCompleteLooksForProduct(product.id),
   ]);
 

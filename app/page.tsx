@@ -99,10 +99,10 @@ export default async function Home(props: HomeProps) {
       ? (await (rawParams as Promise<{ filter?: string | string[] }>)) as { filter?: string | string[] }
       : ((rawParams ?? {}) as { filter?: string | string[] });
 
-  // Fetch products on server — single source of truth
+  // Fetch products on server — single source of truth (storefront: only visible on website)
   let products: Product[] = [];
   try {
-    products = await getProducts();
+    products = await getProducts({ storefrontOnly: true });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Failed to fetch products for homepage:", error);

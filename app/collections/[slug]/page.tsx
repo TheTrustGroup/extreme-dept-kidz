@@ -69,7 +69,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
   try {
     // "All" collection: show all products (no category filter) — fully dynamic SSR
     if (slug === 'all') {
-      const products = await getProducts();
+      const products = await getProducts({ storefrontOnly: true });
       const collectionInfo = {
         name: 'All Products',
         description: 'Browse all products',
@@ -124,7 +124,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     // Fully dynamic SSR: direct DB calls, no cache
     const [categories, productsByCategory] = await Promise.all([
       getAllCategories(),
-      getProductsByCategory(slug),
+      getProductsByCategory(slug, { storefrontOnly: true }),
     ]);
 
     const category = categories.find((c) => c.slug === slug && c.isActive);
@@ -141,7 +141,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     // Also when slug is new-arrivals and category has 0 products (products assigned to Boys only)
     if (products.length === 0) {
       try {
-        const all = await getProducts();
+        const all = await getProducts({ storefrontOnly: true });
         const fallbackProducts = getProductsByCollection(all, slug);
         if (fallbackProducts.length > 0) {
           products = fallbackProducts;

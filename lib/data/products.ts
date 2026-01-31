@@ -16,10 +16,10 @@ import type { Product } from "@/types";
 
 const DIAGNOSTIC_LOG = process.env.NEXT_PHASE8_DIAGNOSTIC === "1";
 
-/** Get all products. Use in server components / API only. */
-export async function getProducts(): Promise<Product[]> {
+/** Get all products. Use in server components / API only. When storefrontOnly is true, only returns products visible on the website. */
+export async function getProducts(options?: { storefrontOnly?: boolean }): Promise<Product[]> {
   const before = Date.now();
-  const products = await getAllProducts();
+  const products = await getAllProducts({ storefrontOnly: options?.storefrontOnly });
   if (DIAGNOSTIC_LOG) {
     const elapsed = Date.now() - before;
     const count = products?.length ?? 0;
@@ -43,10 +43,10 @@ export async function getProducts(): Promise<Product[]> {
   return products;
 }
 
-/** Get a single product by slug. Use in server components / API only. */
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+/** Get a single product by slug. Use in server components / API only. When storefrontOnly is true, returns null for products hidden from the website. */
+export async function getProductBySlug(slug: string, options?: { storefrontOnly?: boolean }): Promise<Product | null> {
   const before = Date.now();
-  const product = await getProductBySlugFromDb(slug);
+  const product = await getProductBySlugFromDb(slug, { storefrontOnly: options?.storefrontOnly });
   if (DIAGNOSTIC_LOG) {
     const elapsed = Date.now() - before;
     console.log(
@@ -66,9 +66,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return product;
 }
 
-/** Get products by category slug. Use in server components / API only. */
-export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
-  return getProductsByCategoryFromDb(categorySlug);
+/** Get products by category slug. Use in server components / API only. When storefrontOnly is true, only returns products visible on the website. */
+export async function getProductsByCategory(categorySlug: string, options?: { storefrontOnly?: boolean }): Promise<Product[]> {
+  return getProductsByCategoryFromDb(categorySlug, { storefrontOnly: options?.storefrontOnly });
 }
 
 export interface SearchResult {
@@ -80,12 +80,12 @@ export interface SearchResult {
   category: string;
 }
 
-/** Search products by query (name, description, tags, category). Min 2 chars. Server only. */
-export async function searchProducts(query: string): Promise<SearchResult[]> {
+/** Search products by query (name, description, tags, category). Min 2 chars. Server only. Pass storefrontOnly true to exclude warehouse-only products. */
+export async function searchProducts(query: string, options?: { storefrontOnly?: boolean }): Promise<SearchResult[]> {
   const q = query?.toLowerCase().trim() || "";
   if (q.length < 2) return [];
 
-  const products = await getAllProducts();
+  const products = await getAllProducts({ storefrontOnly: options?.storefrontOnly });
   return products
     .filter((product) => {
       const searchableText = [

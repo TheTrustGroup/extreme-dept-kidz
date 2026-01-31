@@ -14,7 +14,6 @@ interface Product {
   slug: string;
   price: number;
   inStock: boolean;
-  visibleOnStore?: boolean;
   category: {
     name: string;
   };
@@ -159,9 +158,6 @@ export function ProductManagement(): JSX.Element {
                 <th className="text-left">
                   Status
                 </th>
-                <th className="text-left">
-                  On website
-                </th>
                 <th className="text-right">
                   Actions
                 </th>
@@ -170,7 +166,7 @@ export function ProductManagement(): JSX.Element {
             <tbody className="bg-white divide-y divide-cream-200">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-charcoal-600">
+                  <td colSpan={6} className="px-6 py-8 text-center text-charcoal-600">
                     {searchTerm ? "No products found" : "No products yet. Add your first product!"}
                   </td>
                 </tr>
@@ -209,17 +205,6 @@ export function ProductManagement(): JSX.Element {
                           }`}
                         >
                           {product.inStock ? "In Stock" : "Out of Stock"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            product.visibleOnStore !== false
-                              ? "bg-navy-100 text-navy-800"
-                              : "bg-charcoal-100 text-charcoal-600"
-                          }`}
-                        >
-                          {product.visibleOnStore !== false ? "Yes" : "No"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

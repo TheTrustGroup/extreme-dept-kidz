@@ -314,7 +314,7 @@ async function executeQuery<T>(
  */
 
 // Products
-export async function getAllProducts(): Promise<Product[]> {
+export async function getAllProducts(options?: { storefrontOnly?: boolean }): Promise<Product[]> {
   return executeQuery(
     async () => {
       const { prisma } = await import('./prisma');
@@ -322,9 +322,9 @@ export async function getAllProducts(): Promise<Product[]> {
         throw new Error('Prisma not available - using mock data');
       }
       
-      // Storefront: only products published to website (visibleOnStore). Warehouse-only items stay hidden.
+      const where = options?.storefrontOnly ? { visibleOnStore: true } : undefined;
       const prismaProducts = await prisma.product.findMany({
-        where: { visibleOnStore: true },
+        where,
         select: {
           id: true,
           name: true,
@@ -334,6 +334,7 @@ export async function getAllProducts(): Promise<Product[]> {
           originalPrice: true,
           sku: true,
           inStock: true,
+          visibleOnStore: true,
           createdAt: true,
           updatedAt: true,
           category: {
@@ -379,6 +380,7 @@ export async function getAllProducts(): Promise<Product[]> {
           price: p.price,
           sku: p.sku ?? undefined,
           inStock: p.inStock,
+          visibleOnStore: p.visibleOnStore ?? true,
           images: p.images.map((img) => ({
             url: img.url,
             alt: img.alt ?? undefined,
@@ -445,6 +447,7 @@ export async function getProductById(id: string): Promise<Product | null> {
         price: prismaProduct.price,
         sku: prismaProduct.sku ?? undefined,
         inStock: prismaProduct.inStock,
+        visibleOnStore: (prismaProduct as { visibleOnStore?: boolean }).visibleOnStore ?? true,
         images: prismaProduct.images.map((img) => ({
           url: img.url,
           alt: img.alt ?? undefined,
@@ -477,7 +480,7 @@ export async function getProductById(id: string): Promise<Product | null> {
   );
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+export async function getProductBySlug(slug: string, options?: { storefrontOnly?: boolean }): Promise<Product | null> {
   return executeQuery(
     async () => {
       const { prisma } = await import('./prisma');
@@ -485,9 +488,13 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
         throw new Error('Prisma not available - using mock data');
       }
 
-      // Storefront: only products published to website (visibleOnStore)
+      const baseWhere = { slug };
+      const where = options?.storefrontOnly
+        ? { ...baseWhere, visibleOnStore: true }
+        : baseWhere;
+
       let prismaProduct = await prisma.product.findFirst({
-        where: { slug, visibleOnStore: true },
+        where,
         include: {
           category: true,
           images: { orderBy: { order: 'asc' } },
@@ -496,13 +503,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
         },
       });
 
-      // Fallback: case-insensitive slug match (e.g. link has different casing)
-      if (!prismaProduct) {
+      if (!prismaProduct && !options?.storefrontOnly) {
         prismaProduct = await prisma.product.findFirst({
-          where: {
-            slug: { equals: slug, mode: 'insensitive' },
-            visibleOnStore: true,
-          },
+          where: { slug: { equals: slug, mode: 'insensitive' } },
           include: {
             category: true,
             images: { orderBy: { order: 'asc' } },
@@ -525,6 +528,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
         price: prismaProduct.price,
         sku: prismaProduct.sku ?? undefined,
         inStock: prismaProduct.inStock,
+        visibleOnStore: (prismaProduct as { visibleOnStore?: boolean }).visibleOnStore ?? true,
         images: prismaProduct.images.map((img) => ({
           url: img.url,
           alt: img.alt ?? undefined,
@@ -557,7 +561,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   );
 }
 
-export async function getProductsByCategory(category: string): Promise<Product[]> {
+export async function getProductsByCategory(category: string, options?: { storefrontOnly?: boolean }): Promise<Product[]> {
   return executeQuery(
     async () => {
       const { prisma } = await import('./prisma');
@@ -580,11 +584,13 @@ export async function getProductsByCategory(category: string): Promise<Product[]
         return [];
       }
 
+      const where: { categoryId: string; visibleOnStore?: boolean } = { categoryId: categoryRecord.id };
+      if (options?.storefrontOnly) {
+        where.visibleOnStore = true;
+      }
+
       const prismaProducts = await prisma.product.findMany({
-        where: {
-          categoryId: categoryRecord.id,
-          visibleOnStore: true,
-        },
+        where,
         include: {
           category: true,
           images: {
@@ -617,6 +623,7 @@ export async function getProductsByCategory(category: string): Promise<Product[]
           price: p.price,
           sku: p.sku ?? undefined,
           inStock: p.inStock,
+          visibleOnStore: (p as { visibleOnStore?: boolean }).visibleOnStore ?? true,
           images: p.images.map((img) => ({
             url: img.url,
             alt: img.alt ?? undefined,

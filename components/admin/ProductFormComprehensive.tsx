@@ -42,6 +42,7 @@ const productFormSchema = z.object({
   sku: z.string().min(1, "SKU is required"),
   barcode: z.string().optional(),
   status: z.enum(["active", "draft", "archived"]),
+  visibleOnStore: z.boolean(),
   price: z.number().positive("Price must be positive"),
   salePrice: z.number().optional(),
   costPerItem: z.number().optional(),
@@ -58,7 +59,6 @@ const productFormSchema = z.object({
   metaTitle: z.string().max(60, "Meta title must be 60 characters or less").optional(),
   metaDescription: z.string().max(160, "Meta description must be 160 characters or less").optional(),
   slug: z.string().min(1, "Slug is required"),
-  visibleOnStore: z.boolean().optional(), // Store admin: publish to website (hide warehouse-only)
   images: z.array(z.string()).min(1, "At least one image is required"),
   variants: z.array(z.object({
     size: z.string(),
@@ -111,6 +111,7 @@ export function ProductFormComprehensive({
       sku: initialData?.sku || "",
       barcode: initialData?.barcode || "",
       status: initialData?.status || "draft",
+      visibleOnStore: initialData?.visibleOnStore ?? true,
       price: initialData?.price || 0,
       salePrice: initialData?.salePrice,
       costPerItem: initialData?.costPerItem,
@@ -127,7 +128,6 @@ export function ProductFormComprehensive({
       metaTitle: initialData?.metaTitle || "",
       metaDescription: initialData?.metaDescription || "",
       slug: initialData?.slug || "",
-      visibleOnStore: initialData?.visibleOnStore ?? true,
       images: initialData?.images || [],
       variants: initialData?.variants || DEFAULT_PRODUCT_SIZES.map(size => ({
         size,
@@ -214,7 +214,7 @@ export function ProductFormComprehensive({
           categoryId: formData.categoryId,
           images: formData.images || [],
           inStock: formData.status === "active",
-          visibleOnStore: formData.visibleOnStore !== false,
+          visibleOnStore: formData.visibleOnStore,
           sizes: formData.variants?.map((v: any) => ({
             size: v.size,
             quantity: v.stock || 0,
@@ -298,7 +298,7 @@ export function ProductFormComprehensive({
         categoryId: formData.categoryId,
         images: formData.images || [],
         inStock: formData.status === "active",
-        visibleOnStore: formData.visibleOnStore !== false,
+        visibleOnStore: formData.visibleOnStore,
         sizes: formData.variants?.map(v => ({
           size: v.size,
           quantity: v.stock || 0,
@@ -387,7 +387,7 @@ export function ProductFormComprehensive({
         categoryId: data.categoryId,
         images: data.images || [],
         inStock: data.status === "active",
-        visibleOnStore: data.visibleOnStore !== false,
+        visibleOnStore: data.visibleOnStore,
         sizes: data.variants?.map(v => ({
           size: v.size,
           quantity: v.stock || 0,
@@ -713,20 +713,22 @@ export function ProductFormComprehensive({
                 </select>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
                   id="visibleOnStore"
                   {...register("visibleOnStore")}
-                  className="h-4 w-4 rounded border-cream-300 text-navy-600 focus:ring-navy-500"
+                  className="mt-1 h-4 w-4 rounded border-cream-300 text-navy-600 focus:ring-navy-500"
                 />
-                <label htmlFor="visibleOnStore" className="text-sm font-medium text-charcoal-700">
-                  Publish to website
-                </label>
+                <div>
+                  <label htmlFor="visibleOnStore" className="block text-sm font-medium text-charcoal-700">
+                    Visible on website
+                  </label>
+                  <p className="text-xs text-charcoal-500 mt-0.5">
+                    When off, product is warehouse-only and hidden from the storefront.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-charcoal-500 md:col-span-2 -mt-2">
-                When off, this product is hidden from the online store (warehouse-only). Toggle on to show on the website.
-              </p>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-charcoal-700 mb-2">

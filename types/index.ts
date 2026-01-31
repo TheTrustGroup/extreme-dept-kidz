@@ -74,6 +74,8 @@ export interface Product {
   slug: string;
   /** Whether the product is currently in stock (at least one size available) */
   inStock: boolean;
+  /** If false, product is hidden from the website (warehouse-only). Default true. */
+  visibleOnStore?: boolean;
   /** Optional product tags (e.g., "new", "sale", "bestseller") */
   tags?: string[];
   /** Optional product SKU */

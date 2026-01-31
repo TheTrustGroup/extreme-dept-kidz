@@ -86,10 +86,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // Single source: lib/data/products (server only)
+    // Single source: lib/data/products. Storefront: only visible on website; warehouse: all products.
+    const storefrontOnly = !isWarehouseRequest(request);
     let products = category
-      ? await getProductsByCategory(category)
-      : await getProducts();
+      ? await getProductsByCategory(category, { storefrontOnly })
+      : await getProducts({ storefrontOnly });
 
     // Apply filters (in-memory; category/API already filtered by DB when category param set)
     if (inStock) {
@@ -164,7 +165,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     
     // On error, retry once (getProducts from lib/data/products)
     try {
-      const fallbackProducts = await getProducts();
+      const storefrontOnly = !isWarehouseRequest(request);
+      const fallbackProducts = await getProducts({ storefrontOnly });
       const fallbackSlice = fallbackProducts.slice(0, 20);
       if (isWarehouseRequest(request)) {
         return withCors(request, NextResponse.json(fallbackSlice));

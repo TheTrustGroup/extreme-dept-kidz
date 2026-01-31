@@ -145,6 +145,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         originalPrice: p.originalPrice ?? undefined,
         sku: p.sku ?? undefined,
         inStock: p.inStock,
+        visibleOnStore: p.visibleOnStore ?? true,
         totalStock,
         totalSold,
         images: p.images.map((img) => ({
@@ -360,7 +361,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         sku: String(validatedData.sku || `SKU-${Date.now()}`).trim(),
         categoryId,
         inStock: validatedData.inStock !== undefined ? Boolean(validatedData.inStock) : sizes.some((s) => s.stock > 0),
-        visibleOnStore: validatedData.visibleOnStore !== false,
         images: {
           create: images.map((img: { url: string; alt?: string; isPrimary?: boolean }, index: number) => ({
             url: img.url,

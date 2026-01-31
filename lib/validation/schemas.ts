@@ -77,7 +77,7 @@ export const createProductSchema = z.object({
   slug: z.string().min(1).max(200).optional(),
   sku: z.string().min(1).max(100).optional(),
   inStock: z.boolean().optional(),
-  visibleOnStore: z.boolean().optional(), // Store admin: show/hide product on website
+  visibleOnStore: z.boolean().optional(),
 });
 
 export const updateProductSchema = createProductSchema.partial().extend({
@@ -123,6 +123,7 @@ export const updateProductSchema = createProductSchema.partial().extend({
     ]).pipe(z.number().int().min(0)),
     sku: z.string().optional(),
   })).min(1, 'At least one size required').optional(),
+  visibleOnStore: z.boolean().optional(),
 });
 
 // Category schemas - base schema without transform

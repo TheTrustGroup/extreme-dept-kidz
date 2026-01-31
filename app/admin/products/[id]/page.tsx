@@ -49,6 +49,7 @@ export default function ProductEditPage(): JSX.Element {
         sku: product.sku || "",
         barcode: product.metadata?.barcode || "",
         status: product.inStock ? "active" : "draft",
+        visibleOnStore: product.visibleOnStore !== false,
         price: product.price ? product.price / 100 : 0,
         salePrice: product.originalPrice ? product.originalPrice / 100 : undefined,
         costPerItem: product.metadata?.costPerItem || undefined,
@@ -65,7 +66,6 @@ export default function ProductEditPage(): JSX.Element {
         metaTitle: product.metadata?.metaTitle || "",
         metaDescription: product.metadata?.metaDescription || "",
         slug: product.slug || "",
-        visibleOnStore: product.visibleOnStore !== false,
         images: product.images?.map((img: any) => img.url) || [],
         variants: product.sizes?.map((size: any) => ({
           size: size.size,
