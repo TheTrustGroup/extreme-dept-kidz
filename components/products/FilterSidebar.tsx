@@ -311,9 +311,9 @@ export function FilterSidebar({
               onClick={onClose}
             />
 
-            {/* Drawer — Phase 6 global glass */}
+            {/* Drawer */}
             <m.div
-              className="fixed top-0 right-0 bottom-0 w-full max-w-sm glass shadow-2xl z-50 lg:hidden"
+              className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-cream-50 shadow-2xl z-50 lg:hidden"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -336,7 +336,7 @@ export function FilterSidebar({
         "hidden lg:block"
       )}
     >
-      <div className="glass p-6 shadow-sm">
+      <div className="bg-white/90 backdrop-blur-md rounded-lg border border-cream-200/50 shadow-sm p-6">
         {sidebarContent}
       </div>
     </aside>
@@ -505,3 +505,4 @@ function PriceSlider({ min, max, value, onChange }: PriceSliderProps): JSX.Eleme
     </div>
   );
 }
+

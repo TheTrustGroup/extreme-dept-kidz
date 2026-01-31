@@ -35,19 +35,21 @@ function getPrismaClient(): PrismaClientType | null {
     };
     
     // Create new instance
-    // Prisma reads DATABASE_URL from environment automatically
-    // Note: For connection poolers (Supabase, PgBouncer), we need to add ?pgbouncer=true
-    // This prevents "prepared statement already exists" errors (42P05)
+    // Prisma reads DATABASE_URL from environment automatically.
+    // For Supabase pooler (serverless/Vercel): normalize URL so connection always succeeds.
     const databaseUrl = process.env.DATABASE_URL || '';
-    const isUsingPooler = databaseUrl.includes('pooler.supabase.com');
+    const isSupabasePooler = databaseUrl.includes('pooler.supabase.com');
     
-    // Ensure pgbouncer=true is in the connection string when using pooler
     let finalDatabaseUrl = databaseUrl;
-    if (isUsingPooler && !databaseUrl.includes('pgbouncer=true')) {
-      // Add pgbouncer=true to the connection string
-      finalDatabaseUrl = databaseUrl.includes('?')
-        ? `${databaseUrl}&pgbouncer=true`
-        : `${databaseUrl}?pgbouncer=true`;
+    if (isSupabasePooler) {
+      // Root cause fix: Supabase pooler requires (1) pgbouncer=true and (2) sslmode=require.
+      // Normalize in code so Vercel env doesn't need perfect params (avoids 500 on login).
+      const hasQuery = databaseUrl.includes('?');
+      const base = hasQuery ? databaseUrl.replace(/\?.*$/, '') : databaseUrl;
+      const params = new URLSearchParams(hasQuery ? databaseUrl.slice(databaseUrl.indexOf('?') + 1) : '');
+      params.set('pgbouncer', 'true');
+      params.set('sslmode', 'require');
+      finalDatabaseUrl = `${base}?${params.toString()}`;
     }
     
     const client = new PrismaClient({
@@ -55,8 +57,8 @@ function getPrismaClient(): PrismaClientType | null {
         process.env.NODE_ENV === "development"
           ? ["error", "warn", "query"]
           : ["error"],
-      // Override DATABASE_URL if we modified it for pooler
-      ...(isUsingPooler && finalDatabaseUrl !== databaseUrl && {
+      // Always pass normalized URL for Supabase pooler so pgbouncer + sslmode are set
+      ...(isSupabasePooler && {
         datasources: {
           db: {
             url: finalDatabaseUrl,

@@ -31,8 +31,15 @@ export default function ProductEditPage(): JSX.Element {
     setLoadError(null);
     setLoading(true);
     const base = typeof window !== "undefined" ? window.location.origin : "";
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout so page doesn't stall
     try {
-      const res = await fetch(`${base}/api/admin/products/${productId}`, { credentials: "include" });
+      const res = await fetch(`${base}/api/admin/products/${productId}`, {
+        credentials: "include",
+        signal: controller.signal,
+      });
+      if (timeoutId) clearTimeout(timeoutId);
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setLoadError(err?.error || `Failed to load product (${res.status})`);
@@ -78,16 +85,21 @@ export default function ProductEditPage(): JSX.Element {
         breadcrumb.setDynamicLabel(pathname, product.name);
       }
     } catch (error) {
+      if (timeoutId) clearTimeout(timeoutId);
       console.error("Failed to load product:", error);
+      const isAbort = error instanceof Error && error.name === "AbortError";
       const msg = error instanceof Error ? error.message : "Failed to load product";
       const isNetworkError =
+        isAbort ||
         msg === "Load failed" ||
         msg === "Failed to fetch" ||
         msg.toLowerCase().includes("network");
       setLoadError(
-        isNetworkError
-          ? "Network error. Check your connection and that the dev server is running, then try again."
-          : msg
+        isAbort
+          ? "Request timed out. The database may be unavailable—check connection and try again."
+          : isNetworkError
+            ? "Network error. Check your connection and that the dev server is running, then try again."
+            : msg
       );
     } finally {
       setLoading(false);

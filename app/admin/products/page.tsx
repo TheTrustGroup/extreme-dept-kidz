@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
 import {
@@ -38,6 +37,27 @@ import type { Product } from "@/types";
 interface ProductWithStats extends Product {
   totalStock?: number;
   totalSold?: number;
+}
+
+/** Thumbnail with fallback so invalid URLs (e.g. example.com) don't 404 via next/image and stall the UI. */
+function ProductThumbnail({ url, alt }: { url: string; alt: string }): JSX.Element {
+  const [errored, setErrored] = React.useState(false);
+  React.useEffect(() => setErrored(false), [url]);
+  if (errored || !url) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Package className="w-6 h-6 text-gray-400" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={url}
+      alt={alt}
+      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+      onError={() => setErrored(true)}
+    />
+  );
 }
 
 type QuickFilter = "all" | "published" | "drafts" | "lowStock" | "outOfStock";
@@ -939,13 +959,7 @@ export default function ProductsPage(): JSX.Element {
                           <div className="flex items-center gap-3">
                             <div className="relative w-[60px] h-[60px] rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 group-hover:ring-2 group-hover:ring-indigo-200 transition-all">
                               {primaryImage ? (
-                                <Image
-                                  src={primaryImage.url}
-                                  alt={product.name}
-                                  fill
-                                  className="object-cover group-hover:scale-105 transition-transform duration-200"
-                                  sizes="60px"
-                                />
+                                <ProductThumbnail url={primaryImage.url} alt={product.name} />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
                                   <Package className="w-6 h-6 text-gray-400" />
@@ -1082,13 +1096,7 @@ export default function ProductsPage(): JSX.Element {
                     <div className="flex items-start justify-between mb-3">
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         {primaryImage ? (
-                          <Image
-                            src={primaryImage.url}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="80px"
-                          />
+                          <ProductThumbnail url={primaryImage.url} alt={product.name} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Package className="w-8 h-8 text-gray-400" />
