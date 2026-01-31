@@ -9,6 +9,7 @@ import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { CACHE_TAGS, revalidateCollectionPage } from "@/lib/utils/cache-revalidation";
+import { withCors } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +18,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = await authenticateAndAuthorize(request, 'viewer');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 }));
   }
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const categories = await prisma.category.findMany({
@@ -33,20 +34,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
     
-    return apiSuccess(
+    return withCors(request, apiSuccess(
       {
         categories,
         count: categories.length,
       },
       'Categories fetched successfully'
-    );
+    ));
   } catch (error) {
     logger.error("❌ GET /api/admin/categories error:", error);
-    return apiError(
+    return withCors(request, apiError(
       "Failed to fetch categories",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
 
@@ -55,22 +56,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = await authenticateAndAuthorize(request, 'admin');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to create categories.' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to create categories.' }, { status: 403 }));
   }
 
   try {
     const parsed = await parseJsonBody(request);
-    if (!parsed.ok) return parsed.response;
+    if (!parsed.ok) return withCors(request, parsed.response);
     const body = parsed.data;
 
     // Validate input
     const validation = validate(createCategorySchema, body);
     if (!validation.success) {
-      return apiValidationError(validation.errors);
+      return withCors(request, apiValidationError(validation.errors));
     }
 
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { name, description, image, isActive } = validation.data;
@@ -84,11 +85,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     if (existingCategory) {
-      return apiError(
+      return withCors(request, apiError(
         "Category with this slug already exists",
         409,
         `A category with slug "${slug}" already exists. Please use a different slug.`
-      );
+      ));
     }
 
     const category = await prisma.category.create({
@@ -133,11 +134,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     }, request);
     
-    return apiSuccess(
+    return withCors(request, apiSuccess(
       category,
       "Category created successfully",
       { statusCode: 201 }
-    );
+    ));
   } catch (error: unknown) {
     logger.error("❌ POST /api/admin/categories error:", error);
     if (error instanceof z.ZodError) {
@@ -145,12 +146,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       error.errors.forEach((e) => {
         errors[e.path.join(".")] = e.message;
       });
-      return apiValidationError(errors);
+      return withCors(request, apiValidationError(errors));
     }
-    return apiError(
+    return withCors(request, apiError(
       "Failed to create category",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }

@@ -10,6 +10,7 @@ import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { CACHE_TAGS, revalidateCollectionPage } from "@/lib/utils/cache-revalidation";
 import type { Prisma } from "@prisma/client";
+import { withCors } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +22,11 @@ export async function GET(
   const auth = await authenticateAndAuthorize(request, 'viewer');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 }));
   }
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { id } = await params;
@@ -41,17 +42,17 @@ export async function GET(
     });
 
     if (!category) {
-      return apiNotFound("Category");
+      return withCors(request, apiNotFound("Category"));
     }
 
-    return apiSuccess(category, "Category fetched successfully");
+    return withCors(request, apiSuccess(category, "Category fetched successfully"));
   } catch (error) {
     logger.error("Failed to fetch category:", error);
-    return apiError(
+    return withCors(request, apiError(
       "Failed to fetch category",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
 
@@ -63,17 +64,17 @@ export async function PUT(
   const auth = await authenticateAndAuthorize(request, 'admin');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to update categories.' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to update categories.' }, { status: 403 }));
   }
 
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { id } = await params;
     const parsed = await parseJsonBody(request);
-    if (!parsed.ok) return parsed.response;
+    if (!parsed.ok) return withCors(request, parsed.response);
     const body = parsed.data;
 
     // Log request in development for debugging
@@ -96,7 +97,7 @@ export async function PUT(
       if (process.env.NODE_ENV === 'development') {
         logger.error('Category validation failed:', validation.errors);
       }
-      return apiValidationError(validation.errors);
+      return withCors(request, apiValidationError(validation.errors));
     }
 
     // After the success check, extract with explicit type assertion
@@ -112,7 +113,7 @@ export async function PUT(
     // Check if category exists
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) {
-      return apiNotFound("Category");
+      return withCors(request, apiNotFound("Category"));
     }
 
     // Check slug uniqueness if slug is being updated
@@ -121,11 +122,11 @@ export async function PUT(
         where: { slug: validatedData.slug },
       });
       if (slugExists) {
-        return apiError(
+        return withCors(request, apiError(
           "Category with this slug already exists",
           409,
           `A category with slug "${validatedData.slug}" already exists. Please use a different slug.`
-        );
+        ));
       }
     }
 
@@ -171,19 +172,19 @@ export async function PUT(
       if (prismaError instanceof Error) {
         // Check for unique constraint violation
         if (prismaError.message.includes('Unique constraint') || prismaError.message.includes('duplicate key')) {
-          return apiError(
+          return withCors(request, apiError(
             "Category with this slug already exists",
             409,
             "A category with this slug already exists. Please use a different slug."
-          );
+          ));
         }
         // Check for foreign key constraint
         if (prismaError.message.includes('Foreign key constraint')) {
-          return apiError(
+          return withCors(request, apiError(
             "Cannot update category: constraint violation",
             400,
             prismaError.message
-          );
+          ));
         }
       }
       // Re-throw if not a handled error
@@ -227,7 +228,7 @@ export async function PUT(
       },
     }, request);
 
-    return apiSuccess(category, "Category updated successfully");
+    return withCors(request, apiSuccess(category, "Category updated successfully"));
   } catch (error: unknown) {
     logger.error("Failed to update category:", error);
     if (error instanceof z.ZodError) {
@@ -235,7 +236,7 @@ export async function PUT(
       error.errors.forEach((e) => {
         errors[e.path.join(".")] = e.message;
       });
-      return apiValidationError(errors);
+      return withCors(request, apiValidationError(errors));
     }
 
     // Provide more detailed error messages
@@ -264,11 +265,11 @@ export async function PUT(
       }
     }
     
-    return apiError(
+    return withCors(request, apiError(
       errorMessage,
       statusCode,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
 
@@ -280,12 +281,12 @@ export async function DELETE(
   const auth = await authenticateAndAuthorize(request, 'admin');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to delete categories.' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to delete categories.' }, { status: 403 }));
   }
 
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { id } = await params;
@@ -293,7 +294,7 @@ export async function DELETE(
     // Check if category exists
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) {
-      return apiNotFound("Category");
+      return withCors(request, apiNotFound("Category"));
     }
 
     const categoryName = existing.name;
@@ -333,23 +334,23 @@ export async function DELETE(
       },
     }, request);
 
-    return apiSuccess({ id }, "Category deleted successfully");
+    return withCors(request, apiSuccess({ id }, "Category deleted successfully"));
   } catch (error) {
     logger.error("Failed to delete category:", error);
     
     // Handle foreign key constraint errors
     if (error instanceof Error && error.message.includes('Foreign key constraint')) {
-      return apiError(
+      return withCors(request, apiError(
         "Cannot delete category: it is being used by products",
         409,
         "Remove all products from this category first"
-      );
+      ));
     }
     
-    return apiError(
+    return withCors(request, apiError(
       "Failed to delete category",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
