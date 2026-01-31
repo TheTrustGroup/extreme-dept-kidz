@@ -14,6 +14,13 @@ const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:3001',
 ]);
 
+/** Known production hostnames → canonical origin (for when request.url has internal/proxy host) */
+const KNOWN_HOSTNAMES: Record<string, string> = {
+  'extremedeptkidz.com': 'https://extremedeptkidz.com',
+  'www.extremedeptkidz.com': 'https://www.extremedeptkidz.com',
+  'warehouse.extremedeptkidz.com': WAREHOUSE_ORIGIN,
+};
+
 /** True when the request is from the warehouse app (for response-shape compatibility). */
 export function isWarehouseRequest(request: { headers: Headers }): boolean {
   return request.headers.get('Origin') === WAREHOUSE_ORIGIN;
@@ -28,12 +35,14 @@ function isAllowedOrigin(origin: string | null): boolean {
 }
 
 /**
- * Derive request origin from URL when Origin header is missing (same-origin requests).
- * Ensures API responses always have a valid CORS origin so "access control checks" never fail.
+ * Derive request origin from URL, Referer, or known hostnames when Origin header is missing.
+ * Ensures API responses always have a valid CORS origin so "access control checks" never fail
+ * (e.g. same-origin fetches, RSC payloads, or when request.url has an internal/proxy host).
  */
 function getEffectiveOrigin(request: NextRequest): string | null {
   const origin = request.headers.get('Origin');
   if (origin && isAllowedOrigin(origin)) return origin;
+
   try {
     const url = new URL(request.url);
     const derived = `${url.protocol}//${url.host}`;
@@ -41,9 +50,25 @@ function getEffectiveOrigin(request: NextRequest): string | null {
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
       return `${url.protocol}//${url.host}`;
     }
+    const knownOrigin = KNOWN_HOSTNAMES[url.hostname];
+    if (knownOrigin) return knownOrigin;
   } catch {
     /* ignore */
   }
+
+  const referer = request.headers.get('Referer');
+  if (referer) {
+    try {
+      const refUrl = new URL(referer);
+      const refOrigin = `${refUrl.protocol}//${refUrl.host}`;
+      if (ALLOWED_ORIGINS.has(refOrigin)) return refOrigin;
+      const knownOrigin = KNOWN_HOSTNAMES[refUrl.hostname];
+      if (knownOrigin) return knownOrigin;
+    } catch {
+      /* ignore */
+    }
+  }
+
   return null;
 }
 

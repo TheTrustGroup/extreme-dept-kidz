@@ -12,6 +12,13 @@ const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:3001',
 ]);
 
+/** Known production hostnames → canonical origin (for internal/proxy request URLs) */
+const KNOWN_HOSTNAMES: Record<string, string> = {
+  'extremedeptkidz.com': 'https://extremedeptkidz.com',
+  'www.extremedeptkidz.com': 'https://www.extremedeptkidz.com',
+  'warehouse.extremedeptkidz.com': 'https://warehouse.extremedeptkidz.com',
+};
+
 /** Derive effective origin from request when Origin header is missing (same-origin / RSC fetches) */
 function getEffectiveOrigin(request: NextRequest): string | null {
   const origin = request.headers.get('Origin');
@@ -21,8 +28,22 @@ function getEffectiveOrigin(request: NextRequest): string | null {
     const derived = `${url.protocol}//${url.host}`;
     if (ALLOWED_ORIGINS.has(derived)) return derived;
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return derived;
+    const knownOrigin = KNOWN_HOSTNAMES[url.hostname];
+    if (knownOrigin) return knownOrigin;
   } catch {
     /* ignore */
+  }
+  const referer = request.headers.get('Referer');
+  if (referer) {
+    try {
+      const refUrl = new URL(referer);
+      const refOrigin = `${refUrl.protocol}//${refUrl.host}`;
+      if (ALLOWED_ORIGINS.has(refOrigin)) return refOrigin;
+      const knownOrigin = KNOWN_HOSTNAMES[refUrl.hostname];
+      if (knownOrigin) return knownOrigin;
+    } catch {
+      /* ignore */
+    }
   }
   return null;
 }

@@ -44,7 +44,7 @@ const productFormSchema = z.object({
   barcode: z.string().optional(),
   status: z.enum(["active", "draft", "archived"]),
   visibleOnStore: z.boolean(),
-  price: z.number().positive("Price must be positive"),
+  price: z.number({ required_error: "Price is required", invalid_type_error: "Enter a valid number" }).positive("Price must be greater than 0"),
   salePrice: z.number().optional(),
   costPerItem: z.number().optional(),
   trackInventory: z.boolean(),
@@ -225,7 +225,8 @@ export function ProductFormComprehensive({
         const slugStr = (formData?.slug ?? "").toString().trim();
         const descStr = (formData?.description ?? "").toString().trim();
         const skuStr = (formData?.sku ?? "").toString().trim();
-        if (!nameStr || !slugStr || !descStr || !skuStr) {
+        const validPrice = typeof formData?.price === "number" && !Number.isNaN(formData.price) && formData.price > 0;
+        if (!nameStr || !slugStr || !descStr || !skuStr || !validPrice) {
           setAutoSaveStatus("idle");
           return;
         }
@@ -236,7 +237,7 @@ export function ProductFormComprehensive({
           slug: slugStr,
           description: descStr,
           sku: skuStr,
-          price: (formData?.price ?? 0) * 100,
+          price: typeof formData?.price === "number" && !Number.isNaN(formData.price) ? formData.price : undefined,
           categoryId: formData?.categoryId ?? "",
           images: formData?.images || [],
           inStock: formData?.status === "active",
@@ -248,8 +249,8 @@ export function ProductFormComprehensive({
           tags: formData?.tags || [],
         };
 
-        if (formData?.salePrice != null && formData.salePrice > 0) {
-          payload.originalPrice = formData.salePrice * 100;
+        if (formData?.salePrice != null && formData.salePrice > 0 && !Number.isNaN(formData.salePrice)) {
+          payload.originalPrice = formData.salePrice;
         }
 
         payload.metadata = {
@@ -324,7 +325,7 @@ export function ProductFormComprehensive({
         slug: slugStr,
         description: descStr,
         sku: skuStr,
-        price: (formData?.price ?? 0) * 100,
+        price: typeof formData?.price === "number" && !Number.isNaN(formData.price) ? formData.price : undefined,
         categoryId: formData?.categoryId ?? "",
         images: formData?.images || [],
         inStock: formData?.status === "active",
@@ -336,9 +337,8 @@ export function ProductFormComprehensive({
         tags: formData?.tags || [],
       };
 
-      if (formData?.salePrice != null && formData.salePrice > 0) {
-        payload.originalPrice = formData.price * 100;
-        payload.salePrice = formData.salePrice * 100;
+      if (formData?.salePrice != null && formData.salePrice > 0 && !Number.isNaN(formData.salePrice)) {
+        payload.originalPrice = formData.salePrice;
       }
 
       // Add metadata
@@ -412,13 +412,13 @@ export function ProductFormComprehensive({
       const descStr = (data?.description ?? "").toString().trim();
       const skuStr = (data?.sku ?? "").toString().trim();
 
-      // Transform to API format
+      // Transform to API format (API expects price in dollars; it converts to cents)
       const payload: any = {
         name: nameStr,
         slug: slugStr,
         description: descStr,
         sku: skuStr,
-        price: data.price * 100, // Convert to cents
+        price: data.price,
         categoryId: data.categoryId,
         images: data.images || [],
         inStock: data.status === "active",
@@ -430,8 +430,8 @@ export function ProductFormComprehensive({
         tags: data.tags || [],
       };
 
-      if (data.salePrice) {
-        payload.originalPrice = data.salePrice * 100;
+      if (data.salePrice != null && data.salePrice > 0) {
+        payload.originalPrice = data.salePrice;
       }
 
       // Add metadata
@@ -900,35 +900,71 @@ export function ProductFormComprehensive({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <FloatingInput
-                  type="number"
-                  step="0.01"
-                  {...register("price", { valueAsNumber: true })}
-                  label="Regular Price (₵)"
-                  error={errors.price?.message}
-                  required
+                <Controller
+                  control={control}
+                  name="price"
+                  render={({ field }) => (
+                    <FloatingInput
+                      {...field}
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      value={field.value === undefined || field.value === null || Number.isNaN(field.value) ? "" : field.value}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        field.onChange(v === "" ? undefined : (parseFloat(v) ?? undefined));
+                      }}
+                      label="Regular Price (₵)"
+                      error={errors.price?.message}
+                      required
+                    />
+                  )}
                 />
               </div>
 
               <div>
-                <FloatingInput
-                  type="number"
-                  step="0.01"
-                  {...register("salePrice", { valueAsNumber: true })}
-                  label="Sale Price (₵)"
-                  error={errors.salePrice?.message}
-                  helperText="Must be less than regular price"
+                <Controller
+                  control={control}
+                  name="salePrice"
+                  render={({ field }) => (
+                    <FloatingInput
+                      {...field}
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      value={field.value === undefined || field.value === null || Number.isNaN(field.value) ? "" : field.value}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        field.onChange(v === "" ? undefined : (parseFloat(v) ?? undefined));
+                      }}
+                      label="Sale Price (₵)"
+                      error={errors.salePrice?.message}
+                      helperText="Must be less than regular price"
+                    />
+                  )}
                 />
               </div>
 
               <div>
-                <FloatingInput
-                  type="number"
-                  step="0.01"
-                  {...register("costPerItem", { valueAsNumber: true })}
-                  label="Cost per Item (₵)"
-                  error={errors.costPerItem?.message}
-                  helperText="For profit tracking"
+                <Controller
+                  control={control}
+                  name="costPerItem"
+                  render={({ field }) => (
+                    <FloatingInput
+                      {...field}
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      value={field.value === undefined || field.value === null || Number.isNaN(field.value) ? "" : field.value}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        field.onChange(v === "" ? undefined : (parseFloat(v) ?? undefined));
+                      }}
+                      label="Cost per Item (₵)"
+                      error={errors.costPerItem?.message}
+                      helperText="For profit tracking"
+                    />
+                  )}
                 />
               </div>
             </div>
