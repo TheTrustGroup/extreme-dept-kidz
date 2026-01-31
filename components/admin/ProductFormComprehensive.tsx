@@ -87,6 +87,21 @@ const FORM_SECTIONS = [
   { id: "seo", label: "SEO", icon: Search },
 ] as const;
 
+/** Parse 400 validation response into a single user-facing message */
+function parseApiValidationMessage(status: number, data: Record<string, unknown>): string {
+  const main = (data?.error ?? data?.message) as string | undefined;
+  if (status === 400 && typeof data?.details === "string") {
+    try {
+      const fields = JSON.parse(data.details) as Record<string, string>;
+      const messages = Object.values(fields).filter(Boolean);
+      if (messages.length > 0) return messages.join(". ");
+    } catch {
+      /* ignore */
+    }
+  }
+  return main ?? "Validation failed";
+}
+
 export function ProductFormComprehensive({
   productId,
   initialData,
@@ -242,10 +257,12 @@ export function ProductFormComprehensive({
           images: formData?.images || [],
           inStock: formData?.status === "active",
           visibleOnStore: formData?.visibleOnStore ?? true,
-          sizes: formData?.variants?.map((v: any) => ({
-            size: v?.size ?? "",
-            quantity: v?.stock ?? 0,
-          })) || [],
+          sizes: (formData?.variants || [])
+            .filter((v: { size?: string }) => (v?.size ?? "").toString().trim() !== "")
+            .map((v: { size?: string; stock?: number }) => ({
+              size: (v?.size ?? "").toString().trim(),
+              quantity: v?.stock ?? 0,
+            })),
           tags: formData?.tags || [],
         };
 
@@ -330,10 +347,12 @@ export function ProductFormComprehensive({
         images: formData?.images || [],
         inStock: formData?.status === "active",
         visibleOnStore: formData?.visibleOnStore ?? true,
-        sizes: formData?.variants?.map(v => ({
-          size: v?.size ?? "",
-          quantity: v?.stock ?? 0,
-        })) || [],
+        sizes: (formData?.variants || [])
+          .filter(v => (v?.size ?? "").toString().trim() !== "")
+          .map(v => ({
+            size: (v?.size ?? "").toString().trim(),
+            quantity: v?.stock ?? 0,
+          })),
         tags: formData?.tags || [],
       };
 
@@ -386,7 +405,8 @@ export function ProductFormComprehensive({
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || "Failed to save draft");
+        const message = parseApiValidationMessage(response.status, errorData);
+        throw new Error(message || "Failed to save draft");
       }
     } catch (error) {
       if (!silent) {
@@ -423,10 +443,12 @@ export function ProductFormComprehensive({
         images: data.images || [],
         inStock: data.status === "active",
         visibleOnStore: data.visibleOnStore,
-        sizes: data.variants?.map(v => ({
-          size: v.size,
-          quantity: v.stock || 0,
-        })) || [],
+        sizes: (data.variants || [])
+          .filter(v => (v?.size ?? "").toString().trim() !== "")
+          .map(v => ({
+            size: (v?.size ?? "").toString().trim(),
+            quantity: v?.stock ?? 0,
+          })),
         tags: data.tags || [],
       };
 
@@ -481,7 +503,8 @@ export function ProductFormComprehensive({
         router.push("/admin/products");
         router.refresh();
       } else {
-        throw new Error(responseData.error || responseData.message || "Failed to save product");
+        const message = parseApiValidationMessage(response.status, responseData);
+        throw new Error(message || "Failed to save product");
       }
     } catch (error) {
       console.error("Failed to save product:", error);
@@ -1119,28 +1142,29 @@ export function ProductFormComprehensive({
                           className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 min-w-[7rem]">
                         <input
                           type="number"
                           step="0.01"
                           {...register(`variants.${index}.price`, { valueAsNumber: true })}
                           placeholder="Override price"
-                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          className="input-number-no-spinner w-full min-w-0 px-3 py-2 pr-3 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 min-w-[8rem]">
                         <input
                           type="text"
                           {...register(`variants.${index}.sku`)}
                           placeholder="Variant SKU"
-                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          className="w-full min-w-0 px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 min-w-[6rem]">
                         <input
                           type="number"
                           {...register(`variants.${index}.stock`, { valueAsNumber: true })}
-                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          placeholder="0"
+                          className="input-number-no-spinner w-full min-w-0 px-3 py-2 pr-3 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3 text-right">

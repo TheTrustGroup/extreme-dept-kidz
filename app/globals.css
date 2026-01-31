@@ -51,6 +51,17 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Prevent number input spinners from overlapping text (e.g. admin Variants) */
+  .input-number-no-spinner::-webkit-inner-spin-button,
+  .input-number-no-spinner::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .input-number-no-spinner {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
 
 /*
