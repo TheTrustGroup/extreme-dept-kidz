@@ -75,6 +75,7 @@ export const ProductCard = React.memo(function ProductCard({
         Date.now() - 30 * 24 * 60 * 60 * 1000
       : false);
 
+  // CRITICAL: Use /products/{slug} (not /product/{id}) — matches app/products/[slug] route and Boys section
   const hasValidSlug = Boolean(product?.slug && String(product.slug).trim());
   const productHref = hasValidSlug ? `/products/${product.slug}` : "#";
 

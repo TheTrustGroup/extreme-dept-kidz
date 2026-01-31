@@ -59,16 +59,23 @@ function viewAllHref(filter: JustDroppedFilter): string {
   }
 }
 
+/** Only show products that have a valid slug so links go to /products/{slug}, not error pages. */
+function hasValidSlug(p: Product): boolean {
+  return Boolean(p?.slug && String(p.slug).trim());
+}
+
 /**
  * Just dropped section — Server Component.
  * World-class: server-rendered content, URL-based filters (Link), no client state.
+ * CRITICAL: Uses /products/{slug} (same as Boys section); only products with valid slug are shown.
  */
 export function JustDroppedSection({
   products,
   currentFilter,
 }: JustDroppedSectionProps): JSX.Element {
-  const displayCount = products.length >= 6 ? 6 : products.length >= 4 ? products.length : 4;
-  const displayed = products.slice(0, displayCount);
+  const withValidSlug = products.filter(hasValidSlug);
+  const displayCount = withValidSlug.length >= 6 ? 6 : withValidSlug.length >= 4 ? withValidSlug.length : 4;
+  const displayed = withValidSlug.slice(0, displayCount);
   const placeholdersNeeded = Math.max(0, 4 - displayed.length);
 
   return (

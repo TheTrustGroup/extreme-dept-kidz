@@ -168,27 +168,25 @@ export function HeroSection({ videoSrc }: HeroSectionProps = {}): JSX.Element {
         </div>
       </m.div>
 
-      {/* Smooth scroll indicator */}
-      <m.button
-        ref={scrollRef}
-        type="button"
-        onClick={scrollToNext}
-        className={cn(
-          "absolute bottom-6 left-1/2 -translate-x-1/2 z-10",
-          "flex flex-col items-center gap-1 text-white/80",
-          "hover:text-white transition-colors duration-200",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-          "touch-target-min"
-        )}
-        aria-label="Scroll to content"
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        transition={{ delay: 0.8 }}
-      >
-        <span className="text-[10px] uppercase tracking-[0.25em]">Discover</span>
-        <ChevronDown className="h-6 w-6 animate-bounce" aria-hidden />
-      </m.button>
+      {/* Smooth scroll indicator — pixel-perfect horizontal center */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-10">
+        <button
+          ref={scrollRef}
+          type="button"
+          onClick={scrollToNext}
+          className={cn(
+            "flex flex-col items-center gap-2 text-white hover:text-gold transition-colors",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+            "touch-target-min"
+          )}
+          aria-label="Scroll to content"
+        >
+          <span className="text-sm font-display tracking-widest uppercase">
+            Discover
+          </span>
+          <ChevronDown className="w-6 h-6 animate-bounce" aria-hidden />
+        </button>
+      </div>
     </section>
   );
 }
