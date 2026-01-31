@@ -9,6 +9,7 @@ import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import { withCors } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +21,11 @@ export async function GET(
   const auth = await authenticateAndAuthorize(request, 'viewer');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 }));
   }
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { id } = await params;
@@ -46,23 +47,27 @@ export async function GET(
     });
 
     if (!product) {
-      return apiNotFound("Product");
+      return withCors(request, apiNotFound("Product"));
     }
 
-    // Transform to include categoryId for form compatibility
+    // Transform for form compatibility: categoryId and sizes (edit page expects sizes from variants)
     const productWithCategoryId = {
       ...product,
       categoryId: product.categoryId || product.category?.id,
+      sizes: (product.variants || []).map((v: { size: string; stock: number }) => ({
+        size: v.size,
+        quantity: v.stock ?? 0,
+      })),
     };
 
-    return apiSuccess(productWithCategoryId, "Product fetched successfully");
+    return withCors(request, apiSuccess(productWithCategoryId, "Product fetched successfully"));
   } catch (error) {
     logger.error("Failed to fetch product:", error);
-    return apiError(
+    return withCors(request, apiError(
       "Failed to fetch product",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
 
@@ -76,29 +81,29 @@ export async function PUT(
   const auth = await authenticateAndAuthorize(request, 'admin');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to update products.' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to update products.' }, { status: 403 }));
   }
 
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { id } = await params;
     const parsed = await parseJsonBody(request);
-    if (!parsed.ok) return parsed.response;
+    if (!parsed.ok) return withCors(request, parsed.response);
     const body = parsed.data;
 
     // Validate input (partial validation for updates)
     const validation = validate(updateProductSchema, body);
     if (!validation.success) {
-      return apiValidationError(validation.errors);
+      return withCors(request, apiValidationError(validation.errors));
     }
 
     // Check if product exists
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
-      return apiNotFound("Product");
+      return withCors(request, apiNotFound("Product"));
     }
 
     // Use validated data (after transforms)
@@ -235,7 +240,7 @@ export async function PUT(
       },
     }, requestForLogging);
 
-    return apiSuccess(product, "Product updated successfully");
+    return withCors(request, apiSuccess(product, "Product updated successfully"));
   } catch (error: unknown) {
     logger.error("Failed to update product:", error);
     if (error instanceof z.ZodError) {
@@ -243,13 +248,13 @@ export async function PUT(
       error.errors.forEach((e) => {
         errors[e.path.join(".")] = e.message;
       });
-      return apiValidationError(errors);
+      return withCors(request, apiValidationError(errors));
     }
-    return apiError(
+    return withCors(request, apiError(
       "Failed to update product",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
 
@@ -263,12 +268,12 @@ export async function DELETE(
   const auth = await authenticateAndAuthorize(request, 'admin');
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return NextResponse.json({ error: 'Insufficient permissions. Admin role required to delete products.' }, { status: 403 });
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to delete products.' }, { status: 403 }));
   }
 
   try {
     if (!prisma) {
-      return apiError("Database not available", 500);
+      return withCors(request, apiError("Database not available", 500));
     }
 
     const { id } = await params;
@@ -276,7 +281,7 @@ export async function DELETE(
     // Check if product exists
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
-      return apiNotFound("Product");
+      return withCors(request, apiNotFound("Product"));
     }
 
     // Store product info for logging before deletion
@@ -312,23 +317,23 @@ export async function DELETE(
       },
     }, requestForLogging);
 
-    return apiSuccess({ id }, "Product deleted successfully");
+    return withCors(request, apiSuccess({ id }, "Product deleted successfully"));
   } catch (error) {
     logger.error("Failed to delete product:", error);
     
     // Handle foreign key constraint errors
     if (error instanceof Error && error.message.includes('Foreign key constraint')) {
-      return apiError(
+      return withCors(request, apiError(
         "Cannot delete product: it is associated with orders",
         409,
         "Archive the product instead of deleting it"
-      );
+      ));
     }
     
-    return apiError(
+    return withCors(request, apiError(
       "Failed to delete product",
       500,
       error instanceof Error ? error.message : "Unknown error"
-    );
+    ));
   }
 }
