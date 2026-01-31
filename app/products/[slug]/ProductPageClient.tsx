@@ -59,34 +59,34 @@ export function ProductPageClient({ product, allProducts = [], completeLooks = [
 
   return (
     <>
-      {/* Polo-style: full-width image on mobile, then info card; 2-col on desktop */}
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg-primary pt-20 md:pt-24 pb-24 lg:pb-16 transition-colors duration-300" style={{ contain: "layout style paint" }}>
+      {/* Mobile-first Polo: full-width image, then solid info card; no overflow, no text behind */}
+      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg-primary pt-16 xs:pt-20 md:pt-24 pb-28 lg:pb-16 transition-colors duration-300 overflow-x-hidden" style={{ contain: "layout style paint" }}>
         {/* Breadcrumb — minimal, above content */}
-        <Container size="lg">
-          <div className="mb-4 mt-6 sm:mt-8">
+        <Container size="lg" className="overflow-hidden">
+          <div className="mb-3 mt-4 sm:mt-8 sm:mb-4">
             <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
           </div>
         </Container>
 
-        {/* Main: image full width on mobile; on desktop 2-col */}
-        <div className="mb-0">
+        {/* Main: mobile = single column (image then sheet); desktop = 2-col */}
+        <div className="mb-0 overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,440px)] gap-0 lg:gap-12 lg:max-w-7xl lg:mx-auto lg:px-8 mb-0">
-            {/* Gallery — full width mobile, cream bg, Polo indicator */}
-            <div className="lg:sticky lg:top-24 lg:self-start bg-cream-100 dark:bg-dark-surface">
+            {/* Gallery — full width on mobile, cream bg, Polo "1 | 2" indicator */}
+            <div className="lg:sticky lg:top-24 lg:self-start bg-cream-100 dark:bg-dark-surface overflow-hidden">
               <ProductGallery
                 images={images}
                 productName={product.name}
               />
             </div>
 
-            {/* Info card — Polo: white/cream card, rounded top on mobile (overlaps image feel) */}
-            <div className="lg:sticky lg:top-24 lg:self-start -mt-6 lg:mt-0 relative z-10 lg:bg-transparent bg-cream-50 dark:bg-dark-bg-primary rounded-t-2xl lg:rounded-none pt-6 lg:pt-0 px-4 sm:px-6 lg:px-0 pb-8 lg:pb-0">
+            {/* Info card — Polo: solid white/cream sheet on mobile, rounded top; no content bleed */}
+            <div className="lg:sticky lg:top-24 lg:self-start -mt-5 lg:mt-0 relative z-10 lg:bg-transparent bg-white dark:bg-dark-bg-primary rounded-t-2xl lg:rounded-none pt-5 px-4 sm:px-6 lg:px-0 pb-8 lg:pb-0 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.15)] lg:shadow-none overflow-hidden">
               <ProductInfo product={product} purchaseState={purchaseState} />
             </div>
           </div>
         </div>
 
-        <Container size="lg" className="mt-12 lg:mt-16">
+        <Container size="lg" className="mt-12 lg:mt-16 overflow-hidden">
           {/* Shipping & Returns — anchor for #shipping link from ProductInfo */}
           <section id="shipping" className="scroll-mt-24 mb-8 pb-8 border-b border-cream-200 dark:border-dark-border-glass">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-charcoal-900 dark:text-dark-text-primary mb-2">

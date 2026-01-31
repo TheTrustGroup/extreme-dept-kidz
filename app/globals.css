@@ -1055,27 +1055,16 @@ textarea:focus-visible {
   }
 }
 
-/* Product card — Polo Ralph Lauren–style: clean image, vertical info, minimal chrome */
+/* Product card — Polo Ralph Lauren–style; mobile-first: solid bg, no text behind/outside */
 .product-card {
   display: flex;
   flex-direction: column;
   width: 100%;
   border-radius: var(--glass-radius-global, 16px);
-  background: transparent;
-  border: none;
-  box-shadow: none;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   overflow: hidden;
-}
-
-[data-theme="light"] .product-card,
-.light .product-card {
-  background: transparent;
-}
-
-[data-theme="dark"] .product-card,
-.dark .product-card {
-  background: transparent;
+  isolation: isolate;
+  contain: layout style paint;
 }
 
 .skeleton-card {
@@ -1111,10 +1100,11 @@ textarea:focus-visible {
   }
 }
 
-/* Info block: name | wishlist, category, price (Polo-style vertical stack) */
+/* Info block: name | wishlist, category, price; contained, no bleed */
 .product-card-info {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 /* Legacy: product-card-content (if used elsewhere) */
@@ -1466,12 +1456,16 @@ body {
 }
 
 /* CRITICAL: Prevent nested overflow traps */
-/* Remove overflow: hidden from containers that don't need it */
-.product-card,
+/* Remove overflow: hidden from containers that don't need it (NOT .product-card — cards must stay overflow: hidden to avoid text behind) */
 .glass-panel,
 .glass-card {
   /* Only apply overflow to image containers, not parent */
   overflow: visible;
+}
+
+/* Product card: keep overflow hidden so no text appears behind cards (mobile-first) */
+.product-card {
+  overflow: hidden;
 }
 
 /* Fix nested scroll containers */

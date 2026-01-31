@@ -129,8 +129,8 @@ export function ProductGrid({
                 delay: isAboveFold ? index * 0.02 : 0,
                 ease: "easeOut"
               }}
-              // MOBILE-FIRST LAYOUT FIX: Prevent layout shift with min-height reservation
-              className="w-full flex"
+              // MOBILE-FIRST LAYOUT FIX: min-w-0 so card info truncates; min-height prevents shift
+              className="w-full min-w-0 flex"
               style={{
                 opacity: 1,
                 visibility: "visible",

@@ -134,19 +134,19 @@ export function JustDroppedSection({
             })}
           </nav>
 
-          {/* Product grid — Server-rendered; ProductCard is client for wishlist + hover image */}
+          {/* Product grid — mobile-first: contained, no text behind cards */}
           <div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[var(--space-4)] sm:gap-[var(--space-5)] lg:gap-[var(--space-6)]"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-[var(--space-5)] lg:gap-[var(--space-6)] overflow-hidden"
             role="list"
             aria-label={`${currentFilter === "all" ? "New arrivals" : currentFilter} products`}
           >
             {displayed.map((product, index) => (
-              <div key={product.id} className="w-full" role="listitem">
+              <div key={product.id} className="w-full min-w-0" role="listitem">
                 <ProductCard product={product} priority={index < 2} />
               </div>
             ))}
             {Array.from({ length: placeholdersNeeded }, (_, i) => (
-              <div key={`placeholder-${i}`} className="w-full" role="listitem">
+              <div key={`placeholder-${i}`} className="w-full min-w-0" role="listitem">
                 <PlaceholderCard />
               </div>
             ))}

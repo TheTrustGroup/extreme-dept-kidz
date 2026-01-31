@@ -115,12 +115,12 @@ export const ProductCard = React.memo(function ProductCard({
         </div>
       </div>
 
-      {/* Info block — Polo: name + wishlist right | category (small) | price */}
-      <div className="product-card-info flex flex-col gap-1 pt-3 pb-1">
-        <div className="flex items-start justify-between gap-2">
+      {/* Info block — Polo: name + wishlist right | category (small) | price; contained, no bleed */}
+      <div className="product-card-info flex flex-col gap-1 pt-2 sm:pt-3 pb-2 sm:pb-1 px-2 sm:px-0 min-w-0 overflow-hidden bg-white dark:bg-dark-surface rounded-b-xl">
+        <div className="flex items-start justify-between gap-1.5 min-w-0">
           <h3
             className={cn(
-              "product-card-title font-sans text-sm sm:text-base font-medium leading-snug line-clamp-2 flex-1 min-w-0",
+              "product-card-title font-sans text-xs sm:text-base font-medium leading-snug line-clamp-2 flex-1 min-w-0 break-words",
               theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
             )}
           >
@@ -136,9 +136,10 @@ export const ProductCard = React.memo(function ProductCard({
         </div>
         <p
           className={cn(
-            "text-xs font-normal",
+            "text-[11px] sm:text-xs font-normal truncate",
             theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-500"
           )}
+          title={`${product.category?.name ?? "Product"}${isNew ? " · New" : ""}${isOnSale ? " · Sale" : ""}`}
         >
           {product.category?.name ?? "Product"}
           {isNew && " · New"}
@@ -146,15 +147,16 @@ export const ProductCard = React.memo(function ProductCard({
         </p>
         <p
           className={cn(
-            "product-card-price font-sans text-sm sm:text-base font-semibold mt-0.5",
+            "product-card-price font-sans text-xs sm:text-base font-semibold mt-0.5 truncate",
             theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
           )}
+          title={formatPrice(product.price)}
         >
           {formatPrice(product.price)}
           {isOnSale && product.originalPrice != null && (
             <span
               className={cn(
-                "ml-2 font-normal text-xs line-through",
+                "ml-1.5 sm:ml-2 font-normal text-[10px] sm:text-xs line-through",
                 theme === "dark" ? "text-dark-text-muted" : "text-charcoal-500"
               )}
             >
@@ -167,30 +169,33 @@ export const ProductCard = React.memo(function ProductCard({
   );
 
   return (
-    <>
-      <div
-        className={cn("product-card w-full flex flex-col", className)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {hasValidSlug ? (
-          <Link
-            href={productHref}
-            className="block w-full focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-xl"
-            aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
-          >
-            {cardContent}
-          </Link>
-        ) : (
-          <div
-            className="block w-full rounded-xl cursor-default"
-            aria-label={`${product.name} - ${formatPrice(product.price)} (unavailable)`}
-          >
-            {cardContent}
-          </div>
-        )}
-      </div>
-    </>
+    <div
+      className={cn(
+        "product-card w-full flex flex-col rounded-xl overflow-hidden isolate",
+        "bg-white dark:bg-dark-surface",
+        "shadow-sm md:shadow-none",
+        className
+      )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {hasValidSlug ? (
+        <Link
+          href={productHref}
+          className="block w-full min-w-0 overflow-hidden focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 rounded-xl"
+          aria-label={`View ${product.name} - ${formatPrice(product.price)}`}
+        >
+          {cardContent}
+        </Link>
+      ) : (
+        <div
+          className="block w-full min-w-0 overflow-hidden rounded-xl cursor-default"
+          aria-label={`${product.name} - ${formatPrice(product.price)} (unavailable)`}
+        >
+          {cardContent}
+        </div>
+      )}
+    </div>
   );
 }, (prevProps, nextProps) => {
   return (
