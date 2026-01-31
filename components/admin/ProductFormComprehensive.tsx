@@ -102,9 +102,11 @@ export function ProductFormComprehensive({
     formState: { errors, isDirty },
     setValue,
     watch,
+    getValues,
     reset,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
+    mode: "onTouched",
     defaultValues: {
       name: initialData?.name || "",
       description: initialData?.description || "",
@@ -175,23 +177,37 @@ export function ProductFormComprehensive({
     loadCategories();
   }, []);
 
-  // Auto-generate slug from name
+  // Auto-generate slug from name (only when name is a non-empty string)
   React.useEffect(() => {
-    if (isNew && name && !slug) {
-      const generatedSlug = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      setValue("slug", generatedSlug, { shouldDirty: false });
-    }
+    const nameStr = typeof name === "string" ? name.trim() : "";
+    if (!isNew || !nameStr || (typeof slug === "string" && slug.length > 0)) return;
+    const generatedSlug = nameStr
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    setValue("slug", generatedSlug, { shouldDirty: false });
   }, [name, slug, isNew, setValue]);
+
+  // Auto-generate SKU from name when empty (e.g. "Court Icon Tee" -> "CIT" or slug-based)
+  React.useEffect(() => {
+    const nameStr = typeof name === "string" ? name.trim() : "";
+    const currentSku = (getValues("sku") ?? "").toString().trim();
+    if (!isNew || !nameStr || currentSku.length > 0) return;
+    const slugPart = nameStr
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    const skuPrefix = slugPart.slice(0, 8).toUpperCase().replace(/-/g, "");
+    const suggested = skuPrefix ? `KGS-${skuPrefix}-BLK` : "";
+    if (suggested) setValue("sku", suggested, { shouldDirty: false });
+  }, [name, isNew, setValue, getValues]);
 
   // Auto-generate meta title from name
   React.useEffect(() => {
-    if (isNew && name && !metaTitle) {
-      const generatedTitle = name.length > 60 ? name.substring(0, 57) + "..." : name;
-      setValue("metaTitle", generatedTitle, { shouldDirty: false });
-    }
+    const nameStr = typeof name === "string" ? name : "";
+    if (!isNew || !nameStr || (typeof metaTitle === "string" && metaTitle.length > 0)) return;
+    const generatedTitle = nameStr.length > 60 ? nameStr.substring(0, 57) + "..." : nameStr;
+    setValue("metaTitle", generatedTitle, { shouldDirty: false });
   }, [name, metaTitle, isNew, setValue]);
 
   // Auto-save draft every 30 seconds
@@ -203,45 +219,53 @@ export function ProductFormComprehensive({
 
       setAutoSaveStatus("saving");
       try {
-        const formData = watchedValues;
-        
+        const formData = getValues();
+        const nameStr = (formData?.name ?? "").toString().trim();
+        const slugStr = (formData?.slug ?? "").toString().trim();
+        const descStr = (formData?.description ?? "").toString().trim();
+        const skuStr = (formData?.sku ?? "").toString().trim();
+        if (!nameStr || !slugStr || !descStr || !skuStr) {
+          setAutoSaveStatus("idle");
+          return;
+        }
+
         // Transform to API format
         const payload: any = {
-          name: formData.name.trim(),
-          slug: formData.slug.trim(),
-          description: formData.description.trim(),
-          sku: formData.sku.trim(),
-          price: formData.price * 100,
-          categoryId: formData.categoryId,
-          images: formData.images || [],
-          inStock: formData.status === "active",
-          visibleOnStore: formData.visibleOnStore,
-          sizes: formData.variants?.map((v: any) => ({
-            size: v.size,
-            quantity: v.stock || 0,
+          name: nameStr,
+          slug: slugStr,
+          description: descStr,
+          sku: skuStr,
+          price: (formData?.price ?? 0) * 100,
+          categoryId: formData?.categoryId ?? "",
+          images: formData?.images || [],
+          inStock: formData?.status === "active",
+          visibleOnStore: formData?.visibleOnStore ?? true,
+          sizes: formData?.variants?.map((v: any) => ({
+            size: v?.size ?? "",
+            quantity: v?.stock ?? 0,
           })) || [],
-          tags: formData.tags || [],
+          tags: formData?.tags || [],
         };
 
-        if (formData.salePrice) {
+        if (formData?.salePrice != null && formData.salePrice > 0) {
           payload.originalPrice = formData.salePrice * 100;
         }
 
         payload.metadata = {
-          shortDescription: formData.shortDescription,
-          barcode: formData.barcode,
-          costPerItem: formData.costPerItem,
-          trackInventory: formData.trackInventory,
-          lowStockThreshold: formData.lowStockThreshold,
-          allowBackorders: formData.allowBackorders,
-          weight: formData.weight,
-          dimensions: formData.length || formData.width || formData.height ? {
-            length: formData.length,
-            width: formData.width,
-            height: formData.height,
+          shortDescription: formData?.shortDescription,
+          barcode: formData?.barcode,
+          costPerItem: formData?.costPerItem,
+          trackInventory: formData?.trackInventory,
+          lowStockThreshold: formData?.lowStockThreshold,
+          allowBackorders: formData?.allowBackorders,
+          weight: formData?.weight,
+          dimensions: formData?.length || formData?.width || formData?.height ? {
+            length: formData?.length,
+            width: formData?.width,
+            height: formData?.height,
           } : undefined,
-          metaTitle: formData.metaTitle,
-          metaDescription: formData.metaDescription,
+          metaTitle: formData?.metaTitle,
+          metaDescription: formData?.metaDescription,
         };
 
         const url = isNew ? "/api/admin/products" : `/api/admin/products/${productId}`;
@@ -273,7 +297,7 @@ export function ProductFormComprehensive({
     }, 30000); // 30 seconds
 
     return () => clearInterval(autoSaveInterval);
-  }, [isDirty, saving, savingDraft, imageUploading, watchedValues, isNew, productId, router, reset]);
+  }, [isDirty, saving, savingDraft, imageUploading, getValues, isNew, productId, router, reset]);
 
   // Initialize image order
   React.useEffect(() => {
@@ -287,47 +311,51 @@ export function ProductFormComprehensive({
     if (!silent) setSavingDraft(true);
 
     try {
-      const formData = watchedValues;
-      
+      const formData = getValues();
+      const nameStr = (formData?.name ?? "").toString().trim();
+      const slugStr = (formData?.slug ?? "").toString().trim();
+      const descStr = (formData?.description ?? "").toString().trim();
+      const skuStr = (formData?.sku ?? "").toString().trim();
+
       // Transform to API format
       const payload: any = {
-        name: formData.name.trim(),
-        slug: formData.slug.trim(),
-        description: formData.description.trim(),
-        sku: formData.sku.trim(),
-        price: formData.price * 100, // Convert to cents
-        categoryId: formData.categoryId,
-        images: formData.images || [],
-        inStock: formData.status === "active",
-        visibleOnStore: formData.visibleOnStore,
-        sizes: formData.variants?.map(v => ({
-          size: v.size,
-          quantity: v.stock || 0,
+        name: nameStr,
+        slug: slugStr,
+        description: descStr,
+        sku: skuStr,
+        price: (formData?.price ?? 0) * 100,
+        categoryId: formData?.categoryId ?? "",
+        images: formData?.images || [],
+        inStock: formData?.status === "active",
+        visibleOnStore: formData?.visibleOnStore ?? true,
+        sizes: formData?.variants?.map(v => ({
+          size: v?.size ?? "",
+          quantity: v?.stock ?? 0,
         })) || [],
-        tags: formData.tags || [],
+        tags: formData?.tags || [],
       };
 
-      if (formData.salePrice != null && formData.salePrice > 0) {
+      if (formData?.salePrice != null && formData.salePrice > 0) {
         payload.originalPrice = formData.price * 100;
         payload.salePrice = formData.salePrice * 100;
       }
 
       // Add metadata
       payload.metadata = {
-        shortDescription: formData.shortDescription,
-        barcode: formData.barcode,
-        costPerItem: formData.costPerItem,
-        trackInventory: formData.trackInventory,
-        lowStockThreshold: formData.lowStockThreshold,
-        allowBackorders: formData.allowBackorders,
-        weight: formData.weight,
-        dimensions: formData.length || formData.width || formData.height ? {
-          length: formData.length,
-          width: formData.width,
-          height: formData.height,
+        shortDescription: formData?.shortDescription,
+        barcode: formData?.barcode,
+        costPerItem: formData?.costPerItem,
+        trackInventory: formData?.trackInventory,
+        lowStockThreshold: formData?.lowStockThreshold,
+        allowBackorders: formData?.allowBackorders,
+        weight: formData?.weight,
+        dimensions: formData?.length || formData?.width || formData?.height ? {
+          length: formData?.length,
+          width: formData?.width,
+          height: formData?.height,
         } : undefined,
-        metaTitle: formData.metaTitle,
-        metaDescription: formData.metaDescription,
+        metaTitle: formData?.metaTitle,
+        metaDescription: formData?.metaDescription,
       };
 
       const url = isNew ? "/api/admin/products" : `/api/admin/products/${productId}`;
@@ -353,7 +381,7 @@ export function ProductFormComprehensive({
           isNavigationSafeRef.current = true; // Mark navigation as safe
           router.replace(`/admin/products/${data.data.id}`);
         } else {
-          reset(formData, { keepDirty: false });
+          reset(getValues(), { keepDirty: false });
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -371,19 +399,24 @@ export function ProductFormComprehensive({
     } finally {
       if (!silent) setSavingDraft(false);
     }
-  }, [watchedValues, isNew, productId, router, reset, showToast]);
+  }, [getValues, isNew, productId, router, reset, showToast]);
 
   // Submit form
   const onSubmit = async (data: ProductFormData): Promise<void> => {
     setSaving(true);
 
     try {
+      const nameStr = (data?.name ?? "").toString().trim();
+      const slugStr = (data?.slug ?? "").toString().trim();
+      const descStr = (data?.description ?? "").toString().trim();
+      const skuStr = (data?.sku ?? "").toString().trim();
+
       // Transform to API format
       const payload: any = {
-        name: data.name.trim(),
-        slug: data.slug.trim(),
-        description: data.description.trim(),
-        sku: data.sku.trim(),
+        name: nameStr,
+        slug: slugStr,
+        description: descStr,
+        sku: skuStr,
         price: data.price * 100, // Convert to cents
         categoryId: data.categoryId,
         images: data.images || [],
@@ -606,9 +639,9 @@ export function ProductFormComprehensive({
   }, [isDirty, productId]);
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-8rem)]">
+    <div className="flex gap-6 min-h-[calc(100vh-8rem)] h-[calc(100vh-8rem)]">
       {/* Sidebar Navigation - Admin design system */}
-      <aside className="w-64 flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-4 overflow-y-auto sticky top-0 h-full">
+      <aside className="w-64 flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-4 overflow-y-auto sticky top-0 self-start max-h-[calc(100vh-8rem)]">
         <div className="space-y-1">
           {FORM_SECTIONS.map((section) => {
             const Icon = section.icon;
@@ -655,11 +688,12 @@ export function ProductFormComprehensive({
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 p-6">
-          {/* Basic Information */}
-          <section id="section-basic" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6">
+      {/* Main Content - min-height prevents collapse when typing or validation messages appear */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto min-h-[480px]">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 p-6 pb-16">
+            {/* Basic Information */}
+            <section id="section-basic" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6 space-y-6 min-h-[320px]">
             <h2 className="text-2xl font-bold text-charcoal-900">Basic Information</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1205,6 +1239,7 @@ export function ProductFormComprehensive({
             </div>
           </div>
         </form>
+        </div>
       </div>
 
       {/* Delete Confirmation */}
