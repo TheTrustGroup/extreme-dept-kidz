@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -98,6 +98,7 @@ export function ProductFormComprehensive({
   // Form state
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isDirty },
     setValue,
@@ -698,39 +699,67 @@ export function ProductFormComprehensive({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <FloatingInput
-                  {...register("name")}
-                  label="Product Name"
-                  error={errors.name?.message}
-                  required
+                <Controller
+                  control={control}
+                  name="name"
+                  render={({ field }) => (
+                    <FloatingInput
+                      {...field}
+                      value={field.value ?? ""}
+                      label="Product Name"
+                      error={errors.name?.message}
+                      required
+                    />
+                  )}
                 />
               </div>
 
               <div>
-                <FloatingInput
-                  {...register("slug")}
-                  label="URL Slug"
-                  error={errors.slug?.message}
-                  helperText="Auto-generated from product name"
-                  required
+                <Controller
+                  control={control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FloatingInput
+                      {...field}
+                      value={field.value ?? ""}
+                      label="URL Slug"
+                      error={errors.slug?.message}
+                      helperText="Auto-generated from product name"
+                      required
+                    />
+                  )}
                 />
               </div>
 
               <div>
-                <FloatingInput
-                  {...register("sku")}
-                  label="SKU"
-                  error={errors.sku?.message}
-                  helperText="Stock Keeping Unit"
-                  required
+                <Controller
+                  control={control}
+                  name="sku"
+                  render={({ field }) => (
+                    <FloatingInput
+                      {...field}
+                      value={field.value ?? ""}
+                      label="SKU"
+                      error={errors.sku?.message}
+                      helperText="Stock Keeping Unit"
+                      required
+                    />
+                  )}
                 />
               </div>
 
               <div>
-                <FloatingInput
-                  {...register("barcode")}
-                  label="Barcode (Optional)"
-                  error={errors.barcode?.message}
+                <Controller
+                  control={control}
+                  name="barcode"
+                  render={({ field }) => (
+                    <FloatingInput
+                      {...field}
+                      value={field.value ?? ""}
+                      label="Barcode (Optional)"
+                      error={errors.barcode?.message}
+                    />
+                  )}
                 />
               </div>
 
@@ -769,24 +798,38 @@ export function ProductFormComprehensive({
                 <label className="block text-sm font-medium text-charcoal-700 mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
-                <FloatingTextarea
-                  {...register("description")}
-                  label="Product Description"
-                  rows={8}
-                  error={errors.description?.message}
-                  helperText="Use markdown for formatting (e.g., **bold**, *italic*, - lists)"
-                  required
+                <Controller
+                  control={control}
+                  name="description"
+                  render={({ field }) => (
+                    <FloatingTextarea
+                      {...field}
+                      value={field.value ?? ""}
+                      label="Product Description"
+                      rows={8}
+                      error={errors.description?.message}
+                      helperText="Use markdown for formatting (e.g., **bold**, *italic*, - lists)"
+                      required
+                    />
+                  )}
                 />
               </div>
 
               <div className="md:col-span-2">
-                <FloatingTextarea
-                  {...register("shortDescription")}
-                  label="Short Description"
-                  rows={3}
-                  error={errors.shortDescription?.message}
-                  helperText={`${(shortDescription || "").length}/160 characters`}
-                  maxLength={160}
+                <Controller
+                  control={control}
+                  name="shortDescription"
+                  render={({ field }) => (
+                    <FloatingTextarea
+                      {...field}
+                      value={field.value ?? ""}
+                      label="Short Description"
+                      rows={3}
+                      error={errors.shortDescription?.message}
+                      helperText={`${(field.value ?? "").length}/160 characters`}
+                      maxLength={160}
+                    />
+                  )}
                 />
               </div>
             </div>

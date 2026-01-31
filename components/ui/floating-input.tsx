@@ -20,7 +20,7 @@ export function FloatingInput({
   ...props
 }: FloatingInputProps): JSX.Element {
   const [focused, setFocused] = React.useState(false);
-  const hasValue = Boolean(props.value || props.defaultValue);
+  const hasValue = Boolean(props.value != null && props.value !== "" || (props.defaultValue != null && props.defaultValue !== ""));
 
   return (
     <div className="relative">
@@ -36,7 +36,8 @@ export function FloatingInput({
             props.onBlur?.(e);
           }}
           className={cn(
-            "peer w-full px-4 pt-6 pb-2 text-sm bg-white border rounded-lg",
+            "peer w-full px-4 pb-2 text-sm bg-white border rounded-lg",
+            focused || hasValue ? "pt-7" : "pt-6",
             "focus:outline-none focus:ring-2 transition-all duration-200",
             "placeholder-transparent",
             error
@@ -103,7 +104,7 @@ export function FloatingTextarea({
   ...props
 }: FloatingTextareaProps): JSX.Element {
   const [focused, setFocused] = React.useState(false);
-  const hasValue = Boolean(props.value || props.defaultValue);
+  const hasValue = Boolean(props.value != null && props.value !== "" || (props.defaultValue != null && props.defaultValue !== ""));
 
   return (
     <div className="relative">
@@ -119,7 +120,8 @@ export function FloatingTextarea({
             props.onBlur?.(e);
           }}
           className={cn(
-            "peer w-full px-4 pt-6 pb-2 text-sm bg-white border rounded-lg resize-none",
+            "peer w-full px-4 pb-2 text-sm bg-white border rounded-lg resize-none",
+            focused || hasValue ? "pt-7" : "pt-6",
             "focus:outline-none focus:ring-2 transition-all duration-200",
             "placeholder-transparent",
             error
