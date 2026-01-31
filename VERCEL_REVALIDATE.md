@@ -21,6 +21,7 @@ curl "https://extremedeptkidz.com/api/revalidate?secret=YOUR_REVALIDATE_SECRET"
 Replace `YOUR_REVALIDATE_SECRET` with the value you set in Vercel.
 
 - **Manual:** Run that `curl` (or open the URL in a browser) after you deploy.
+- **If the live site still doesn’t show recent UI:** In Vercel, confirm production is on the latest commit, then run the `curl` above and hard refresh (Cmd+Shift+R) or open the site in incognito.
 - **Automated:** Use a GitHub Action that runs after `git push`, waits for Vercel deploy to finish, then calls that URL. Or use Vercel’s “Deploy Hooks” to trigger a small external service that calls it.
 
 ## 3. Optional: Vercel Cron (Pro)

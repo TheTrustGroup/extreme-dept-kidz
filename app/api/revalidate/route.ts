@@ -32,13 +32,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
-    revalidatePath("/collections/boys");
-    revalidatePath("/collections/girls");
-    revalidatePath("/collections");
-    revalidatePath("/");
+    revalidatePath("/", "page");
+    revalidatePath("/collections/boys", "page");
+    revalidatePath("/collections/girls", "page");
+    revalidatePath("/collections", "page");
     return NextResponse.json({
       revalidated: true,
-      paths: ["/collections/boys", "/collections/girls", "/collections", "/"],
+      paths: ["/", "/collections/boys", "/collections/girls", "/collections"],
     });
   } catch (e) {
     console.error("Revalidate GET error:", e);
