@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
-import { apiError, apiSuccess } from "@/lib/utils/api-response";
+import { apiError, apiSuccess, apiValidationError } from "@/lib/utils/api-response";
+import { parseJsonBody } from "@/lib/utils/parse-body";
+import { bulkProductsSchema, validate } from "@/lib/validation/schemas";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { revalidateOnProductMutation, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -28,16 +31,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
-    const body = await request.json();
-    const { ids, action, categoryId, status } = body;
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return apiError("No products selected", 400);
+    const validation = validate(bulkProductsSchema, body);
+    if (!validation.success) {
+      return apiValidationError(validation.errors);
     }
 
-    if (!['delete', 'activate', 'deactivate', 'assignCategory', 'duplicate'].includes(action)) {
-      return apiError("Invalid action", 400);
-    }
+    const { ids, action, categoryId } = validation.data;
 
     // Verify all products exist
     const products = await prisma.product.findMany({
@@ -254,8 +257,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       `Successfully ${action}d ${ids.length} product${ids.length !== 1 ? 's' : ''}`
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Bulk products action error:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to perform bulk action",
       500,

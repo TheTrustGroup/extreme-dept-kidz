@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
-import { apiSuccess, apiError, apiNotFound } from "@/lib/utils/api-response";
+import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
+import { parseJsonBody } from "@/lib/utils/parse-body";
+import { inventorySyncSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { withCors } from "@/lib/utils/cors";
 
@@ -32,15 +35,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return withCors(request, apiError("Database not available", 500));
     }
 
-    const body = await request.json();
-    const { productId, sizes } = body;
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return withCors(request, parsed.response);
+    const body = parsed.data;
 
-    if (!productId || !Array.isArray(sizes)) {
-      return withCors(
-        request,
-        apiError("Invalid request. Expected productId and sizes array.", 400)
-      );
+    const validation = validate(inventorySyncSchema, body);
+    if (!validation.success) {
+      return withCors(request, apiValidationError(validation.errors));
     }
+
+    const { productId, sizes } = validation.data;
 
     const updateResults: { size: string; variantId: string; updated?: boolean; created?: boolean }[] = [];
 
@@ -114,9 +118,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         "Inventory synced successfully"
       )
     );
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof Error && error.message === "Product not found") {
       return withCors(request, apiNotFound("Product"));
+    }
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return withCors(request, apiValidationError(errors));
     }
     logger.error("Failed to sync inventory:", error);
     return withCors(

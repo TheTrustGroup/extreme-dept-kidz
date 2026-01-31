@@ -226,11 +226,50 @@ export const adminLoginSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
-// Inventory update schema
+// Inventory update schema (variantId can be cuid or uuid from params)
 export const updateInventorySchema = z.object({
-  variantId: z.string().uuid(),
+  variantId: z.string().min(1, 'Variant ID is required'),
   quantity: z.number().int().min(0),
   action: z.enum(['set', 'add', 'subtract']).default('set'),
+});
+
+// Bulk action schemas (return 400 on invalid payload)
+export const bulkProductsSchema = z
+  .object({
+    ids: z.array(z.string().min(1)).min(1, 'At least one product ID is required'),
+    action: z.enum(['delete', 'activate', 'deactivate', 'assignCategory', 'duplicate']),
+    categoryId: z.string().min(1).optional(),
+  })
+  .refine((data) => data.action !== 'assignCategory' || (data.categoryId != null && data.categoryId !== ''), {
+    message: 'Category ID is required when action is assignCategory',
+    path: ['categoryId'],
+  });
+
+export const bulkOrdersSchema = z
+  .object({
+    ids: z.array(z.string().min(1)).min(1, 'At least one order ID is required'),
+    action: z.enum(['updateStatus', 'cancel']),
+    status: z.enum(['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED']).optional(),
+    cancelledReason: z.string().optional(),
+  })
+  .refine((data) => data.action !== 'updateStatus' || data.status != null, {
+    message: 'Status is required when action is updateStatus',
+    path: ['status'],
+  });
+
+export const bulkCategoriesSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1, 'At least one category ID is required'),
+  action: z.enum(['delete', 'activate', 'deactivate']),
+});
+
+// Inventory sync (warehouse/offline)
+export const inventorySyncSchema = z.object({
+  productId: z.string().min(1, 'Product ID is required'),
+  sizes: z.array(z.object({
+    size: z.string().min(1),
+    quantity: z.number().int().min(0).optional(),
+    inStock: z.boolean().optional(),
+  })).min(1, 'At least one size is required'),
 });
 
 // Image upload schema

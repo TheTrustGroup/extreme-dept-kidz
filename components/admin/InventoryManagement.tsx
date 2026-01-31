@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, Package, TrendingDown, DollarSign, Download, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 import { StockUpdateModal } from "./StockUpdateModal";
 import { mockProducts } from "@/lib/mock-data";
 import type { Product, ProductSize } from "@/types";
@@ -366,9 +367,11 @@ export function InventoryManagement(): JSX.Element {
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           {product.images[0] ? (
-                            <img 
-                              src={product.images[0].url} 
+                            <SimpleOptimizedImage
+                              src={product.images[0].url}
                               alt={product.name}
+                              width={48}
+                              height={48}
                               className="w-full h-full object-cover rounded-lg"
                             />
                           ) : (

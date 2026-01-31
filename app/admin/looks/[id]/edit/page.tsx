@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { formatPrice } from '@/lib/utils';
+import { SimpleOptimizedImage } from '@/components/ui/SimpleOptimizedImage';
 
 interface Product {
   id: string;
@@ -531,9 +532,11 @@ export default function EditCompleteLookPage() {
                     >
                       <div className="flex items-center gap-3">
                         {primaryImage && (
-                          <img
+                          <SimpleOptimizedImage
                             src={primaryImage.url}
                             alt={product.name}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-cover rounded"
                           />
                         )}
@@ -593,9 +596,11 @@ export default function EditCompleteLookPage() {
                   }`}
                 >
                   {primaryImage && (
-                    <img
+                    <SimpleOptimizedImage
                       src={primaryImage.url}
                       alt={product.name}
+                      width={256}
+                      height={128}
                       className="w-full h-32 object-cover rounded mb-2"
                     />
                   )}

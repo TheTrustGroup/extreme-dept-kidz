@@ -33,6 +33,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
+import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 
 interface ProductWithStats extends Product {
   totalStock?: number;
@@ -51,9 +52,10 @@ function ProductThumbnail({ url, alt }: { url: string; alt: string }): JSX.Eleme
     );
   }
   return (
-    <img
+    <SimpleOptimizedImage
       src={url}
       alt={alt}
+      fill
       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
       onError={() => setErrored(true)}
     />

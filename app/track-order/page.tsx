@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Search, Package, CheckCircle2, Clock, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
+import { SimpleOptimizedImage } from '@/components/ui/SimpleOptimizedImage';
 
 interface OrderStatus {
   id: string;
@@ -199,8 +200,14 @@ export default function TrackOrderPage() {
                 <div className="space-y-4">
                   {order.items.map((item) => (
                     <div key={item.id} className="flex gap-4">
-                      <div className="relative w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                      <div className="relative w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+                        <SimpleOptimizedImage
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className="object-cover rounded-lg"
+                          sizes="80px"
+                        />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">{item.name}</p>

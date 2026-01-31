@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
-import { apiSuccess, apiError } from "@/lib/utils/api-response";
+import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
+import { parseJsonBody } from "@/lib/utils/parse-body";
+import { bulkCategoriesSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
@@ -22,16 +25,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
-    const body = await request.json();
-    const { ids, action } = body;
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return apiError("No categories selected", 400);
+    const validation = validate(bulkCategoriesSchema, body);
+    if (!validation.success) {
+      return apiValidationError(validation.errors);
     }
 
-    if (!['delete', 'activate', 'deactivate'].includes(action)) {
-      return apiError("Invalid action", 400);
-    }
+    const { ids, action } = validation.data;
 
     // Verify all categories exist
     const categories = await prisma.category.findMany({
@@ -140,8 +143,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       `Successfully ${action === 'delete' ? 'deleted' : action === 'activate' ? 'activated' : 'deactivated'} ${count} categor${count === 1 ? 'y' : 'ies'}`
     );
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Bulk action error:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to perform bulk action",
       500,

@@ -1,18 +1,62 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { m } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { TrendingUp, Package, Users, DollarSign, AlertTriangle, RefreshCw, Download, Plus, ShoppingBag, Eye, Calendar, X } from "lucide-react";
+import { TrendingUp, Package, Users, DollarSign, AlertTriangle, RefreshCw, Download, Plus, ShoppingBag, X } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
-import { AdminH1, AdminH2, AdminH3, AdminBody, AdminBodySmall } from "@/components/admin/AdminTypography";
+import { AdminH2, AdminH3, AdminBodySmall } from "@/components/admin/AdminTypography";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/button";
-import { RevenueChart } from "@/components/admin/analytics/RevenueChart";
-import { OrdersStatusChart } from "@/components/admin/charts/OrdersStatusChart";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+
+/** Skeleton for chart loading state */
+function ChartSkeleton(): JSX.Element {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-6 w-32 bg-gray-200 rounded" />
+      <div className="h-48 bg-gray-100 rounded" />
+      <div className="flex gap-2">
+        <div className="h-3 flex-1 bg-gray-100 rounded" />
+        <div className="h-3 flex-1 bg-gray-100 rounded" />
+        <div className="h-3 flex-1 bg-gray-100 rounded" />
+      </div>
+    </div>
+  );
+}
+
+/** Skeleton for table loading state */
+function TableSkeleton(): JSX.Element {
+  return (
+    <div className="animate-pulse">
+      <div className="h-10 bg-gray-200 rounded mb-4" />
+      <div className="h-10 bg-gray-100 rounded mb-2" />
+      <div className="h-10 bg-gray-100 rounded mb-2" />
+      <div className="h-10 bg-gray-100 rounded mb-2" />
+      <div className="h-10 bg-gray-100 rounded" />
+    </div>
+  );
+}
+
+/** Lazy-load heavy chart components for faster initial load */
+const RevenueChart = dynamic(
+  () => import("@/components/admin/analytics/RevenueChart").then((mod) => ({ default: mod.RevenueChart })),
+  {
+    loading: () => <ChartSkeleton />,
+    ssr: false,
+  }
+);
+
+const OrdersStatusChart = dynamic(
+  () => import("@/components/admin/charts/OrdersStatusChart").then((mod) => ({ default: mod.OrdersStatusChart })),
+  {
+    loading: () => <ChartSkeleton />,
+    ssr: false,
+  }
+);
 
 interface DashboardData {
   metrics: {
@@ -51,6 +95,36 @@ interface DashboardData {
   };
 }
 
+/** Stat card using admin design system typography */
+function StatCard({
+  title,
+  value,
+  change,
+  trend,
+}: {
+  title: string;
+  value: string;
+  change: string;
+  trend: "up" | "down";
+}): JSX.Element {
+  return (
+    <div className="admin-card">
+      <p className="admin-label mb-2">{title}</p>
+      <div className="flex items-end justify-between">
+        <p className="admin-heading-xl">{value}</p>
+        <span
+          className={cn(
+            "text-sm font-semibold",
+            trend === "up" ? "text-green-600" : "text-red-600"
+          )}
+        >
+          {change}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 interface MetricCardProps {
   title: string;
   value: string;
@@ -85,8 +159,8 @@ function MetricCard({ title, value, change, trend, icon: Icon, badge }: MetricCa
           <div
             className={cn(
               "admin-flex-sm items-center text-sm font-semibold px-[var(--admin-space-2)] py-1 rounded-full flex-shrink-0",
-              trend === "up" 
-                ? "text-green-700 bg-green-50" 
+              trend === "up"
+                ? "text-green-700 bg-green-50"
                 : "text-red-700 bg-red-50"
             )}
           >
@@ -238,20 +312,22 @@ export default function AdminDashboardPage(): JSX.Element {
   const { metrics, charts, recentOrders, topProducts } = dashboardData;
 
   return (
-    <div className="admin-rhythm-lg">
+    <div className="min-h-screen" style={{ backgroundColor: "var(--admin-gray-50, #F8FAFC)" }}>
       {/* Header */}
-      <div className="admin-section admin-flex-md flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div className="admin-rhythm-sm">
-          <AdminH1>Dashboard</AdminH1>
-          <AdminBodySmall className="text-charcoal-600">Welcome back! Here&apos;s what&apos;s happening with your store.</AdminBodySmall>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Date Range Selector */}
-          <div className="relative">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="admin-heading-xl">Dashboard</h1>
+            <p className="admin-body mt-1" style={{ color: "var(--admin-gray-500, #64748B)" }}>
+              Welcome back, Admin
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative">
             <select
               value={datePeriod}
               onChange={(e) => handleDateRangeChange(e.target.value as DateRangePeriod)}
-              className="admin-input px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-2)] sm:py-2.5 rounded-lg text-xs sm:text-sm text-charcoal-900 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent w-full sm:w-auto flex-shrink-0"
+              className="admin-input px-3 py-2 rounded-lg text-sm w-full sm:w-auto flex-shrink-0"
             >
               <option value="today">Today</option>
               <option value="7days">Last 7 days</option>
@@ -299,63 +375,52 @@ export default function AdminDashboardPage(): JSX.Element {
                 </div>
               </div>
             )}
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-2 text-charcoal-600 hover:text-navy-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              aria-label="Refresh dashboard"
+            >
+              <RefreshCw className={cn("w-5 h-5", refreshing && "animate-spin")} />
+            </button>
+            <button
+              onClick={handleExportDashboard}
+              className="p-2 text-charcoal-600 hover:text-navy-600 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Export dashboard data"
+            >
+              <Download className="w-5 h-5" />
+            </button>
           </div>
-          {/* Refresh Button */}
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-2 text-charcoal-600 hover:text-navy-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-            aria-label="Refresh dashboard"
-          >
-            <RefreshCw className={cn("w-5 h-5", refreshing && "animate-spin")} />
-          </button>
-          {/* Export Button */}
-          <button
-            onClick={handleExportDashboard}
-            className="p-2 text-charcoal-600 hover:text-navy-600 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Export dashboard data"
-          >
-            <Download className="w-5 h-5" />
-          </button>
         </div>
-      </div>
+      </header>
 
-      {/* Metric Cards */}
-      <div className="admin-grid-md grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title="Total Revenue"
-          value={formatPrice(metrics.revenue)}
-          change={metrics.revenueChange}
-          trend={metrics.revenueChange >= 0 ? "up" : "down"}
-          icon={DollarSign}
-        />
-        <MetricCard
-          title="Total Orders"
-          value={metrics.orders.toString()}
-          change={metrics.ordersChange}
-          trend={metrics.ordersChange >= 0 ? "up" : "down"}
-          icon={Package}
-        />
-        <MetricCard
-          title="Total Products"
-          value={metrics.products.toString()}
-          change={0}
-          trend="up"
-          icon={Package}
-          badge={metrics.lowStockCount > 0 ? `${metrics.lowStockCount} low stock` : undefined}
-        />
-        <MetricCard
-          title="Total Customers"
-          value={metrics.customers.toString()}
-          change={0}
-          trend="up"
-          icon={Users}
-          badge={metrics.newCustomers > 0 ? `+${metrics.newCustomers} new` : undefined}
-        />
-      </div>
+      {/* Main Content */}
+      <main className="p-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <StatCard
+            title="Total Revenue"
+            value={formatPrice(metrics.revenue)}
+            change={`${metrics.revenueChange >= 0 ? "+" : ""}${metrics.revenueChange.toFixed(1)}%`}
+            trend={metrics.revenueChange >= 0 ? "up" : "down"}
+          />
+          <StatCard
+            title="Orders"
+            value={metrics.orders.toString()}
+            change={`${metrics.ordersChange >= 0 ? "+" : ""}${metrics.ordersChange.toFixed(1)}%`}
+            trend={metrics.ordersChange >= 0 ? "up" : "down"}
+          />
+          <StatCard
+            title="Customers"
+            value={metrics.customers.toString()}
+            change={metrics.newCustomers > 0 ? `+${metrics.newCustomers} new` : "+0%"}
+            trend="up"
+          />
+        </div>
 
       {/* Charts Section */}
-      <div className="admin-grid-md grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="admin-grid-md grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Sales Chart */}
         <m.div
           initial={{ opacity: 0, y: 20 }}
@@ -378,25 +443,22 @@ export default function AdminDashboardPage(): JSX.Element {
         </m.div>
       </div>
 
-      {/* Row 3: Recent Orders and Quick Actions */}
-      <div className="admin-grid-md grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Orders */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="lg:col-span-2 admin-card admin-section-md"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <AdminH2 className="text-lg sm:text-xl">Recent Orders</AdminH2>
-            <Link
-              href="/admin/orders"
-              className="text-sm text-navy-600 hover:text-navy-700 font-medium"
-            >
-              View all orders →
-            </Link>
-          </div>
-          <div className="overflow-x-auto">
+        {/* Recent Orders & Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Orders */}
+          <div className="lg:col-span-2">
+            <div className="admin-card">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="admin-heading-md">Recent Orders</h2>
+                <Link
+                  href="/admin/orders"
+                  className="text-sm font-medium"
+                  style={{ color: "var(--admin-accent, #3B82F6)" }}
+                >
+                  View all →
+                </Link>
+              </div>
+              <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -445,55 +507,57 @@ export default function AdminDashboardPage(): JSX.Element {
                 )}
               </tbody>
             </table>
+              </div>
+            </div>
           </div>
-        </m.div>
 
-        {/* Quick Actions */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="admin-card admin-section-md"
-        >
-          <AdminH2 className="text-lg sm:text-xl mb-4">Quick Actions</AdminH2>
-          <div className="space-y-3">
-            <Link href="/admin/products/new">
-              <Button className="w-full justify-start" size="lg">
-                <Plus className="w-5 h-5 mr-2" />
-                Add New Product
-              </Button>
-            </Link>
-            <Link href="/admin/orders?status=PENDING">
-              <Button variant="secondary" className="w-full justify-start" size="lg">
-                <ShoppingBag className="w-5 h-5 mr-2" />
-                Process Orders
-                {pendingOrdersCount > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {pendingOrdersCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
-            <Link href="/admin/inventory">
-              <Button variant="secondary" className="w-full justify-start" size="lg">
-                <AlertTriangle className="w-5 h-5 mr-2" />
-                View Low Stock
-                {metrics.lowStockCount > 0 && (
-                  <span className="ml-auto bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {metrics.lowStockCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
-            <Link href="/admin/customers">
-              <Button variant="secondary" className="w-full justify-start" size="lg">
-                <Users className="w-5 h-5 mr-2" />
-                View Customers
-              </Button>
-            </Link>
+          {/* Quick Actions */}
+          <div>
+            <div className="admin-card">
+              <h2 className="admin-heading-md mb-4">Quick Actions</h2>
+              <div className="space-y-3">
+                <Link
+                  href="/admin/products/new"
+                  className="admin-btn admin-btn-primary w-full flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add New Product
+                </Link>
+                <Link
+                  href="/admin/orders?status=PENDING"
+                  className="admin-btn admin-btn-secondary w-full flex items-center justify-center gap-2"
+                >
+                  <Package className="w-4 h-4" />
+                  Process Orders
+                  {pendingOrdersCount > 0 && (
+                    <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {pendingOrdersCount}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  href="/admin/inventory"
+                  className="admin-btn admin-btn-secondary w-full flex items-center justify-center gap-2"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  View Low Stock
+                  {metrics.lowStockCount > 0 && (
+                    <span className="ml-auto bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {metrics.lowStockCount}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  href="/admin/customers"
+                  className="admin-btn admin-btn-secondary w-full flex items-center justify-center gap-2"
+                >
+                  <Users className="w-4 h-4" />
+                  View Customers
+                </Link>
+              </div>
+            </div>
           </div>
-        </m.div>
-      </div>
+        </div>
 
       {/* Top Selling Products */}
       {topProducts.length > 0 && (
@@ -550,6 +614,7 @@ export default function AdminDashboardPage(): JSX.Element {
           </div>
         </m.div>
       )}
+      </main>
     </div>
   );
 }

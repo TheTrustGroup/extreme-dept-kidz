@@ -13,6 +13,7 @@ import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { LazyWebVitals } from "./LazyWebVitals";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
+import PageTransition from "@/components/ui/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProductsUpdateListener } from "@/components/ProductsUpdateListener";
 import "./globals.css";
@@ -201,7 +202,7 @@ export default function RootLayout({
             </Suspense>
             <main id="main-content" className="flex-1" role="main">
               <Suspense fallback={<PageLoader />}>
-                {children}
+                <PageTransition>{children}</PageTransition>
               </Suspense>
             </main>
             <Suspense fallback={null}>

@@ -54,6 +54,84 @@
 }
 
 /*
+ * Smooth Scrolling & Performance
+ * GPU hints, scroll containers, reduced-motion, image optimization
+ */
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  /* Use GPU for transforms and opacity */
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  -webkit-perspective: 1000;
+}
+
+/* Optimize scroll containers */
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+}
+
+/* Optimize animations */
+.animated {
+  will-change: transform, opacity;
+}
+
+/* Disable animations on low-end devices / prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Optimize images (content-visibility; use loading="lazy" in HTML for native lazy load) */
+img {
+  content-visibility: auto;
+}
+
+/*
+ * Touch / Click Response
+ * Remove tap delay, instant feedback, touch targets, no text select on buttons
+ */
+button,
+a,
+[role="button"] {
+  /* Remove tap delay on mobile */
+  touch-action: manipulation;
+  /* Instant feedback */
+  transition: transform 0.1s, background-color 0.2s;
+  /* Highlight on touch */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+button:active,
+a:active {
+  transform: scale(0.98);
+}
+
+/* Increase touch targets on mobile (iOS recommendation) */
+@media (max-width: 768px) {
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Disable text selection on buttons */
+button,
+.btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/*
  * PHASE 2 — DESIGN SYSTEM
  * Ultra modern · Soft glassmorphism · Premium fashion (Apple × Gentle Monster × Off-White × Arc'teryx)
  * Mobile-first · Zero overlap · Zero clutter · Visual breathing room · Strong hierarchy · Precise spacing

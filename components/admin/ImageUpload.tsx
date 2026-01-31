@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 
 /** Renders product image with fallback when URL fails (404 / invalid). Avoids Next/Image breaking the page. */
 function AdminProductImage({ url, alt }: { url: string; alt: string }): JSX.Element {
@@ -20,9 +21,10 @@ function AdminProductImage({ url, alt }: { url: string; alt: string }): JSX.Elem
           <ImageIcon className="w-10 h-10" aria-hidden />
         </div>
       ) : (
-        <img
+        <SimpleOptimizedImage
           src={url}
           alt={alt}
+          fill
           className="w-full h-full object-cover"
           onError={() => setErrored(true)}
         />

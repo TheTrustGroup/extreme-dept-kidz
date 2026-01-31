@@ -18,6 +18,7 @@ import {
   Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 import { cn } from "@/lib/utils";
 import { StockUpdateModal } from "../StockUpdateModal";
 import type { ProductSize } from "@/types";
@@ -422,9 +423,11 @@ export function AdvancedInventoryTable({
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {variant.imageUrl ? (
-                          <img
+                          <SimpleOptimizedImage
                             src={variant.imageUrl}
                             alt={variant.productName}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded object-cover"
                           />
                         ) : (

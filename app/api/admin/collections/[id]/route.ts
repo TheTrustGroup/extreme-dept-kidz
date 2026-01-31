@@ -1,7 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
+import { z } from "zod";
 import { updateCollectionSchema, validate } from "@/lib/validation/schemas";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
 import { revalidatePath } from "next/cache";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
@@ -69,7 +71,9 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
     // Validate input
     const validation = validate(updateCollectionSchema, body);
@@ -130,8 +134,15 @@ export async function PUT(
     }, request);
 
     return apiSuccess(collection, "Collection updated successfully");
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Failed to update collection:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to update collection",
       500,

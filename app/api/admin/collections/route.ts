@@ -1,11 +1,13 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { apiSuccess, apiError } from "@/lib/utils/api-response";
+import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
+import { z } from "zod";
 import { createCollectionSchema, validate } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
 import { revalidatePath } from "next/cache";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 
 export const dynamic = "force-dynamic";
 
@@ -62,16 +64,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
     // Validate input
     const validation = validate(createCollectionSchema, body);
     if (!validation.success) {
-      return apiError(
-        "Validation failed",
-        400,
-        JSON.stringify(validation.errors)
-      );
+      return apiValidationError(validation.errors);
     }
 
     const { name, slug, description, image, isActive } = validation.data;
@@ -110,8 +110,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }, request);
 
     return apiSuccess(collection, "Collection created successfully", { statusCode: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Failed to create collection:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to create collection",
       500,

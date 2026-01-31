@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
+import { z } from "zod";
 import { createCategorySchema, validate } from "@/lib/validation/schemas";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
@@ -57,7 +59,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
     // Validate input
     const validation = validate(createCategorySchema, body);
@@ -134,8 +138,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       "Category created successfully",
       { statusCode: 201 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("❌ POST /api/admin/categories error:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to create category",
       500,

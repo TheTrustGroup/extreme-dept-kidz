@@ -30,6 +30,7 @@ import { FloatingInput, FloatingTextarea } from "@/components/ui/floating-input"
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 import { cn } from "@/lib/utils";
 import { DEFAULT_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
 import { m } from "framer-motion";
@@ -783,9 +784,11 @@ export function ProductFormComprehensive({
                     >
                       <GripVertical className="w-5 h-5 text-charcoal-400 cursor-move" />
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-cream-100 flex-shrink-0">
-                        <img
+                        <SimpleOptimizedImage
                           src={images[imgIndex]}
                           alt={`Product image ${displayIndex + 1}`}
+                          width={80}
+                          height={80}
                           className="w-full h-full object-cover"
                         />
                       </div>

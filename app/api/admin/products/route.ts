@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
+import { z } from "zod";
 import { createProductSchema, validate } from "@/lib/validation/schemas";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { csrfProtection } from "@/lib/auth/csrf-middleware";
@@ -234,18 +236,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return withCors(request, parsed.response);
+    const body = parsed.data;
 
     // Log request body in development for debugging
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && body && typeof body === 'object') {
+      const b = body as Record<string, unknown>;
       logger.log('Product creation request:', {
-        hasName: !!body.name,
-        hasDescription: !!body.description,
-        hasPrice: !!body.price,
-        hasCategoryId: !!body.categoryId,
-        imagesCount: Array.isArray(body.images) ? body.images.length : 0,
-        sizesCount: Array.isArray(body.sizes) ? body.sizes.length : 0,
-        sizes: body.sizes,
+        hasName: !!b.name,
+        hasDescription: !!b.description,
+        hasPrice: !!b.price,
+        hasCategoryId: !!b.categoryId,
+        imagesCount: Array.isArray(b.images) ? b.images.length : 0,
+        sizesCount: Array.isArray(b.sizes) ? b.sizes.length : 0,
+        sizes: b.sizes,
       });
     }
 
@@ -364,7 +369,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         images: {
           create: images.map((img: { url: string; alt?: string; isPrimary?: boolean }, index: number) => ({
             url: img.url,
-            alt: img.alt || `${body.name} - Image ${index + 1}`,
+            alt: img.alt || `${validatedData.name} - Image ${index + 1}`,
             isPrimary: img.isPrimary ?? (index === 0),
             order: index,
           })),
@@ -424,9 +429,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       'Product created successfully',
       { statusCode: 201 }
     ));
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("❌ POST /api/admin/products error:", error);
-    
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return withCors(request, apiValidationError(errors));
+    }
     return withCors(request, apiError(
       "Failed to create product",
       500,

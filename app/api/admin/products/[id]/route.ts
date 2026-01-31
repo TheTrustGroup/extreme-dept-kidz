@@ -3,7 +3,9 @@ import { prisma } from "@/lib/db/prisma";
 import { revalidateOnProductMutation } from "@/lib/utils/cache-revalidation";
 import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
+import { z } from "zod";
 import { updateProductSchema, validate } from "@/lib/validation/schemas";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
@@ -83,7 +85,9 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
     // Validate input (partial validation for updates)
     const validation = validate(updateProductSchema, body);
@@ -232,8 +236,15 @@ export async function PUT(
     }, requestForLogging);
 
     return apiSuccess(product, "Product updated successfully");
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Failed to update product:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to update product",
       500,

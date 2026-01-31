@@ -3,7 +3,9 @@ import { prisma } from "@/lib/db/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/utils/cache-revalidation";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
+import { z } from "zod";
 import { updateCompleteLookSchema, validate } from "@/lib/validation/schemas";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
@@ -77,7 +79,9 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
     // Validate input
     const validation = validate(updateCompleteLookSchema, body);
@@ -194,8 +198,15 @@ export async function PUT(
     }, request);
 
     return apiSuccess(look, "Complete look updated successfully");
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Failed to update complete look:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to update complete look",
       500,

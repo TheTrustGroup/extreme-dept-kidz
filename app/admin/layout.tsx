@@ -12,6 +12,7 @@ import { useAdminKeyboards } from "@/lib/hooks/use-admin-keyboard";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "@/app/admin/admin-globals.css";
+import "@/styles/admin-design-system.css";
 
 interface AdminLayoutProps {
   children: React.ReactNode;

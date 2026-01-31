@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { prisma } from "@/lib/db/prisma";
-import { apiError, apiSuccess } from "@/lib/utils/api-response";
+import { apiError, apiSuccess, apiValidationError } from "@/lib/utils/api-response";
+import { parseJsonBody } from "@/lib/utils/parse-body";
+import { bulkOrdersSchema, validate } from "@/lib/validation/schemas";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { revalidatePath } from "next/cache";
 
@@ -25,16 +28,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
-    const body = await request.json();
-    const { ids, action, status, cancelledReason } = body;
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.data;
 
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return apiError("No orders selected", 400);
+    const validation = validate(bulkOrdersSchema, body);
+    if (!validation.success) {
+      return apiValidationError(validation.errors);
     }
 
-    if (!['updateStatus', 'cancel'].includes(action)) {
-      return apiError("Invalid action", 400);
-    }
+    const { ids, action, status, cancelledReason } = validation.data;
 
     // Verify all orders exist
     const orders = await prisma.order.findMany({
@@ -49,21 +52,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const orderNumbers = orders.map(o => o.orderNumber);
 
     switch (action) {
-      case 'updateStatus':
-        if (!status) {
-          return apiError("Status is required", 400);
-        }
+      case 'updateStatus': {
+        const updateStatus = status!;
 
         const updateData: any = {
-          status,
+          status: updateStatus,
         };
 
         // Handle status-specific fields
-        if (status === 'SHIPPED') {
+        if (updateStatus === 'SHIPPED') {
           updateData.shippedAt = new Date();
-        } else if (status === 'DELIVERED') {
+        } else if (updateStatus === 'DELIVERED') {
           updateData.deliveredAt = new Date();
-        } else if (status === 'CANCELLED') {
+        } else if (updateStatus === 'CANCELLED') {
           updateData.cancelledAt = new Date();
         }
 
@@ -79,12 +80,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           resourceId: ids[0],
           details: {
             action: 'bulk_update_status',
-            status,
+            status: updateStatus,
             count: ids.length,
             orders: orderNumbers.slice(0, 5),
           },
         }, request);
         break;
+      }
 
       case 'cancel':
         result = await prisma.order.updateMany({
@@ -123,8 +125,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       `Successfully ${action === 'updateStatus' ? 'updated' : 'cancelled'} ${ids.length} order${ids.length !== 1 ? 's' : ''}`
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Bulk orders action error:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return apiValidationError(errors);
+    }
     return apiError(
       "Failed to perform bulk action",
       500,

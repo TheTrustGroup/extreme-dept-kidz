@@ -1,7 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
+import { z } from "zod";
 import { updateInventorySchema, validate } from "@/lib/validation/schemas";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { withCors } from "@/lib/utils/cors";
@@ -30,10 +32,12 @@ export async function PUT(
     }
 
     const { variantId } = await params;
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return withCors(request, parsed.response);
+    const body = parsed.data;
 
-    // Validate input
-    const validation = validate(updateInventorySchema, { ...body, variantId });
+    // Validate input (merge body with variantId from params)
+    const validation = validate(updateInventorySchema, { ...(body && typeof body === "object" ? body : {}), variantId });
     if (!validation.success) {
       return withCors(request, apiValidationError(validation.errors));
     }
@@ -114,8 +118,15 @@ export async function PUT(
         "Inventory updated successfully"
       )
     );
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error("Failed to update inventory:", error);
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((e) => {
+        errors[e.path.join(".")] = e.message;
+      });
+      return withCors(request, apiValidationError(errors));
+    }
     return withCors(
       request,
       apiError(
