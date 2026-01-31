@@ -14,7 +14,7 @@ export function useProductPurchase(product: Product) {
   const [quantity, setQuantity] = React.useState(1);
 
   const availableSizes = React.useMemo(
-    () => product.sizes.filter((size) => size.inStock),
+    () => (Array.isArray(product.sizes) ? product.sizes : []).filter((size) => size.inStock),
     [product.sizes]
   );
 

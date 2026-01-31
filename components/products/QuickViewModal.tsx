@@ -36,10 +36,11 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
   // Focus trap for accessibility
   useFocusTrap(modalRef, isOpen);
 
-  // Get all product images, sorted with primary first
+  // Get all product images, sorted with primary first (defensive: never assume product.images is array)
   const productImages = React.useMemo(() => {
-    if (!product?.images) return [];
-    const sorted = [...product.images].sort((a, b) => {
+    const images = Array.isArray(product?.images) ? product.images : [];
+    if (images.length === 0) return [];
+    const sorted = [...images].sort((a, b) => {
       const aIsPrimary = (a as ProductImage).isPrimary ? 0 : 1;
       const bIsPrimary = (b as ProductImage).isPrimary ? 0 : 1;
       return aIsPrimary - bIsPrimary;
@@ -47,13 +48,16 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
     return sorted;
   }, [product?.images]);
 
+  const sizes = Array.isArray(product?.sizes) ? product.sizes : [];
+
   React.useEffect(() => {
-    if (product && product.sizes && product.sizes.length > 0) {
-      // Set first available size as default
-      const firstAvailable = product.sizes.find(s => s.inStock);
-      setSelectedSize(firstAvailable?.size || product.sizes[0].size);
+    const s = Array.isArray(product?.sizes) ? product.sizes : [];
+    if (s.length > 0) {
+      const firstAvailable = s.find((el) => el.inStock);
+      setSelectedSize(firstAvailable?.size ?? s[0]?.size ?? "");
+    } else {
+      setSelectedSize("");
     }
-    // Reset quantity and image index when product changes
     setQuantity(1);
     setCurrentImageIndex(0);
   }, [product]);
@@ -86,9 +90,9 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
 
   if (!product) return <></>;
 
-  const currentImage = productImages[currentImageIndex] || productImages[0];
-  const isOnSale = product.originalPrice && product.originalPrice > product.price;
-  const availableSizes = product.sizes?.filter(s => s.inStock) || [];
+  const currentImage = productImages[currentImageIndex] ?? productImages[0];
+  const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
+  const availableSizes = sizes.filter((s) => s.inStock);
   const hasMultipleImages = productImages.length > 1;
 
   // Truncate description to 150 characters
@@ -337,7 +341,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                   )}
 
                   {/* Size — prominent, required for Add to Bag */}
-                  {product.sizes && product.sizes.length > 0 && (
+                  {sizes.length > 0 && (
                     <div>
                       <p className={cn(
                         "text-sm font-semibold mb-2",
@@ -351,7 +355,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                         aria-label="Select size"
                         className="flex flex-wrap gap-2"
                       >
-                        {product.sizes.map((size) => (
+                        {sizes.map((size) => (
                           <button
                             key={size.size}
                             onClick={() => setSelectedSize(size.size)}
@@ -438,7 +442,7 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                       Add to Bag
                     </Button>
                     <Link
-                      href={`/products/${product.slug}`}
+                      href={product?.slug ? `/products/${product.slug}` : "/collections"}
                       onClick={onClose}
                       className={cn(
                         "text-center text-sm font-medium underline underline-offset-2 py-2",

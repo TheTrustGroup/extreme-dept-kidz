@@ -101,9 +101,9 @@ export function ProductGallery({
 
   return (
     <>
-      <div className={cn("flex flex-col lg:flex-row gap-3 xs:gap-4 sm:gap-5 lg:gap-6", className)}>
-        {/* Main Image - Glass Panel */}
-        <div className="relative lg:w-full aspect-square lg:aspect-auto lg:h-[600px] xl:h-[700px] glass-panel rounded-xl overflow-hidden group" style={{ contain: "layout style paint" }}>
+      <div className={cn("flex flex-col lg:flex-row gap-0 lg:gap-6", className)}>
+        {/* Main Image — Polo: cream bg, no heavy panel on mobile */}
+        <div className="relative lg:w-full aspect-square lg:aspect-auto lg:h-[600px] xl:h-[700px] bg-cream-100 dark:bg-dark-surface lg:rounded-xl overflow-hidden group" style={{ contain: "layout style paint" }}>
           <m.div
             key={selectedIndex}
             initial={{ opacity: 0, x: 20 }}
@@ -158,23 +158,24 @@ export function ProductGallery({
               </>
             )}
 
-            {/* Image Counter (Mobile) - Glass */}
+            {/* Image Counter — Polo: pill bottom-left, "1 | 2" style */}
             {images.length > 1 && (
               <m.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="absolute bottom-4 right-4 lg:hidden px-3 py-1.5 bg-charcoal-900/80 backdrop-blur-md text-cream-50 rounded-full text-xs font-medium shadow-glass"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-4 left-4 px-3 py-1.5 bg-white/90 dark:bg-charcoal-900/80 backdrop-blur-sm text-charcoal-700 dark:text-cream-50 rounded-full text-xs font-medium border border-cream-200/80 dark:border-transparent"
+                aria-label={`Image ${selectedIndex + 1} of ${images.length}`}
               >
-                {selectedIndex + 1} / {images.length}
+                {selectedIndex + 1} | {images.length}
               </m.div>
             )}
           </m.div>
         </div>
 
-        {/* Thumbnail Navigation */}
+        {/* Thumbnail Navigation — desktop only (Polo: clean mobile = image + indicator only) */}
         {images.length > 1 && (
-          <div className="lg:w-auto lg:flex-shrink-0">
+          <div className="hidden lg:block lg:w-auto lg:flex-shrink-0">
             {/* CRITICAL: Optimized scroll container with native momentum scrolling */}
             <div 
               className="flex lg:flex-col gap-2 xs:gap-2.5 sm:gap-3 lg:gap-4 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto lg:max-h-[600px] scrollbar-hide pb-2 lg:pb-0"

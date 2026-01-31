@@ -59,43 +59,58 @@ export function ProductPageClient({ product, allProducts = [], completeLooks = [
 
   return (
     <>
-      <div className="min-h-screen bg-dark-bg-primary [data-theme='light']:bg-cream-50 pt-20 md:pt-24 pb-20 lg:pb-16 transition-colors duration-300" style={{ contain: "layout style paint" }}>
+      {/* Polo-style: full-width image on mobile, then info card; 2-col on desktop */}
+      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg-primary pt-20 md:pt-24 pb-24 lg:pb-16 transition-colors duration-300" style={{ contain: "layout style paint" }}>
+        {/* Breadcrumb — minimal, above content */}
         <Container size="lg">
-          {/* Breadcrumb - Below header, before page title */}
-          <div className="mb-6 sm:mb-8 mt-6 sm:mt-8">
+          <div className="mb-4 mt-6 sm:mt-8">
             <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
           </div>
+        </Container>
 
-          {/* Main Product Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-6 sm:gap-8 lg:gap-12 mb-12 sm:mb-16 lg:mb-24">
-            {/* Product Gallery - Sticky on Desktop */}
-            <div className="lg:sticky lg:top-24 lg:self-start">
+        {/* Main: image full width on mobile; on desktop 2-col */}
+        <div className="mb-0">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,440px)] gap-0 lg:gap-12 lg:max-w-7xl lg:mx-auto lg:px-8 mb-0">
+            {/* Gallery — full width mobile, cream bg, Polo indicator */}
+            <div className="lg:sticky lg:top-24 lg:self-start bg-cream-100 dark:bg-dark-surface">
               <ProductGallery
                 images={images}
                 productName={product.name}
               />
             </div>
 
-            {/* Product Info - Sticky on Desktop */}
-            <div className="lg:sticky lg:top-24 lg:self-start">
+            {/* Info card — Polo: white/cream card, rounded top on mobile (overlaps image feel) */}
+            <div className="lg:sticky lg:top-24 lg:self-start -mt-6 lg:mt-0 relative z-10 lg:bg-transparent bg-cream-50 dark:bg-dark-bg-primary rounded-t-2xl lg:rounded-none pt-6 lg:pt-0 px-4 sm:px-6 lg:px-0 pb-8 lg:pb-0">
               <ProductInfo product={product} purchaseState={purchaseState} />
             </div>
           </div>
+        </div>
+
+        <Container size="lg" className="mt-12 lg:mt-16">
+          {/* Shipping & Returns — anchor for #shipping link from ProductInfo */}
+          <section id="shipping" className="scroll-mt-24 mb-8 pb-8 border-b border-cream-200 dark:border-dark-border-glass">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-charcoal-900 dark:text-dark-text-primary mb-2">
+              Shipping and Free Returns
+            </h2>
+            <p className="text-sm text-charcoal-600 dark:text-dark-text-secondary">
+              Free shipping on orders over ₵800. Easy returns within 30 days. Items must be unworn with tags attached.
+            </p>
+          </section>
 
           {/* Complete The Look Section - Below fold, can stream */}
-          <Suspense fallback={<div className="h-96 bg-cream-50 animate-pulse" />}>
+          <Suspense fallback={<div className="h-96 bg-cream-50 dark:bg-dark-surface animate-pulse rounded-xl" />}>
             <CompleteTheLook currentProduct={product} initialLooks={completeLooks} />
           </Suspense>
 
           {/* Reviews Section - Below fold, can stream */}
-          <Suspense fallback={<div className="h-64 bg-cream-50 animate-pulse" />}>
+          <Suspense fallback={<div className="h-64 bg-cream-50 dark:bg-dark-surface animate-pulse rounded-xl" />}>
             <Reviews productId={product.id} />
           </Suspense>
         </Container>
       </div>
 
       {/* Product Recommendations - Below fold, can stream */}
-      <Suspense fallback={<div className="h-96 bg-cream-50 animate-pulse" />}>
+      <Suspense fallback={<div className="h-96 bg-cream-50 dark:bg-dark-surface animate-pulse" />}>
         <ProductRecommendations
           currentProduct={product}
           allProducts={allProducts}

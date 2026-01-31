@@ -37,7 +37,7 @@ export function Reviews({ productId }: ReviewsProps) {
   });
 
   return (
-    <div className="mt-12 border-t pt-12">
+    <div id="reviews" className="mt-12 border-t pt-12 scroll-mt-24">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-serif font-bold mb-2">Customer Reviews</h2>

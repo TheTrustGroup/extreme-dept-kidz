@@ -1055,31 +1055,27 @@ textarea:focus-visible {
   }
 }
 
-/* PHASE 5 + PHASE 6 — Product card: strict vertical stack + global glass token */
+/* Product card — Polo Ralph Lauren–style: clean image, vertical info, minimal chrome */
 .product-card {
   display: flex;
   flex-direction: column;
   width: 100%;
   border-radius: var(--glass-radius-global, 16px);
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur-global, 14px));
-  -webkit-backdrop-filter: blur(var(--glass-blur-global, 14px));
-  border: 1px solid var(--glass-border-global);
-  box-shadow: var(--glass-shadow);
-  transition: box-shadow 0.2s ease;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
   overflow: hidden;
 }
 
 [data-theme="light"] .product-card,
 .light .product-card {
-  background: var(--glass-bg-light-mode);
-  border-color: var(--glass-border-light-mode);
+  background: transparent;
 }
 
 [data-theme="dark"] .product-card,
 .dark .product-card {
-  background: var(--glass-bg);
-  border-color: var(--glass-border-global);
+  background: transparent;
 }
 
 .skeleton-card {
@@ -1094,7 +1090,7 @@ textarea:focus-visible {
   contain: layout style paint;
 }
 
-/* PHASE 5 — Image wrap: image + Quick View only; no absolute outside */
+/* Image wrap: image only (no overlays except out-of-stock) */
 .product-card-image-wrap {
   position: relative;
   width: 100%;
@@ -1115,7 +1111,7 @@ textarea:focus-visible {
   }
 }
 
-/* PHASE 5 — Info block: strict vertical stack below image, no absolute */
+/* Info block: name | wishlist, category, price (Polo-style vertical stack) */
 .product-card-info {
   flex: 1;
   min-width: 0;
@@ -1131,35 +1127,26 @@ textarea:focus-visible {
   min-height: 0;
 }
 
-[data-theme="dark"] .product-card,
-.dark .product-card {
-  background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
-}
-
-/* Polish — Product card: subtle hover (desktop), no overlap */
-.product-card {
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-
+/* Polish — Product card: subtle hover (desktop) */
 .product-card:hover {
-  box-shadow: var(--glass-shadow-elevated);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .product-card:hover,
+.dark .product-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Placeholder slot: same aspect as product card but non-interactive, no hover */
+.product-card-placeholder {
+  transition: none;
+  pointer-events: none;
 }
 
 @media (min-width: 1024px) {
   .product-card:hover {
     transform: translateY(-2px) scale(1.01);
   }
-}
-
-[data-theme="light"] .product-card:hover,
-.light .product-card:hover {
-  border-color: var(--color-cream-300);
-}
-
-[data-theme="dark"] .product-card:hover,
-.dark .product-card:hover {
-  box-shadow: var(--shadow-medium);
 }
 
 /* Legacy .product-image — map to image-wrap for any remaining usage */
@@ -1171,10 +1158,10 @@ textarea:focus-visible {
   flex-shrink: 0;
 }
 
-/* PHASE 5 — Product card title & price: responsive, no hover hacks */
+/* Product card title & price — Polo-style: sans, clear hierarchy */
 .product-card-title {
   font-size: clamp(0.875rem, 0.8rem + 0.2vw, 1.125rem);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
   margin: 0;
   padding: 0;
@@ -1183,7 +1170,7 @@ textarea:focus-visible {
 }
 
 .product-card-price {
-  font-size: clamp(0.9375rem, 0.9rem + 0.1vw, 1.25rem);
+  font-size: clamp(0.875rem, 0.85rem + 0.1vw, 1.125rem);
   font-weight: 600;
   line-height: 1.4;
   margin: 0;

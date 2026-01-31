@@ -18,16 +18,18 @@ interface JustDroppedSectionProps {
   currentFilter: JustDroppedFilter;
 }
 
-/** Placeholder when fewer than 4 products. Server Component, theme via dark:. */
+/** Placeholder when fewer than 4 products. Not a product — no link, no Quick View. */
 function PlaceholderCard(): JSX.Element {
   return (
     <div
       className={cn(
-        "product-card w-full flex flex-col items-center justify-center p-8",
-        "bg-cream-50 dark:bg-dark-surface border-2 border-dashed border-cream-200 dark:border-dark-border-glass rounded-xl",
-        "text-charcoal-600 dark:text-dark-text-secondary"
+        "product-card-placeholder w-full flex flex-col items-center justify-center p-8 rounded-xl",
+        "bg-cream-50 dark:bg-dark-surface border-2 border-dashed border-cream-200 dark:border-dark-border-glass",
+        "text-charcoal-600 dark:text-dark-text-secondary cursor-default select-none",
+        "min-h-[280px] sm:min-h-[320px]"
       )}
-      style={{ aspectRatio: "4 / 5", minHeight: "400px" }}
+      style={{ aspectRatio: "4 / 5" }}
+      aria-hidden="true"
     >
       <div className="text-center space-y-4">
         <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center bg-cream-100 dark:bg-dark-bg-secondary">
@@ -132,7 +134,7 @@ export function JustDroppedSection({
             })}
           </nav>
 
-          {/* Product grid — Server-rendered; ProductCard is client for Quick View only */}
+          {/* Product grid — Server-rendered; ProductCard is client for wishlist + hover image */}
           <div
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[var(--space-4)] sm:gap-[var(--space-5)] lg:gap-[var(--space-6)]"
             role="list"

@@ -23,44 +23,31 @@ type FilterType = "all" | "boys" | "girls" | "new";
  * Placeholder Card Component
  * Shows "More styles coming soon" message
  */
+/** Placeholder when fewer products — not a product; same pattern as JustDroppedSection. */
 function PlaceholderCard(): JSX.Element {
   const { theme } = useTheme();
-  
+
   return (
     <div
       className={cn(
-        "product-card w-full flex flex-col items-center justify-center p-8",
-        "bg-cream-50 border-2 border-dashed rounded-xl",
-        theme === "dark" && "bg-dark-surface border-dark-border-glass"
+        "product-card-placeholder w-full flex flex-col items-center justify-center p-8 rounded-xl",
+        "bg-cream-50 dark:bg-dark-surface border-2 border-dashed border-cream-200 dark:border-dark-border-glass",
+        "text-charcoal-600 dark:text-dark-text-secondary cursor-default select-none"
       )}
-      style={{
-        aspectRatio: "4 / 5",
-        minHeight: "400px",
-      }}
+      style={{ aspectRatio: "4 / 5", minHeight: "280px" }}
+      aria-hidden="true"
     >
-      <div className={cn(
-        "text-center space-y-4",
-        theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
-      )}>
+      <div className="text-center space-y-4">
         <div className={cn(
           "w-16 h-16 mx-auto rounded-full flex items-center justify-center",
-          theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-100"
+          "bg-cream-100 dark:bg-dark-bg-secondary"
         )}>
-          <ChevronRight className={cn(
-            "w-8 h-8 rotate-[-90deg]",
-            theme === "dark" ? "text-dark-text-muted" : "text-charcoal-400"
-          )} />
+          <ChevronRight className="w-8 h-8 rotate-[-90deg] text-charcoal-400 dark:text-dark-text-muted" />
         </div>
-        <p className={cn(
-          "font-serif text-lg font-semibold",
-          theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-        )}>
+        <p className="font-sans text-lg font-semibold text-charcoal-900 dark:text-dark-text-primary">
           More Styles Coming Soon
         </p>
-        <p className={cn(
-          "text-sm",
-          theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
-        )}>
+        <p className="text-sm text-charcoal-600 dark:text-dark-text-secondary">
           Check back for new arrivals
         </p>
       </div>

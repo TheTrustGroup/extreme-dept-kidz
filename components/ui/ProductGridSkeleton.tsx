@@ -19,10 +19,7 @@ interface ProductGridSkeletonProps {
 }
 
 /**
- * ProductGridSkeleton Component
- * 
- * Skeleton loader for product grids with shimmer animation.
- * Matches ProductCard layout for seamless loading experience.
+ * ProductGridSkeleton — Matches ProductCard layout (Polo-style: image 4:5, info name | slot, category, price).
  */
 export function ProductGridSkeleton({
   count = 4,
@@ -31,7 +28,6 @@ export function ProductGridSkeleton({
 }: ProductGridSkeletonProps): JSX.Element {
   const { theme } = useTheme();
 
-  // Map columns to Tailwind classes - use string literal types for proper typing
   const getGridCols = (cols: number): string => {
     const gridMap: Record<number, string> = {
       1: "grid-cols-1",
@@ -65,53 +61,49 @@ export function ProductGridSkeleton({
   );
 }
 
-/**
- * Individual Product Card Skeleton
- */
+/** Single card skeleton — matches ProductCard: image 4:5, then name row (left + right slot), category, price. */
 function ProductCardSkeleton({ theme }: { theme: "light" | "dark" }): JSX.Element {
   return (
-    <div
-      className={cn(
-        "rounded-xl overflow-hidden border transition-colors duration-300",
-        theme === "dark"
-          ? "bg-dark-surface border-dark-border-glass"
-          : "bg-cream-50 border-cream-200"
-      )}
-    >
-      {/* Image Skeleton */}
-      <Skeleton
-        variant="rounded"
-        className={cn(
-          "w-full aspect-square",
-          theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-200"
-        )}
-      />
-
-      {/* Content Skeleton */}
-      <div className="p-4 space-y-3">
-        {/* Product Name */}
+    <div className="product-card w-full flex flex-col rounded-xl overflow-hidden">
+      <div className="product-card-image-wrap relative w-full overflow-hidden rounded-t-xl bg-cream-100 dark:bg-dark-surface">
+        <div className="relative w-full" style={{ aspectRatio: "4 / 5" }}>
+          <Skeleton
+            variant="rounded"
+            className={cn(
+              "absolute inset-0 w-full h-full rounded-none",
+              theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-200"
+            )}
+          />
+        </div>
+      </div>
+      <div className="product-card-info flex flex-col gap-1 pt-3 pb-1">
+        <div className="flex items-start justify-between gap-2">
+          <Skeleton
+            variant="rounded"
+            className={cn(
+              "h-4 flex-1 min-w-0 max-w-[85%]",
+              theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-200"
+            )}
+          />
+          <Skeleton
+            variant="rounded"
+            className={cn(
+              "h-6 w-6 shrink-0 rounded-full",
+              theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-200"
+            )}
+          />
+        </div>
         <Skeleton
           variant="rounded"
           className={cn(
-            "h-5 w-3/4",
+            "h-3 w-1/2",
             theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-200"
           )}
         />
-
-        {/* Category */}
         <Skeleton
           variant="rounded"
           className={cn(
-            "h-4 w-1/2",
-            theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-200"
-          )}
-        />
-
-        {/* Price */}
-        <Skeleton
-          variant="rounded"
-          className={cn(
-            "h-6 w-1/3 mt-4",
+            "h-4 w-1/3 mt-0.5",
             theme === "dark" ? "bg-dark-bg-secondary" : "bg-cream-200"
           )}
         />
