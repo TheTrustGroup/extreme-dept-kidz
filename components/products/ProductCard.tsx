@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import type { Product, ProductImage } from "@/types";
+import type { Product, ProductImage, ProductSize } from "@/types";
 import { cn, formatPrice } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { WishlistButton } from "@/components/WishlistButton";
+import { ALL_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
 
 interface ProductCardProps {
   product: Product;
@@ -15,16 +16,43 @@ interface ProductCardProps {
   fetchPriority?: "auto" | "high" | "low";
 }
 
+/** Polo-style size range: "8-12", "2T-8", or "8-20" from product sizes. */
+function formatSizeRange(sizes: ProductSize[]): string {
+  if (!sizes?.length) return "";
+  const order = ALL_PRODUCT_SIZES as unknown as string[];
+  const sizeStrings = sizes.map((s) => s.size);
+  const inOrder = sizeStrings.filter((size) => order.includes(size));
+  const sorted =
+    inOrder.length > 0
+      ? [...inOrder].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+      : [...sizeStrings].sort((a, b) => {
+          const na = parseInt(a, 10);
+          const nb = parseInt(b, 10);
+          if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+          return String(a).localeCompare(String(b));
+        });
+  if (sorted.length === 0) return "";
+  if (sorted.length === 1) return sorted[0];
+  return `${sorted[0]}-${sorted[sorted.length - 1]}`;
+}
+
+/** Polo-style subtitle: "Boys Sizes 8-12" or "Girls Sizes 4-10" (category + Sizes + range). */
+function productCardSubtitle(product: Product): string {
+  const categoryName = product.category?.name ?? "";
+  const sizeRange = formatSizeRange(Array.isArray(product.sizes) ? product.sizes : []);
+  if (!sizeRange) return categoryName || "Product";
+  return `${categoryName} Sizes ${sizeRange}`.trim();
+}
+
 /**
  * ProductCard — Polo Ralph Lauren–style: clean image, vertical info stack, wishlist on right.
- * Structure: product-card > image-wrap (image only) > info (name + wishlist | category | price).
- * No overlays on image except out-of-stock. Tap card = PDP.
+ * Under card: product name, then "Boys/Girls" + size range (e.g. "Boys 8-12"), then price. Tap card = PDP.
  */
 export const ProductCard = React.memo(function ProductCard({
   product,
   className,
   priority = false,
-  fetchPriority = "low",
+  fetchPriority: _fetchPriority = "low",
 }: ProductCardProps): JSX.Element {
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = React.useState(false);
@@ -139,9 +167,9 @@ export const ProductCard = React.memo(function ProductCard({
             "text-[11px] sm:text-xs font-normal truncate",
             theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-500"
           )}
-          title={`${product.category?.name ?? "Product"}${isNew ? " · New" : ""}${isOnSale ? " · Sale" : ""}`}
+          title={productCardSubtitle(product)}
         >
-          {product.category?.name ?? "Product"}
+          {productCardSubtitle(product)}
           {isNew && " · New"}
           {isOnSale && " · Sale"}
         </p>

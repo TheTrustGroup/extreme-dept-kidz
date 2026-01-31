@@ -80,17 +80,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const [allProducts, completeLooks] = await Promise.all([
-    getProducts({ storefrontOnly: true }),
-    getCompleteLooksForProduct(product.id),
-  ]);
+  let allProducts: Product[] = [];
+  let completeLooks: Awaited<ReturnType<typeof getCompleteLooksForProduct>> = [];
+  try {
+    [allProducts, completeLooks] = await Promise.all([
+      getProducts({ storefrontOnly: true }),
+      getCompleteLooksForProduct(product.id).catch(() => []),
+    ]);
+  } catch {
+    // Non-fatal: render PDP with empty related data
+  }
 
-  // Generate structured data
+  const category = product.category ?? { name: "Product", slug: "all" };
   const productSchema = generateProductSchema(product);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "Collections", url: "/collections" },
-    { name: product.category.name, url: `/collections/${product.category.slug}` },
+    { name: category.name, url: `/collections/${category.slug}` },
     { name: product.name, url: `/products/${product.slug}` },
   ]);
 

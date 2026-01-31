@@ -105,9 +105,9 @@
   --space-section-desktop: 6rem; /* 96px */
   --space-section-hero: 7rem;    /* 112px */
   /* Minimal gap for last section before footer (Explore the collection → footer) */
-  --space-before-footer-mobile: var(--space-4);   /* 16px */
-  --space-before-footer-tablet: var(--space-5);   /* 20px */
-  --space-before-footer-desktop: var(--space-6);  /* 24px */
+  --space-before-footer-mobile: var(--space-3);   /* 12px */
+  --space-before-footer-tablet: var(--space-4);   /* 16px */
+  --space-before-footer-desktop: var(--space-5);  /* 20px */
   --space-block: var(--space-6); /* 24px */
   --space-inline: var(--space-4); /* 16px */
 

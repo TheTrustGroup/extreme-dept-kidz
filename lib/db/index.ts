@@ -503,9 +503,13 @@ export async function getProductBySlug(slug: string, options?: { storefrontOnly?
         },
       });
 
-      if (!prismaProduct && !options?.storefrontOnly) {
+      // Case-insensitive slug fallback so /products/monza-tee resolves even if DB has "Monza-Tee"
+      if (!prismaProduct) {
+        const fallbackWhere = options?.storefrontOnly
+          ? { slug: { equals: slug, mode: 'insensitive' as const }, visibleOnStore: true }
+          : { slug: { equals: slug, mode: 'insensitive' as const } };
         prismaProduct = await prisma.product.findFirst({
-          where: { slug: { equals: slug, mode: 'insensitive' } },
+          where: fallbackWhere,
           include: {
             category: true,
             images: { orderBy: { order: 'asc' } },

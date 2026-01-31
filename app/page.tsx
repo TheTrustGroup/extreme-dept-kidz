@@ -16,7 +16,6 @@ import {
 } from "@/lib/utils/just-dropped";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
-import { RealtimeTest } from "@/components/debug/RealtimeTest";
 
 // Hero, TrustBar, and "Just dropped" in main bundle so below-hero is never blank
 // Shop by Style removed for world-class simplicity — Just dropped + Shop by Category
@@ -192,9 +191,6 @@ export default async function Home(props: HomeProps) {
       </div>
       {/* Temporary: remove after fixing caching */}
       <CacheDebugPanel productsCount={products.length} generatedAt={generatedAt} />
-      
-      {/* Realtime Test Component - Remove after testing */}
-      <RealtimeTest />
     </>
   );
 }

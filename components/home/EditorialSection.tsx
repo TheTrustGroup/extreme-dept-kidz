@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 export function EditorialSection(): JSX.Element {
   return (
     <section 
-      // Design System: Consistent spacing using 8px base scale
-      className="section bg-cream-50"
+      // Design System: Tighter bottom spacing so "Explore the Collection" sits closer to footer
+      className="section bg-cream-50 pb-8 md:pb-10 lg:pb-12"
       aria-labelledby="editorial-heading"
     >
       <Container size="lg">
