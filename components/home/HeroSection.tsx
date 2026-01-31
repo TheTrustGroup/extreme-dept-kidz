@@ -4,43 +4,78 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { m } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const HERO_IMAGE = "/Extreme 1.png";
 
-/** PHASE 4 — Hero: Headline, value prop, Primary CTA, optional Secondary CTA, Hero Image. No UI overload. */
-export function HeroSection(): JSX.Element {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        ease: [0.25, 0.46, 0.45, 0.94],
-        staggerChildren: 0.12,
-        delayChildren: 0.06,
-      },
-    },
-  };
+export interface HeroSectionProps {
+  /** Optional background video URL (auto-play, muted, loop). Falls back to image when not set. */
+  videoSrc?: string;
+}
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94],
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
     },
-  };
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+/**
+ * Luxury homepage hero: full-screen video/image, glassmorphism overlay,
+ * Shop Boys / Shop Girls CTAs, smooth scroll indicator. Ralph Lauren–inspired.
+ */
+export function HeroSection({ videoSrc }: HeroSectionProps = {}): JSX.Element {
+  const scrollRef = React.useRef<HTMLButtonElement>(null);
+
+  const scrollToNext = React.useCallback(() => {
+    const main = document.getElementById("main-content");
+    if (main) {
+      main.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
+    }
+  }, []);
 
   return (
     <section
-      className="relative flex items-center justify-center overflow-hidden min-h-[calc(100vh-4.5rem)] pt-[4.5rem] md:min-h-[calc(100vh-4.5rem)]"
+      className={cn(
+        "relative flex items-center justify-center overflow-hidden",
+        "min-h-[70vh] sm:min-h-[80vh] md:min-h-screen",
+        "pt-[4.5rem] md:pt-[4.5rem]"
+      )}
       aria-label="Hero section"
     >
-      {/* Hero Image */}
+      {/* Background: video (if available) or image */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[var(--brand-text)]">
+        {videoSrc ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            aria-hidden
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+        ) : null}
+        <div className="absolute inset-0 bg-luxury-navy-950">
           <Image
             src={HERO_IMAGE}
             alt=""
@@ -55,72 +90,105 @@ export function HeroSection(): JSX.Element {
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/50" aria-hidden />
+        {videoSrc ? <div className="absolute inset-0 bg-luxury-navy-950/40" aria-hidden /> : null}
+        <div
+          className="absolute inset-0 bg-luxury-navy-950/50"
+          aria-hidden
+        />
       </div>
 
-      {/* Content */}
+      {/* Centered content with glassmorphism overlay */}
       <m.div
-        className="relative z-10 w-full flex items-center justify-center px-4 py-12 md:py-16"
+        className={cn(
+          "relative z-10 w-full max-w-4xl mx-auto px-4 py-12 md:py-16",
+          "rounded-none md:rounded-xl",
+          "backdrop-blur-md border border-white/10",
+          "bg-white/5 md:bg-white/10",
+          "shadow-glass"
+        )}
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="text-center">
           <m.h1
             className={cn(
-              "heading-xl font-serif font-bold text-cream-50",
-              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl",
-              "leading-[1.1] tracking-tight",
-              "mb-4 md:mb-5"
+              "font-serif font-semibold text-white",
+              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl",
+              "leading-tight tracking-tight",
+              "mb-3 sm:mb-4"
             )}
             variants={itemVariants}
-            style={{ textShadow: "var(--hero-text-shadow)" }}
+            style={{ textShadow: "0 2px 20px rgba(0,0,0,0.4)" }}
           >
             Premium Streetwear for Young Legends
           </m.h1>
 
           <m.p
             className={cn(
-              "font-sans text-cream-100/95 text-base md:text-lg lg:text-xl max-w-xl mx-auto",
-              "leading-snug mb-8 md:mb-10"
+              "font-sans text-white/90 text-sm sm:text-base md:text-lg max-w-xl mx-auto",
+              "leading-snug mb-6 sm:mb-8"
             )}
             variants={itemVariants}
-            style={{ textShadow: "var(--hero-text-shadow-subtle)" }}
+            style={{ textShadow: "0 1px 8px rgba(0,0,0,0.3)" }}
           >
             Elevated style for young legends. Built for adventure, designed for life.
           </m.p>
 
+          {/* CTAs: Shop Boys / Shop Girls */}
           <m.div
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4"
+            className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4"
             variants={itemVariants}
           >
-            <Button
-              variant="primary"
-              size="lg"
+            <Link
+              href="/collections/boys"
               className={cn(
-                "min-w-[140px] md:min-w-[160px]",
-                "bg-cream-50 text-charcoal-900 border border-cream-200/50",
-                "hover:bg-cream-50 hover:shadow-lg"
+                "inline-flex items-center justify-center min-w-[160px] sm:min-w-[180px] px-6 py-3",
+                "rounded-none border-2 border-luxury-gold bg-luxury-gold",
+                "text-sm font-medium uppercase tracking-[0.2em] text-luxury-navy-900",
+                "hover:bg-luxury-gold/90 hover:border-luxury-gold/90 transition-colors duration-200",
+                "touch-target-min"
               )}
-              asChild
             >
-              <Link href="/collections/all">Shop All</Link>
-            </Button>
-            <Button
-              variant="secondary"
-              size="lg"
+              Shop Boys
+            </Link>
+            <Link
+              href="/collections/girls"
               className={cn(
-                "min-w-[140px] md:min-w-[160px]",
-                "bg-transparent border-2 border-cream-50 text-cream-50",
-                "hover:bg-cream-50 hover:text-charcoal-900"
+                "inline-flex items-center justify-center min-w-[160px] sm:min-w-[180px] px-6 py-3",
+                "rounded-none border-2 border-white/80 bg-transparent text-white",
+                "text-sm font-medium uppercase tracking-[0.2em]",
+                "hover:bg-white/10 hover:border-white transition-colors duration-200",
+                "touch-target-min"
               )}
-              asChild
             >
-              <Link href="/collections/new-arrivals">New Arrivals</Link>
-            </Button>
+              Shop Girls
+            </Link>
           </m.div>
         </div>
       </m.div>
+
+      {/* Smooth scroll indicator */}
+      <m.button
+        ref={scrollRef}
+        type="button"
+        onClick={scrollToNext}
+        className={cn(
+          "absolute bottom-6 left-1/2 -translate-x-1/2 z-10",
+          "flex flex-col items-center gap-1 text-white/80",
+          "hover:text-white transition-colors duration-200",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+          "touch-target-min"
+        )}
+        aria-label="Scroll to content"
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ delay: 0.8 }}
+      >
+        <span className="text-[10px] uppercase tracking-[0.25em]">Discover</span>
+        <ChevronDown className="h-6 w-6 animate-bounce" aria-hidden />
+      </m.button>
     </section>
   );
 }

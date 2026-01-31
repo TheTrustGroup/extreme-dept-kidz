@@ -1,167 +1,109 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { m } from "framer-motion";
-import { AnimatePresence } from "framer-motion";
-import { X, Plus, Minus, Trash2, ShoppingBag, CheckCircle } from "lucide-react";
-import { useCartStore } from "@/lib/stores/cart-store";
-import { Button } from "@/components/ui/button";
-import { H3, Body } from "@/components/ui/typography";
-import type { ProductImage } from "@/types";
-import { cn, formatPrice } from "@/lib/utils";
-import { useFocusTrap } from "@/lib/hooks/use-keyboard-navigation";
+import Image from "next/image";
+import { m, AnimatePresence } from "framer-motion";
+import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
+import type { CartItem as CartItemType } from "@/types";
+import { formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
-interface CartDrawerProps {
+export interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  items: CartItemType[];
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemove: (id: string) => void;
 }
 
 /**
- * CartDrawer Component
- * 
- * Premium cart drawer that slides in from the right.
- * Displays cart items with quantity controls and checkout options.
+ * Luxury cart drawer: slide-in from right, glassmorphism overlay,
+ * product list with thumbnails, quantity controls, subtotal, checkout, empty state.
+ * Pure UI — all behavior via props.
  */
-export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const items = useCartStore((state) => state.items);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const removeItem = useCartStore((state) => state.removeItem);
-  const getTotal = useCartStore((state) => state.getTotal);
-  const [removingItemId, setRemovingItemId] = React.useState<string | null>(
-    null
+export function CartDrawer({
+  isOpen,
+  onClose,
+  items,
+  onUpdateQuantity,
+  onRemove,
+}: CartDrawerProps): JSX.Element {
+  const drawerRef = React.useRef<HTMLDivElement>(null);
+
+  const subtotal = React.useMemo(
+    () => items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [items]
   );
 
-  const subtotal = getTotal();
-
-  // Handle quantity change
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
-    const item = items.find(i => i.id === itemId);
-    updateQuantity(itemId, newQuantity);
-    if (item) {
-      announceToScreenReader(`Quantity updated to ${newQuantity} for ${item.product.name}`);
-    }
-  };
-
-  // Handle remove item with confirmation
-  const handleRemoveClick = (itemId: string) => {
-    const item = items.find(i => i.id === itemId);
-    if (removingItemId === itemId) {
-      // Confirm removal
-      if (item) {
-        announceToScreenReader(`${item.product.name} removed from cart`);
-      }
-      removeItem(itemId);
-      setRemovingItemId(null);
-    } else {
-      // Show confirmation state
-      setRemovingItemId(itemId);
-      // Auto-cancel confirmation after 3 seconds
-      setTimeout(() => {
-        setRemovingItemId((current) => (current === itemId ? null : current));
-      }, 3000);
-    }
-  };
-
-  // Prevent body scroll when drawer is open
   React.useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-      setRemovingItemId(null);
-    }
+    if (isOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
 
-  // Keyboard navigation
   React.useEffect(() => {
     if (!isOpen) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
+      if (e.key === "Escape") onClose();
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
-
-  // Focus trap for accessibility
-  const drawerRef = React.useRef<HTMLDivElement>(null);
-  useFocusTrap(drawerRef, isOpen);
-  
-  // Screen reader announcement helper
-  const announceToScreenReader = React.useCallback((message: string): void => {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('role', 'status');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    document.body.appendChild(announcement);
-    setTimeout(() => {
-      if (document.body.contains(announcement)) {
-        document.body.removeChild(announcement);
-      }
-    }, 1000);
-  }, []);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Glassmorphism overlay */}
           <m.div
-            className="fixed inset-0 bg-charcoal-900/40 backdrop-blur-sm z-50"
+            className="fixed inset-0 z-50 bg-luxury-navy-950/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.25 }}
             onClick={onClose}
-            aria-hidden="true"
+            aria-hidden
           />
 
-          {/* Drawer */}
+          {/* Drawer panel — slide-in from right */}
           <m.div
             ref={drawerRef}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-[100vw] xs:max-w-sm sm:max-w-md md:max-w-lg glass shadow-2xl z-50 flex flex-col"
+            className={cn(
+              "fixed top-0 right-0 bottom-0 z-50 w-full max-w-[100vw] xs:max-w-sm sm:max-w-md",
+              "flex flex-col bg-luxury-cream/95 backdrop-blur-md border-l border-white/20 shadow-2xl"
+            )}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{
-              type: "spring",
-              damping: 35,
-              stiffness: 400,
-              mass: 0.8,
-            }}
+            transition={{ type: "spring", damping: 32, stiffness: 320 }}
             role="dialog"
             aria-modal="true"
             aria-label="Shopping cart"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 xs:p-5 sm:p-6 border-b border-cream-200 flex-shrink-0 bg-cream-50">
+            <div className="flex items-center justify-between flex-shrink-0 px-4 py-5 sm:px-6 border-b border-luxury-navy-200/30 bg-luxury-cream">
               <div>
-                <H3 className="text-charcoal-900 text-lg xs:text-xl font-serif font-bold">
+                <h2
+                  className={cn(
+                    "text-lg sm:text-xl font-semibold text-luxury-navy tracking-tight",
+                    "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
+                  )}
+                >
                   Your Cart
-                </H3>
+                </h2>
                 {items.length > 0 && (
-                  <Body 
-                    className="text-sm text-charcoal-600 mt-0.5"
-                    aria-live="polite"
-                    aria-atomic="true"
-                  >
+                  <p className="text-sm text-luxury-navy-600 mt-0.5" aria-live="polite">
                     {items.length} {items.length === 1 ? "item" : "items"}
-                  </Body>
+                  </p>
                 )}
               </div>
               <m.button
+                type="button"
                 onClick={onClose}
-                className="p-2 text-charcoal-700 hover:text-charcoal-900 transition-colors duration-200 rounded-lg hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2"
+                className="p-2 text-luxury-navy-600 hover:text-luxury-navy rounded-lg hover:bg-luxury-navy-100/50 focus:outline-none focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2"
                 aria-label="Close cart"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -170,109 +112,57 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </m.button>
             </div>
 
-            {/* Cart Content */}
-            {/* CRITICAL: Optimized scroll container with native momentum scrolling */}
-            <div 
-              className="flex-1 overflow-y-auto"
-              data-scroll-container
+            {/* Scrollable content */}
+            <div
+              className="flex-1 overflow-y-auto min-h-0"
               style={{
-                WebkitOverflowScrolling: 'touch',
-                transform: 'translateZ(0)',
-                willChange: 'scroll-position',
-                contain: 'layout style paint',
+                WebkitOverflowScrolling: "touch",
+                contain: "layout style paint",
               }}
             >
               {items.length === 0 ? (
-                <EmptyCartState />
+                <EmptyState onClose={onClose} />
               ) : (
-                <div className="p-4 xs:p-5 sm:p-6 space-y-3 xs:space-y-4">
-                  <AnimatePresence mode="popLayout">
-                    {items.map((item, index) => (
-                      <CartItem
-                        key={item.id}
-                        item={item}
-                        onQuantityChange={(quantity) =>
-                          handleQuantityChange(item.id!, quantity)
-                        }
-                        onRemove={() => handleRemoveClick(item.id!)}
-                        isRemoving={removingItemId === item.id}
-                        index={index}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
+                <ul className="p-4 sm:p-6 space-y-4" role="list">
+                  {items.map((item, index) => (
+                    <DrawerCartItem
+                      key={item.id ?? `${item.product.id}-${item.selectedSize}`}
+                      item={item}
+                      index={index}
+                      onUpdateQuantity={onUpdateQuantity}
+                      onRemove={onRemove}
+                    />
+                  ))}
+                </ul>
               )}
             </div>
 
-            {/* Footer */}
+            {/* Footer: subtotal + checkout (only when not empty) */}
             {items.length > 0 && (
-              <div className="border-t border-cream-200 p-6 space-y-4 bg-cream-50">
-                {/* Subtotal */}
-                <div className="flex items-center justify-between pb-2">
-                  <Body className="font-semibold text-charcoal-900">
-                    Subtotal
-                  </Body>
-                  <Body className="font-serif text-xl font-semibold text-charcoal-900">
+              <div className="flex-shrink-0 p-4 sm:p-6 border-t border-luxury-navy-200/30 bg-luxury-cream space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-luxury-navy">Subtotal</span>
+                  <span
+                    className={cn(
+                      "text-lg font-semibold text-luxury-navy",
+                      "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
+                    )}
+                  >
                     {formatPrice(subtotal)}
-                  </Body>
+                  </span>
                 </div>
-                <div className="flex items-center justify-between text-sm text-charcoal-600 pb-2">
-                  <span>Shipping</span>
-                  <span className="text-xs">Calculated at checkout</span>
-                </div>
-                <div className="border-t border-cream-200 pt-3 pb-4">
-                  <div className="flex items-center justify-between">
-                    <Body className="font-bold text-charcoal-900 text-lg">
-                      Total
-                    </Body>
-                    <Body className="font-serif text-2xl font-bold text-charcoal-900">
-                      {formatPrice(subtotal)}
-                    </Body>
-                  </div>
-                </div>
-
-                {/* Trust Indicators */}
-                <div className="space-y-2 pb-4">
-                  <div className="flex items-center gap-2 text-xs text-charcoal-600">
-                    <CheckCircle className="w-3.5 h-3.5 text-forest-600 flex-shrink-0" />
-                    <span>Secure Checkout</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-charcoal-600">
-                    <CheckCircle className="w-3.5 h-3.5 text-forest-600 flex-shrink-0" />
-                    <span>Easy Returns</span>
-                  </div>
-                </div>
-
-                {/* CTAs */}
-                <div className="space-y-3">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full py-6 text-base font-semibold uppercase tracking-wide"
-                    asChild
-                  >
-                    <Link href="/checkout" onClick={onClose}>
-                      Checkout
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="w-full text-charcoal-700 hover:text-charcoal-900"
-                    asChild
-                  >
-                    <Link href="/cart" onClick={onClose}>
-                      View Cart
-                    </Link>
-                  </Button>
-                  <Link
-                    href="/collections"
-                    onClick={onClose}
-                    className="block text-center text-sm text-charcoal-600 hover:text-charcoal-900 transition-colors"
-                  >
-                    Continue Shopping
-                  </Link>
-                </div>
+                <Link
+                  href="/checkout"
+                  onClick={onClose}
+                  className={cn(
+                    "block w-full py-3.5 text-center text-sm font-medium tracking-wider uppercase",
+                    "bg-luxury-navy text-white rounded-none",
+                    "hover:bg-luxury-navy/90 transition-colors",
+                    "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
+                  )}
+                >
+                  Checkout
+                </Link>
               </div>
             )}
           </m.div>
@@ -282,190 +172,158 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   );
 }
 
-/**
- * CartItem Component
- */
-interface CartItemProps {
-  item: {
-    id?: string;
-    product: {
-      id: string;
-      name: string;
-      slug: string;
-      price: number;
-      images: Array<{ url: string; alt?: string }>;
-    };
-    quantity: number;
-    selectedSize: string;
-  };
-  onQuantityChange: (quantity: number) => void;
-  onRemove: () => void;
-  isRemoving: boolean;
-  index: number;
+function getItemId(item: CartItemType): string {
+  if (item.id) return item.id;
+  return `${item.product.id}-${item.selectedSize}`;
 }
 
-function CartItem({
+interface DrawerCartItemProps {
+  item: CartItemType;
+  index: number;
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemove: (id: string) => void;
+}
+
+function DrawerCartItem({
   item,
-  onQuantityChange,
-  onRemove,
-  isRemoving,
   index,
-}: CartItemProps): JSX.Element {
-  const primaryImage =
-    item.product.images.find((img) => (img as ProductImage).isPrimary) ||
-    item.product.images[0];
+  onUpdateQuantity,
+  onRemove,
+}: DrawerCartItemProps): JSX.Element {
+  const id = getItemId(item);
+  const thumb = item.product.images?.[0];
+  const thumbUrl = thumb?.url;
+  const thumbAlt = thumb?.alt ?? item.product.name;
 
   return (
-    <m.div
+    <m.li
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20, scale: 0.95 }}
-      transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
+      exit={{ opacity: 0, x: -12 }}
+      transition={{ duration: 0.25, delay: index * 0.04 }}
       className={cn(
-        "flex gap-4 p-4 rounded-lg border-2 transition-all duration-200",
-        isRemoving 
-          ? "border-navy-900 bg-navy-50/50" 
-          : "border-cream-200 bg-cream-50 hover:border-cream-300 hover:shadow-sm"
+        "flex gap-4 p-4 rounded-lg border border-luxury-navy-200/30",
+        "bg-white/60 backdrop-blur-sm hover:border-luxury-gold/30 transition-colors"
       )}
     >
-      {/* Product Image */}
+      {/* Thumbnail */}
       <Link
         href={`/products/${item.product.slug}`}
-        className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-cream-100 border border-cream-200"
-        onClick={(e) => {
-          // Prevent closing drawer when clicking image
-          e.stopPropagation();
-        }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-luxury-navy-100/50 border border-luxury-navy-200/20"
       >
-        <Image
-          src={primaryImage.url}
-          alt={primaryImage.alt || item.product.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 80px, 96px"
-          quality={75}
-          loading="lazy"
-          placeholder="blur"
-          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-        />
+        {thumbUrl ? (
+          <Image
+            src={thumbUrl}
+            alt={thumbAlt}
+            fill
+            className="object-cover"
+            sizes="96px"
+            quality={80}
+          />
+        ) : (
+          <div className="w-full h-full bg-luxury-navy-200/30 flex items-center justify-center">
+            <ShoppingBag className="w-8 h-8 text-luxury-navy-400" />
+          </div>
+        )}
       </Link>
 
-      {/* Product Info */}
       <div className="flex-1 min-w-0">
         <Link
           href={`/products/${item.product.slug}`}
-          className="block mb-1"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Body className="font-semibold text-charcoal-900 line-clamp-2 hover:text-navy-900 transition-colors duration-200">
-            {item.product.name}
-          </Body>
-        </Link>
-        <Body className="text-sm text-charcoal-600 mb-2">
-          Size: <span className="font-medium">{item.selectedSize}</span>
-        </Body>
-        <div className="flex items-baseline gap-2 mb-2">
-          <Body className="font-semibold text-charcoal-900 text-base">
-            {formatPrice(item.product.price)}
-          </Body>
-          {item.quantity > 1 && (
-            <Body className="text-xs text-charcoal-500">
-              × {item.quantity} = {formatPrice(item.product.price * item.quantity)}
-            </Body>
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "block font-medium text-luxury-navy line-clamp-2 hover:text-luxury-gold-700 transition-colors",
+            "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
           )}
-        </div>
+        >
+          {item.product.name}
+        </Link>
+        <p className="text-xs text-luxury-navy-600 mt-0.5">
+          Size: <span className="font-medium">{item.selectedSize}</span>
+        </p>
+        <p className="text-sm font-semibold text-luxury-gold-700 mt-1">
+          {formatPrice(item.product.price)}
+          {item.quantity > 1 && (
+            <span className="text-luxury-navy-600 font-normal ml-1">
+              × {item.quantity} = {formatPrice(item.product.price * item.quantity)}
+            </span>
+          )}
+        </p>
 
-        {/* Quantity Controls */}
-        <div className="flex items-center gap-3 mt-3">
-          <div className="flex items-center gap-2 border-2 border-cream-200 rounded-lg bg-cream-50">
-            <m.button
-              onClick={() => onQuantityChange(item.quantity - 1)}
+        {/* Quantity controls */}
+        <div className="flex items-center gap-2 mt-3">
+          <div className="inline-flex items-center border border-luxury-navy-200/40 rounded-md bg-luxury-cream">
+            <button
+              type="button"
+              onClick={() => onUpdateQuantity(id, item.quantity - 1)}
               disabled={item.quantity <= 1}
-              className={cn(
-                "p-1.5 hover:bg-cream-100 transition-colors duration-200 rounded-l",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
+              className="p-2 text-luxury-navy-700 hover:text-luxury-navy disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Decrease quantity"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
             >
-              <Minus className="w-3.5 h-3.5 text-charcoal-900" />
-            </m.button>
-            <span 
-              className="font-sans text-sm font-semibold text-charcoal-900 min-w-[2.5rem] text-center"
-              aria-live="polite"
-              aria-atomic="true"
-            >
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <span className="min-w-[2rem] text-center text-sm font-medium text-luxury-navy" aria-live="polite">
               {item.quantity}
             </span>
-            <m.button
-              onClick={() => onQuantityChange(item.quantity + 1)}
-              disabled={item.quantity >= 10}
-              className={cn(
-                "p-1.5 hover:bg-cream-100 transition-colors duration-200 rounded-r",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
+            <button
+              type="button"
+              onClick={() => onUpdateQuantity(id, item.quantity + 1)}
+              disabled={item.quantity >= 99}
+              className="p-2 text-luxury-navy-700 hover:text-luxury-navy disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Increase quantity"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
             >
-              <Plus className="w-3.5 h-3.5 text-charcoal-900" />
-            </m.button>
+              <Plus className="w-3.5 h-3.5" />
+            </button>
           </div>
-
-          {/* Remove Button */}
-          <m.button
-            onClick={onRemove}
-            className={cn(
-              "p-2 text-charcoal-600 hover:text-charcoal-900 transition-colors duration-200 rounded-lg hover:bg-cream-100",
-              isRemoving && "text-navy-900 bg-navy-50"
-            )}
-            aria-label={isRemoving ? "Confirm remove" : "Remove item"}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
+            type="button"
+            onClick={() => onRemove(id)}
+            className="p-2 text-luxury-navy-500 hover:text-luxury-navy rounded-md hover:bg-luxury-navy-100/50"
+            aria-label="Remove item"
           >
-            {isRemoving ? (
-              <span className="text-xs font-medium">Confirm?</span>
-            ) : (
-              <Trash2 className="w-4 h-4" />
-            )}
-          </m.button>
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
-    </m.div>
+    </m.li>
   );
 }
 
-/**
- * EmptyCartState Component
- */
-function EmptyCartState(): JSX.Element {
+function EmptyState({ onClose }: { onClose: () => void }): JSX.Element {
   return (
-    <m.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center h-full p-8 text-center"
-    >
+    <div className="flex flex-col items-center justify-center p-8 text-center min-h-[280px]">
       <m.div
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="mb-6"
+        transition={{ duration: 0.3 }}
+        className="mb-5"
       >
-        <ShoppingBag className="w-20 h-20 text-charcoal-300" />
+        <ShoppingBag className="w-16 h-16 text-luxury-navy-300" aria-hidden />
       </m.div>
-      <H3 className="text-charcoal-900 mb-2 text-xl">Your cart is empty</H3>
-      <Body className="text-charcoal-600 mb-6 max-w-sm">
-        Let&apos;s change that. Discover our curated collection of premium pieces for young legends.
-      </Body>
-      <Button variant="primary" size="lg" className="w-full sm:w-auto" asChild>
-        <Link href="/collections/boys">SHOP BOYS</Link>
-      </Button>
-    </m.div>
+      <h3
+        className={cn(
+          "text-lg font-semibold text-luxury-navy mb-2",
+          "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
+        )}
+      >
+        Your cart is empty
+      </h3>
+      <p className="text-sm text-luxury-navy-600 mb-6 max-w-xs">
+        Discover our curated collection of premium pieces for young legends.
+      </p>
+      <Link
+        href="/collections"
+        onClick={onClose}
+        className={cn(
+          "inline-block px-6 py-3 text-sm font-medium tracking-wider uppercase",
+          "bg-luxury-navy text-white rounded-none hover:bg-luxury-navy/90 transition-colors",
+          "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
+        )}
+      >
+        Shop Collections
+      </Link>
+    </div>
   );
 }
-

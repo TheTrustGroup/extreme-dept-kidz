@@ -4,6 +4,7 @@
 
 export { HeroSection } from "./HeroSection";
 export { TrustBar } from "./TrustBar";
+export { TrustSection } from "./TrustSection";
 export { NewArrivalsSection } from "./NewArrivalsSection";
 export { JustDroppedSection } from "./JustDroppedSection";
 export { ShopByStyleSection } from "./ShopByStyleSection";

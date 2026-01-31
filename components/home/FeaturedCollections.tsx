@@ -1,72 +1,68 @@
 import * as React from "react";
-import Link from "next/link";
-import { Container } from "@/components/ui/container";
-import { H2, H3 } from "@/components/ui/typography";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { getAllCollections } from "@/lib/db";
-import type { Collection } from "@/types";
-import { CollectionCard } from "./CollectionCard";
+import { getAllCategories } from "@/lib/db";
+import type { Category } from "@/types";
+import { FeaturedCategoryCard } from "./FeaturedCategoryCard";
+
+const FEATURED_SLUGS = ["boys", "girls"] as const;
 
 /**
- * FeaturedCollections Component
- * 
- * Fetches real collections from database and displays them in a grid.
- * Only shows active collections.
+ * FeaturedCollections
+ *
+ * Fetches active categories from the database and displays Boys and Girls
+ * in a luxury 2-column (desktop) / 1-column (mobile) grid with large hero
+ * images, overlay, glassmorphism hover, and Shop CTAs.
  */
 export async function FeaturedCollections(): Promise<JSX.Element> {
-  // Fetch collections from database
-  let collections: Collection[] = [];
+  let categories: Category[] = [];
   try {
-    collections = await getAllCollections();
-    // Filter to only active collections
-    collections = collections.filter(coll => coll.isActive !== false);
-    // Limit to first 3 collections for grid layout
-    collections = collections.slice(0, 3);
+    const all = await getAllCategories();
+    const active = all.filter((c) => c.isActive !== false);
+    // Prefer Boys and Girls by slug; fallback to first two active categories
+    const featured = FEATURED_SLUGS.map(
+      (slug) => active.find((c) => c.slug.toLowerCase() === slug) as Category | undefined
+    ).filter(Boolean) as Category[];
+    categories =
+      featured.length >= 2 ? featured : active.slice(0, 2);
   } catch (error) {
-    console.error('Failed to fetch collections:', error);
-    // Fallback to empty array - component will render empty section
-    collections = [];
+    console.error("Failed to fetch categories for FeaturedCollections:", error);
+    categories = [];
   }
 
-  // Don't render section if no collections
-  if (collections.length === 0) {
+  if (categories.length === 0) {
     return <></>;
   }
 
   return (
-    <section 
-      // Design System: Consistent spacing using 8px base scale
-      className="section bg-cream-50"
-      aria-labelledby="collections-heading"
+    <section
+      className="section-padding bg-luxury-cream"
+      aria-labelledby="featured-collections-heading"
     >
-      <Container size="lg">
-        {/* Design System: Consistent spacing using 8px base scale */}
-        <div className="space-y-[var(--space-8)] lg:space-y-[var(--space-12)]">
-          {/* Section Title */}
+      <div className="container-luxury">
+        <div className="space-y-8 lg:space-y-12">
           <div className="text-center">
-            <H2 id="collections-heading" className="text-charcoal-900">
-              Collections
-            </H2>
+            <h2
+              id="featured-collections-heading"
+              className="text-2xl sm:text-3xl md:text-4xl font-semibold text-luxury-navy tracking-tight font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
+            >
+              Featured Collections
+            </h2>
           </div>
 
-          {/* Collections Grid - Consistent spacing */}
-          <div 
-            // Design System: Consistent spacing using 8px base scale
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--space-4)] sm:gap-[var(--space-5)] md:gap-[var(--space-6)] lg:gap-[var(--space-8)]"
+          <div
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8"
             role="list"
             aria-label="Featured collections"
           >
-            {collections.map((collection, index) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
+            {categories.map((category, index) => (
+              <FeaturedCategoryCard
+                key={category.id}
+                category={category}
                 index={index}
               />
             ))}
           </div>
         </div>
-      </Container>
+      </div>
     </section>
   );
 }
-

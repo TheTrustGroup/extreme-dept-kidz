@@ -505,4 +505,3 @@ function PriceSlider({ min, max, value, onChange }: PriceSliderProps): JSX.Eleme
     </div>
   );
 }
-

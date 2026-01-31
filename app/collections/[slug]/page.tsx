@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { CategoryHero } from "@/components/categories";
 import { CollectionPageClient } from "./CollectionPageClient";
 import { getAllCategories } from "@/lib/db";
 import { getProducts, getProductsByCategory } from "@/lib/data/products";
@@ -114,9 +115,19 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       return (
         <>
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-          <Suspense fallback={<div className="min-h-screen bg-cream-50 pt-24 pb-16"><div className="container mx-auto px-4 animate-pulse space-y-8"><div className="h-8 bg-cream-200 rounded w-1/3" /><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">{Array.from({ length: 8 }).map((_, i) => (<div key={i} className="space-y-4"><div className="aspect-square bg-cream-200 rounded-lg" /><div className="h-4 bg-cream-200 rounded w-3/4" /><div className="h-4 bg-cream-200 rounded w-1/2" /></div>))}</div></div></div>}>
-            <CollectionPageClient params={{ slug }} products={serializedProducts} collectionInfo={collectionInfo} />
-          </Suspense>
+          <div className="min-h-screen bg-luxury-cream">
+            <CategoryHero
+              title={collectionInfo.name}
+              description={collectionInfo.description}
+              productCount={serializedProducts.length}
+              backgroundImage={collectionInfo.image}
+            />
+            <div className="container-luxury section-padding">
+              <Suspense fallback={<div className="animate-pulse space-y-6"><div className="h-8 bg-luxury-cream-300/50 rounded w-1/3" /><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">{Array.from({ length: 8 }).map((_, i) => (<div key={i} className="space-y-4"><div className="aspect-[4/5] bg-luxury-cream-300/50 rounded-lg" /><div className="h-4 bg-luxury-cream-300/50 rounded w-3/4" /><div className="h-4 bg-luxury-cream-300/50 rounded w-1/2" /></div>))}</div></div>}>
+                <CollectionPageClient params={{ slug }} products={serializedProducts} collectionInfo={collectionInfo} skipHero />
+              </Suspense>
+            </div>
+          </div>
         </>
       );
     }
@@ -215,6 +226,10 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
       updatedAt: product.updatedAt ? (typeof product.updatedAt === 'string' ? product.updatedAt : product.updatedAt.toISOString()) : undefined,
     }));
 
+    const heroTitle = collectionInfo?.name ?? slug.charAt(0).toUpperCase() + slug.slice(1);
+    const heroDescription = collectionInfo?.description;
+    const heroImage = collectionInfo?.image;
+
     // CRITICAL: Streaming SSR with optimized Suspense boundary
     // Uses proper skeleton to prevent layout shift
     return (
@@ -225,55 +240,67 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
             dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
           />
         )}
-        <Suspense
-          fallback={
-          <div className="min-h-screen bg-cream-50 pt-24 pb-16">
-            <div className="container mx-auto px-4">
-              <div className="animate-pulse space-y-8">
-                {/* Header skeleton */}
-                <div className="h-8 bg-cream-200 rounded w-1/3" />
-                {/* Product grid skeleton */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="space-y-4">
-                      <div className="aspect-square bg-cream-200 rounded-lg" />
-                      <div className="h-4 bg-cream-200 rounded w-3/4" />
-                      <div className="h-4 bg-cream-200 rounded w-1/2" />
-                    </div>
-                  ))}
+        <div className="min-h-screen bg-luxury-cream">
+          <CategoryHero
+            title={heroTitle}
+            description={heroDescription}
+            productCount={serializedProducts.length}
+            backgroundImage={heroImage}
+          />
+          <div className="container-luxury section-padding">
+            <Suspense
+              fallback={
+                <div className="animate-pulse space-y-6">
+                  <div className="h-8 bg-luxury-cream-300/50 rounded w-1/3" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="space-y-4">
+                        <div className="aspect-[4/5] bg-luxury-cream-300/50 rounded-lg" />
+                        <div className="h-4 bg-luxury-cream-300/50 rounded w-3/4" />
+                        <div className="h-4 bg-luxury-cream-300/50 rounded w-1/2" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
+              }
+              key={`collection-${slug}`}
+            >
+              <CollectionPageClient
+                params={{ slug }}
+                products={serializedProducts}
+                collectionInfo={collectionInfo}
+                skipHero
+              />
+            </Suspense>
           </div>
-        }
-        key={`collection-${slug}`}
-      >
-        <CollectionPageClient
-          params={{ slug }}
-          products={serializedProducts}
-          collectionInfo={collectionInfo}
-        />
-      </Suspense>
+        </div>
       </>
     );
   } catch (error) {
     console.error(`[CollectionPage] Error loading collection ${slug}:`, error);
-    
+
     // Return error state with empty products
+    const fallbackTitle = slug.charAt(0).toUpperCase() + slug.slice(1);
     return (
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-          </div>
-        }
-      >
-        <CollectionPageClient
-          params={{ slug }}
-          products={[]}
-          collectionInfo={undefined}
-        />
-      </Suspense>
+      <div className="min-h-screen bg-luxury-cream">
+        <CategoryHero title={fallbackTitle} productCount={0} />
+        <div className="container-luxury section-padding">
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-navy"></div>
+              </div>
+            }
+          >
+            <CollectionPageClient
+              params={{ slug }}
+              products={[]}
+              collectionInfo={undefined}
+              skipHero
+            />
+          </Suspense>
+        </div>
+      </div>
     );
   }
 }

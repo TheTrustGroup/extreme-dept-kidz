@@ -7,6 +7,7 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    // Mobile-first breakpoints
     screens: {
       xs: "375px",
       sm: "640px",
@@ -16,15 +17,57 @@ const config: Config = {
       "2xl": "1536px",
     },
     extend: {
+      // Luxury color palette: navy, cream, gold
       colors: {
-        // COLOR SYSTEM NORMALIZATION: Brand tokens - single source of truth
+        luxury: {
+          navy: {
+            DEFAULT: "#0f172a",
+            50: "#f0f4f8",
+            100: "#d9e2ec",
+            200: "#bcccdc",
+            300: "#9fb3c8",
+            400: "#829ab1",
+            500: "#627d98",
+            600: "#486581",
+            700: "#334e68",
+            800: "#243b53",
+            900: "#102a43",
+            950: "#0a1929",
+          },
+          cream: {
+            DEFAULT: "#faf8f5",
+            50: "#fefdfb",
+            100: "#faf8f5",
+            200: "#f5f0e8",
+            300: "#ebe3d6",
+            400: "#ddd2c2",
+            500: "#c9bbaa",
+            600: "#b39f8c",
+            700: "#9a8570",
+            800: "#7d6b5a",
+            900: "#5c4d40",
+          },
+          gold: {
+            DEFAULT: "#c9a227",
+            50: "#fdf9e7",
+            100: "#f9eebb",
+            200: "#f3e08d",
+            300: "#ecd45d",
+            400: "#e5c935",
+            500: "#d4b82a",
+            600: "#c9a227",
+            700: "#a8841f",
+            800: "#876719",
+            900: "#6b4f14",
+          },
+        },
+        // Keep existing token-based colors for compatibility
         brand: {
           bg: "var(--brand-bg)",
           primary: "var(--brand-primary)",
           secondary: "var(--brand-secondary)",
           text: "var(--brand-text)",
         },
-        // Legacy color mappings - reference CSS variables from tokens.css
         cream: {
           50: "var(--color-cream-50)",
           100: "var(--color-cream-100)",
@@ -50,7 +93,6 @@ const config: Config = {
           900: "var(--color-charcoal-900)",
           950: "var(--color-charcoal-950)",
         },
-        // Bold accent - deep navy - COLOR SYSTEM NORMALIZATION: Maps to brand-primary
         navy: {
           50: "var(--color-navy-50)",
           100: "var(--color-navy-100)",
@@ -64,7 +106,6 @@ const config: Config = {
           900: "var(--color-navy-900)",
           950: "var(--color-navy-950)",
         },
-        // Alternative accent - forest green
         forest: {
           50: "var(--color-forest-50)",
           100: "var(--color-forest-100)",
@@ -78,7 +119,6 @@ const config: Config = {
           900: "var(--color-forest-900)",
           950: "var(--color-forest-950)",
         },
-        // Premium warm accents – honey (badges, highlights) - COLOR SYSTEM NORMALIZATION: Maps to brand-secondary
         honey: {
           50: "var(--color-honey-50)",
           100: "var(--color-honey-100)",
@@ -100,7 +140,6 @@ const config: Config = {
           500: "var(--color-sage-500)",
           600: "var(--color-sage-600)",
         },
-        // Dark Theme System - Premium dark palette
         dark: {
           bg: {
             primary: "var(--color-bg-primary, #0b0f1a)",
@@ -125,7 +164,81 @@ const config: Config = {
           soft: "var(--accent-soft, rgba(255, 122, 24, 0.15))",
         },
       },
-      /* PHASE 3 + PHASE 2 — Single spacing: 1–10 from tokens, then extended scale */
+      // Glassmorphism
+      backgroundColor: {
+        "glass": "rgba(255, 255, 255, 0.08)",
+        "glass-strong": "rgba(255, 255, 255, 0.14)",
+        "glass-subtle": "rgba(255, 255, 255, 0.04)",
+        "glass-dark": "rgba(15, 23, 42, 0.6)",
+        "glass-dark-strong": "rgba(15, 23, 42, 0.85)",
+      },
+      borderColor: {
+        "glass": "rgba(255, 255, 255, 0.18)",
+        "glass-strong": "rgba(255, 255, 255, 0.25)",
+      },
+      boxShadow: {
+        "sm": "0 1px 3px rgba(28, 28, 28, 0.06)",
+        "md": "0 4px 12px rgba(28, 28, 28, 0.08)",
+        "lg": "0 8px 24px rgba(28, 28, 28, 0.08)",
+        "xl": "0 12px 40px rgba(28, 28, 28, 0.1)",
+        "navy": "0 4px 12px rgba(11, 31, 54, 0.25)",
+        "glass": "0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+        "glass-lg": "0 16px 48px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12)",
+        "glass-xl": "0 24px 64px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.14)",
+        "luxury-gold": "0 4px 20px rgba(201, 162, 39, 0.25)",
+        "luxury-gold-sm": "0 2px 8px rgba(201, 162, 39, 0.15)",
+        "dark-soft": "var(--shadow-soft)",
+        "dark-medium": "var(--shadow-medium)",
+        "dark-strong": "var(--shadow-strong)",
+      },
+      backdropBlur: {
+        xs: "6px",
+        sm: "12px",
+        md: "16px",
+        lg: "24px",
+        xl: "40px",
+        "glass": "12px",
+        "glass-lg": "24px",
+      },
+      borderRadius: {
+        xs: "6px",
+        sm: "10px",
+        md: "var(--radius-card, 16px)",
+        lg: "var(--radius-glass, 20px)",
+        xl: "var(--radius-glass-lg, 24px)",
+        "glass": "16px",
+        "glass-lg": "24px",
+      },
+      // Premium typography scale
+      fontSize: {
+        "phase-xs": ["var(--text-xs)", { lineHeight: "1.4" }],
+        "phase-sm": ["var(--text-sm)", { lineHeight: "1.5" }],
+        "phase-base": ["var(--text-base)", { lineHeight: "1.6" }],
+        "phase-lg": ["var(--text-lg)", { lineHeight: "1.55" }],
+        "phase-xl": ["var(--text-xl)", { lineHeight: "1.4" }],
+        "phase-2xl": ["var(--text-2xl)", { lineHeight: "1.35" }],
+        "phase-3xl": ["var(--text-3xl)", { lineHeight: "1.3" }],
+        "phase-4xl": ["var(--text-4xl)", { lineHeight: "1.25" }],
+        "phase-5xl": ["var(--text-5xl)", { lineHeight: "1.2" }],
+        "caption": ["0.75rem", { lineHeight: "1.4", letterSpacing: "0.02em" }],
+        "small": ["0.875rem", { lineHeight: "1.5", letterSpacing: "0.01em" }],
+        "lead": ["1.125rem", { lineHeight: "1.55", letterSpacing: "0" }],
+        "h4": ["1.25rem", { lineHeight: "1.4", letterSpacing: "-0.01em" }],
+        "h3": ["1.5rem", { lineHeight: "1.35", letterSpacing: "-0.01em" }],
+        "h2": ["1.875rem", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
+        "h1": ["2.25rem", { lineHeight: "1.25", letterSpacing: "-0.02em" }],
+        "display-2xl": ["4.5rem", { lineHeight: "1.08", letterSpacing: "-0.02em" }],
+        "display-xl": ["3.75rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
+        "display-lg": ["3rem", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
+        "display-md": ["2.25rem", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
+        "display-sm": ["1.875rem", { lineHeight: "1.4", letterSpacing: "0" }],
+        "luxury-hero": ["clamp(2rem, 5vw, 4rem)", { lineHeight: "1.1", letterSpacing: "-0.03em" }],
+        "luxury-title": ["clamp(1.5rem, 3vw, 2.5rem)", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
+      },
+      fontFamily: {
+        serif: ["var(--font-playfair)", "Georgia", "serif"],
+        sans: ["var(--font-sans)"],
+      },
       spacing: {
         "1": "var(--space-1)",
         "2": "var(--space-2)",
@@ -153,84 +266,23 @@ const config: Config = {
         "block": "var(--space-block, 1.5rem)",
         "inline": "var(--space-inline, 1rem)",
       },
-      fontSize: {
-        // PHASE 3 — Master layout typography (CSS vars)
-        "phase-xs": ["var(--text-xs)", { lineHeight: "1.4" }],
-        "phase-sm": ["var(--text-sm)", { lineHeight: "1.5" }],
-        "phase-base": ["var(--text-base)", { lineHeight: "1.6" }],
-        "phase-lg": ["var(--text-lg)", { lineHeight: "1.55" }],
-        "phase-xl": ["var(--text-xl)", { lineHeight: "1.4" }],
-        "phase-2xl": ["var(--text-2xl)", { lineHeight: "1.35" }],
-        "phase-3xl": ["var(--text-3xl)", { lineHeight: "1.3" }],
-        "phase-4xl": ["var(--text-4xl)", { lineHeight: "1.25" }],
-        "phase-5xl": ["var(--text-5xl)", { lineHeight: "1.2" }],
-        // Legacy scale
-        "caption": ["0.75rem", { lineHeight: "1.4", letterSpacing: "0.02em" }],
-        "small": ["0.875rem", { lineHeight: "1.5", letterSpacing: "0.01em" }],
-        "lead": ["1.125rem", { lineHeight: "1.55", letterSpacing: "0" }],
-        "h4": ["1.25rem", { lineHeight: "1.4", letterSpacing: "-0.01em" }],
-        "h3": ["1.5rem", { lineHeight: "1.35", letterSpacing: "-0.01em" }],
-        "h2": ["1.875rem", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
-        "h1": ["2.25rem", { lineHeight: "1.25", letterSpacing: "-0.02em" }],
-        "display-2xl": ["4.5rem", { lineHeight: "1.08", letterSpacing: "-0.02em" }],
-        "display-xl": ["3.75rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
-        "display-lg": ["3rem", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
-        "display-md": ["2.25rem", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
-        "display-sm": ["1.875rem", { lineHeight: "1.4", letterSpacing: "0" }],
-      },
-      fontFamily: {
-        serif: ["var(--font-playfair)", "Georgia", "serif"],
-        sans: ["var(--font-sans)"],
-      },
-      boxShadow: {
-        // PHASE 2 — Soft, minimal noise
-        'sm': '0 1px 3px rgba(28, 28, 28, 0.06)',
-        'md': '0 4px 12px rgba(28, 28, 28, 0.08)',
-        'lg': '0 8px 24px rgba(28, 28, 28, 0.08)',
-        'xl': '0 12px 40px rgba(28, 28, 28, 0.1)',
-        'navy': '0 4px 12px rgba(11, 31, 54, 0.25)',
-        'glass': 'var(--glass-shadow)',
-        'glass-lg': 'var(--glass-shadow-elevated)',
-        'glass-xl': '0 16px 48px rgba(28, 28, 28, 0.1)',
-        'dark-soft': 'var(--shadow-soft)',
-        'dark-medium': 'var(--shadow-medium)',
-        'dark-strong': 'var(--shadow-strong)',
-      },
-      backdropBlur: {
-        xs: '6px',
-        sm: '12px',
-        md: 'var(--glass-soft-blur, 16px)',
-        lg: 'var(--glass-soft-blur-strong, 24px)',
-      },
-      borderRadius: {
-        xs: '6px',
-        sm: '10px',
-        md: 'var(--radius-card, 16px)',
-        lg: 'var(--radius-glass, 20px)',
-        xl: 'var(--radius-glass-lg, 24px)',
-      },
       transitionDuration: {
-        // Design System: Animation timing (Tier 2)
-        'fast': '150ms',
-        'normal': '300ms',
-        'slow': '500ms',
-        // Dark theme transitions
-        'transition-fast': '120ms',
-        'transition-base': '220ms',
-        'transition-smooth': '400ms',
+        fast: "150ms",
+        normal: "300ms",
+        slow: "500ms",
+        "transition-fast": "120ms",
+        "transition-base": "220ms",
+        "transition-smooth": "400ms",
       },
       transitionTimingFunction: {
-        // Design System: Easing functions
-        'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
-        'out': 'cubic-bezier(0, 0, 0.2, 1)',
-        'in': 'cubic-bezier(0.4, 0, 1, 1)',
-        // Dark theme easing
-        'transition-fast': 'cubic-bezier(0.4, 0, 0.2, 1)',
-        'transition-base': 'cubic-bezier(0.4, 0, 0.2, 1)',
-        'transition-smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        "in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
+        out: "cubic-bezier(0, 0, 0.2, 1)",
+        in: "cubic-bezier(0.4, 0, 1, 1)",
+        "transition-smooth": "cubic-bezier(0.16, 1, 0.3, 1)",
+        luxury: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
       },
+      // Custom animations (luxury + existing)
       animation: {
-        // Smooth animation presets
         "fade-in": "fadeIn 0.6s ease-in-out",
         "fade-in-up": "fadeInUp 0.6s ease-out",
         "fade-in-down": "fadeInDown 0.6s ease-out",
@@ -238,7 +290,10 @@ const config: Config = {
         "slide-in-left": "slideInLeft 0.6s ease-out",
         "scale-in": "scaleIn 0.4s ease-out",
         "smooth-float": "smoothFloat 3s ease-in-out infinite",
-        "shimmer": "shimmer 2s linear infinite",
+        shimmer: "shimmer 2s linear infinite",
+        "luxury-fade-in": "luxuryFadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
+        "luxury-slide-up": "luxurySlideUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
+        "luxury-scale": "luxuryScale 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
       },
       keyframes: {
         fadeIn: {
@@ -273,10 +328,26 @@ const config: Config = {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        luxuryFadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        luxurySlideUp: {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        luxuryScale: {
+          "0%": { opacity: "0", transform: "scale(0.96)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+    require("@tailwindcss/aspect-ratio"),
+  ],
 };
 
 export default config;

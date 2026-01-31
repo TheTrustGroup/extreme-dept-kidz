@@ -4,10 +4,14 @@ import nextDynamic from "next/dynamic";
 import { generateWebsiteSchema, generateOrganizationSchema } from "@/lib/seo/structured-data";
 import { getProducts } from "@/lib/data/products";
 import type { Product } from "@/types";
-import { HeroSection } from "@/components/home";
-import { TrustBar } from "@/components/home";
-import { JustDroppedSection } from "@/components/home";
-import { GirlsCollectionSection } from "@/components/home";
+import {
+  HeroSection,
+  FeaturedCollections,
+  TrustSection,
+  TrustBar,
+  JustDroppedSection,
+  GirlsCollectionSection,
+} from "@/components/home";
 import { StreamingSkeleton } from "@/components/ui/StreamingSkeleton";
 import {
   sortJustDropped,
@@ -21,11 +25,6 @@ import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
 // Shop by Style removed for world-class simplicity — Just dropped + Shop by Category
 
 const ShopByCategory = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByCategory })), {
-  ssr: true, // SSR enabled for streaming
-  loading: () => <StreamingSkeleton variant="section" height="h-96" />,
-});
-
-const FeaturedCollections = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.FeaturedCollections })), {
   ssr: true, // SSR enabled for streaming
   loading: () => <StreamingSkeleton variant="section" height="h-96" />,
 });
@@ -126,9 +125,15 @@ export default async function Home(props: HomeProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <div className="relative">
+      <div className="bg-luxury-cream">
         {/* Hero Section - Full viewport height, seamless with header */}
         <HeroSection />
+
+        {/* Featured Collections - Boys / Girls with hero images and Shop CTAs */}
+        <FeaturedCollections />
+
+        {/* Trust / Features - Free shipping, returns, secure checkout, premium quality */}
+        <TrustSection />
 
         {/* Trust Bar - Prominent trust signals for first-time visitors */}
         <TrustBar />
@@ -148,14 +153,6 @@ export default async function Home(props: HomeProps) {
           key="shop-by-category"
         >
           <ShopByCategory />
-        </Suspense>
-
-        {/* Featured Collections Section - Below fold, can stream */}
-        <Suspense 
-          fallback={<StreamingSkeleton variant="section" height="h-96" />}
-          key="featured-collections"
-        >
-          <FeaturedCollections />
         </Suspense>
 
         {/* Editorial Lifestyle Section - Below fold, can stream */}

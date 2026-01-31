@@ -35,6 +35,8 @@ interface CollectionPageClientProps {
   products?: Product[];
   /** From server: real category name/description (Admin → Categories). When set, no mock data is used. */
   collectionInfo?: { name: string; description?: string; image?: string; metadata?: Record<string, unknown> };
+  /** When true, hero and breadcrumb are rendered by the server (CategoryHero); client skips them. */
+  skipHero?: boolean;
 }
 
 /**
@@ -46,6 +48,7 @@ export function CollectionPageClient({
   params,
   products: serverProducts = [],
   collectionInfo,
+  skipHero = false,
 }: CollectionPageClientProps): JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -368,38 +371,42 @@ export function CollectionPageClient({
   }, [collection.name]);
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      {/* Breadcrumb - Below header, before page title */}
-      <div className="pt-20 md:pt-24 pb-4">
-        <Container size="lg">
-          <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
-        </Container>
-      </div>
+    <div className={skipHero ? "" : "min-h-screen bg-cream-50"}>
+      {!skipHero && (
+        <>
+          {/* Breadcrumb - Below header, before page title */}
+          <div className="pt-20 md:pt-24 pb-4">
+            <Container size="lg">
+              <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
+            </Container>
+          </div>
 
-      {/* Collection Hero Header */}
-      <section className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden bg-charcoal-900">
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
-        <div className="relative h-full flex items-center justify-center text-center px-4">
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-4xl"
-          >
-            <H1 className="text-cream-50 mb-4 text-4xl md:text-5xl lg:text-6xl font-serif font-bold drop-shadow-lg">
-              {collection.name.toUpperCase()}
-            </H1>
-            {collection.description && (
-              <Body className="text-xl md:text-2xl text-cream-100 max-w-2xl mx-auto drop-shadow-md">
-                {collection.description}
-              </Body>
-            )}
-          </m.div>
-        </div>
-      </section>
+          {/* Collection Hero Header (legacy; when skipHero, server renders CategoryHero) */}
+          <section className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden bg-charcoal-900">
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
+            <div className="relative h-full flex items-center justify-center text-center px-4">
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="max-w-4xl"
+              >
+                <H1 className="text-cream-50 mb-4 text-4xl md:text-5xl lg:text-6xl font-serif font-bold drop-shadow-lg">
+                  {collection.name.toUpperCase()}
+                </H1>
+                {collection.description && (
+                  <Body className="text-xl md:text-2xl text-cream-100 max-w-2xl mx-auto drop-shadow-md">
+                    {collection.description}
+                  </Body>
+                )}
+              </m.div>
+            </div>
+          </section>
+        </>
+      )}
 
-      <div className="pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
-        <Container size="lg">
+      <div className={skipHero ? "pt-0" : "pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16"}>
+        <Container size={skipHero ? "full" : "lg"} className={skipHero ? "max-w-none px-0" : undefined}>
           {/* Product Count & Active Filters */}
           <m.div
             initial={{ opacity: 0, y: 20 }}
@@ -419,7 +426,7 @@ export function CollectionPageClient({
             </div>
           </m.div>
 
-          {/* Main Content: Filters + Products */}
+          {/* Main Content: Filter sidebar (existing logic) + Products with luxury spacing */}
           <div className="flex flex-col lg:flex-row gap-6 xs:gap-7 sm:gap-8">
           {/* Filter Sidebar */}
           <FilterSidebar
