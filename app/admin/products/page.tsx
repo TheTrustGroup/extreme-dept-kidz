@@ -1037,7 +1037,7 @@ export default function ProductsPage(): JSX.Element {
                               variant="ghost"
                               size="sm"
                               asChild
-                              className="hover:bg-indigo-50 hover:text-indigo-600 transition-all"
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all"
                               title="Edit"
                             >
                               <Link href={`/admin/products/${product.id}`}>
@@ -1140,7 +1140,7 @@ export default function ProductsPage(): JSX.Element {
                         variant="ghost"
                         size="sm"
                         asChild
-                        className="flex-1"
+                        className="flex-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Link href={`/admin/products/${product.id}`}>

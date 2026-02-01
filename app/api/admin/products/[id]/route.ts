@@ -1,48 +1,41 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { authenticateAndAuthorize } from "@/lib/auth/middleware";
+import { withCors } from "@/lib/utils/cors";
+import { apiSuccess, apiError, apiNotFound } from "@/lib/utils/api-response";
+import { parseJsonBody } from "@/lib/utils/parse-body";
 import { revalidateOnProductMutation } from "@/lib/utils/cache-revalidation";
 import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
-import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/utils/api-response";
-import { z } from "zod";
-import { updateProductSchema, validate } from "@/lib/validation/schemas";
-import { parseJsonBody } from "@/lib/utils/parse-body";
 import { logger } from "@/lib/utils/logger";
-import { authenticateAndAuthorize } from "@/lib/auth/middleware";
-import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
-import { withCors } from "@/lib/utils/cors";
 
 export const dynamic = "force-dynamic";
 
+type RouteContext = { params: Promise<{ id: string }> };
+
+// GET - Fetch single product
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteContext
 ): Promise<NextResponse> {
-  // RBAC: Viewing products requires viewer role or higher
-  const auth = await authenticateAndAuthorize(request, 'viewer');
+  const auth = await authenticateAndAuthorize(request, "viewer");
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return withCors(request, NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 }));
+    return withCors(
+      request,
+      NextResponse.json({ error: "Insufficient permissions" }, { status: 403 })
+    );
   }
   try {
     if (!prisma) {
       return withCors(request, apiError("Database not available", 500));
     }
-
     const { id } = await params;
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
         category: true,
-        images: {
-          orderBy: { order: 'asc' },
-        },
         variants: true,
-        tags: true,
-        collections: {
-          include: {
-            collection: true,
-          },
-        },
+        images: { orderBy: { order: "asc" } },
       },
     });
 
@@ -50,290 +43,236 @@ export async function GET(
       return withCors(request, apiNotFound("Product"));
     }
 
-    // Transform for form compatibility: categoryId and sizes (edit page expects sizes from variants)
-    const productWithCategoryId = {
+    // Form compatibility: include sizes from variants and categoryId (form expects sizes[])
+    const forForm = {
       ...product,
-      categoryId: product.categoryId || product.category?.id,
-      sizes: (product.variants || []).map((v: { size: string; stock: number }) => ({
+      categoryId: product.categoryId ?? product.category?.id ?? null,
+      sizes: (product.variants ?? []).map((v) => ({
         size: v.size,
         quantity: v.stock ?? 0,
       })),
     };
 
-    return withCors(request, apiSuccess(productWithCategoryId, "Product fetched successfully"));
-  } catch (error) {
-    logger.error("Failed to fetch product:", error);
-    return withCors(request, apiError(
-      "Failed to fetch product",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    ));
+    return withCors(request, apiSuccess(forForm));
+  } catch (error: unknown) {
+    logger.error("Get product error:", error);
+    return withCors(
+      request,
+      apiError(
+        "Failed to fetch product",
+        500,
+        error instanceof Error ? error.message : "Unknown error"
+      )
+    );
   }
 }
 
+// PUT - Update product (supports ProductEditForm body: name, description, slug, categoryId, variants, images)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteContext
 ): Promise<NextResponse> {
-  // Store request for activity logging
-  const requestForLogging = request;
-  // RBAC: Updating products requires admin role or higher
-  const auth = await authenticateAndAuthorize(request, 'admin');
+  const auth = await authenticateAndAuthorize(request, "admin");
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to update products.' }, { status: 403 }));
+    return withCors(
+      request,
+      NextResponse.json(
+        { error: "Insufficient permissions. Admin role required to update products." },
+        { status: 403 }
+      )
+    );
   }
-
   try {
     if (!prisma) {
       return withCors(request, apiError("Database not available", 500));
     }
-
     const { id } = await params;
     const parsed = await parseJsonBody(request);
     if (!parsed.ok) return withCors(request, parsed.response);
-    const body = parsed.data;
+    const body = parsed.data as {
+      name?: string;
+      description?: string;
+      slug?: string;
+      categoryId?: string;
+      variants?: Array<{
+        id: string;
+        name?: string;
+        sku?: string;
+        price?: number;
+        stock?: number;
+        comparePrice?: number | null;
+      }>;
+      images?: Array<{ id?: string; url: string; alt?: string; position?: number }>;
+    };
 
-    // Validate input (partial validation for updates)
-    const validation = validate(updateProductSchema, body);
-    if (!validation.success) {
-      return withCors(request, apiValidationError(validation.errors));
-    }
+    const { name, description, slug, categoryId, variants, images } = body;
 
-    // Check if product exists
-    const existing = await prisma.product.findUnique({ where: { id } });
-    if (!existing) {
-      return withCors(request, apiNotFound("Product"));
-    }
-
-    // Use validated data (after transforms)
-    const validatedData = validation.data;
-
-    // Build update data object with only provided fields
-    const updateData: any = {};
-    
-    if (validatedData.name !== undefined) updateData.name = validatedData.name;
-    if (validatedData.slug !== undefined) updateData.slug = validatedData.slug;
-    if (validatedData.description !== undefined) updateData.description = validatedData.description;
-    if (validatedData.price !== undefined) {
-      const priceValue = typeof validatedData.price === 'number' 
-        ? validatedData.price 
-        : parseFloat(String(validatedData.price));
-      if (!isNaN(priceValue)) {
-        updateData.price = Math.round(priceValue * 100);
-      }
-    }
-    if (validatedData.originalPrice !== undefined) {
-      if (validatedData.originalPrice) {
-        const originalPriceValue = typeof validatedData.originalPrice === 'number' 
-          ? validatedData.originalPrice 
-          : parseFloat(String(validatedData.originalPrice));
-        if (!isNaN(originalPriceValue)) {
-          updateData.originalPrice = Math.round(originalPriceValue * 100);
-        } else {
-          updateData.originalPrice = null;
-        }
-      } else {
-        updateData.originalPrice = null;
-      }
-    }
-    if (validatedData.sku !== undefined) updateData.sku = validatedData.sku;
-    if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId;
-    if (validatedData.inStock !== undefined) updateData.inStock = validatedData.inStock;
-    if (validatedData.visibleOnStore !== undefined) updateData.visibleOnStore = validatedData.visibleOnStore;
-
-    // Handle images update
-    if (validatedData.images !== undefined && Array.isArray(validatedData.images)) {
-      // Schema transforms images to array of strings, but TypeScript needs help with type inference
-      const imageUrls = validatedData.images.map((img: string | { url: string; alt?: string; isPrimary?: boolean }) => {
-        return typeof img === 'string' ? img : img.url;
-      });
-      
-      updateData.images = {
-        deleteMany: {},
-        create: imageUrls.map((url: string, index: number) => ({
-          url: String(url).trim(),
-          alt: `${validatedData.name || existing.name} - Image ${index + 1}`,
-          isPrimary: index === 0,
-          order: index,
-        })),
-      };
-    }
-
-    // Handle sizes/variants update
-    if (validatedData.sizes !== undefined && Array.isArray(validatedData.sizes)) {
-      updateData.variants = {
-        deleteMany: {},
-        create: validatedData.sizes.map((size: { size: string; quantity: string | number; sku?: string }) => {
-          // Schema transforms quantity to number, but TypeScript needs help with type inference
-          const quantity = typeof size.quantity === 'number' 
-            ? size.quantity 
-            : parseInt(String(size.quantity), 10);
-          const stock = isNaN(quantity) ? 0 : Math.max(0, quantity);
-          
-          return {
-            size: size.size,
-            stock,
-            sku: size.sku || `${validatedData.sku || existing.sku || 'SKU'}-${size.size}`,
-          };
-        }),
-      };
-    }
-
-    // Handle tags update
-    if (validatedData.tags !== undefined && Array.isArray(validatedData.tags)) {
-      updateData.tags = {
-        deleteMany: {},
-        create: validatedData.tags.map((tag: string) => ({ name: tag.trim() })).filter((tag: { name: string }) => tag.name),
-      };
-    }
-
-    // Get existing product to check if category changed
-    const existingProduct = await prisma.product.findUnique({
-      where: { id },
-      include: { category: true },
-    });
-
-    // Update product
+    // Update product base fields
     const product = await prisma.product.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(slug !== undefined && { slug }),
+        ...(categoryId !== undefined && { categoryId }),
+      },
+    });
+
+    // Sync variants (schema: size, sku, price in cents, stock; form sends name -> size, price in dollars)
+    if (variants && Array.isArray(variants)) {
+      const existingIds = variants
+        .filter((v) => v.id && !String(v.id).startsWith("new-"))
+        .map((v) => v.id);
+
+      await prisma.productVariant.deleteMany({
+        where: {
+          productId: id,
+          id: { notIn: existingIds },
+        },
+      });
+
+      for (const v of variants) {
+        const size = (v.name ?? "One Size").trim() || "One Size";
+        const priceCents =
+          v.price != null ? Math.round(Number(v.price) * 100) : null;
+        const stock = Math.max(0, Math.floor(Number(v.stock) ?? 0));
+        const sku = (v.sku ?? "").trim() || `${product.sku ?? "SKU"}-${size}-${Date.now()}`;
+
+        if (v.id && String(v.id).startsWith("new-")) {
+          await prisma.productVariant.create({
+            data: {
+              productId: id,
+              size,
+              sku,
+              price: priceCents,
+              stock,
+            },
+          });
+        } else if (v.id) {
+          await prisma.productVariant.update({
+            where: { id: v.id },
+            data: { size, sku, price: priceCents, stock },
+          });
+        }
+      }
+    }
+
+    // Sync images (schema: url, alt, order)
+    if (images && Array.isArray(images)) {
+      await prisma.productImage.deleteMany({ where: { productId: id } });
+      await prisma.productImage.createMany({
+        data: images.map((img, index) => ({
+          productId: id,
+          url: (img.url ?? "").trim() || "/placeholder.png",
+          alt: (img.alt ?? "").trim() || product.name,
+          isPrimary: index === 0,
+          order: img.position ?? index,
+        })),
+      });
+    }
+
+    const updated = await prisma.product.findUnique({
+      where: { id },
       include: {
         category: true,
-        images: true,
         variants: true,
-        tags: true,
+        images: { orderBy: { order: "asc" } },
       },
     });
 
-    // Single contract: mutation → revalidate before response (three truths)
-    const { revalidateOnProductMutation } = await import('@/lib/utils/cache-revalidation');
     await revalidateOnProductMutation({
       type: "update",
-      slug: product.slug,
-      id: product.id,
-      categorySlug: product.category?.slug ?? undefined,
-      oldSlug: existingProduct?.slug !== product.slug ? existingProduct?.slug : undefined,
-      oldCategorySlug: existingProduct?.category?.slug ?? undefined,
+      slug: updated!.slug,
+      id: updated!.id,
+      categorySlug: updated!.category?.slug,
     });
-
     triggerProductUpdatedWebhook({
-      productId: product.id,
-      productSlug: product.slug,
+      productId: updated!.id,
+      productSlug: updated!.slug,
       action: "updated",
-      categorySlug: product.category?.slug ?? undefined,
+      categorySlug: updated!.category?.slug,
     });
 
-    // Log activity
-    await logActivity({
-      adminUserId: auth.user!.id,
-      action: ActivityActions.PRODUCT_UPDATED,
-      resource: 'Product',
-      resourceId: id,
-      details: {
-        name: product.name,
-        changes: {
-          name: validatedData.name || undefined,
-          price: validatedData.price !== undefined ? validatedData.price : undefined,
-          sku: validatedData.sku || undefined,
-        },
-      },
-    }, requestForLogging);
-
-    return withCors(request, apiSuccess(product, "Product updated successfully"));
+    return withCors(request, apiSuccess(updated, "Product updated successfully"));
   } catch (error: unknown) {
-    logger.error("Failed to update product:", error);
-    if (error instanceof z.ZodError) {
-      const errors: Record<string, string> = {};
-      error.errors.forEach((e) => {
-        errors[e.path.join(".")] = e.message;
-      });
-      return withCors(request, apiValidationError(errors));
-    }
-    return withCors(request, apiError(
-      "Failed to update product",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    ));
+    logger.error("Update product error:", error);
+    return withCors(
+      request,
+      apiError(
+        "Failed to update product",
+        500,
+        error instanceof Error ? error.message : "Unknown error"
+      )
+    );
   }
 }
 
+// DELETE - Delete product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteContext
 ): Promise<NextResponse> {
-  // Store request for activity logging
-  const requestForLogging = request;
-  // RBAC: Deleting products requires admin role or higher
-  const auth = await authenticateAndAuthorize(request, 'admin');
+  const auth = await authenticateAndAuthorize(request, "admin");
   if (auth.error) return auth.error;
   if (!auth.authorized) {
-    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Admin role required to delete products.' }, { status: 403 }));
+    return withCors(
+      request,
+      NextResponse.json(
+        { error: "Insufficient permissions. Admin role required to delete products." },
+        { status: 403 }
+      )
+    );
   }
-
   try {
     if (!prisma) {
       return withCors(request, apiError("Database not available", 500));
     }
-
     const { id } = await params;
 
-    // Check if product exists
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
       return withCors(request, apiNotFound("Product"));
     }
-
-    // Store product info for logging before deletion
-    const productName = existing.name;
-    const productSku = existing.sku;
 
     await prisma.product.delete({
       where: { id },
     });
 
-    // Single contract: mutation → revalidate before response (three truths)
     await revalidateOnProductMutation({
       type: "delete",
       slug: existing.slug,
       id: existing.id,
     });
-
     triggerProductUpdatedWebhook({
       productId: id,
       productSlug: existing.slug,
       action: "deleted",
     });
 
-    // Log activity
-    await logActivity({
-      adminUserId: auth.user!.id,
-      action: ActivityActions.PRODUCT_DELETED,
-      resource: 'Product',
-      resourceId: id,
-      details: {
-        name: productName,
-        sku: productSku,
-      },
-    }, requestForLogging);
-
-    return withCors(request, apiSuccess({ id }, "Product deleted successfully"));
-  } catch (error) {
-    logger.error("Failed to delete product:", error);
-    
-    // Handle foreign key constraint errors
-    if (error instanceof Error && error.message.includes('Foreign key constraint')) {
-      return withCors(request, apiError(
-        "Cannot delete product: it is associated with orders",
-        409,
-        "Archive the product instead of deleting it"
-      ));
+    return withCors(
+      request,
+      apiSuccess({ id, message: "Product deleted successfully" }, "Product deleted successfully")
+    );
+  } catch (error: unknown) {
+    logger.error("Delete product error:", error);
+    if (error instanceof Error && error.message.includes("Foreign key constraint")) {
+      return withCors(
+        request,
+        apiError(
+          "Cannot delete product: it is associated with orders",
+          409,
+          "Archive the product instead of deleting it"
+        )
+      );
     }
-    
-    return withCors(request, apiError(
-      "Failed to delete product",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    ));
+    return withCors(
+      request,
+      apiError(
+        "Failed to delete product",
+        500,
+        error instanceof Error ? error.message : "Unknown error"
+      )
+    );
   }
 }
