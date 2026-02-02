@@ -5,12 +5,23 @@ import { m } from "framer-motion";
 import { X, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { AdminRole } from "@/lib/auth/rbac";
+
+const ADMIN_ROLES: { value: AdminRole; label: string }[] = [
+  { value: "viewer", label: "Viewer" },
+  { value: "driver", label: "Driver" },
+  { value: "warehouse", label: "Warehouse" },
+  { value: "cashier", label: "Cashier" },
+  { value: "manager", label: "Manager" },
+  { value: "admin", label: "Admin" },
+  { value: "super_admin", label: "Super Admin" },
+];
 
 export interface AdminUserFormData {
   email: string;
   name: string;
   password: string;
-  role: "super_admin" | "admin" | "manager" | "viewer";
+  role: AdminRole;
   isActive: boolean;
 }
 
@@ -19,7 +30,7 @@ interface AdminUserFormProps {
     id: string;
     email: string;
     name: string;
-    role: "super_admin" | "admin" | "manager" | "viewer";
+    role: AdminRole;
     isActive: boolean;
   } | null;
   isOpen: boolean;
@@ -278,13 +289,12 @@ export function AdminUserForm({
             </label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as AdminRole }))}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="viewer">Viewer</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
-              <option value="super_admin">Super Admin</option>
+              {ADMIN_ROLES.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
             </select>
           </div>
 

@@ -27,7 +27,7 @@ export interface AdminUser {
   id: string;
   email: string;
   name: string;
-  role: "super_admin" | "admin" | "manager" | "viewer";
+  role: "super_admin" | "admin" | "manager" | "cashier" | "warehouse" | "driver" | "viewer";
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
@@ -186,12 +186,21 @@ export function AdminUserTable({
         return 'bg-indigo-100 text-indigo-800';
       case 'manager':
         return 'bg-blue-100 text-blue-800';
+      case 'cashier':
+        return 'bg-emerald-100 text-emerald-800';
+      case 'warehouse':
+        return 'bg-amber-100 text-amber-800';
+      case 'driver':
+        return 'bg-teal-100 text-teal-800';
       case 'viewer':
         return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const getRoleLabel = (role: string): string =>
+    role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   if (loading) {
     return (
@@ -232,6 +241,9 @@ export function AdminUserTable({
             <option value="super_admin">Super Admin</option>
             <option value="admin">Admin</option>
             <option value="manager">Manager</option>
+            <option value="cashier">Cashier</option>
+            <option value="warehouse">Warehouse</option>
+            <option value="driver">Driver</option>
             <option value="viewer">Viewer</option>
           </select>
 
@@ -349,7 +361,7 @@ export function AdminUserTable({
                         "px-2 py-1 text-xs font-medium rounded-full inline-block",
                         getRoleColor(user.role)
                       )}>
-                        {user.role.replace('_', ' ')}
+                        {getRoleLabel(user.role)}
                       </span>
                     </td>
                     <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">

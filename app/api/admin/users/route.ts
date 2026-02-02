@@ -9,17 +9,19 @@ import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-// Validation schemas
+// Validation schemas (roles must match Prisma AdminRole enum)
+const adminRoleEnum = z.enum(["super_admin", "admin", "manager", "cashier", "warehouse", "driver", "viewer"]);
+
 const createUserSchema = z.object({
   email: z.string().email("Invalid email address"),
   name: z.string().min(1, "Name is required").max(100, "Name too long"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["super_admin", "admin", "manager", "viewer"]),
+  role: adminRoleEnum,
 });
 
 const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  role: z.enum(["super_admin", "admin", "manager", "viewer"]).optional(),
+  role: adminRoleEnum.optional(),
   isActive: z.boolean().optional(),
   password: z.string().min(8).optional(),
 });
