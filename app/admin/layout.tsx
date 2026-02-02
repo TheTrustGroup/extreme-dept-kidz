@@ -27,9 +27,21 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
-  const [checkingAuth, setCheckingAuth] = React.useState(true);
   const pathname = usePathname();
   const { checkAuth, user, isAuthenticated } = useAdminAuth();
+
+  // Define public routes that don't require authentication
+  const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
+  const isPublicRoute = publicRoutes.includes(pathname);
+
+  // CRITICAL FIX: Check if public route immediately to prevent dashboard flash
+  // For public routes, render children immediately without any auth check or layout
+  if (isPublicRoute) {
+    return <>{children}</>;
+  }
+
+  // For protected routes, check authentication
+  const [checkingAuth, setCheckingAuth] = React.useState(true);
 
   // Enable keyboard shortcuts (must be called unconditionally)
   useAdminKeyboards();
@@ -37,18 +49,13 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
   // CRITICAL: Only verify auth when we don't already have a user (e.g. full load/refresh).
   // Skipping checkAuth on in-admin navigation prevents 401-then-redirect when cookie is delayed.
   React.useEffect(() => {
-    const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
-    if (publicRoutes.includes(pathname)) {
-      setCheckingAuth(false);
-      return;
-    }
-
     // Already have user from a previous check — trust session for this navigation (no API call).
     if (user && isAuthenticated) {
       setCheckingAuth(false);
       return;
     }
 
+    // Check authentication for protected routes
     checkAuth()
       .then((authenticated) => {
         if (!authenticated) {
@@ -64,12 +71,6 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
         setCheckingAuth(false);
       });
   }, [pathname, checkAuth, router, user, isAuthenticated]);
-
-  // Don't render layout on public pages (login, forgot-password, reset-password)
-  const publicRoutes = ["/admin/login", "/admin/forgot-password", "/admin/reset-password"];
-  if (publicRoutes.includes(pathname)) {
-    return <>{children}</>;
-  }
 
   // Show loader only while checking (brief moment on mount)
   // Do NOT check isAuthenticated or user - middleware already validated cookie
