@@ -1,16 +1,31 @@
 // app/api/admin/customers/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { requireManager } from '@/lib/auth/requireAdmin';
+import { withCors } from '@/lib/utils/cors';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * GET /api/admin/customers
+ * 
+ * CRITICAL SECURITY: Protected route - requires manager role or higher.
+ * Returns paginated list of customers.
+ */
 export async function GET(request: NextRequest) {
+  // CRITICAL: Server-side authentication and authorization
+  const auth = await requireManager(request);
+  if (auth.error) {
+    return withCors(request, auth.error);
+  }
+  
+  // auth.user is guaranteed to be non-null here
   try {
     if (!prisma) {
-      return NextResponse.json(
+      return withCors(request, NextResponse.json(
         { error: 'Database not available', details: 'DATABASE_URL not set or Prisma failed to initialize' },
         { status: 500 }
-      );
+      ));
     }
 
     // Parse query parameters
@@ -49,7 +64,7 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    return NextResponse.json({
+    return withCors(request, NextResponse.json({
       customers,
       pagination: {
         page,
@@ -57,18 +72,17 @@ export async function GET(request: NextRequest) {
         total,
         totalPages: Math.ceil(total / limit)
       }
-    });
+    }));
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('❌ Customers API Error:', error);
-
-    return NextResponse.json(
+    
+    return withCors(request, NextResponse.json(
       {
         error: 'Failed to fetch customers',
         details: message
       },
       { status: 500 }
-    );
+    ));
   }
 }

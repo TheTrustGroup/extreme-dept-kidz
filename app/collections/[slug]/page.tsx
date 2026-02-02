@@ -28,7 +28,11 @@ export async function generateMetadata({
         title: 'All Products | Extreme Dept Kidz',
         description: 'Browse all premium kids fashion. New arrivals, boys, girls, and essentials.',
         keywords: ['all products', 'kids fashion', 'premium children\'s clothing', 'luxury kids fashion'],
-        alternates: { canonical: 'https://extremedeptkidz.com/collections/all' },
+        alternates: { 
+          canonical: process.env.NEXT_PUBLIC_SITE_URL 
+            ? `${process.env.NEXT_PUBLIC_SITE_URL}/collections/all`
+            : 'http://localhost:3000/collections/all'
+        },
       };
     }
     const categories = await getAllCategories();
@@ -45,12 +49,25 @@ export async function generateMetadata({
       title: `${name} | Extreme Dept Kidz`,
       description,
       keywords: [name, "luxury kids fashion", "premium children's clothing", "kids fashion collection"],
-      alternates: { canonical: `https://extremedeptkidz.com/collections/${slug}` },
+      alternates: { 
+        canonical: process.env.NEXT_PUBLIC_SITE_URL 
+          ? `${process.env.NEXT_PUBLIC_SITE_URL}/collections/${slug}`
+          : `http://localhost:3000/collections/${slug}`
+      },
       openGraph: {
         title: `${name} | Extreme Dept Kidz`,
         description,
-        url: `https://extremedeptkidz.com/collections/${slug}`,
-        images: [{ url: "https://extremedeptkidz.com/og-image.jpg", width: 1200, height: 630, alt: name }],
+        url: process.env.NEXT_PUBLIC_SITE_URL 
+          ? `${process.env.NEXT_PUBLIC_SITE_URL}/collections/${slug}`
+          : `http://localhost:3000/collections/${slug}`,
+        images: [{ 
+          url: process.env.NEXT_PUBLIC_SITE_URL 
+            ? `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.jpg`
+            : "http://localhost:3000/og-image.jpg", 
+          width: 1200, 
+          height: 630, 
+          alt: name 
+        }],
       },
     };
   } catch (error) {

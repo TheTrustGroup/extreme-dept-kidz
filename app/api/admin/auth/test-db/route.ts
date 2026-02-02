@@ -1,17 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { requireAdmin } from '@/lib/auth/requireAdmin';
+import { withCors } from '@/lib/utils/cors';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Database Connection Test Endpoint
  * 
- * ⚠️ SECURITY: Only available in development mode
+ * ⚠️ SECURITY: Development only OR authenticated admin only
  * Tests database connectivity and provides detailed diagnostics.
+ * 
+ * CRITICAL: In production, this endpoint requires admin authentication.
+ * In development, it's accessible without auth for debugging.
  */
-export async function GET(_request: NextRequest): Promise<NextResponse> {
-  // Allow in production for database diagnostics (read-only, no sensitive data exposed)
-  // This endpoint only tests connectivity and returns safe diagnostic info
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // CRITICAL SECURITY: Require admin auth in production
+  // In development, allow without auth for easier debugging
+  if (process.env.NODE_ENV === 'production') {
+    const auth = await requireAdmin(request, 'viewer');
+    if (auth.error) {
+      return withCors(request, NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      ));
+    }
+  }
+  
+  // Rest of endpoint logic (diagnostics)
   const diagnostics: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     hasDatabaseUrl: !!process.env.DATABASE_URL,
@@ -26,22 +42,25 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
 
   // Test Prisma client
   if (!prisma) {
-    return NextResponse.json({
-      success: false,
-      error: 'Prisma client is not available',
-      diagnostics: {
-        ...diagnostics,
-        reason: !process.env.DATABASE_URL 
-          ? 'DATABASE_URL environment variable is not set'
-          : 'Prisma client initialization failed',
+    return withCors(request, NextResponse.json(
+      {
+        success: false,
+        error: 'Prisma client is not available',
+        diagnostics: {
+          ...diagnostics,
+          reason: !process.env.DATABASE_URL 
+            ? 'DATABASE_URL environment variable is not set'
+            : 'Prisma client initialization failed',
+        },
+        recommendations: [
+          'Check if DATABASE_URL is set in Vercel environment variables',
+          'Verify the connection string format is correct',
+          'Ensure the connection string uses the Supabase Connection Pooler (port 6543)',
+          'Check Supabase project status (not paused)',
+        ],
       },
-      recommendations: [
-        'Check if DATABASE_URL is set in Vercel environment variables',
-        'Verify the connection string format is correct',
-        'Ensure the connection string uses the Supabase Connection Pooler (port 6543)',
-        'Check Supabase project status (not paused)',
-      ],
-    }, { status: 500 });
+      { status: 500 }
+    ));
   }
 
   // Test database connection
@@ -55,11 +74,13 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     diagnostics.connectionTest = 'success';
     diagnostics.adminUserCount = adminCount;
     
-    return NextResponse.json({
-      success: true,
-      message: 'Database connection successful',
-      diagnostics,
-    });
+    return withCors(request, NextResponse.json(
+      {
+        success: true,
+        message: 'Database connection successful',
+        diagnostics,
+      }
+    ));
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
@@ -98,21 +119,24 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     
     recommendations.push('Try the connection string from Supabase Dashboard → Settings → Database');
     
-    return NextResponse.json({
-      success: false,
-      error: 'Database connection failed',
-      diagnostics: {
-        ...diagnostics,
-        connectionTest: 'failed',
-        error: errorMessage,
-        errorCode: errorCode || undefined,
-        errorType: error instanceof Error ? error.constructor.name : typeof error,
-        isPreparedStatementError,
-        isConnectionError,
-        isAuthError,
-        ...(process.env.NODE_ENV === 'development' && { stack: errorStack }),
+    return withCors(request, NextResponse.json(
+      {
+        success: false,
+        error: 'Database connection failed',
+        diagnostics: {
+          ...diagnostics,
+          connectionTest: 'failed',
+          error: errorMessage,
+          errorCode: errorCode || undefined,
+          errorType: error instanceof Error ? error.constructor.name : typeof error,
+          isPreparedStatementError,
+          isConnectionError,
+          isAuthError,
+          ...(process.env.NODE_ENV === 'development' && { stack: errorStack }),
+        },
+        recommendations,
       },
-      recommendations,
-    }, { status: 500 });
+      { status: 500 }
+    ));
   }
 }

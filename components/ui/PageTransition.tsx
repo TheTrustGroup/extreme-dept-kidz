@@ -33,4 +33,3 @@ export function PageTransition({ children }: PageTransitionProps): JSX.Element {
 }
 
 export default PageTransition;
-

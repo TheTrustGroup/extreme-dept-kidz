@@ -1,0 +1,7 @@
+TARGETED FIXES FOR CURRENT ISSUES
+Issues Identified:
+
+❌ Mobile menu extends to bottom of page (should overlay only)
+❌ "DISCOVER" button not centered on hero
+❌ Products in "Just Dropped" section link to error page
+✅ Products in "Boys" section work correctly

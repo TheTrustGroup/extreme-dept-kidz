@@ -46,7 +46,9 @@ export async function generateMetadata({
       ...(product.tags ?? []),
     ],
     alternates: {
-      canonical: `https://extremedeptkidz.com/products/${product.slug}`,
+      canonical: process.env.NEXT_PUBLIC_SITE_URL 
+        ? `${process.env.NEXT_PUBLIC_SITE_URL}/products/${product.slug}`
+        : `http://localhost:3000/products/${product.slug}`,
     },
   };
 

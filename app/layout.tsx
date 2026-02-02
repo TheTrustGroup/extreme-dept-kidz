@@ -64,14 +64,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://extremedeptkidz.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   alternates: {
-    canonical: "https://extremedeptkidz.com",
+    canonical: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://extremedeptkidz.com",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
     siteName: "Extreme Dept Kidz",
     title: "Extreme Dept Kidz | Luxury Kids Fashion",
     description:

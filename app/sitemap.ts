@@ -1,18 +1,19 @@
 import type { MetadataRoute } from "next";
 import { getAllCategories } from "@/lib/db";
 import { getProducts } from "@/lib/data/products";
+import { getSiteUrl, getSiteUrlForPath } from "@/lib/config/site-url";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://extremedeptkidz.com";
+const SITE_URL = getSiteUrl();
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
-    { url: `${SITE_URL}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/cart`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.5 },
-    { url: `${SITE_URL}/collections`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: getSiteUrlForPath('/about'), lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: getSiteUrlForPath('/contact'), lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { url: getSiteUrlForPath('/cart'), lastModified: new Date(), changeFrequency: "weekly", priority: 0.5 },
+    { url: getSiteUrlForPath('/collections'), lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
   ];
 
   let collectionPages: MetadataRoute.Sitemap = [];
@@ -21,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     collectionPages = categories
       .filter((c) => c.isActive)
       .map((c) => ({
-        url: `${SITE_URL}/collections/${c.slug}`,
+        url: getSiteUrlForPath(`/collections/${c.slug}`),
         lastModified: new Date(),
         changeFrequency: "weekly" as const,
         priority: 0.9,
@@ -34,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const products = await getProducts({ storefrontOnly: true });
     productPages = products.map((p) => ({
-      url: `${SITE_URL}/products/${p.slug}`,
+      url: getSiteUrlForPath(`/products/${p.slug}`),
       lastModified: p.updatedAt || p.createdAt || new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.8,

@@ -61,10 +61,12 @@ export const metadata: Metadata = {
     title: "Extreme Dept Kidz | Luxury Kids Fashion",
     description:
       "Discover luxury kids fashion at Extreme Dept Kidz. Premium clothing and accessories for boys and girls.",
-    url: "https://extremedeptkidz.com",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
     images: [
       {
-        url: "https://extremedeptkidz.com/og-image.jpg",
+        url: process.env.NEXT_PUBLIC_SITE_URL 
+          ? `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.jpg`
+          : "http://localhost:3000/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Extreme Dept Kidz - Luxury Kids Fashion",

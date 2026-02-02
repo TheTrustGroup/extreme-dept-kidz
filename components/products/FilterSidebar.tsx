@@ -471,9 +471,7 @@ function PriceSlider({ min, max, value, onChange }: PriceSliderProps): JSX.Eleme
         <span className="text-charcoal-700 font-medium">
           {formatPrice(localMax)}
         </span>
-      </div>
-
-      {/* Slider Track */}
+      </div>      {/* Slider Track */}
       <div className="relative h-2 bg-cream-200 rounded-full">
         {/* Active Range */}
         <div
