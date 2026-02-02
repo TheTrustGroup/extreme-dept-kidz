@@ -20,7 +20,6 @@ import {
   X,
   FileText,
   UserCog,
-  LogOut,
   Plus,
   FolderOpen,
   Boxes,
@@ -56,7 +55,7 @@ interface AdminSidebarProps {
  */
 export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Element {
   const pathname = usePathname();
-  const { user, logout } = useAdminAuth();
+  const { user } = useAdminAuth();
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = React.useState(false);
   const [isDesktop, setIsDesktop] = React.useState(false);
@@ -489,52 +488,6 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
                 </div>
               )}
             </div>
-            {/* Sign Out Button - Backup location in sidebar footer */}
-            {/* Sign Out Button - Always show when sidebar is expanded, or show icon when collapsed */}
-            {sidebarExpanded ? (
-              <button
-                onClick={async () => {
-                  try {
-                    await logout();
-                  } catch (error) {
-                    console.error("Logout error:", error);
-                    window.location.replace('/admin/login');
-                  }
-                }}
-                className="w-full mt-[var(--admin-space-2)] admin-flex-sm items-center justify-center px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-200 border border-white/10 hover:border-white/20"
-                aria-label="Sign out"
-                title="Sign out"
-                style={{ 
-                  visibility: 'visible',
-                  opacity: 1,
-                  display: 'flex'
-                }}
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-                <AdminSidebarText className="ml-[var(--admin-space-2)]">Sign Out</AdminSidebarText>
-              </button>
-            ) : (
-              <button
-                onClick={async () => {
-                  try {
-                    await logout();
-                  } catch (error) {
-                    console.error("Logout error:", error);
-                    window.location.replace('/admin/login');
-                  }
-                }}
-                className="w-full mt-[var(--admin-space-2)] admin-flex-sm items-center justify-center px-[var(--admin-space-2)] py-[var(--admin-space-2)] rounded-lg text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
-                aria-label="Sign out"
-                title="Sign out"
-                style={{ 
-                  visibility: 'visible',
-                  opacity: 1,
-                  display: 'flex'
-                }}
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-              </button>
-            )}
           </div>
         )}
       </m.aside>
