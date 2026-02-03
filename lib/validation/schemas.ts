@@ -220,6 +220,43 @@ export const createOrderSchema = z.object({
   }),
 });
 
+/** Checkout create-order API: items (productId + size + quantity), shippingAddress, paymentMethod, shippingAmount. */
+export const createOrderApiSchema = z.object({
+  items: z.array(z.object({
+    productId: z.string().min(1, 'Product ID is required'),
+    size: z.string().min(1, 'Size is required'),
+    quantity: z.number().int().positive('Quantity must be at least 1'),
+  })).min(1, 'At least one item is required').max(50),
+  shippingAddress: z.object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Invalid email'),
+    phone: z.string().min(10, 'Phone is required'),
+    address: z.string().min(1, 'Address is required'),
+    apartment: z.string().optional(),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(1, 'State is required'),
+    zipCode: z.string().min(1, 'Zip code is required'),
+    country: z.string().min(1, 'Country is required'),
+  }),
+  billingAddress: z.object({
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().optional(),
+    address: z.string().min(1),
+    apartment: z.string().optional(),
+    city: z.string().min(1),
+    state: z.string().min(1),
+    zipCode: z.string().min(1),
+    country: z.string().min(1),
+  }).optional().nullable(),
+  paymentMethod: z.enum(['paystack', 'momo', 'card']),
+  shippingAmount: z.number().int().min(0),
+  taxAmount: z.number().int().min(0).optional().default(0),
+  idempotencyKey: z.string().max(128).optional().nullable(),
+});
+
 // Admin schemas
 export const adminLoginSchema = z.object({
   email: z.string().email('Invalid email'),

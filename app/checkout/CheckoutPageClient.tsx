@@ -43,10 +43,60 @@ export function CheckoutPageClient(): JSX.Element | null {
 
   const handleSubmit = async (data: CheckoutFormData): Promise<void> => {
     try {
-      const cartTotal = useCartStore.getState().getTotal();
+      const cartItems = useCartStore.getState().items;
       const shippingPrice = SHIPPING_METHODS.find(m => m.id === shippingMethod)?.price || 0;
-      const total = cartTotal + shippingPrice;
-      const orderId = `ORD-${Date.now()}`;
+
+      // 1. Create order in DB first (mission-critical: order exists before payment)
+      const orderPayload = {
+        items: cartItems.map((item) => ({
+          productId: item.product.id,
+          size: item.selectedSize,
+          quantity: item.quantity,
+        })),
+        shippingAddress: {
+          firstName: data.shippingAddress.firstName,
+          lastName: data.shippingAddress.lastName,
+          email: data.shippingAddress.email,
+          phone: data.shippingAddress.phone,
+          address: data.shippingAddress.address,
+          apartment: data.shippingAddress.apartment,
+          city: data.shippingAddress.city,
+          state: data.shippingAddress.state,
+          zipCode: data.shippingAddress.zipCode,
+          country: data.shippingAddress.country,
+        },
+        billingAddress: data.payment.billingAddressSameAsShipping === false && data.payment.billingAddress
+          ? {
+              firstName: data.payment.billingAddress.firstName,
+              lastName: data.payment.billingAddress.lastName,
+              email: data.payment.billingAddress.email,
+              phone: data.payment.billingAddress.phone,
+              address: data.payment.billingAddress.address,
+              apartment: data.payment.billingAddress.apartment,
+              city: data.payment.billingAddress.city,
+              state: data.payment.billingAddress.state,
+              zipCode: data.payment.billingAddress.zipCode,
+              country: data.payment.billingAddress.country,
+            }
+          : null,
+        paymentMethod: data.payment.method,
+        shippingAmount: shippingPrice,
+        taxAmount: 0,
+      };
+
+      const orderRes = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      });
+      const orderResult = await orderRes.json();
+      if (!orderResult.success || !orderResult.data?.orderId) {
+        alert(orderResult.error || "Could not create order. Please try again.");
+        return;
+      }
+
+      const { orderId, orderNumber } = orderResult.data;
+      const total = useCartStore.getState().getTotal() + shippingPrice;
 
       if (data.payment.method === "paystack") {
         const response = await fetch("/api/payment/paystack/initiate", {
@@ -55,7 +105,7 @@ export function CheckoutPageClient(): JSX.Element | null {
           body: JSON.stringify({
             email: data.shippingAddress.email,
             amount: total, // pesewas (GHS) / kobo (NGN)
-            orderId,
+            orderId, // DB order id = Paystack reference (for webhook/verify)
             currency: "GHS",
           }),
         });
@@ -66,6 +116,7 @@ export function CheckoutPageClient(): JSX.Element | null {
         }
         sessionStorage.setItem("paymentReferenceId", result.data.reference);
         sessionStorage.setItem("orderId", orderId);
+        sessionStorage.setItem("orderNumber", orderNumber);
         window.location.href = result.data.authorizationUrl;
         return;
       }
@@ -90,6 +141,7 @@ export function CheckoutPageClient(): JSX.Element | null {
         }
         sessionStorage.setItem("paymentReferenceId", result.data.referenceId);
         sessionStorage.setItem("orderId", orderId);
+        sessionStorage.setItem("orderNumber", orderNumber);
         router.push(`/checkout/payment-status?ref=${result.data.referenceId}`);
         return;
       }

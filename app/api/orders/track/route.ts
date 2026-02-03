@@ -1,101 +1,157 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { apiSuccess, apiError, apiNotFound } from '@/lib/utils/api-response';
-import { logger } from '@/lib/utils/logger';
+/**
+ * GET /api/orders/track?number=ORD-xxx&email=customer@example.com
+ * Look up order by orderNumber and verify email (from shippingAddress).
+ */
 
-export const dynamic = 'force-dynamic';
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/db/prisma";
+import { apiSuccess, apiError, apiNotFound } from "@/lib/utils/api-response";
+import { logger } from "@/lib/utils/logger";
 
-// Mock order data - In production, fetch from database
-const mockOrders: Record<string, any> = {
-  'ORD-12345': {
-    id: 'order_1',
-    orderNumber: 'ORD-12345',
-    email: 'customer@example.com',
-    status: 'shipped',
-    createdAt: '2024-01-10T10:00:00Z',
-    items: [
-      {
-        id: 'item_1',
-        name: 'Blue Patterned Camp Collar Shirt',
-        quantity: 1,
-        price: 25000,
-        image: '/Blue Patterned Short-Sleeve Shirt.jpg',
-      },
-    ],
-    shipping: {
-      address: '123 Main St, Accra, Ghana',
-      method: 'Standard Shipping',
-      trackingNumber: 'TRACK123456',
-    },
-    timeline: [
-      {
-        id: 'status_1',
-        status: 'pending',
-        date: '2024-01-10',
-        description: 'Order placed',
-      },
-      {
-        id: 'status_2',
-        status: 'processing',
-        date: '2024-01-11',
-        description: 'Order confirmed and processing',
-      },
-      {
-        id: 'status_3',
-        status: 'shipped',
-        date: '2024-01-12',
-        description: 'Order shipped',
-        location: 'Accra, Ghana',
-      },
-    ],
-  },
-};
+export const dynamic = "force-dynamic";
+
+interface ShippingAddressJson {
+  email?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+function buildTimeline(order: {
+  status: string;
+  createdAt: Date;
+  shippedAt: Date | null;
+  deliveredAt: Date | null;
+  cancelledAt: Date | null;
+}): Array<{ id: string; status: string; date: string; description: string; location?: string }> {
+  const timeline: Array<{ id: string; status: string; date: string; description: string; location?: string }> = [];
+  timeline.push({
+    id: "placed",
+    status: "pending",
+    date: new Date(order.createdAt).toISOString().slice(0, 10),
+    description: "Order placed",
+  });
+  if (order.status !== "PENDING" && order.status !== "CANCELLED") {
+    timeline.push({
+      id: "processing",
+      status: "processing",
+      date: new Date(order.createdAt).toISOString().slice(0, 10),
+      description: "Order confirmed and processing",
+    });
+  }
+  if (order.shippedAt || ["SHIPPED", "DELIVERED"].includes(order.status)) {
+    timeline.push({
+      id: "shipped",
+      status: "shipped",
+      date: order.shippedAt ? new Date(order.shippedAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+      description: "Order shipped",
+    });
+  }
+  if (order.deliveredAt || order.status === "DELIVERED") {
+    timeline.push({
+      id: "delivered",
+      status: "delivered",
+      date: order.deliveredAt ? new Date(order.deliveredAt).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+      description: "Delivered",
+    });
+  }
+  if (order.status === "CANCELLED" && order.cancelledAt) {
+    timeline.push({
+      id: "cancelled",
+      status: "cancelled",
+      date: new Date(order.cancelledAt).toISOString().slice(0, 10),
+      description: "Order cancelled",
+    });
+  }
+  return timeline;
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const orderNumber = searchParams.get('number')?.trim();
-    const email = searchParams.get('email')?.trim().toLowerCase();
+    const orderNumber = searchParams.get("number")?.trim();
+    const email = searchParams.get("email")?.trim();
 
     if (!orderNumber || !email) {
-      return apiError('Order number and email are required', 400);
+      return apiError("Order number and email are required", 400);
     }
 
-    // In production, query database:
-    // const order = await prisma.order.findFirst({
-    //   where: {
-    //     orderNumber,
-    //     email: email.toLowerCase(),
-    //   },
-    //   include: {
-    //     items: {
-    //       include: {
-    //         product: true,
-    //       },
-    //     },
-    //   },
-    // });
+    if (!prisma) {
+      return apiError("Service unavailable", 503);
+    }
 
-    const order = mockOrders[orderNumber];
+    const order = await prisma.order.findUnique({
+      where: { orderNumber },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                images: { where: { isPrimary: true }, take: 1, select: { url: true } },
+              },
+            },
+            variant: { select: { size: true } },
+          },
+        },
+      },
+    });
 
     if (!order) {
-      return apiNotFound('Order');
+      return apiNotFound("Order");
     }
 
-    // Verify email matches
-    if (order.email.toLowerCase() !== email) {
-      return apiNotFound('Order');
+    const shipping = order.shippingAddress as ShippingAddressJson | null;
+    const orderEmail = (shipping?.email ?? "").toString().toLowerCase().trim();
+    const requestedEmail = email.toLowerCase().trim();
+
+    if (orderEmail !== requestedEmail) {
+      return apiNotFound("Order");
     }
 
-    return apiSuccess(
-      { order },
-      "Order found successfully"
-    );
+    const statusLower = order.status.toLowerCase();
+    const shippingAddress = shipping
+      ? [shipping.address, shipping.city, shipping.state, shipping.country].filter(Boolean).join(", ")
+      : "";
+
+    const responseOrder = {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      email: orderEmail,
+      status: statusLower,
+      createdAt: order.createdAt.toISOString(),
+      items: order.items.map((item) => ({
+        id: item.id,
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.product.images[0]?.url ?? "",
+      })),
+      shipping: {
+        address: shippingAddress,
+        method: order.paymentMethod,
+        trackingNumber: order.trackingNumber ?? undefined,
+      },
+      timeline: buildTimeline({
+        status: order.status,
+        createdAt: order.createdAt,
+        shippedAt: order.shippedAt,
+        deliveredAt: order.deliveredAt,
+        cancelledAt: order.cancelledAt,
+      }),
+    };
+
+    return apiSuccess({ order: responseOrder }, "Order found successfully");
   } catch (error) {
-    logger.error('Track order error:', error);
+    logger.error("Track order error:", error);
     return apiError(
-      'Failed to track order',
+      "Failed to track order",
       500,
-      error instanceof Error ? error.message : 'Unknown error'
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
