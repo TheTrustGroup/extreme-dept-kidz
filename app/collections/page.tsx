@@ -27,7 +27,13 @@ export const metadata: Metadata = {
   },
 };
 
-const FALLBACK_COLLECTION_IMAGE = "/4677.png";
+/** Paths we treat as placeholder — do not show on collection cards. */
+const PLACEHOLDER_IMAGE_PATHS = ["/4677.png", "/4671.png", "/4672.png", "/4674.png", "/4675.png", "/IMG_4673.png", "/IMG_4689.png"];
+
+function isPlaceholderImage(url: string | undefined): boolean {
+  if (!url) return true;
+  return PLACEHOLDER_IMAGE_PATHS.some((p) => url === p || url.endsWith(p));
+}
 
 /** PHASE 9 — Safe ISR: Collections index revalidates every 60s. */
 export const revalidate = 60;
@@ -38,18 +44,22 @@ export const revalidate = 60;
  * Shows admin-created categories (Boys, Girls, Premium Kidswear, etc.) so
  * categories you add in Admin → Categories appear here. Each card links to
  * /collections/[slug], which loads products by category slug.
+ * No placeholder image: cards show a styled block unless the category has a real image.
  */
 export default async function CollectionsPage(): Promise<JSX.Element> {
   const categories = await getAllCategories();
   const active = categories.filter((c) => c.isActive);
 
-  const items = active.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    description: c.description ?? undefined,
-    image: c.image ?? FALLBACK_COLLECTION_IMAGE,
-  }));
+  const items = active.map((c) => {
+    const image = c.image && !isPlaceholderImage(c.image) ? c.image : undefined;
+    return {
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      description: c.description ?? undefined,
+      image,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-cream-50 pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
@@ -83,15 +93,17 @@ export default async function CollectionsPage(): Promise<JSX.Element> {
               href={`/collections/${item.slug}`}
               className="group block"
             >
-              <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-cream-100 mb-4">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  loading="lazy"
-                />
+              <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-cream-200 mb-4">
+                {item.image ? (
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    loading="lazy"
+                  />
+                ) : null}
                 <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <h2 className="font-serif text-2xl md:text-3xl font-semibold text-cream-50 drop-shadow-md">

@@ -8,7 +8,6 @@ import {
   HeroSection,
   FeaturedCollections,
   TrustSection,
-  TrustBar,
   JustDroppedSection,
   GirlsCollectionSection,
 } from "@/components/home";
@@ -21,7 +20,7 @@ import {
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
 
-// Hero, TrustBar, and "Just dropped" in main bundle so below-hero is never blank
+// Hero and "Just dropped" in main bundle so below-hero is never blank
 // Shop by Style removed for world-class simplicity — Just dropped + Shop by Category
 
 const ShopByCategory = nextDynamic(() => import("@/components/home").then((mod) => ({ default: mod.ShopByCategory })), {
@@ -136,9 +135,6 @@ export default async function Home(props: HomeProps) {
 
         {/* Trust / Features - Free shipping, returns, secure checkout, premium quality */}
         <TrustSection />
-
-        {/* Trust Bar - Prominent trust signals for first-time visitors */}
-        <TrustBar />
 
         {/* CRITICAL: Streaming SSR with proper Suspense boundaries */}
         {/* Progressive rendering: LCP elements (Hero) render first, rest streams in */}
