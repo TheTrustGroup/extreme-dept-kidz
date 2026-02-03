@@ -210,10 +210,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   } catch (error) {
     logger.error("Failed to create user:", error);
-    return apiError(
-      "Failed to create user",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    );
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const isEnumError =
+      message.includes("enum") ||
+      message.includes("AdminRole") ||
+      message.includes("invalid input value");
+    const isUniqueError =
+      (error &&
+        typeof error === "object" &&
+        "code" in error &&
+        (error as { code?: string }).code === "P2002") ||
+      message.toLowerCase().includes("unique") ||
+      message.toLowerCase().includes("already exists");
+    if (isEnumError && !isUniqueError) {
+      return apiError(
+        "Invalid role or database schema out of date. Ensure the migration that adds cashier, warehouse, and driver roles has been applied (prisma/migrations/20250202120000_add_admin_roles_cashier_warehouse_driver).",
+        400,
+        message
+      );
+    }
+    if (isUniqueError) {
+      return apiError("User with this email already exists", 409, message);
+    }
+    return apiError("Failed to create user", 500, message);
   }
 }

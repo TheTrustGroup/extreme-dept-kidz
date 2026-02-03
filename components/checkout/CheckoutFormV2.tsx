@@ -4,7 +4,7 @@ import * as React from "react";
 import { useForm, type UseFormRegister, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { m, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, CreditCard, Smartphone, Lock, Shield } from "lucide-react";
+import { ArrowLeft, ArrowRight, CreditCard, Smartphone, Lock, Shield, Wallet } from "lucide-react";
 import {
   shippingAddressSchema,
   type ShippingAddress,
@@ -111,6 +111,7 @@ export function CheckoutFormV2({
           return;
         }
       }
+      // paystack: no extra fields (email from shipping, redirect to Paystack)
       setCurrentStep("review");
     }
   };
@@ -130,7 +131,7 @@ export function CheckoutFormV2({
       payment: {
         method: paymentMethod,
         billingAddressSameAsShipping: billingSameAsShipping,
-        ...(paymentMethod === "card" ? { cardDetails } : { momoPhone }),
+        ...(paymentMethod === "card" ? { cardDetails } : paymentMethod === "momo" ? { momoPhone } : {}),
       },
     });
   };
@@ -410,6 +411,35 @@ export function CheckoutFormV2({
                     Mobile Money
                   </Body>
                 </label>
+
+                <label className={cn(
+                  "flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                  paymentMethod === "paystack"
+                    ? theme === "dark"
+                      ? "border-accent-primary bg-accent-primary/10"
+                      : "border-navy-900 bg-navy-50"
+                    : theme === "dark"
+                      ? "border-dark-border-glass bg-dark-bg-secondary hover:border-dark-border-glass/80"
+                      : "border-cream-200 bg-cream-50 hover:border-cream-300"
+                )}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="paystack"
+                    checked={paymentMethod === "paystack"}
+                    onChange={() => setPaymentMethod("paystack")}
+                  />
+                  <Wallet className={cn(
+                    "w-5 h-5",
+                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                  )} />
+                  <Body className={cn(
+                    "font-semibold flex-1",
+                    theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
+                  )}>
+                    Paystack (Card & Mobile Money)
+                  </Body>
+                </label>
               </div>
 
               {/* Card Details */}
@@ -491,6 +521,17 @@ export function CheckoutFormV2({
                 </div>
               )}
 
+              {paymentMethod === "paystack" && (
+                <div className="space-y-2 p-4 rounded-lg bg-cream-100 dark:bg-dark-bg-secondary">
+                  <Body className={cn(
+                    "text-sm",
+                    theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
+                  )}>
+                    You will be redirected to Paystack to pay securely with card or mobile money.
+                  </Body>
+                </div>
+              )}
+
               {/* Billing Address */}
               <div className="pt-4 border-t border-cream-200 dark:border-dark-border-glass">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -525,7 +566,9 @@ export function CheckoutFormV2({
                   disabled={
                     paymentMethod === "card"
                       ? !cardDetails.number || !cardDetails.expiry || !cardDetails.cvv || !cardDetails.name
-                      : !momoPhone.trim()
+                      : paymentMethod === "momo"
+                        ? !momoPhone.trim()
+                        : false
                   }
                   variant="primary"
                   size="lg"
@@ -705,7 +748,11 @@ function OrderReview({
           "text-sm",
           theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
         )}>
-          {paymentMethod === "card" ? "Credit/Debit Card" : "Mobile Money"}
+          {paymentMethod === "card"
+                ? "Credit/Debit Card"
+                : paymentMethod === "paystack"
+                  ? "Paystack (Card & Mobile Money)"
+                  : "Mobile Money"}
         </Body>
       </div>
 

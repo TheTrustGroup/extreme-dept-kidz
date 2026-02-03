@@ -43,52 +43,61 @@ export function CheckoutPageClient(): JSX.Element | null {
 
   const handleSubmit = async (data: CheckoutFormData): Promise<void> => {
     try {
-      // Only handle MoMo payments for now
-      if (data.payment.method !== "momo") {
-        alert("MoMo payment is currently the only supported method. Please select MoMo.");
-        return;
-      }
-
-      // Calculate total including shipping
       const cartTotal = useCartStore.getState().getTotal();
       const shippingPrice = SHIPPING_METHODS.find(m => m.id === shippingMethod)?.price || 0;
       const total = cartTotal + shippingPrice;
-
-      // Generate order ID
       const orderId = `ORD-${Date.now()}`;
 
-      // Extract phone number from shipping address
-      const phoneNumber = data.shippingAddress.phone.replace(/\D/g, ''); // Remove non-digits
-      
-      // Initiate MoMo payment
-      const response = await fetch('/api/payment/momo/initiate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: total / 100, // Convert cents to GHS
-          phoneNumber: phoneNumber,
-          orderId,
-          customerName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`,
-          customerEmail: data.shippingAddress.email,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!result.success || !result.data?.referenceId) {
-        alert(result.error || 'Payment initiation failed. Please try again.');
+      if (data.payment.method === "paystack") {
+        const response = await fetch("/api/payment/paystack/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: data.shippingAddress.email,
+            amount: total, // pesewas (GHS) / kobo (NGN)
+            orderId,
+            currency: "GHS",
+          }),
+        });
+        const result = await response.json();
+        if (!result.success || !result.data?.authorizationUrl) {
+          alert(result.error || "Payment initiation failed. Please try again.");
+          return;
+        }
+        sessionStorage.setItem("paymentReferenceId", result.data.reference);
+        sessionStorage.setItem("orderId", orderId);
+        window.location.href = result.data.authorizationUrl;
         return;
       }
 
-      // Store reference ID for polling
-      sessionStorage.setItem('paymentReferenceId', result.data.referenceId);
-      sessionStorage.setItem('orderId', orderId);
+      if (data.payment.method === "momo") {
+        const phoneNumber = data.shippingAddress.phone.replace(/\D/g, "");
+        const response = await fetch("/api/payment/momo/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: total / 100,
+            phoneNumber,
+            orderId,
+            customerName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`,
+            customerEmail: data.shippingAddress.email,
+          }),
+        });
+        const result = await response.json();
+        if (!result.success || !result.data?.referenceId) {
+          alert(result.error || "Payment initiation failed. Please try again.");
+          return;
+        }
+        sessionStorage.setItem("paymentReferenceId", result.data.referenceId);
+        sessionStorage.setItem("orderId", orderId);
+        router.push(`/checkout/payment-status?ref=${result.data.referenceId}`);
+        return;
+      }
 
-      // Redirect to payment status page
-      router.push(`/checkout/payment-status?ref=${result.data.referenceId}`);
+      alert("Please select Paystack or Mobile Money to continue.");
     } catch (error) {
-      console.error('Checkout error:', error);
-      alert('An error occurred. Please try again.');
+      console.error("Checkout error:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 

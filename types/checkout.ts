@@ -38,7 +38,7 @@ export interface ShippingMethodOption {
 /**
  * Payment Method
  */
-export type PaymentMethod = "card" | "paypal" | "apple-pay" | "momo";
+export type PaymentMethod = "card" | "paypal" | "apple-pay" | "momo" | "paystack";
 
 /**
  * Payment Details (Stripe-ready structure)

@@ -176,8 +176,12 @@ export default function AdminUsersPage(): JSX.Element {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || `Failed to ${isEdit ? 'update' : 'create'} user`);
+        const err = await response.json();
+        const detail = typeof err.details === "string" ? err.details : "";
+        const message = err.error
+          ? (detail ? `${err.error}: ${detail}` : err.error)
+          : `Failed to ${isEdit ? "update" : "create"} user`;
+        throw new Error(message);
       }
 
       showToast({

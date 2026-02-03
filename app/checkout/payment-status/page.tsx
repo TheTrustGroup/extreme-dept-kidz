@@ -9,64 +9,79 @@ import { H1 } from "@/components/ui/typography";
 export default function PaymentStatusPage(): JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const referenceId = searchParams.get("ref");
+  const referenceId = searchParams.get("ref") ?? searchParams.get("reference");
   const [status, setStatus] = React.useState<"processing" | "success" | "failed" | "timeout">("processing");
   const [message, setMessage] = React.useState("Processing payment...");
   const clearCart = useCartStore((state) => state.clearCart);
 
   React.useEffect(() => {
-    if (!referenceId) {
+    const ref = referenceId ?? null;
+    if (!ref) {
       router.push("/checkout");
       return;
     }
 
-    // Poll for payment status
     let attempts = 0;
-    const maxAttempts = 30; // 5 minutes (10s intervals)
-    const pollInterval = 10000; // 10 seconds
+    const maxAttempts = 30;
+    const pollInterval = 10000;
 
-    const pollPaymentStatus = async () => {
+    const checkStatus = async (): Promise<boolean> => {
       try {
-        const response = await fetch(`/api/payment/momo/verify?referenceId=${referenceId}`);
-        const result = await response.json();
+        const paystackRes = await fetch(
+          `/api/payment/paystack/verify?referenceId=${encodeURIComponent(ref)}`
+        );
+        const paystackJson = await paystackRes.json();
+        if (paystackJson.success && paystackJson.data?.verified) {
+          setStatus("success");
+          setMessage("Payment successful! Your order is confirmed.");
+          clearCart();
+          setTimeout(() => router.push(`/checkout/success?ref=${ref}`), 3000);
+          return true;
+        }
+        if (paystackJson.data?.status === "failed") {
+          setStatus("failed");
+          setMessage("Payment failed. Please try again.");
+          return true;
+        }
 
-        if (result.success && result.data) {
-          if (result.data.verified) {
+        const momoRes = await fetch(
+          `/api/payment/momo/verify?referenceId=${encodeURIComponent(ref)}`
+        );
+        const momoJson = await momoRes.json();
+        if (momoJson.success && momoJson.data) {
+          if (momoJson.data.verified) {
             setStatus("success");
             setMessage("Payment successful! Your order is confirmed.");
             clearCart();
-            
-            // Redirect to success page after 3 seconds
-            setTimeout(() => {
-              router.push(`/checkout/success?ref=${referenceId}`);
-            }, 3000);
-            return;
-          } else if (result.data.status === "FAILED") {
+            setTimeout(() => router.push(`/checkout/success?ref=${ref}`), 3000);
+            return true;
+          }
+          if (momoJson.data.status === "FAILED") {
             setStatus("failed");
             setMessage("Payment failed. Please try again.");
-            return;
+            return true;
           }
         }
+      } catch (err) {
+        console.error("Payment status check error:", err);
+      }
+      return false;
+    };
 
-        attempts++;
-        if (attempts >= maxAttempts) {
-          setStatus("timeout");
-          setMessage("Payment is taking longer than expected. Please check your phone or contact support.");
-        }
-      } catch (error) {
-        console.error("Payment status check error:", error);
-        attempts++;
-        if (attempts >= maxAttempts) {
-          setStatus("timeout");
-          setMessage("Unable to verify payment status. Please contact support.");
-        }
+    const poll = async () => {
+      const done = await checkStatus();
+      if (done) return;
+      attempts++;
+      if (attempts >= maxAttempts) {
+        setStatus("timeout");
+        setMessage(
+          "Payment is taking longer than expected. Please check your phone or contact support."
+        );
       }
     };
 
-    // Start polling immediately, then every 10 seconds
-    pollPaymentStatus();
-    const interval = setInterval(pollPaymentStatus, pollInterval);
-
+    poll();
+    const interval = setInterval(poll, pollInterval);
     return () => clearInterval(interval);
   }, [referenceId, router, clearCart]);
 
@@ -79,7 +94,7 @@ export default function PaymentStatusPage(): JSX.Element {
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-navy-900 mx-auto mb-6"></div>
               <H1 className="text-charcoal-900 mb-4">Processing Payment</H1>
               <p className="text-charcoal-600 mb-6">
-                Please check your phone and approve the MoMo payment prompt.
+                Complete your payment in the window that opened, or wait while we verify.
               </p>
               <p className="text-sm text-charcoal-500">
                 This may take up to 2 minutes...
