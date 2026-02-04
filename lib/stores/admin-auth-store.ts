@@ -1,10 +1,12 @@
 /**
  * Admin Authentication Store
- * 
+ *
  * Zustand store for managing admin authentication state.
+ * Uses apiUrl() so warehouse (NEXT_PUBLIC_API_URL) sends login/me/logout to main site.
  */
 
 import { create } from "zustand";
+import { apiUrl } from "@/lib/config/api-base";
 
 export type AdminRole = "super_admin" | "admin" | "manager" | "viewer";
 
@@ -106,7 +108,7 @@ export const useAdminAuth = create<AdminAuthState>()(
           
           // Add cache-busting timestamp to prevent any caching
           const timestamp = Date.now();
-          const response = await fetch(`/api/admin/auth/login?t=${timestamp}`, {
+          const response = await fetch(apiUrl(`/api/admin/auth/login?t=${timestamp}`), {
             method: "POST",
             headers: { 
               "Content-Type": "application/json",
@@ -233,7 +235,7 @@ export const useAdminAuth = create<AdminAuthState>()(
         }
 
         try {
-          const response = await fetch("/api/admin/auth/logout", {
+          const response = await fetch(apiUrl("/api/admin/auth/logout"), {
             method: "POST",
             credentials: 'include',
             cache: 'no-store',
@@ -270,7 +272,7 @@ export const useAdminAuth = create<AdminAuthState>()(
         // Just verify auth via API - cookie is automatically included
 
         try {
-          const response = await fetch("/api/admin/auth/me", {
+          const response = await fetch(apiUrl("/api/admin/auth/me"), {
             credentials: 'include', // Cookie automatically included
             headers: {
               'Authorization': `Bearer ${token}`, // Fallback if cookie not ready
@@ -354,10 +356,10 @@ export const useAdminAuth = create<AdminAuthState>()(
           }
           
           const doFetch = () =>
-            fetch("/api/admin/auth/me", {
+            fetch(apiUrl("/api/admin/auth/me"), {
               headers,
-              credentials: 'include',
-              cache: 'no-store',
+              credentials: "include",
+              cache: "no-store",
             });
 
           let response = await doFetch();

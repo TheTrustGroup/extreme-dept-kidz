@@ -23,29 +23,40 @@ export function InventoryTableWrapper(): JSX.Element {
   const [loading, setLoading] = React.useState(true);
   const { showToast } = useToast();
 
-  React.useEffect(() => {
-    async function loadInventory(): Promise<void> {
-      setLoading(true);
-      try {
-        const response = await fetch(apiUrl("/api/admin/inventory"), {
-          credentials: "include",
-        });
+  const loadInventory = React.useCallback(async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const response = await fetch(apiUrl("/api/admin/inventory"), {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch inventory');
-        }
-
-        const data = await response.json();
-        setVariants(data.data?.variants || []);
-      } catch (error) {
-        console.error("Failed to load inventory:", error);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch inventory");
       }
-    }
 
-    loadInventory();
+      const data = await response.json();
+      setVariants(data.data?.variants || []);
+    } catch (error) {
+      console.error("Failed to load inventory:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  React.useEffect(() => {
+    loadInventory();
+  }, [loadInventory]);
+
+  // Refetch when user returns to this tab/window so other-device updates are visible
+  React.useEffect(() => {
+    const onVisibility = (): void => {
+      if (document.visibilityState === "visible") loadInventory();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [loadInventory]);
 
   const handleStockUpdate = React.useCallback(async (variantId: string, stock: number): Promise<void> => {
     try {
@@ -131,9 +142,11 @@ export function InventoryTableWrapper(): JSX.Element {
         })
       );
 
-      // Reload inventory
+      // Reload inventory (no cache so other devices see latest)
       const response = await fetch(apiUrl("/api/admin/inventory"), {
         credentials: "include",
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
       });
 
       if (response.ok) {

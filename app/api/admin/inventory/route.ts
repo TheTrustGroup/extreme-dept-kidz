@@ -70,7 +70,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       imageUrl: v.product.images[0]?.url,
     }));
 
-    return withCors(request, apiSuccess(
+    const response = withCors(request, apiSuccess(
       {
         variants: tableVariants,
         count: variants.length,
@@ -79,6 +79,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
       "Inventory fetched successfully"
     ));
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    return response;
   } catch (error) {
     logger.error("Failed to fetch inventory:", error);
     return withCors(request, apiError(

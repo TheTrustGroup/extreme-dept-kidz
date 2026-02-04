@@ -11,7 +11,9 @@ const nextConfig = {
     return [
       { source: '/admin/api/login', destination: '/api/admin/auth/login' },
       { source: '/admin/api/me', destination: '/api/admin/auth/me' },
-      { source: '/api/orders', destination: '/api/admin/orders' },
+      { source: '/admin/api/logout', destination: '/api/admin/auth/logout' },
+      { source: '/api/auth/logout', destination: '/api/admin/auth/logout' },
+      // Do not rewrite /api/orders – POST is checkout (create order), GET list uses /api/admin/orders
       { source: '/admin/api/products', destination: '/api/admin/products' },
       { source: '/admin/api/products/:path*', destination: '/api/admin/products/:path*' },
     ];

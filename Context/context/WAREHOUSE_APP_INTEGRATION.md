@@ -91,6 +91,7 @@ CORS is already configured on the main site for warehouse origin (`https://wareh
 
 - `/api/admin/auth/login` and `/admin/api/login`
 - `/api/admin/auth/me` (and `/admin/api/me` rewrite)
+- `/api/admin/auth/logout`, `/admin/api/logout`, and `/api/auth/logout` (all rewrite to same handler)
 - `/api/products` (public products)
 - `/admin/api/products` and `/admin/api/products/:id` (rewrite to `/api/admin/products`, used by warehouse Inventory)
 - `/api/admin/products`

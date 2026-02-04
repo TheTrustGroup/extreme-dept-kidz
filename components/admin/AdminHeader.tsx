@@ -11,6 +11,7 @@ import { AdminSearchModal } from "@/components/admin/AdminSearchModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminBody, AdminBodySmall, AdminCaption } from "@/components/admin/AdminTypography";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/config/api-base";
 
 // Wrapper component to catch errors in DatabaseStatus
 function DatabaseStatusWrapper(): JSX.Element {
@@ -44,8 +45,8 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
   React.useEffect(() => {
     const fetchNotificationCount = async (): Promise<void> => {
       try {
-        const response = await fetch('/api/admin/orders?status=PENDING&limit=1', {
-          credentials: 'include',
+        const response = await fetch(apiUrl("/api/admin/orders?status=PENDING&limit=1"), {
+          credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();

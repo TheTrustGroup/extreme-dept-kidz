@@ -97,6 +97,7 @@ export function middleware(request: NextRequest) {
     pathname === '/admin/api/login' ||
     pathname.startsWith('/api/admin/') ||
     pathname.startsWith('/admin/api/') ||
+    pathname === '/api/auth/logout' ||
     pathname === '/api/orders' ||
     pathname.startsWith('/api/orders/') ||
     pathname === '/api/products' ||
@@ -221,9 +222,10 @@ export function middleware(request: NextRequest) {
 // Match all static assets and image routes, plus admin API for CORS
 export const config = {
   matcher: [
-    // CORS for warehouse: admin API, orders, public products
+    // CORS for warehouse: admin API, orders, logout, public products
     '/api/admin/:path*',
     '/admin/api/:path*',
+    '/api/auth/logout',
     '/api/orders',
     '/api/orders/:path*',
     '/api/products',
