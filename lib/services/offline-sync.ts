@@ -1,8 +1,10 @@
 /**
  * Offline Sync Service
- * 
+ *
  * Handles offline inventory updates and automatic syncing when connection is restored.
+ * Uses apiUrl() so warehouse deployment calls the main site API (NEXT_PUBLIC_API_URL).
  */
+import { apiUrl } from "@/lib/config/api-base";
 
 export interface PendingInventoryUpdate {
   id: string;
@@ -208,8 +210,8 @@ class OfflineSyncService {
         this.updateUpdateStatus(update.id, 'syncing');
         
         // Try to sync via API
-        const response = await fetch(`/api/admin/inventory/sync`, {
-          method: 'POST',
+        const response = await fetch(apiUrl("/api/admin/inventory/sync"), {
+          method: "POST",
           headers: {
             'Content-Type': 'application/json',
           },

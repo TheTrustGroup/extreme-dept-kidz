@@ -5,6 +5,7 @@ import { m } from "framer-motion";
 import { ArrowUp, ArrowDown, Package, ShoppingBag, RefreshCw, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/config/api-base";
 
 export interface StockHistoryEntry {
   id: string;
@@ -40,8 +41,8 @@ export function StockHistory({
     async function loadHistory(): Promise<void> {
       setLoadingHistory(true);
       try {
-        const response = await fetch(`/api/admin/inventory/history/${variantId}?limit=50`, {
-          credentials: 'include',
+        const response = await fetch(apiUrl(`/api/admin/inventory/history/${variantId}?limit=50`), {
+          credentials: "include",
         });
 
         if (!response.ok) {

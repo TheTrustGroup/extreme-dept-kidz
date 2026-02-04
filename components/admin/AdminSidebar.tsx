@@ -34,6 +34,7 @@ import {
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { AdminSidebarText, AdminCaption } from "@/components/admin/AdminTypography";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/config/api-base";
 
 interface NavItem {
   label: string;
@@ -66,8 +67,8 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
   React.useEffect(() => {
     const fetchPendingOrdersCount = async (): Promise<void> => {
       try {
-        const response = await fetch('/api/admin/orders', {
-          credentials: 'include',
+        const response = await fetch(apiUrl("/api/admin/orders"), {
+          credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();
@@ -93,8 +94,8 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
   React.useEffect(() => {
     const fetchLowStockCount = async (): Promise<void> => {
       try {
-        const response = await fetch('/api/admin/inventory', {
-          credentials: 'include',
+        const response = await fetch(apiUrl("/api/admin/inventory"), {
+          credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();

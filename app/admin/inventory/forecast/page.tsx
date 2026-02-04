@@ -3,6 +3,7 @@
 import * as React from "react";
 import { StockForecastChart, type StockForecast } from "@/components/admin/inventory/StockForecastChart";
 import { H1 } from "@/components/ui/typography";
+import { apiUrl } from "@/lib/config/api-base";
 
 export default function ForecastPage(): JSX.Element {
   const [forecasts, setForecasts] = React.useState<StockForecast[]>([]);
@@ -12,8 +13,8 @@ export default function ForecastPage(): JSX.Element {
     async function loadForecasts(): Promise<void> {
       setLoading(true);
       try {
-        const response = await fetch('/api/admin/inventory/forecast', {
-          credentials: 'include',
+        const response = await fetch(apiUrl("/api/admin/inventory/forecast"), {
+          credentials: "include",
         });
 
         if (!response.ok) {

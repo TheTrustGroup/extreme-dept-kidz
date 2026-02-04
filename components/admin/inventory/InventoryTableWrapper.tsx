@@ -3,6 +3,7 @@
 import * as React from "react";
 import { AdvancedInventoryTable } from "./AdvancedInventoryTable";
 import { useToast } from "@/components/ui/Toast";
+import { apiUrl } from "@/lib/config/api-base";
 
 interface InventoryVariant {
   id: string;
@@ -26,8 +27,8 @@ export function InventoryTableWrapper(): JSX.Element {
     async function loadInventory(): Promise<void> {
       setLoading(true);
       try {
-        const response = await fetch('/api/admin/inventory', {
-          credentials: 'include',
+        const response = await fetch(apiUrl("/api/admin/inventory"), {
+          credentials: "include",
         });
 
         if (!response.ok) {
@@ -48,15 +49,15 @@ export function InventoryTableWrapper(): JSX.Element {
 
   const handleStockUpdate = React.useCallback(async (variantId: string, stock: number): Promise<void> => {
     try {
-      const response = await fetch(`/api/admin/inventory/${variantId}`, {
-        method: 'PUT',
+      const response = await fetch(apiUrl(`/api/admin/inventory/${variantId}`), {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           quantity: stock,
-          action: 'set',
+          action: "set",
         }),
       });
 
@@ -112,15 +113,15 @@ export function InventoryTableWrapper(): JSX.Element {
               return;
           }
 
-          const response = await fetch(`/api/admin/inventory/${variantId}`, {
-            method: 'PUT',
+          const response = await fetch(apiUrl(`/api/admin/inventory/${variantId}`), {
+            method: "PUT",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-            credentials: 'include',
+            credentials: "include",
             body: JSON.stringify({
               quantity: newStock,
-              action: 'set',
+              action: "set",
             }),
           });
 
@@ -131,8 +132,8 @@ export function InventoryTableWrapper(): JSX.Element {
       );
 
       // Reload inventory
-      const response = await fetch('/api/admin/inventory', {
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/inventory"), {
+        credentials: "include",
       });
 
       if (response.ok) {

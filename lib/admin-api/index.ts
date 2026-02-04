@@ -274,8 +274,9 @@ export interface InventoryAnalytics {
 
 export async function getInventoryAnalytics(): Promise<InventoryAnalytics> {
   try {
-    const response = await fetch('/api/admin/inventory/analytics', {
-      credentials: 'include',
+    const { apiUrl } = await import("@/lib/config/api-base");
+    const response = await fetch(apiUrl("/api/admin/inventory/analytics"), {
+      credentials: "include",
     });
 
     if (!response.ok) {

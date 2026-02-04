@@ -6,6 +6,7 @@ import { Download, FileText, DollarSign, Package, AlertTriangle, TrendingDown } 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { apiUrl } from "@/lib/config/api-base";
 
 interface ReportData {
   type: 'valuation' | 'movement' | 'lowStock' | 'slowMoving';
@@ -67,8 +68,8 @@ export function InventoryReports({ onGenerateReport }: InventoryReportsProps): J
 
     try {
       // Call API to generate report
-      const response = await fetch(`/api/admin/inventory/reports/${reportId}`, {
-        credentials: 'include',
+      const response = await fetch(apiUrl(`/api/admin/inventory/reports/${reportId}`), {
+        credentials: "include",
       });
 
       if (!response.ok) {

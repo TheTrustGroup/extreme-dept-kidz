@@ -73,12 +73,15 @@ fetch(`${API_BASE}/admin/api/login`, {
 fetch(`${API_BASE}/admin/api/me`, { credentials: 'include' });
 ```
 
-### 4. Checklist
+### 4. Codebase: API base is wired (use env on warehouse)
 
-- [ ] `NEXT_PUBLIC_API_URL=https://extremedeptkidz.com` in warehouse `.env.local` and Vercel
-- [ ] All admin API calls use `${API_BASE}/api/admin/...` or `${API_BASE}/admin/api/login`
-- [ ] All fetch calls use `credentials: 'include'` so the auth cookie is sent
-- [ ] Redeploy the warehouse app after changing env
+The app now uses `getApiBase()` / `apiUrl()` from `@/lib/config/api-base` for inventory and admin sidebar calls. When `NEXT_PUBLIC_API_URL` is set (e.g. on the warehouse deployment), those requests go to the main site. **You must set the env on the warehouse deployment**; no code change needed there.
+
+### 5. Checklist
+
+- [ ] `NEXT_PUBLIC_API_URL=https://extremedeptkidz.com` in warehouse `.env.local` and **Vercel (warehouse project)**  
+- [ ] All fetch calls use `credentials: 'include'` (already used in inventory/sidebar code)
+- [ ] **Redeploy the warehouse app** after adding or changing `NEXT_PUBLIC_API_URL`
 
 ---
 
