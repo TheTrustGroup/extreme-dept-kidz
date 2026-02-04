@@ -175,6 +175,28 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
               )}
           </div>
 
+          {/* Sign Out (always visible when logged in) */}
+          {user && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowUserMenu(false);
+                logout().catch((err) => {
+                  console.error("Logout error:", err);
+                  window.location.replace('/admin/login');
+                });
+              }}
+              className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg text-red-600 hover:bg-red-50/80 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-red-200/50 flex-shrink-0"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <LogOut className="w-5 h-5 flex-shrink-0" />
+              <AdminBodySmall className="hidden sm:inline font-medium ml-1">Sign out</AdminBodySmall>
+            </button>
+          )}
+
           {/* User Menu */}
           {user && (
             <div 
@@ -182,6 +204,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
               style={{ position: 'relative', isolation: 'isolate' }}
             >
               <button
+                type="button"
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="admin-flex-sm items-center px-[var(--admin-space-2)] sm:px-[var(--admin-space-3)] py-[var(--admin-space-2)] rounded-lg hover:bg-cream-100/70 backdrop-blur-sm transition-all duration-200 active:scale-95 border border-transparent hover:border-cream-200/50 min-w-0"
               >
@@ -239,19 +262,20 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                         <AdminBodySmall>Profile Settings</AdminBodySmall>
                       </Link>
                       <button
-                        onClick={async () => {
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setShowUserMenu(false);
-                          try {
-                            await logout();
-                          } catch (error) {
-                            console.error("Logout error:", error);
-                            // Force redirect even if logout fails
+                          logout().catch((err) => {
+                            console.error("Logout error:", err);
                             window.location.replace('/admin/login');
-                          }
+                          });
                         }}
-                        className="w-full text-left px-[var(--admin-space-3)] py-[var(--admin-space-2)] text-red-600 hover:bg-red-50/80 backdrop-blur-sm rounded-lg transition-all duration-200 hover:shadow-sm"
+                        className="w-full text-left px-[var(--admin-space-3)] py-[var(--admin-space-2)] text-red-600 hover:bg-red-50/80 backdrop-blur-sm rounded-lg transition-all duration-200 hover:shadow-sm flex items-center gap-2"
                         aria-label="Sign out"
                       >
+                        <LogOut className="w-4 h-4 flex-shrink-0" />
                         <AdminBodySmall>Sign Out</AdminBodySmall>
                       </button>
                     </div>

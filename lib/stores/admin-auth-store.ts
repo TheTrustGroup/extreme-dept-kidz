@@ -20,7 +20,7 @@ interface AdminAuthState {
   token: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
   refreshAuth: () => Promise<void>;
   syncCookie: () => void;
@@ -214,18 +214,11 @@ export const useAdminAuth = create<AdminAuthState>()(
 
       logout: async (): Promise<void> => {
         console.log("[Auth] Logout initiated");
-        
-        // Clear local state first (immediate UI update)
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-        });
-        lastAuthCheck = 0;
-        
-        // Clear cookie from client side immediately (even though it's httpOnly, try anyway)
+        // Do NOT clear state here — layout's useEffect would see user=null, run checkAuth(),
+        // get /me while cookie is still set, and restore the user. Clear state only after
+        // cookie is cleared and right before redirect.
+
         if (typeof window !== 'undefined') {
-          // Clear cookie with multiple variations to ensure it's removed
           const hostname = window.location.hostname;
           const cookiesToClear = [
             'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT',
@@ -234,44 +227,33 @@ export const useAdminAuth = create<AdminAuthState>()(
             'admin-token=; path=/admin; expires=Thu, 01 Jan 1970 00:00:00 GMT',
             `admin-token=; path=/admin; domain=${hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT`,
           ];
-          
           cookiesToClear.forEach(cookie => {
             document.cookie = cookie;
           });
-          
-          console.log("[Auth] Cleared cookies from client side");
         }
-        
-        // Clear cookie via API - CRITICAL: Wait for response to ensure cookie is cleared
+
         try {
           const response = await fetch("/api/admin/auth/logout", {
             method: "POST",
             credentials: 'include',
             cache: 'no-store',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
           });
-          
           if (response.ok) {
-            console.log("[Auth] Logout API call successful - cookie should be cleared");
-            // The response includes Set-Cookie header to clear the cookie
-            // We need to wait a bit for the browser to process it
-            await new Promise(resolve => setTimeout(resolve, 200));
+            console.log("[Auth] Logout API call successful - cookie cleared");
+            await new Promise((r) => setTimeout(r, 100));
           } else {
             console.warn("[Auth] Logout API returned non-OK status:", response.status);
           }
         } catch (error) {
-          // Log but don't block - we've already cleared local state
           console.error("[Auth] Logout API call failed:", error);
         }
-        
-        // CRITICAL: Redirect to login with a query parameter to force logout
-        // This ensures middleware doesn't redirect back to /admin
+
+        lastAuthCheck = 0;
+        set({ user: null, token: null, isAuthenticated: false });
+
         if (typeof window !== 'undefined') {
-          console.log("[Auth] Redirecting to login page with logout parameter");
-          // Use replace to prevent back button from going to admin pages
-          // Add timestamp to prevent caching and ensure fresh page load
+          console.log("[Auth] Redirecting to login");
           window.location.replace(`/admin/login?logout=true&t=${Date.now()}`);
         }
       },
