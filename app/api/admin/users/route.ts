@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
@@ -17,13 +18,6 @@ const createUserSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name too long"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: adminRoleEnum,
-});
-
-const updateUserSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  role: adminRoleEnum.optional(),
-  isActive: z.boolean().optional(),
-  password: z.string().min(8).optional(),
 });
 
 /**
@@ -53,7 +47,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const isActive = searchParams.get('isActive');
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.AdminUserWhereInput = {};
     
     if (search) {
       where.OR = [
@@ -164,24 +158,61 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Hash password
     const passwordHash = await hashPassword(password);
 
-    // Create user
-    const user = await prisma.adminUser.create({
-      data: {
-        email: email.toLowerCase(),
-        name,
-        passwordHash,
-        role,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
+    const normalizedEmail = email.toLowerCase();
+    let user: { id: string; email: string; name: string; role: string; isActive: boolean; createdAt: Date };
+
+    try {
+      // Create user (Prisma sends role as AdminRole enum)
+      user = await prisma.adminUser.create({
+        data: {
+          email: normalizedEmail,
+          name,
+          passwordHash,
+          role,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+        },
+      });
+    } catch (createErr: unknown) {
+      const msg = String((createErr as { message?: string })?.message ?? "");
+      const code = (createErr as { meta?: { code?: string } })?.meta?.code;
+      // DB column may be AdminRole_new while Prisma uses AdminRole → type mismatch
+      if (msg.includes("AdminRole_new") || msg.includes("42804") || code === "P5010") {
+        try {
+          await prisma.$executeRaw(
+            Prisma.sql`
+              INSERT INTO "AdminUser" (
+                "id", "email", "name", "passwordHash", "role", "isActive",
+                "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
+                "tokenVersion", "createdAt", "updatedAt"
+              ) VALUES (
+                gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
+                ${role}::"AdminRole_new", true,
+                NULL, NULL, NULL, NULL, 0, NOW(), NOW()
+              )
+            `
+          );
+          const created = await prisma.adminUser.findUnique({
+            where: { email: normalizedEmail },
+            select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+          });
+          if (!created) throw new Error("User created but not found");
+          user = created;
+        } catch (rawErr) {
+          logger.error("Failed to create user (raw fallback):", rawErr);
+          throw createErr; // rethrow original so existing error handling can run
+        }
+      } else {
+        throw createErr;
+      }
+    }
 
     // Log activity
     await logActivity({
@@ -196,7 +227,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     }, request);
 
-    const response = apiSuccess(user, "User created successfully");
     return NextResponse.json(
       {
         success: true,

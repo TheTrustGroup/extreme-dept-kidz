@@ -62,7 +62,11 @@ export function AdminUserForm({
 
   const isEditMode = !!user;
 
+  // Only reset form when modal opens or when switching to a different user (by id).
+  // Using openKey avoids resetting on every parent re-render when user is a new object reference.
+  const openKey = isOpen ? (user?.id ?? "create") : "closed";
   React.useEffect(() => {
+    if (!isOpen) return;
     if (user) {
       setFormData({
         email: user.email,
@@ -82,7 +86,8 @@ export function AdminUserForm({
     }
     setErrors({});
     setPasswordStrength({ score: 0, feedback: [] });
-  }, [user, isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- openKey intentionally replaces user/isOpen to avoid form reset on parent re-render
+  }, [openKey]);
 
   const validatePassword = (password: string): void => {
     const feedback: string[] = [];
@@ -184,7 +189,7 @@ export function AdminUserForm({
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               disabled={isEditMode}
               className={cn(
-                "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white",
                 errors.email ? "border-red-300" : "border-gray-300",
                 isEditMode && "bg-gray-100 cursor-not-allowed"
               )}
@@ -208,7 +213,7 @@ export function AdminUserForm({
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className={cn(
-                "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white",
                 errors.name ? "border-red-300" : "border-gray-300"
               )}
               placeholder="John Doe"
@@ -232,7 +237,7 @@ export function AdminUserForm({
                 value={formData.password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 className={cn(
-                  "w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                  "w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white",
                   errors.password ? "border-red-300" : "border-gray-300"
                 )}
                 placeholder={isEditMode ? "Enter new password" : "Enter password"}
@@ -290,7 +295,7 @@ export function AdminUserForm({
             <select
               value={formData.role}
               onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as AdminRole }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white"
             >
               {ADMIN_ROLES.map(({ value, label }) => (
                 <option key={value} value={value}>{label}</option>
