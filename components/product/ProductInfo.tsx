@@ -9,7 +9,8 @@ import { useCartStore } from "@/lib/stores/cart-store";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { useProductPurchase } from "@/lib/hooks/use-product-purchase";
 import { Button } from "@/components/ui/button";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { FormattedPrice } from "@/components/ui/FormattedPrice";
 
 interface ProductInfoProps {
   product: Product;
@@ -87,12 +88,11 @@ export function ProductInfo({ product, className, purchaseState }: ProductInfoPr
         {product.name}
       </h1>
       <p className="text-xl sm:text-2xl font-bold text-charcoal-900 dark:text-dark-text-primary mb-1">
-        {formatPrice(product.price)}
-        {isOnSale && product.originalPrice != null && (
-          <span className="ml-2 text-base font-normal text-charcoal-500 dark:text-dark-text-muted line-through">
-            {formatPrice(product.originalPrice)}
-          </span>
-        )}
+        <FormattedPrice
+          value={product.price}
+          originalValue={isOnSale ? product.originalPrice : undefined}
+          showOriginal={isOnSale}
+        />
       </p>
       <p className="text-xs font-normal text-charcoal-500 dark:text-dark-text-secondary uppercase tracking-wider mb-5">
         Free shipping on orders over ₵800

@@ -5,7 +5,8 @@ import Image from "next/image";
 import { Lock, Shield, Truck } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { H3, Body } from "@/components/ui/typography";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useFormattedPrice } from "@/components/providers/CurrencyProvider";
 import type { ShippingMethod } from "@/types/checkout";
 import type { ProductImage } from "@/types";
 
@@ -31,6 +32,7 @@ export function CheckoutOrderSummary({
 }: CheckoutOrderSummaryProps) {
   const items = useCartStore((state) => state.items);
   const getTotal = useCartStore((state) => state.getTotal);
+  const formatPrice = useFormattedPrice();
 
   const subtotal = getTotal();
   const shippingCost = SHIPPING_COSTS[shippingMethod];

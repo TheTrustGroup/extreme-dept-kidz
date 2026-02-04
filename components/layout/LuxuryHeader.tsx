@@ -12,6 +12,7 @@ import { MobileNav } from "./MobileNav";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { useCartStore } from "@/lib/stores/cart-store";
+import { CurrencySelector } from "@/components/ui/CurrencySelector";
 
 const SearchOverlay = React.lazy(() =>
   import("./SearchOverlay").then((m) => ({ default: m.SearchOverlay }))
@@ -221,8 +222,9 @@ export function LuxuryHeader({
             </Link>
           </nav>
 
-          {/* Right: Search, Cart, Account, Mobile menu */}
+          {/* Right: Currency, Search, Cart, Account, Mobile menu */}
           <div className="flex items-center gap-0.5 md:gap-1">
+            <CurrencySelector isDark={isDark} />
             <IconButton
               aria-label="Search products"
               onClick={() => setIsSearchOpen(true)}

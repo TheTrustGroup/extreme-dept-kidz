@@ -10,7 +10,8 @@ import { useCartStore } from "@/lib/stores/cart-store";
 import { Button } from "@/components/ui/button";
 import { Body } from "@/components/ui/typography";
 import type { ProductImage } from "@/types";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useFormattedPrice } from "@/components/providers/CurrencyProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface CartPreviewDropdownProps {
@@ -33,6 +34,7 @@ export function CartPreviewDropdown({
   triggerRef,
 }: CartPreviewDropdownProps) {
   const { theme } = useTheme();
+  const formatPrice = useFormattedPrice();
   const items = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const getTotal = useCartStore((state) => state.getTotal);
@@ -350,6 +352,7 @@ function CartPreviewItem({
   index,
   theme,
 }: CartPreviewItemProps) {
+  const formatPrice = useFormattedPrice();
   const primaryImage =
     item.product.images.find((img) => (img as ProductImage).isPrimary) ||
     item.product.images[0];

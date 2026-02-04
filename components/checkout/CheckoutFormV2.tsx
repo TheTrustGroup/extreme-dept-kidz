@@ -14,7 +14,8 @@ import {
 } from "@/types/checkout";
 import { Button } from "@/components/ui/button";
 import { H2, H3, Body } from "@/components/ui/typography";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useFormattedPrice } from "@/components/providers/CurrencyProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { CheckoutSteps, type CheckoutStep } from "./CheckoutSteps";
 import { useCartStore } from "@/lib/stores/cart-store";
@@ -69,6 +70,7 @@ export function CheckoutFormV2({
   onShippingMethodChange,
 }: CheckoutFormV2Props): JSX.Element {
   const { theme } = useTheme();
+  const formatPrice = useFormattedPrice();
   const [currentStep, setCurrentStep] = React.useState<CheckoutStep>("shipping");
   const [selectedShippingMethod, setSelectedShippingMethod] =
     React.useState<ShippingMethod>("standard");
@@ -693,6 +695,7 @@ function OrderReview({
   onSubmit,
 }: OrderReviewProps): JSX.Element {
   const { theme } = useTheme();
+  const formatPrice = useFormattedPrice();
   const items = useCartStore((state) => state.items);
   const getTotal = useCartStore((state) => state.getTotal);
 

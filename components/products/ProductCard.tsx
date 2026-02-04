@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import type { Product, ProductImage, ProductSize } from "@/types";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useFormattedPrice } from "@/components/providers/CurrencyProvider";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { WishlistButton } from "@/components/WishlistButton";
@@ -55,6 +56,7 @@ export const ProductCard = React.memo(function ProductCard({
   fetchPriority: _fetchPriority = "low",
 }: ProductCardProps): JSX.Element {
   const { theme } = useTheme();
+  const formatPrice = useFormattedPrice();
   const [isHovered, setIsHovered] = React.useState(false);
 
   const primaryImage =

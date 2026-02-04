@@ -455,9 +455,7 @@ function PriceSlider({ min, max, value, onChange }: PriceSliderProps): JSX.Eleme
     const newMax = Math.max(Number(e.target.value), localMin);
     setLocalMax(newMax);
     onChange(localMin, newMax);
-  };
-
-  const minPercent = ((localMin - min) / (max - min)) * 100;
+  };  const minPercent = ((localMin - min) / (max - min)) * 100;
   const maxPercent = ((localMax - min) / (max - min)) * 100;  return (
     <div className="space-y-4">
       {/* Price Display */}

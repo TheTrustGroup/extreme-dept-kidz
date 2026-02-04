@@ -6,8 +6,8 @@ import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import type { CartItem as CartItemType } from "@/types";
-import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useFormattedPrice } from "@/components/providers/CurrencyProvider";
 
 export interface CartDrawerProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ export function CartDrawer({
   onRemove,
 }: CartDrawerProps): JSX.Element {
   const drawerRef = React.useRef<HTMLDivElement>(null);
+  const formatPrice = useFormattedPrice();
 
   const subtotal = React.useMemo(
     () => items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
@@ -191,6 +192,7 @@ function DrawerCartItem({
   onRemove,
 }: DrawerCartItemProps): JSX.Element {
   const id = getItemId(item);
+  const formatPrice = useFormattedPrice();
   const thumb = item.product.images?.[0];
   const thumbUrl = thumb?.url;
   const thumbAlt = thumb?.alt ?? item.product.name;

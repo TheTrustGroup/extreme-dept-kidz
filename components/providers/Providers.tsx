@@ -7,6 +7,7 @@ import { LazyMotionProvider } from "./LazyMotion";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ThemeProvider } from "./ThemeProvider";
 import { RevealProvider } from "./RevealProvider";
+import { CurrencyProvider } from "./CurrencyProvider";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -22,9 +23,11 @@ export function Providers({ children }: ProvidersProps): JSX.Element {
       <RevealProvider>
         <LazyMotionProvider>
           <ToastProvider>
-            <CartProvider>
-              <CartDrawerProvider>{children}</CartDrawerProvider>
-            </CartProvider>
+            <CurrencyProvider>
+              <CartProvider>
+                <CartDrawerProvider>{children}</CartDrawerProvider>
+              </CartProvider>
+            </CurrencyProvider>
           </ToastProvider>
         </LazyMotionProvider>
       </RevealProvider>

@@ -33,3 +33,9 @@ export type { ScrollRevealProps } from "./ScrollReveal";
 
 export { PageTransition } from "./PageTransition";
 export type { PageTransitionProps } from "./PageTransition";
+
+export { FormattedPrice } from "./FormattedPrice";
+export type { FormattedPriceProps } from "./FormattedPrice";
+
+export { CurrencySelector } from "./CurrencySelector";
+export type { CurrencySelectorProps } from "./CurrencySelector";
