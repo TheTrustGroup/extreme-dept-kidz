@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 import { apiSuccess, apiError, apiValidationError, apiNotFound } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
@@ -170,19 +171,53 @@ export async function PUT(
       };
     }
 
-    // Update user
-    const user = await prisma.adminUser.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        updatedAt: true,
-      },
-    });
+    type UserShape = { id: string; email: string; name: string; role: string; isActive: boolean; updatedAt: Date };
+    let user: UserShape;
+
+    try {
+      user = await prisma.adminUser.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isActive: true,
+          updatedAt: true,
+        },
+      });
+    } catch (updateErr: unknown) {
+      const msg = String((updateErr as { message?: string })?.message ?? "");
+      const code = (updateErr as { meta?: { code?: string } })?.meta?.code;
+      if (!msg.includes("AdminRole_new") && !msg.includes("42804") && code !== "P5010") {
+        throw updateErr;
+      }
+      // DB column may be AdminRole_new; run raw UPDATE with cast
+      try {
+        const setParts: Prisma.Sql[] = [];
+        if (updateData.name !== undefined) setParts.push(Prisma.sql`"name" = ${updateData.name}`);
+        if (updateData.role !== undefined) setParts.push(Prisma.sql`"role" = ${updateData.role}::"AdminRole_new"`);
+        if (updateData.isActive !== undefined) setParts.push(Prisma.sql`"isActive" = ${updateData.isActive}`);
+        if (updateData.passwordHash !== undefined) setParts.push(Prisma.sql`"passwordHash" = ${updateData.passwordHash}`);
+        if (updateData.tokenVersion && typeof updateData.tokenVersion === "object" && "increment" in updateData.tokenVersion) {
+          setParts.push(Prisma.sql`"tokenVersion" = "tokenVersion" + 1`);
+        }
+        setParts.push(Prisma.sql`"updatedAt" = NOW()`);
+        await prisma.$executeRaw(
+          Prisma.sql`UPDATE "AdminUser" SET ${Prisma.join(setParts, ", ")} WHERE "id" = ${id}`
+        );
+        const updated = await prisma.adminUser.findUnique({
+          where: { id },
+          select: { id: true, email: true, name: true, role: true, isActive: true, updatedAt: true },
+        });
+        if (!updated) throw new Error("User updated but not found");
+        user = updated;
+      } catch (rawErr) {
+        logger.error("Failed to update user (raw fallback):", rawErr);
+        throw updateErr;
+      }
+    }
 
     // Log activity
     const activityDetails: Record<string, any> = {};

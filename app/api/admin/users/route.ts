@@ -57,7 +57,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     if (role) {
-      where.role = role;
+      where.role = role as "super_admin" | "admin" | "manager" | "cashier" | "warehouse" | "driver" | "viewer";
     }
 
     if (isActive !== null && isActive !== undefined) {
