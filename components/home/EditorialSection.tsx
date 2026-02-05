@@ -19,7 +19,7 @@ export function EditorialSection(): JSX.Element {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-0">
           {/* Image Side - 60% */}
           <m.div
-            className="relative lg:col-span-3 h-[300px] xs:h-[350px] sm:h-[400px] md:h-[500px] lg:h-[600px] xl:h-[700px]"
+            className="relative lg:col-span-3 h-[300px] xs:h-[350px] sm:h-[400px] md:h-[500px] lg:h-[600px] xl:h-[700px] overflow-hidden"
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -29,11 +29,12 @@ export function EditorialSection(): JSX.Element {
               src="/editorial-cover-adventure-style.png"
               alt="Built for Adventure, Designed for Style - Premium streetwear for young legends"
               variant="gallery"
-              className="object-cover w-full h-full"
+              className="object-cover object-[center_top] w-full h-full"
               fill
               quality={90}
               useIntersectionObserver={false}
               isLCP={false}
+              sizes="(max-width: 1024px) 100vw, 60vw"
             />
           </m.div>
 
