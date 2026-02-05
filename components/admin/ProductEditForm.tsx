@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { X, Plus, Upload } from "lucide-react";
+import { apiUrl } from "@/lib/config/api-base";
 
 interface Product {
   id: string;
@@ -47,9 +48,10 @@ export default function ProductEditForm({ product }: { product: Product }) {
     setError("");
 
     try {
-      const response = await fetch(`/api/admin/products/${product.id}`, {
+      const response = await fetch(apiUrl(`/api/admin/products/${product.id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 

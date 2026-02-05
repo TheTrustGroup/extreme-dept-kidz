@@ -34,6 +34,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
+import { apiUrl } from "@/lib/config/api-base";
 
 interface ProductWithStats extends Product {
   totalStock?: number;
@@ -123,12 +124,11 @@ export default function ProductsPage(): JSX.Element {
     outOfStock: 0,
   });
 
-  // Load categories (use same-origin base so fetch works behind proxy / different port)
+  // Load categories (apiUrl so warehouse hits main site)
   React.useEffect(() => {
     async function loadCategories(): Promise<void> {
       try {
-        const base = typeof window !== "undefined" ? window.location.origin : "";
-        const res = await fetch(`${base}/api/admin/categories`, { credentials: "include" });
+        const res = await fetch(apiUrl("/api/admin/categories"), { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           const cats = data.data?.categories || data.categories || [];
@@ -169,8 +169,7 @@ export default function ProductsPage(): JSX.Element {
         params.set('stockStatus', 'outOfStock');
       }
 
-      const base = typeof window !== "undefined" ? window.location.origin : "";
-      const response = await fetch(`${base}/api/admin/products?${params.toString()}`, {
+      const response = await fetch(apiUrl(`/api/admin/products?${params.toString()}`), {
         credentials: "include",
       });
 
@@ -198,11 +197,10 @@ export default function ProductsPage(): JSX.Element {
     }
   }, [search, filters, sortBy, sortOrder, page, quickFilter, showToast]);
 
-  // Load stats - consolidated single API call
+  // Load stats - consolidated single API call (apiUrl so warehouse hits main site)
   const loadStats = React.useCallback(async (): Promise<void> => {
     try {
-      const base = typeof window !== "undefined" ? window.location.origin : "";
-      const res = await fetch(`${base}/api/admin/products/stats`, { credentials: "include" });
+      const res = await fetch(apiUrl("/api/admin/products/stats"), { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         const statsData = data.data || data;
@@ -259,9 +257,9 @@ export default function ProductsPage(): JSX.Element {
     setProcessing(true);
 
     try {
-      const response = await fetch(`/api/admin/products/${id}`, {
+      const response = await fetch(apiUrl(`/api/admin/products/${id}`), {
         method: "DELETE",
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -312,13 +310,13 @@ export default function ProductsPage(): JSX.Element {
     setProcessing(true);
 
     try {
-      const response = await fetch('/api/admin/products/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products/bulk"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           ids: Array.from(selectedProducts),
-          action: 'delete',
+          action: "delete",
         }),
       });
 
@@ -358,13 +356,13 @@ export default function ProductsPage(): JSX.Element {
     setProcessing(true);
 
     try {
-      const response = await fetch('/api/admin/products/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products/bulk"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           ids: Array.from(selectedProducts),
-          action: status ? 'activate' : 'deactivate',
+          action: status ? "activate" : "deactivate",
         }),
       });
 
@@ -404,13 +402,13 @@ export default function ProductsPage(): JSX.Element {
     setProcessing(true);
 
     try {
-      const response = await fetch('/api/admin/products/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products/bulk"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           ids: Array.from(selectedProducts),
-          action: 'assignCategory',
+          action: "assignCategory",
           categoryId,
         }),
       });
@@ -450,13 +448,13 @@ export default function ProductsPage(): JSX.Element {
     setProcessing(true);
 
     try {
-      const response = await fetch('/api/admin/products/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products/bulk"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           ids: Array.from(selectedProducts),
-          action: 'duplicate',
+          action: "duplicate",
         }),
       });
 

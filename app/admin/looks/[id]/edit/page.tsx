@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/Toast';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { formatPrice } from '@/lib/utils';
 import { SimpleOptimizedImage } from '@/components/ui/SimpleOptimizedImage';
+import { apiUrl } from '@/lib/config/api-base';
 
 interface Product {
   id: string;
@@ -70,8 +71,8 @@ export default function EditCompleteLookPage() {
 
   const fetchLook = async () => {
     try {
-      const response = await fetch(`/api/admin/complete-looks/${lookId}`, {
-        credentials: 'include',
+      const response = await fetch(apiUrl(`/api/admin/complete-looks/${lookId}`), {
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
@@ -116,8 +117,8 @@ export default function EditCompleteLookPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/admin/products', {
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products"), {
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
@@ -262,10 +263,10 @@ export default function EditCompleteLookPage() {
         requiredProductIds: Array.from(requiredProducts),
       };
 
-      const response = await fetch(`/api/admin/complete-looks/${lookId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch(apiUrl(`/api/admin/complete-looks/${lookId}`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 

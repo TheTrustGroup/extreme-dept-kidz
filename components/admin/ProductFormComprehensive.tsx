@@ -33,6 +33,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 import { cn } from "@/lib/utils";
 import { DEFAULT_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
+import { apiUrl } from "@/lib/config/api-base";
 import { m } from "framer-motion";
 
 // Form schema
@@ -175,12 +176,71 @@ export function ProductFormComprehensive({
   const metaDescription = watch("metaDescription");
   const shortDescription = watch("shortDescription");
 
-  // Load categories (use same-origin base so fetch works behind proxy / different port)
+  // When server didn't provide initialData (e.g. warehouse with no DB), fetch product from API
+  React.useEffect(() => {
+    if (isNew || initialData != null) return;
+    if (!productId) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(apiUrl(`/api/admin/products/${productId}`), {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        const data = json.data ?? json;
+        const meta = (data.metadata ?? {}) as Record<string, unknown>;
+        const dims = (meta.dimensions ?? {}) as Record<string, unknown>;
+        const sizes = data.sizes ?? data.variants ?? [];
+        const mapped = {
+          name: (data.name ?? "") as string,
+          description: (data.description ?? "") as string,
+          shortDescription: (meta.shortDescription as string) ?? "",
+          sku: (data.sku ?? "") as string,
+          barcode: (meta.barcode as string) ?? "",
+          status: (data.inStock ? "active" : "draft") as "active" | "draft" | "archived",
+          visibleOnStore: data.visibleOnStore !== false,
+          price: typeof data.price === "number" ? data.price / 100 : 0,
+          salePrice: typeof data.originalPrice === "number" ? data.originalPrice / 100 : undefined,
+          costPerItem: meta.costPerItem as number | undefined,
+          trackInventory: (meta.trackInventory as boolean) !== false,
+          stockQuantity: sizes.reduce((sum: number, s: { quantity?: number }) => sum + (s.quantity ?? 0), 0),
+          lowStockThreshold: (meta.lowStockThreshold as number) ?? 10,
+          allowBackorders: (meta.allowBackorders as boolean) ?? false,
+          weight: data.weight as number | undefined,
+          length: dims.length as number | undefined,
+          width: dims.width as number | undefined,
+          height: dims.height as number | undefined,
+          categoryId: (data.categoryId ?? data.category?.id ?? "") as string,
+          tags: (data.tags?.map((t: { name?: string }) => t.name ?? t) ?? []) as string[],
+          metaTitle: (meta.metaTitle as string) ?? "",
+          metaDescription: (meta.metaDescription as string) ?? "",
+          slug: (data.slug ?? "") as string,
+          images: (data.images?.map((img: { url?: string }) => img.url ?? img) ?? []) as string[],
+          variants: sizes.length
+            ? (sizes as { size: string; quantity?: number }[]).map((s) => ({
+                size: s.size ?? "",
+                stock: s.quantity ?? 0,
+              }))
+            : DEFAULT_PRODUCT_SIZES.map((size) => ({ size, stock: 0 })),
+        };
+        if (!cancelled) reset(mapped);
+      } catch (e) {
+        if (!cancelled) console.error("Failed to load product for edit:", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [productId, isNew, initialData, reset]);
+
+  // Load categories (apiUrl so warehouse hits main site)
   React.useEffect(() => {
     async function loadCategories(): Promise<void> {
       try {
-        const base = typeof window !== "undefined" ? window.location.origin : "";
-        const res = await fetch(`${base}/api/admin/categories`, { credentials: "include" });
+        const res = await fetch(apiUrl("/api/admin/categories"), { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           const cats = data.data?.categories || data.categories || [];
@@ -287,7 +347,7 @@ export function ProductFormComprehensive({
           metaDescription: formData?.metaDescription,
         };
 
-        const url = isNew ? "/api/admin/products" : `/api/admin/products/${productId}`;
+        const url = isNew ? apiUrl("/api/admin/products") : apiUrl(`/api/admin/products/${productId}`);
         const method = isNew ? "POST" : "PUT";
 
         const response = await fetch(url, {
@@ -378,13 +438,13 @@ export function ProductFormComprehensive({
         metaDescription: formData?.metaDescription,
       };
 
-      const url = isNew ? "/api/admin/products" : `/api/admin/products/${productId}`;
+      const url = isNew ? apiUrl("/api/admin/products") : apiUrl(`/api/admin/products/${productId}`);
       const method = isNew ? "POST" : "PUT";
 
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -474,13 +534,13 @@ export function ProductFormComprehensive({
         metaDescription: data.metaDescription,
       };
 
-      const url = isNew ? "/api/admin/products" : `/api/admin/products/${productId}`;
+      const url = isNew ? apiUrl("/api/admin/products") : apiUrl(`/api/admin/products/${productId}`);
       const method = isNew ? "POST" : "PUT";
 
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -524,9 +584,9 @@ export function ProductFormComprehensive({
 
     setSaving(true);
     try {
-      const response = await fetch(`/api/admin/products/${productId}`, {
+      const response = await fetch(apiUrl(`/api/admin/products/${productId}`), {
         method: "DELETE",
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (response.ok) {

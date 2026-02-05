@@ -6,6 +6,7 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { useToast } from "@/components/ui/Toast";
+import { apiUrl } from "@/lib/config/api-base";
 
 interface Category {
   id: string;
@@ -80,8 +81,8 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
   async function fetchCategoriesAndCollections(): Promise<void> {
     try {
       const [categoriesRes, collectionsRes] = await Promise.all([
-        fetch("/api/admin/categories", { credentials: 'include' }).catch(() => null),
-        fetch("/api/admin/collections", { credentials: 'include' }).catch(() => null),
+        fetch(apiUrl("/api/admin/categories"), { credentials: "include" }).catch(() => null),
+        fetch(apiUrl("/api/admin/collections"), { credentials: "include" }).catch(() => null),
       ]);
 
       if (categoriesRes && categoriesRes.ok) {
@@ -155,8 +156,8 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/products/${productId}`, {
-        credentials: 'include', // Include cookies for authentication
+      const response = await fetch(apiUrl(`/api/admin/products/${productId}`), {
+        credentials: "include",
       });
       
       if (!response.ok) {
@@ -452,16 +453,14 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       };
 
       const url = productId
-        ? `/api/admin/products/${productId}`
-        : "/api/admin/products";
+        ? apiUrl(`/api/admin/products/${productId}`)
+        : apiUrl("/api/admin/products");
       const method = productId ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        credentials: 'include', // Include cookies for authentication
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 

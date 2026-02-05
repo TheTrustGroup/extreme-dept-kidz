@@ -73,6 +73,17 @@ function transformProduct(prismaProduct: {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+/** Return 405 with CORS so warehouse/cross-origin clients get a valid response (no CORS error). */
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  return withCors(
+    request,
+    new NextResponse(
+      JSON.stringify({ error: "Method not allowed", message: "Use GET to list products" }),
+      { status: 405, headers: { "Content-Type": "application/json" } }
+    )
+  );
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -132,7 +143,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Warehouse expects a raw array for (response || []).map(...) compatibility
     if (isWarehouseRequest(request)) {
-      return withCors(request, NextResponse.json(paginatedProducts));
+      const res = withCors(request, NextResponse.json(paginatedProducts));
+      res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+      return res;
     }
 
     const data = {

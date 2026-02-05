@@ -5,6 +5,7 @@ import { Edit, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
+import { apiUrl } from "@/lib/config/api-base";
 
 interface Product {
   id: string;
@@ -26,8 +27,8 @@ export function PricingManagement(): JSX.Element {
 
   async function fetchProducts(): Promise<void> {
     try {
-      const response = await fetch("/api/admin/products", {
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products"), {
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
@@ -51,10 +52,10 @@ export function PricingManagement(): JSX.Element {
     if (!editData) return;
 
     try {
-      const response = await fetch(`/api/admin/products/${productId}`, {
+      const response = await fetch(apiUrl(`/api/admin/products/${productId}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include', // Include cookies for authentication
+        credentials: "include",
         body: JSON.stringify({
           ...products.find((p) => p.id === productId),
           price: editData.price,

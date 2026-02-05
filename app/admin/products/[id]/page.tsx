@@ -22,8 +22,9 @@ export default async function ProductEditPage({ params }: PageProps) {
     );
   }
 
+  // When server has no DB (e.g. warehouse), still render edit form; client will fetch product via API
   if (!prisma) {
-    notFound();
+    return <ProductEditClient productId={id} initialData={null} />;
   }
 
   const product = await prisma.product.findUnique({
@@ -37,7 +38,7 @@ export default async function ProductEditPage({ params }: PageProps) {
   });
 
   if (!product) {
-    notFound();
+    return <ProductEditClient productId={id} initialData={null} />;
   }
 
   const metadata = (product.metadata ?? {}) as Record<string, unknown>;

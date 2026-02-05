@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/Toast';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { formatPrice } from '@/lib/utils';
 import { SimpleOptimizedImage } from '@/components/ui/SimpleOptimizedImage';
+import { apiUrl } from '@/lib/config/api-base';
 
 interface Product {
   id: string;
@@ -45,8 +46,8 @@ export default function NewCompleteLookPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/admin/products', {
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products"), {
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
@@ -191,7 +192,7 @@ export default function NewCompleteLookPage() {
         requiredProductIds: Array.from(requiredProducts),
       };
 
-      const response = await fetch('/api/admin/complete-looks', {
+      const response = await fetch(apiUrl('/api/admin/complete-looks'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

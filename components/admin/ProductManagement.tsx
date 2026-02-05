@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/config/api-base";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,8 +38,8 @@ export function ProductManagement(): JSX.Element {
 
   async function fetchProducts(): Promise<void> {
     try {
-      const response = await fetch("/api/admin/products", {
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/products"), {
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
@@ -68,9 +69,9 @@ export function ProductManagement(): JSX.Element {
     setDeleteConfirm(null);
 
     try {
-      const response = await fetch(`/api/admin/products/${id}`, {
+      const response = await fetch(apiUrl(`/api/admin/products/${id}`), {
         method: "DELETE",
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (response.ok) {
