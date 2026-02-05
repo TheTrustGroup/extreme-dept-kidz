@@ -42,7 +42,6 @@ export function FloatingCurrencySelector(): JSX.Element {
   const currency = useCurrencyStore((s) => s.currency);
   const setCurrency = useCurrencyStore((s) => s.setCurrency);
   const current = SUPPORTED_CURRENCIES.find((c) => c.code === currency) ?? SUPPORTED_CURRENCIES[0];
-  const [isOpen, setIsOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
   // Ensure component only renders on client and portal is available
@@ -52,7 +51,7 @@ export function FloatingCurrencySelector(): JSX.Element {
 
   const isDark = theme === "dark";
 
-  // Inject critical CSS to ensure fixed positioning works - override any global styles
+  // Inject only wrapper positioning CSS - do NOT override transforms on children (breaks Menu + Framer Motion)
   React.useEffect(() => {
     const styleId = "floating-currency-selector-styles";
     if (document.getElementById(styleId)) return;
@@ -60,9 +59,7 @@ export function FloatingCurrencySelector(): JSX.Element {
     const style = document.createElement("style");
     style.id = styleId;
     style.textContent = `
-      /* CRITICAL: Force fixed positioning for currency selector - highest specificity */
-      body > [data-floating-currency-selector="true"],
-      html > body > [data-floating-currency-selector="true"] {
+      .floating-currency-selector-root {
         position: fixed !important;
         bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem)) !important;
         left: max(1.5rem, env(safe-area-inset-left, 1.5rem)) !important;
@@ -70,28 +67,13 @@ export function FloatingCurrencySelector(): JSX.Element {
         top: auto !important;
         z-index: 99999 !important;
         isolation: isolate !important;
-        visibility: visible !important;
-        opacity: 1 !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: visible !important;
         pointer-events: auto !important;
-        transform: none !important;
-        will-change: auto !important;
-        -webkit-transform: none !important;
-        -ms-transform: none !important;
-        /* Ensure it's not affected by any parent containers */
-        contain: layout style paint !important;
       }
-      /* Prevent any child transforms from affecting positioning */
-      [data-floating-currency-selector="true"] * {
-        transform: none !important;
-        -webkit-transform: none !important;
-      }
-      /* Mobile-specific: Ensure it's always visible on small screens */
       @media (max-width: 768px) {
-        body > [data-floating-currency-selector="true"],
-        html > body > [data-floating-currency-selector="true"] {
+        .floating-currency-selector-root {
           left: 1rem !important;
           bottom: max(1rem, env(safe-area-inset-bottom, 1rem)) !important;
         }
@@ -109,29 +91,19 @@ export function FloatingCurrencySelector(): JSX.Element {
 
   const content = (
     <div
+      className="floating-currency-selector-root"
       data-floating-currency-selector="true"
       style={{
-        // CRITICAL: Fixed positioning - must be fixed to viewport
-        // Inline styles as fallback (CSS injection with !important will override)
         position: "fixed",
-        // Apple-style: Respect safe area insets for notched devices (iPhone X+)
         bottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))",
         left: "max(1.5rem, env(safe-area-inset-left, 1.5rem))",
         right: "auto",
         top: "auto",
-        // Ensure highest z-index
         zIndex: 99999,
-        // Prevent any parent transforms from affecting positioning
         isolation: "isolate",
-        // Ensure it's always visible and interactive
-        visibility: "visible",
-        opacity: 1,
-        // Ensure it's not affected by any parent positioning
         margin: 0,
         padding: 0,
-        // Ensure it's not affected by any parent overflow
         overflow: "visible",
-        // Ensure pointer events work
         pointerEvents: "auto",
       }}
     >
@@ -144,12 +116,7 @@ export function FloatingCurrencySelector(): JSX.Element {
         }}
       >
       <Menu as="div" className="relative">
-            {({ open }) => {
-              React.useEffect(() => {
-                setIsOpen(open);
-              }, [open]);
-
-              return (
+            {({ open }) => (
                 <>
                   {/* Main Button */}
                   <MenuButton
@@ -186,7 +153,7 @@ export function FloatingCurrencySelector(): JSX.Element {
                         "w-1 h-1 rounded-full",
                         isDark ? "bg-accent-primary" : "bg-navy-600"
                       )}
-                      animate={{ opacity: isOpen ? 0.5 : 1 }}
+                      animate={{ opacity: open ? 0.5 : 1 }}
                       transition={{ duration: 0.2 }}
                       aria-hidden="true"
                     />
@@ -224,10 +191,7 @@ export function FloatingCurrencySelector(): JSX.Element {
                                   {({ focus }) => (
                                     <button
                                       type="button"
-                                      onClick={() => {
-                                        setCurrency(c.code);
-                                        setIsOpen(false);
-                                      }}
+                                      onClick={() => setCurrency(c.code)}
                                       className={cn(
                                         "flex w-full items-center gap-3 px-3 py-2.5 rounded-xl",
                                         "text-left text-sm font-sans",
@@ -315,20 +279,44 @@ export function FloatingCurrencySelector(): JSX.Element {
                         </div>
                       </MenuItems>
                 </>
-              );
-            }}
+            )}
           </Menu>
       </m.div>
     </div>
   );
 
-  // Render via portal to document.body to ensure it's always at root level
-  // This prevents any parent container positioning from affecting it
-  if (!mounted || typeof document === "undefined") return <></>;
-  
-  // Ensure we have a valid body element
-  const portalTarget = document.body;
-  if (!portalTarget) return <></>;
-  
-  return createPortal(content, portalTarget);
+  // Portal to a dedicated fixed layer on body so layout/flex never affects position
+  const [portalRoot, setPortalRoot] = React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    const id = "floating-currency-portal-root";
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("div");
+      el.id = id;
+      el.setAttribute("aria-hidden", "true");
+      Object.assign(el.style, {
+        position: "fixed",
+        inset: "0",
+        pointerEvents: "none",
+        zIndex: "99998",
+      });
+      document.body.appendChild(el);
+    }
+    setPortalRoot(el);
+    return () => {
+      const existing = document.getElementById(id);
+      if (existing?.childNodes.length === 0) {
+        existing.remove();
+      }
+    };
+  }, [mounted]);
+
+  if (!mounted || !portalRoot) return <></>;
+
+  return createPortal(
+    <div style={{ pointerEvents: "auto" }}>{content}</div>,
+    portalRoot
+  );
 }
