@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { m, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useCurrencyStore } from "@/lib/stores/currency-store";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency/constants";
@@ -29,11 +29,12 @@ const CURRENCY_FLAGS: Record<string, string> = {
  * FloatingCurrencySelector Component
  * 
  * Premium floating currency selector with flags - Apple/Ralph Lauren aesthetic
- * - Fixed position, bottom-left corner
+ * - Fixed position, bottom-left corner of viewport (always visible, unaffected by scrolling)
  * - Minimal, clean design with subtle animations
  * - Currency flags visible for quick recognition
  * - Smooth transitions and hover effects
  * - Responsive and accessible
+ * - Respects safe area insets for notched devices (iPhone X+)
  */
 export function FloatingCurrencySelector(): JSX.Element {
   const { theme } = useTheme();
@@ -41,50 +42,25 @@ export function FloatingCurrencySelector(): JSX.Element {
   const setCurrency = useCurrencyStore((s) => s.setCurrency);
   const current = SUPPORTED_CURRENCIES.find((c) => c.code === currency) ?? SUPPORTED_CURRENCIES[0];
   const [isOpen, setIsOpen] = React.useState(false);
-  const [isVisible, setIsVisible] = React.useState(true);
-
-  // Hide when scrolling down, show when scrolling up (optional enhancement)
-  React.useEffect(() => {
-    let lastScrollY = window.scrollY;
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY;
-          // Show when at top or scrolling up, hide when scrolling down significantly
-          if (currentScrollY < 100 || currentScrollY < lastScrollY) {
-            setIsVisible(true);
-          } else if (currentScrollY > lastScrollY + 50) {
-            setIsVisible(false);
-          }
-          lastScrollY = currentScrollY;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const isDark = theme === "dark";
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <m.div
-          initial={{ opacity: 0, x: -20, scale: 0.9 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -20, scale: 0.9 }}
-          transition={{
-            duration: 0.3,
-            ease: [0.22, 1, 0.36, 1], // Apple-like easing
-          }}
-          className="fixed bottom-6 left-6 z-[50]"
-        >
-          <Menu as="div" className="relative">
+    <m.div
+      initial={{ opacity: 0, x: -20, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1], // Apple-like easing
+      }}
+      className="fixed bottom-6 left-6 z-[9999]"
+      style={{
+        // Apple-style: Respect safe area insets for notched devices (iPhone X+)
+        bottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))",
+        left: "max(1.5rem, env(safe-area-inset-left, 1.5rem))",
+      }}
+    >
+      <Menu as="div" className="relative">
             {({ open }) => {
               React.useEffect(() => {
                 setIsOpen(open);
@@ -259,8 +235,6 @@ export function FloatingCurrencySelector(): JSX.Element {
               );
             }}
           </Menu>
-        </m.div>
-      )}
-    </AnimatePresence>
+    </m.div>
   );
 }
