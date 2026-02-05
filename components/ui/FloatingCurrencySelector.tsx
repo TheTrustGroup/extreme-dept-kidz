@@ -27,15 +27,11 @@ const CURRENCY_FLAGS: Record<string, string> = {
 };
 
 /**
- * FloatingCurrencySelector Component
- * 
- * Premium floating currency selector with flags - Apple/Ralph Lauren aesthetic
- * - Fixed position, bottom-left corner of viewport (always visible, unaffected by scrolling)
- * - Minimal, clean design with subtle animations
- * - Currency flags visible for quick recognition
- * - Smooth transitions and hover effects
- * - Responsive and accessible
- * - Respects safe area insets for notched devices (iPhone X+)
+ * FloatingCurrencySelector
+ *
+ * Viewport-fixed currency control: bottom-left, always visible, never clipped by layout.
+ * Portals to document.body so no ancestor transform/flex can affect position.
+ * Respects safe-area insets and prefers-reduced-motion.
  */
 export function FloatingCurrencySelector(): JSX.Element {
   const { theme } = useTheme();
@@ -43,10 +39,19 @@ export function FloatingCurrencySelector(): JSX.Element {
   const setCurrency = useCurrencyStore((s) => s.setCurrency);
   const current = SUPPORTED_CURRENCIES.find((c) => c.code === currency) ?? SUPPORTED_CURRENCIES[0];
   const [mounted, setMounted] = React.useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
 
-  // Ensure component only renders on client and portal is available
   React.useEffect(() => {
     setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent): void => setPrefersReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   const isDark = theme === "dark";
@@ -108,12 +113,13 @@ export function FloatingCurrencySelector(): JSX.Element {
       }}
     >
       <m.div
-        initial={{ opacity: 0, x: -20, scale: 0.9 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, x: -20, scale: 0.9 }}
         animate={{ opacity: 1, x: 0, scale: 1 }}
-        transition={{
-          duration: 0.4,
-          ease: [0.22, 1, 0.36, 1], // Apple-like easing
-        }}
+        transition={
+          prefersReducedMotion
+            ? { duration: 0 }
+            : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
+        }
       >
       <Menu as="div" className="relative">
             {({ open }) => (
@@ -285,38 +291,11 @@ export function FloatingCurrencySelector(): JSX.Element {
     </div>
   );
 
-  // Portal to a dedicated fixed layer on body so layout/flex never affects position
-  const [portalRoot, setPortalRoot] = React.useState<HTMLElement | null>(null);
+  if (!mounted || typeof document === "undefined") return <></>;
 
-  React.useEffect(() => {
-    if (typeof document === "undefined") return;
-    const id = "floating-currency-portal-root";
-    let el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement("div");
-      el.id = id;
-      el.setAttribute("aria-hidden", "true");
-      Object.assign(el.style, {
-        position: "fixed",
-        inset: "0",
-        pointerEvents: "none",
-        zIndex: "99998",
-      });
-      document.body.appendChild(el);
-    }
-    setPortalRoot(el);
-    return () => {
-      const existing = document.getElementById(id);
-      if (existing?.childNodes.length === 0) {
-        existing.remove();
-      }
-    };
-  }, [mounted]);
+  const target = document.body;
+  if (!target) return <></>;
 
-  if (!mounted || !portalRoot) return <></>;
-
-  return createPortal(
-    <div style={{ pointerEvents: "auto" }}>{content}</div>,
-    portalRoot
-  );
+  // Portal to body so fixed position is relative to viewport; no parent transform/flex can affect it.
+  return createPortal(content, target);
 }
