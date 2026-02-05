@@ -53,20 +53,16 @@ export function FloatingCurrencySelector(): JSX.Element {
   const isDark = theme === "dark";
 
   const content = (
-    <m.div
-      initial={{ opacity: 0, x: -20, scale: 0.9 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      transition={{
-        duration: 0.4,
-        ease: [0.22, 1, 0.36, 1], // Apple-like easing
-      }}
-      className="fixed bottom-6 left-6 z-[9999] pointer-events-auto"
+    <div
+      data-floating-currency-selector="true"
       style={{
+        // CRITICAL: Fixed positioning - must be fixed to viewport
+        position: "fixed",
         // Apple-style: Respect safe area insets for notched devices (iPhone X+)
         bottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))",
         left: "max(1.5rem, env(safe-area-inset-left, 1.5rem))",
-        // Ensure it's truly fixed to viewport (redundant but explicit)
-        position: "fixed",
+        // Ensure highest z-index
+        zIndex: 99999,
         // Prevent any parent transforms from affecting positioning
         isolation: "isolate",
         // Ensure it's always visible and interactive
@@ -74,8 +70,23 @@ export function FloatingCurrencySelector(): JSX.Element {
         opacity: 1,
         // Create new stacking context
         transform: "translateZ(0)",
+        // Ensure it's not affected by any parent positioning
+        margin: 0,
+        padding: 0,
+        // Ensure it's not affected by any parent overflow
+        overflow: "visible",
+        // Ensure pointer events work
+        pointerEvents: "auto",
       }}
     >
+      <m.div
+        initial={{ opacity: 0, x: -20, scale: 0.9 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{
+          duration: 0.4,
+          ease: [0.22, 1, 0.36, 1], // Apple-like easing
+        }}
+      >
       <Menu as="div" className="relative">
             {({ open }) => {
               React.useEffect(() => {
@@ -251,12 +262,17 @@ export function FloatingCurrencySelector(): JSX.Element {
               );
             }}
           </Menu>
-    </m.div>
+      </m.div>
+    </div>
   );
 
   // Render via portal to document.body to ensure it's always at root level
   // This prevents any parent container positioning from affecting it
-  if (!mounted) return <></>;
+  if (!mounted || typeof document === "undefined") return <></>;
   
-  return createPortal(content, document.body);
+  // Ensure we have a valid body element
+  const portalTarget = document.body;
+  if (!portalTarget) return <></>;
+  
+  return createPortal(content, portalTarget);
 }

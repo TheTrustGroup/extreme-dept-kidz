@@ -49,10 +49,9 @@ export function SnapchatIcon({ className }: IconProps): JSX.Element {
       className={cn("w-5 h-5", className)}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Snapchat Ghost - Rounded rectangle head with wavy bottom tail */}
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-2 8c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm4 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-2 2c-1.1 0-2 .9-2 2h4c0-1.1-.9-2-2-2z" />
-      {/* Wavy bottom - classic ghost tail with three waves */}
-      <path d="M7 16c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H7zm4 0c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2zm4 0c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2z" />
+      {/* Official Snapchat Ghost - Complete ghost shape in single path */}
+      {/* Rounded head with wavy bottom tail */}
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V15c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm-3 7c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm6 0c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1zm-3 3c-1.1 0-2 .9-2 2h4c0-1.1-.9-2-2-2zm-2 4c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H7zm4 0c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2zm4 0c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-2z" />
     </svg>
   );
 }
