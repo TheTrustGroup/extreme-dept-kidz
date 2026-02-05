@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { m } from "framer-motion";
-import { Mail, Sparkles, Calendar, ArrowRight } from "lucide-react";
+import { Mail, Award, Calendar, ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { H1, H2, Body } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
@@ -30,83 +30,8 @@ export function ComingSoonPage({
 
   return (
     <div className="min-h-screen bg-cream-50">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] md:h-[70vh] overflow-hidden">
-        <div className="absolute inset-0">
-          {heroImage ? (
-            <Image
-              src={heroImage}
-              alt={`${collectionName} collection preview`}
-              fill
-              className="object-cover"
-              priority
-              quality={85}
-              sizes="100vw"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-navy-900 via-charcoal-900 to-navy-800" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/90 via-charcoal-900/60 to-charcoal-900/40" />
-        </div>
-
-        <Container size="lg" className="relative h-full flex items-center justify-center">
-          <m.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center max-w-4xl px-4"
-          >
-            <m.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="inline-flex items-center gap-2 mb-6"
-            >
-              <Sparkles className={cn(
-                "w-8 h-8 md:w-10 md:h-10",
-                theme === "dark" ? "text-accent-primary" : "text-cream-50"
-              )} />
-              <span className={cn(
-                "font-sans text-sm md:text-base font-semibold uppercase tracking-wider",
-                theme === "dark" ? "text-accent-primary" : "text-cream-50"
-              )}>
-                Launching Soon
-              </span>
-            </m.div>
-
-            <H1 className={cn(
-              "text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif font-bold mb-6",
-              "text-cream-50 drop-shadow-2xl"
-            )}>
-              {collectionName} Collection
-            </H1>
-
-            <Body className={cn(
-              "text-lg md:text-xl lg:text-2xl mb-8 max-w-2xl mx-auto",
-              "text-cream-100 drop-shadow-lg"
-            )}>
-              Something extraordinary is on the way. Be the first to discover our newest collection designed for young legends.
-            </Body>
-
-            {estimatedLaunchDate && (
-              <m.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cream-50/10 backdrop-blur-sm border border-cream-50/20"
-              >
-                <Calendar className="w-5 h-5 text-cream-50" />
-                <span className="font-sans text-sm md:text-base text-cream-50">
-                  Estimated Launch: {estimatedLaunchDate}
-                </span>
-              </m.div>
-            )}
-          </m.div>
-        </Container>
-      </section>
-
       {/* Main Content */}
-      <Container size="lg" className="py-16 md:py-20 lg:py-24">
+      <Container size="lg" className="pt-16 md:pt-20 lg:pt-24 pb-16 md:pb-20 lg:pb-24">
         <div className="space-y-16 md:space-y-20 lg:space-y-24">
           {/* Email Signup Section */}
           <m.section
@@ -193,7 +118,7 @@ export function ComingSoonPage({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {[
                 {
-                  icon: Sparkles,
+                  icon: Award,
                   title: "Premium Quality",
                   description: "Thoughtfully crafted pieces with uncompromising attention to detail and premium materials.",
                 },
