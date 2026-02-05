@@ -5,6 +5,7 @@ import Link from "next/link";
 import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H2, Body, Caption } from "@/components/ui/typography";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { cn } from "@/lib/utils";
 
 export function EditorialSection(): JSX.Element {
@@ -24,13 +25,16 @@ export function EditorialSection(): JSX.Element {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
-            <div 
-              className="relative w-full h-full bg-cream-200"
-              role="img"
-              aria-label="Lifestyle editorial image - The EXTREME DEPT Boy collection"
-            >
-              {/* Image will be added later */}
-            </div>
+            <OptimizedImage
+              src="/editorial-cover-adventure-style.png"
+              alt="Built for Adventure, Designed for Style - Premium streetwear for young legends"
+              variant="gallery"
+              className="object-cover w-full h-full"
+              fill
+              quality={90}
+              useIntersectionObserver={false}
+              isLCP={false}
+            />
           </m.div>
 
           {/* Text Side - 40% */}
