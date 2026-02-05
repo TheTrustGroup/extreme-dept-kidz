@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { m } from "framer-motion";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useCurrencyStore } from "@/lib/stores/currency-store";
@@ -42,10 +43,16 @@ export function FloatingCurrencySelector(): JSX.Element {
   const setCurrency = useCurrencyStore((s) => s.setCurrency);
   const current = SUPPORTED_CURRENCIES.find((c) => c.code === currency) ?? SUPPORTED_CURRENCIES[0];
   const [isOpen, setIsOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  // Ensure component only renders on client and portal is available
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isDark = theme === "dark";
 
-  return (
+  const content = (
     <m.div
       initial={{ opacity: 0, x: -20, scale: 0.9 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -53,11 +60,20 @@ export function FloatingCurrencySelector(): JSX.Element {
         duration: 0.4,
         ease: [0.22, 1, 0.36, 1], // Apple-like easing
       }}
-      className="fixed bottom-6 left-6 z-[9999]"
+      className="fixed bottom-6 left-6 z-[9999] pointer-events-auto"
       style={{
         // Apple-style: Respect safe area insets for notched devices (iPhone X+)
         bottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))",
         left: "max(1.5rem, env(safe-area-inset-left, 1.5rem))",
+        // Ensure it's truly fixed to viewport (redundant but explicit)
+        position: "fixed",
+        // Prevent any parent transforms from affecting positioning
+        isolation: "isolate",
+        // Ensure it's always visible and interactive
+        visibility: "visible",
+        opacity: 1,
+        // Create new stacking context
+        transform: "translateZ(0)",
       }}
     >
       <Menu as="div" className="relative">
@@ -237,4 +253,10 @@ export function FloatingCurrencySelector(): JSX.Element {
           </Menu>
     </m.div>
   );
+
+  // Render via portal to document.body to ensure it's always at root level
+  // This prevents any parent container positioning from affecting it
+  if (!mounted) return <></>;
+  
+  return createPortal(content, document.body);
 }
