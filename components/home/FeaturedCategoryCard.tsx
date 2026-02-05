@@ -21,7 +21,12 @@ export function FeaturedCategoryCard({
   index,
 }: FeaturedCategoryCardProps): JSX.Element {
   const href = `/collections/${category.slug}`;
-  const imageUrl = category.image ?? undefined;
+  // Use cover images for Boys and Girls collections
+  const imageUrl = category.slug.toLowerCase() === "boys"
+    ? "/collections-boys-cover.png"
+    : category.slug.toLowerCase() === "girls"
+    ? "/collections-girls-cover.png"
+    : category.image ?? undefined;
 
   return (
     <m.article
