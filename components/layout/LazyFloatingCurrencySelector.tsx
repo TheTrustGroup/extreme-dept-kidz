@@ -5,9 +5,11 @@ import dynamic from "next/dynamic";
 
 /**
  * LazyFloatingCurrencySelector
- * 
- * CRITICAL FIX: Defer hydration until after page is interactive
- * This prevents blocking FCP/LCP and improves initial render performance
+ *
+ * Renders the currency utility pill into #global-utility-layer (portal from root layout).
+ * Do NOT move this component inside the footer or any other layout slot — it must stay
+ * in the root layout and portal to #global-utility-layer so it appears above the footer
+ * as a sticky pill when the footer is in view. Deferred hydration for FCP/LCP.
  */
 const FloatingCurrencySelector = dynamic(
   () => import("@/components/ui/FloatingCurrencySelector").then((mod) => ({ default: mod.FloatingCurrencySelector })),

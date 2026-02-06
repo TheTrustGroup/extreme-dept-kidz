@@ -206,6 +206,20 @@ export default function RootLayout({
                 <PageTransition>{children}</PageTransition>
               </Suspense>
             </main>
+            {/*
+             * GLOBAL UTILITY LAYER — Currency selector and other global utilities.
+             * DO NOT move the currency selector into the footer or any other layout slot.
+             *
+             * Why the previous viewport-fixed currency selector could not move (diagnosis):
+             * - Body has contain: layout style paint (globals.css), which creates a containing
+             *   block for position:fixed descendants. Fixed elements were therefore positioned
+             *   relative to body and scrolled with the page instead of staying viewport-fixed.
+             * - The component was portaled to document.body but remained a descendant of body,
+             *   so body's containment still applied. No amount of z-index or !important fixed it.
+             * - We do NOT use viewport-fixed on mobile; the currency pill lives here, above the
+             *   footer, and is shown only when the footer enters view (sticky utility pill).
+             */}
+            <div id="global-utility-layer" role="region" aria-label="Page utilities" />
             <Suspense fallback={null}>
               <ConditionalFooter />
             </Suspense>

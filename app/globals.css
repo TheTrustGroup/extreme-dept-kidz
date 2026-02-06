@@ -72,12 +72,19 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Exclude html/body so position:fixed children of body are viewport-relative (e.g. floating currency selector) */
+/* GPU hints for non-root: body has contain:paint so position:fixed is not viewport-relative anyway.
+ * Currency selector lives in #global-utility-layer as a sticky pill above footer, not viewport-fixed. */
 *:not(html):not(body) {
-  /* Use GPU for transforms and opacity */
   -webkit-transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   -webkit-perspective: 1000;
+}
+
+/* Global utility layer: currency pill and similar. DO NOT add overflow:hidden or contain:paint
+ * here — it would break sticky positioning and cause jitter. Do NOT move currency into the footer. */
+#global-utility-layer {
+  overflow: visible;
+  contain: none;
 }
 
 /* Optimize scroll containers */

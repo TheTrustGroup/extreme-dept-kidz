@@ -26,7 +26,10 @@ const SOCIAL_LINKS = [
   { href: "https://snapchat.com/t/dE3hKeZX", icon: SnapchatIcon, label: "Snapchat" },
 ];
 
-/** Luxury footer: dark navy, gold accents, glassmorphism newsletter, 4-column desktop. */
+/**
+ * Luxury footer: dark navy, gold accents, glassmorphism newsletter, 4-column desktop.
+ * Currency selector is NOT part of the footer — it lives in #global-utility-layer above.
+ */
 export function LuxuryFooter(): JSX.Element {
   const currentYear = new Date().getFullYear();
 
