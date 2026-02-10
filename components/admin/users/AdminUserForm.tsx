@@ -163,20 +163,31 @@ export function AdminUserForm({
     }
   };
 
+  // Lock body scroll when modal is open so only modal content scrolls
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return <></>;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <m.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="admin-modal bg-white rounded-xl p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-6)] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="admin-modal bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl my-auto"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex-shrink-0 flex items-center justify-between p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-6)] pb-0">
           <h2 className="text-2xl font-bold text-gray-900">
             {isEditMode ? 'Edit User' : 'Create New User'}
           </h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
@@ -184,7 +195,8 @@ export function AdminUserForm({
           </button>
         </div>
 
-        <form id="admin-user-form" onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex-1 min-h-0 overflow-y-auto px-[var(--admin-space-4)] sm:px-[var(--admin-space-5)] lg:px-[var(--admin-space-6)]">
+          <form id="admin-user-form" onSubmit={handleSubmit} className="space-y-6 pt-6 pb-6">
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -366,7 +378,8 @@ export function AdminUserForm({
               {loading ? 'Saving...' : isEditMode ? 'Update User' : 'Create User'}
             </Button>
           </div>
-        </form>
+          </form>
+        </div>
       </m.div>
     </div>
   );

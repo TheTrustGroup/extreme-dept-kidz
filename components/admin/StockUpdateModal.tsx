@@ -127,9 +127,9 @@ export function StockUpdateModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="admin-modal bg-white rounded-lg p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-6)] max-w-2xl w-full mx-auto max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="admin-modal bg-white rounded-lg max-w-2xl w-full mx-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col my-auto">
+        <div className="flex-shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-6)] pb-0">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl font-bold truncate">Update Stock - {productName}</h2>
             {!isOnline && (
@@ -140,6 +140,7 @@ export function StockUpdateModal({
             )}
           </div>
           <button 
+            type="button"
             onClick={onClose} 
             className="text-gray-400 hover:text-gray-600 transition-colors self-end sm:self-auto"
             aria-label="Close modal"
@@ -148,7 +149,8 @@ export function StockUpdateModal({
           </button>
         </div>
 
-        <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+        <div className="flex-1 min-h-0 overflow-y-auto px-[var(--admin-space-4)] sm:px-[var(--admin-space-5)] lg:px-[var(--admin-space-6)] pt-4 sm:pt-6">
+          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
           {sizes.map((size, index) => (
             <div key={size.size} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
               <label className="w-full sm:w-24 font-medium text-gray-700 text-sm sm:text-base">Size {size.size}:</label>
@@ -208,29 +210,30 @@ export function StockUpdateModal({
               </div>
             </div>
           ))}
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4 border-t">
+        <div className="flex-shrink-0 flex flex-col sm:flex-row gap-2 sm:gap-4 border-t p-[var(--admin-space-4)] sm:p-[var(--admin-space-5)] lg:p-[var(--admin-space-6)] bg-white rounded-b-lg">
           <Button
-            variant="ghost"
-            onClick={handleReset}
-            className="flex-1 order-2 sm:order-1"
-          >
-            Reset
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="flex-1 order-3 sm:order-2"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleUpdate}
-            className="flex-1 bg-black text-white hover:bg-gray-800 order-1 sm:order-3"
-          >
-            Update Stock
-          </Button>
+              variant="ghost"
+              onClick={handleReset}
+              className="flex-1 order-2 sm:order-1"
+            >
+              Reset
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="flex-1 order-3 sm:order-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdate}
+              className="flex-1 bg-black text-white hover:bg-gray-800 order-1 sm:order-3"
+            >
+              Update Stock
+            </Button>
         </div>
       </div>
     </div>
