@@ -7,6 +7,8 @@ export interface AuthenticatedUser {
   id: string;
   email: string;
   role: string;
+  /** When set, APIs should scope data (e.g. orders) to this POS. */
+  assignedPos?: string | null;
 }
 
 export interface AuthResult {
@@ -76,6 +78,7 @@ export async function authenticateRequest(
         id: true,
         email: true,
         role: true,
+        assignedPos: true,
         isActive: true,
         tokenVersion: true,
       },
@@ -108,6 +111,7 @@ export async function authenticateRequest(
         id: user.id,
         email: user.email,
         role: user.role,
+        assignedPos: user.assignedPos ?? undefined,
       },
       error: null,
     };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import type { AssignedPos, Prisma } from "@prisma/client";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 import { authenticateAndAuthorize } from "@/lib/auth/middleware";
@@ -25,6 +26,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
     const db = prisma;
+
+    // POS scoping: when user has assignedPos, restrict all order data to that POS
+    const orderPosWhere: Prisma.OrderWhereInput = auth.user?.assignedPos
+      ? { pos: auth.user.assignedPos as AssignedPos }
+      : {};
 
     const { searchParams } = new URL(request.url);
     const period = (searchParams.get('period') || '30days') as DashboardParams['period'];
@@ -85,30 +91,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ] = await Promise.all([
       // Current period orders
       db.order.findMany({
-        where: {
-          createdAt: { gte: startDate, lte: endDate },
-        },
+        where: { ...orderPosWhere, createdAt: { gte: startDate, lte: endDate } },
         select: { total: true, createdAt: true },
       }),
       // Previous period orders
       db.order.findMany({
-        where: {
-          createdAt: { gte: prevStartDate, lte: prevEndDate },
-        },
+        where: { ...orderPosWhere, createdAt: { gte: prevStartDate, lte: prevEndDate } },
         select: { total: true },
       }),
       // Current period revenue
       db.order.aggregate({
-        where: {
-          createdAt: { gte: startDate, lte: endDate },
-        },
+        where: { ...orderPosWhere, createdAt: { gte: startDate, lte: endDate } },
         _sum: { total: true },
       }),
       // Previous period revenue
       db.order.aggregate({
-        where: {
-          createdAt: { gte: prevStartDate, lte: prevEndDate },
-        },
+        where: { ...orderPosWhere, createdAt: { gte: prevStartDate, lte: prevEndDate } },
         _sum: { total: true },
       }),
       // Total products
@@ -131,13 +129,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       // Orders by status
       db.order.groupBy({
         by: ['status'],
-        where: {
-          createdAt: { gte: startDate, lte: endDate },
-        },
+        where: { ...orderPosWhere, createdAt: { gte: startDate, lte: endDate } },
         _count: { id: true },
       }),
       // Recent orders (last 5)
       db.order.findMany({
+        where: orderPosWhere,
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: {
@@ -154,6 +151,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         by: ['productId'],
         where: {
           order: {
+            ...orderPosWhere,
             createdAt: { gte: startDate, lte: endDate },
             status: { not: 'CANCELLED' },
           },
@@ -171,9 +169,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }).catch(() => []),
       // Sales data for chart (daily revenue)
       db.order.findMany({
-        where: {
-          createdAt: { gte: startDate, lte: endDate },
-        },
+        where: { ...orderPosWhere, createdAt: { gte: startDate, lte: endDate } },
         select: {
           total: true,
           createdAt: true,

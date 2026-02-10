@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { Menu as MenuIcon, Search, Bell, ChevronDown, LogOut } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
-import { getRoleDisplayLabel } from "@/lib/auth/rbac";
+import { getRoleDisplayLabel, getAssignedPosDisplayLabel } from "@/lib/auth/rbac";
 import { DatabaseStatus } from "@/components/admin/DatabaseStatus";
 import { AdminSearchModal } from "@/components/admin/AdminSearchModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -253,7 +253,12 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps): JSX.Element {
                     <div className="admin-section-sm bg-gradient-to-r from-navy-50/80 to-navy-100/80 backdrop-blur-sm border-b border-cream-200/50">
                       <AdminBodySmall className="font-semibold text-charcoal-900">{user.name}</AdminBodySmall>
                       <AdminCaption className="text-charcoal-600 truncate normal-case">{user.email}</AdminCaption>
-                      <AdminCaption className="text-charcoal-500 mt-[var(--admin-space-1)]">{getRoleDisplayLabel(user.role)}</AdminCaption>
+                      <AdminCaption className="text-charcoal-500 mt-[var(--admin-space-1)]">
+                        {getRoleDisplayLabel(user.role)}
+                        {user.assignedPos && (
+                          <span className="ml-1"> · {getAssignedPosDisplayLabel(user.assignedPos)}</span>
+                        )}
+                      </AdminCaption>
                     </div>
                     <div className="admin-rhythm-sm p-[var(--admin-space-1)]">
                       <Link

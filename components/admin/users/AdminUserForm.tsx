@@ -339,7 +339,7 @@ export function AdminUserForm({
               ))}
             </select>
             <p className="mt-1 text-xs text-gray-500">
-              Which POS this user can access (e.g. Main Town or Store). Leave unset for no restriction.
+              For Cashier or Warehouse, assign a POS so this user only sees that location&apos;s orders and data. Leave unset for full access (e.g. Admin).
             </p>
           </div>
 

@@ -237,10 +237,10 @@ export default function AdminUsersPage(): JSX.Element {
         <div>
           <H1 className="text-3xl font-bold text-gray-900 mb-2">Admin Users</H1>
           <p className="text-gray-600 text-sm">
-            Manage admin users and their permissions
+            Set each user&apos;s <strong>role</strong> and <strong>POS access</strong> here. Only super admins can create or edit users.
           </p>
           <p className="text-gray-500 text-xs mt-1">
-            New users sign in at: <strong>/admin/login</strong> on this site (e.g. {typeof window !== "undefined" ? `${window.location.origin}/admin/login` : "this domain"})
+            Users with a POS assigned (e.g. Main Town or Store) only see data for that location (e.g. orders). Login: <strong>/admin/login</strong> on this site.
           </p>
         </div>
       </div>

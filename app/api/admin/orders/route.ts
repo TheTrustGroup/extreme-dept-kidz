@@ -8,11 +8,11 @@ import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  // RBAC: Viewing orders requires manager role or higher
-  const auth = await authenticateAndAuthorize(request, 'manager');
+  // RBAC: Viewing orders requires manager role or higher (cashier has view_orders via manager-level check in rbac)
+  const auth = await authenticateAndAuthorize(request, ['manager', 'cashier']);
   if (auth.error) return withCors(request, auth.error);
   if (!auth.authorized) {
-    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Manager role required to view orders.' }, { status: 403 }));
+    return withCors(request, NextResponse.json({ error: 'Insufficient permissions. Manager or Cashier role required to view orders.' }, { status: 403 }));
   }
   try {
     if (!prisma) {
@@ -34,7 +34,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const skip = (page - 1) * limit;
 
     // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic where for Prisma
     const where: any = {};
+
+    // POS scoping: when user has assignedPos, show only orders for that POS
+    if (auth.user?.assignedPos) {
+      where.pos = auth.user.assignedPos;
+    }
 
     // Status filter (fulfillment status)
     if (status) {

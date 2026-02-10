@@ -177,6 +177,7 @@ model Order {
   orderNumber     String        @unique // Human-readable: ORD-2024-001
   userId          String? // Optional: for guest checkout
   user            User?         @relation(fields: [userId], references: [id])
+  pos             AssignedPos?  // POS/location where order was taken (for scoping by user.assignedPos)
   status          OrderStatus   @default(PENDING)
   subtotal        Int // Subtotal in cents
   shipping        Int // Shipping cost in cents
@@ -200,6 +201,7 @@ model Order {
   @@index([orderNumber])
   @@index([userId])
   @@index([status])
+  @@index([pos])
   @@index([createdAt])
 }
 
