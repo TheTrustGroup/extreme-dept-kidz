@@ -304,6 +304,7 @@ model AdminUser {
   id                      String      @id @default(cuid())
   email                   String      @unique
   name                    String
+  displayName              String?     // Optional in schema; DB may have it NOT NULL (set from name when creating)
   passwordHash            String      // Hashed password (never store plain text!)
   role                    AdminRole   @default(viewer)
   isActive                Boolean     @default(true)

@@ -168,6 +168,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         data: {
           email: normalizedEmail,
           name,
+          displayName: name, // DB may have NOT NULL displayName (legacy column)
           passwordHash,
           role,
           isActive: true,
@@ -190,11 +191,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         await prisma.$executeRaw(
           Prisma.sql`
             INSERT INTO "AdminUser" (
-              "id", "email", "name", "passwordHash", "role", "isActive",
+              "id", "email", "name", "displayName", "passwordHash", "role", "isActive",
               "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
               "tokenVersion", "createdAt", "updatedAt"
             ) VALUES (
-              gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
+              gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${name}, ${passwordHash},
               ${role}::"AdminRole", true,
               NULL, NULL, NULL, NULL, 0, NOW(), NOW()
             )
@@ -206,11 +207,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           await prisma.$executeRaw(
             Prisma.sql`
               INSERT INTO "AdminUser" (
-                "id", "email", "name", "passwordHash", "role", "isActive",
+                "id", "email", "name", "displayName", "passwordHash", "role", "isActive",
                 "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
                 "tokenVersion", "createdAt", "updatedAt"
               ) VALUES (
-                gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
+                gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${name}, ${passwordHash},
                 ${role}::"AdminRole_new", true,
                 NULL, NULL, NULL, NULL, 0, NOW(), NOW()
               )
