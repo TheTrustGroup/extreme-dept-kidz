@@ -280,7 +280,7 @@ export async function PUT(
 /**
  * DELETE /api/admin/users/[id]
  * 
- * Delete (deactivate) an admin user (super_admin only, cannot delete self)
+ * Permanently delete an admin user (super_admin only, cannot delete self)
  */
 export async function DELETE(
   request: NextRequest,
@@ -317,18 +317,17 @@ export async function DELETE(
       return apiNotFound("User");
     }
 
-    // Soft delete by setting isActive to false
-    const user = await prisma.adminUser.update({
+    // Permanently delete the user (cascades to activity logs, etc. per schema)
+    await prisma.adminUser.delete({
       where: { id },
-      data: { isActive: false },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-      },
     });
+    const user = {
+      id: existingUser.id,
+      email: existingUser.email,
+      name: existingUser.name,
+      role: existingUser.role,
+      isActive: existingUser.isActive,
+    };
 
     // Log activity
     await logActivity({
@@ -343,7 +342,7 @@ export async function DELETE(
       },
     }, request);
 
-    return apiSuccess(user, "User deactivated successfully");
+    return apiSuccess(user, "User deleted successfully");
   } catch (error) {
     logger.error("Failed to delete user:", error);
     return apiError(

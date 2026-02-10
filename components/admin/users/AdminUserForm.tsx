@@ -178,7 +178,7 @@ export function AdminUserForm({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="admin-user-form" onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -330,6 +330,7 @@ export function AdminUserForm({
             </Button>
             <Button
               type="submit"
+              form="admin-user-form"
               className="flex-1"
               disabled={loading}
             >

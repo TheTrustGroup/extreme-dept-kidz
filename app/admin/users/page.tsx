@@ -8,6 +8,7 @@ import { H1 } from "@/components/ui/typography";
 import { useToast } from "@/components/ui/Toast";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { apiUrl } from "@/lib/config/api-base";
 
 export default function AdminUsersPage(): JSX.Element {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function AdminUsersPage(): JSX.Element {
   async function loadUsers(): Promise<void> {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetch(apiUrl('/api/admin/users'), {
         credentials: 'include',
       });
 
@@ -92,7 +93,7 @@ export default function AdminUsersPage(): JSX.Element {
     setDeleteConfirm(null);
 
     try {
-      const response = await fetch(`/api/admin/users/${user.id}`, {
+      const response = await fetch(apiUrl(`/api/admin/users/${user.id}`), {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -104,8 +105,8 @@ export default function AdminUsersPage(): JSX.Element {
 
       showToast({
         type: "success",
-        title: "User Deactivated",
-        message: `${user.name} has been deactivated successfully`,
+        title: "User Deleted",
+        message: `${user.name} has been permanently removed`,
       });
 
       await loadUsers();
@@ -116,14 +117,14 @@ export default function AdminUsersPage(): JSX.Element {
       showToast({
         type: "error",
         title: "Error",
-        message: error instanceof Error ? error.message : "Failed to deactivate user",
+        message: error instanceof Error ? error.message : "Failed to delete user",
       });
     }
   };
 
   const handleToggleStatus = async (user: AdminUser): Promise<void> => {
     try {
-      const response = await fetch(`/api/admin/users/${user.id}`, {
+      const response = await fetch(apiUrl(`/api/admin/users/${user.id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +163,7 @@ export default function AdminUsersPage(): JSX.Element {
     setFormLoading(true);
     try {
       const isEdit = !!editingUser;
-      const url = isEdit ? `/api/admin/users/${editingUser.id}` : '/api/admin/users';
+      const url = isEdit ? apiUrl(`/api/admin/users/${editingUser.id}`) : apiUrl('/api/admin/users');
       const method = isEdit ? 'PUT' : 'POST';
 
       const body: any = {
@@ -266,9 +267,9 @@ export default function AdminUsersPage(): JSX.Element {
 
       <ConfirmDialog
         isOpen={!!deleteConfirm}
-        title="Deactivate User"
-        message={`Are you sure you want to deactivate ${deleteConfirm?.name}? This action cannot be undone.`}
-        confirmText="Deactivate"
+        title="Delete User"
+        message={`Permanently delete ${deleteConfirm?.name}? This cannot be undone.`}
+        confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
         onConfirm={confirmDelete}
