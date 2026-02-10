@@ -161,6 +161,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const normalizedEmail = email.toLowerCase();
     let user: { id: string; email: string; name: string; role: string; isActive: boolean; createdAt: Date };
 
+    let createErr: unknown = null;
     try {
       // Create user (Prisma sends role as AdminRole enum)
       user = await prisma.adminUser.create({
@@ -180,17 +181,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           createdAt: true,
         },
       });
-    } catch (createErr: unknown) {
-      const msg = String((createErr as { message?: string })?.message ?? "");
-      const code = (createErr as { meta?: { code?: string } })?.meta?.code;
-      const isRoleTypeError =
-        msg.includes("AdminRole") ||
-        msg.includes("42804") ||
-        msg.includes("invalid input value") ||
-        code === "P5010";
-      if (isRoleTypeError) {
-        // Try raw INSERT with AdminRole first, then AdminRole_new (DB may use either)
-        let inserted = false;
+    } catch (err: unknown) {
+      createErr = err;
+      logger.error("Prisma adminUser.create failed, trying raw INSERT fallback:", err);
+      // Always try raw INSERT (AdminRole then AdminRole_new) on any create failure
+      let inserted = false;
+      try {
+        await prisma.$executeRaw(
+          Prisma.sql`
+            INSERT INTO "AdminUser" (
+              "id", "email", "name", "passwordHash", "role", "isActive",
+              "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
+              "tokenVersion", "createdAt", "updatedAt"
+            ) VALUES (
+              gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
+              ${role}::"AdminRole", true,
+              NULL, NULL, NULL, NULL, 0, NOW(), NOW()
+            )
+          `
+        );
+        inserted = true;
+      } catch {
         try {
           await prisma.$executeRaw(
             Prisma.sql`
@@ -200,42 +211,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 "tokenVersion", "createdAt", "updatedAt"
               ) VALUES (
                 gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
-                ${role}::"AdminRole", true,
+                ${role}::"AdminRole_new", true,
                 NULL, NULL, NULL, NULL, 0, NOW(), NOW()
               )
             `
           );
           inserted = true;
-        } catch {
-          try {
-            await prisma.$executeRaw(
-              Prisma.sql`
-                INSERT INTO "AdminUser" (
-                  "id", "email", "name", "passwordHash", "role", "isActive",
-                  "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
-                  "tokenVersion", "createdAt", "updatedAt"
-                ) VALUES (
-                  gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
-                  ${role}::"AdminRole_new", true,
-                  NULL, NULL, NULL, NULL, 0, NOW(), NOW()
-                )
-              `
-            );
-            inserted = true;
-          } catch (rawErr) {
-            logger.error("Failed to create user (raw fallback):", rawErr);
-          }
+        } catch (rawErr) {
+          logger.error("Raw INSERT fallback failed:", rawErr);
         }
-        if (inserted) {
-          const created = await prisma.adminUser.findUnique({
-            where: { email: normalizedEmail },
-            select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
-          });
-          if (!created) throw new Error("User created but not found");
-          user = created;
-        } else {
-          throw createErr;
-        }
+      }
+      if (inserted) {
+        const created = await prisma.adminUser.findUnique({
+          where: { email: normalizedEmail },
+          select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+        });
+        if (!created) throw new Error("User created but not found");
+        user = created;
       } else {
         throw createErr;
       }
@@ -290,6 +282,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (isUniqueError) {
       return apiError("User with this email already exists", 409, message);
     }
-    return apiError("Failed to create user", 500, message);
+    return apiError(message || "Failed to create user", 500, message);
   }
 }

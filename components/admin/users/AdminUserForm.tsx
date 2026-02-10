@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { AdminRole } from "@/lib/auth/rbac";
 
+// Must match Prisma AdminRole enum and API createUserSchema (app/api/admin/users/route.ts)
 const ADMIN_ROLES: { value: AdminRole; label: string }[] = [
   { value: "viewer", label: "Viewer" },
   { value: "driver", label: "Driver" },

@@ -8,7 +8,8 @@
 import { create } from "zustand";
 import { apiUrl } from "@/lib/config/api-base";
 
-export type AdminRole = "super_admin" | "admin" | "manager" | "viewer";
+// Must match Prisma AdminRole enum and lib/auth/rbac.ts
+export type AdminRole = "super_admin" | "admin" | "manager" | "cashier" | "warehouse" | "driver" | "viewer";
 
 export interface AdminUser {
   id: string;
@@ -30,8 +31,7 @@ interface AdminAuthState {
   hasPermission: (permission: string) => boolean;
 }
 
-// Permission matrix
-// Updated to match context requirements: super_admin, admin, manager, viewer
+// Permission matrix – must match backend (Prisma AdminRole + lib/auth/rbac.ts)
 const PERMISSIONS: Record<AdminRole, string[]> = {
   super_admin: [
     "view_dashboard",
@@ -67,6 +67,29 @@ const PERMISSIONS: Record<AdminRole, string[]> = {
     "refund_orders",
     "view_analytics",
     "manage_inventory",
+    "view_inventory",
+  ],
+  cashier: [
+    "view_dashboard",
+    "view_products",
+    "view_orders",
+    "manage_orders",
+    "view_analytics",
+    "view_inventory",
+  ],
+  warehouse: [
+    "view_dashboard",
+    "view_products",
+    "view_orders",
+    "view_analytics",
+    "manage_inventory",
+    "view_inventory",
+  ],
+  driver: [
+    "view_dashboard",
+    "view_products",
+    "view_orders",
+    "view_analytics",
     "view_inventory",
   ],
   viewer: [

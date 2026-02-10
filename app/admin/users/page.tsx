@@ -176,7 +176,13 @@ export default function AdminUsersPage(): JSX.Element {
       });
 
       if (!response.ok) {
-        const err = await response.json();
+        let err: { error?: string; details?: string } = {};
+        try {
+          err = await response.json();
+        } catch {
+          const text = await response.text();
+          throw new Error(text || `Server error (${response.status})`);
+        }
         const detail = typeof err.details === "string" ? err.details : "";
         const message = err.error
           ? (detail ? `${err.error}: ${detail}` : err.error)
@@ -215,6 +221,9 @@ export default function AdminUsersPage(): JSX.Element {
           <H1 className="text-3xl font-bold text-gray-900 mb-2">Admin Users</H1>
           <p className="text-gray-600 text-sm">
             Manage admin users and their permissions
+          </p>
+          <p className="text-gray-500 text-xs mt-1">
+            New users sign in at: <strong>/admin/login</strong> on this site (e.g. {typeof window !== "undefined" ? `${window.location.origin}/admin/login` : "this domain"})
           </p>
         </div>
       </div>
