@@ -8,6 +8,21 @@ import { cn } from "@/lib/utils";
 import type { AdminRole, AssignedPos } from "@/lib/auth/rbac";
 import { ASSIGNED_POS_LABELS } from "@/lib/auth/rbac";
 
+/** POS options to show in the form. Maintown cashier = Main Town only; DC cashier = DC/Mainstore only; else both. */
+function getPosOptionsForUser(email: string): Array<{ value: AssignedPos | ''; label: string }> {
+  const normalized = (email || '').toLowerCase().trim();
+  if (normalized.includes('maintown_cashier') || normalized === 'maintown_cashier@extremedeptkidz.com') {
+    return [{ value: 'main_town', label: ASSIGNED_POS_LABELS.main_town }];
+  }
+  if (normalized === 'cashier@extremedeptkidz.com') {
+    return [{ value: 'store', label: ASSIGNED_POS_LABELS.store }];
+  }
+  return [
+    { value: '', label: '— None —' },
+    ...(Object.entries(ASSIGNED_POS_LABELS) as [AssignedPos, string][]).map(([value, label]) => ({ value, label })),
+  ];
+}
+
 // Must match Prisma AdminRole enum and API createUserSchema (app/api/admin/users/route.ts)
 const ADMIN_ROLES: { value: AdminRole; label: string }[] = [
   { value: "viewer", label: "Viewer" },
@@ -73,12 +88,14 @@ export function AdminUserForm({
   React.useEffect(() => {
     if (!isOpen) return;
     if (user) {
+      const posOpts = getPosOptionsForUser(user.email);
+      const singlePos = posOpts.length === 1 && posOpts[0].value !== '' ? (posOpts[0].value as AssignedPos) : null;
       setFormData({
         email: user.email,
         name: user.name,
         password: '',
         role: user.role,
-        assignedPos: user.assignedPos ?? null,
+        assignedPos: singlePos ?? user.assignedPos ?? null,
         isActive: user.isActive,
       });
     } else {
@@ -95,6 +112,14 @@ export function AdminUserForm({
     setPasswordStrength({ score: 0, feedback: [] });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- openKey intentionally replaces user/isOpen to avoid form reset on parent re-render
   }, [openKey]);
+
+  // When email changes and restricts to a single POS (maintown_cashier or cashier@), lock assignedPos to that value
+  React.useEffect(() => {
+    const posOpts = getPosOptionsForUser(formData.email);
+    if (posOpts.length === 1 && posOpts[0].value !== '') {
+      setFormData(prev => ({ ...prev, assignedPos: posOpts[0].value as AssignedPos }));
+    }
+  }, [formData.email]);
 
   const validatePassword = (password: string): void => {
     const feedback: string[] = [];
@@ -320,26 +345,40 @@ export function AdminUserForm({
             </select>
           </div>
 
-          {/* Assigned POS */}
+          {/* Assigned POS — restricted by user: maintown_cashier = Main Town only, cashier@ = DC/Mainstore only */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               POS access
             </label>
-            <select
-              value={formData.assignedPos ?? ''}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                assignedPos: (e.target.value === '' ? null : e.target.value) as AssignedPos | null,
-              }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white"
-            >
-              <option value="">— None —</option>
-              {(Object.entries(ASSIGNED_POS_LABELS) as [AssignedPos, string][]).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
+            {(() => {
+              const posOptions = getPosOptionsForUser(formData.email);
+              const singlePosOnly = posOptions.length === 1 && posOptions[0].value !== '';
+              if (singlePosOnly) {
+                const only = posOptions[0];
+                return (
+                  <div className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+                    <span className="font-medium">{only.label}</span>
+                    <span className="text-xs text-gray-500">(fixed for this user)</span>
+                  </div>
+                );
+              }
+              return (
+                <select
+                  value={formData.assignedPos ?? ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    assignedPos: (e.target.value === '' ? null : e.target.value) as AssignedPos | null,
+                  }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white"
+                >
+                  {posOptions.map((opt) => (
+                    <option key={opt.value || 'none'} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              );
+            })()}
             <p className="mt-1 text-xs text-gray-500">
-              For Cashier or Warehouse, assign a POS so this user only sees that location&apos;s orders and data. Leave unset for full access (e.g. Admin).
+              Maintown POS: Main Town only. DC/Mainstore POS: DC/Mainstore only. Leave unset for full access (e.g. Admin).
             </p>
           </div>
 

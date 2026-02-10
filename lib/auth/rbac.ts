@@ -21,7 +21,7 @@ export type AssignedPos = 'main_town' | 'store';
 /** Display labels for assigned POS. */
 export const ASSIGNED_POS_LABELS: Record<AssignedPos, string> = {
   main_town: 'Main Town',
-  store: 'Store',
+  store: 'DC/Mainstore',
 };
 
 export function getAssignedPosDisplayLabel(pos: AssignedPos | null | undefined): string {

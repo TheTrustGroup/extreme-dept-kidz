@@ -4,11 +4,12 @@
  * Usage: npx tsx scripts/seed-warehouse-role-users.ts
  *
  * Creates or updates these users with password EDK-!@# (see HAND_TO_BACKEND.md):
- *   manager@extremedeptkidz.com   (role: manager)
- *   cashier@extremedeptkidz.com  (role: cashier)
- *   warehouse@extremedeptkidz.com (role: warehouse)
- *   driver@extremedeptkidz.com   (role: driver)
- *   viewer@extremedeptkidz.com   (role: viewer)
+ *   manager@extremedeptkidz.com       (role: manager)
+ *   cashier@extremedeptkidz.com       (role: cashier, POS: DC/Mainstore)
+ *   maintown_cashier@extremedeptkidz.com (role: cashier, POS: Main Town only)
+ *   warehouse@extremedeptkidz.com     (role: warehouse)
+ *   driver@extremedeptkidz.com        (role: driver)
+ *   viewer@extremedeptkidz.com        (role: viewer)
  *
  * Does not modify your existing admin (e.g. super_admin) user.
  *
@@ -38,9 +39,12 @@ const prisma = new PrismaClient();
 
 const ROLE_PASSWORD = 'EDK-!@#';
 
-const ROLE_USERS: Array<{ email: string; name: string; role: 'manager' | 'cashier' | 'warehouse' | 'driver' | 'viewer' }> = [
+type AssignedPos = 'main_town' | 'store';
+
+const ROLE_USERS: Array<{ email: string; name: string; role: 'manager' | 'cashier' | 'warehouse' | 'driver' | 'viewer'; assignedPos?: AssignedPos }> = [
   { email: 'manager@extremedeptkidz.com', name: 'Manager', role: 'manager' },
-  { email: 'cashier@extremedeptkidz.com', name: 'Cashier', role: 'cashier' },
+  { email: 'cashier@extremedeptkidz.com', name: 'Cashier', role: 'cashier', assignedPos: 'store' },
+  { email: 'maintown_cashier@extremedeptkidz.com', name: 'Maintown Cashier', role: 'cashier', assignedPos: 'main_town' },
   { email: 'warehouse@extremedeptkidz.com', name: 'Warehouse', role: 'warehouse' },
   { email: 'driver@extremedeptkidz.com', name: 'Driver', role: 'driver' },
   { email: 'viewer@extremedeptkidz.com', name: 'Viewer', role: 'viewer' },
@@ -72,12 +76,12 @@ async function main(): Promise<void> {
 
   await ensureEnumValues();
 
-  for (const { email, name, role } of ROLE_USERS) {
+  for (const { email, name, role, assignedPos } of ROLE_USERS) {
     try {
       await prisma.adminUser.upsert({
         where: { email },
-        update: { name, role, passwordHash, isActive: true },
-        create: { email, name, passwordHash, role, isActive: true },
+        update: { name, displayName: name, role, passwordHash, isActive: true, assignedPos: assignedPos ?? undefined },
+        create: { email, name, displayName: name, passwordHash, role, isActive: true, assignedPos: assignedPos ?? undefined },
       });
     } catch (err: unknown) {
       const msg = String((err as { message?: string })?.message ?? '');
