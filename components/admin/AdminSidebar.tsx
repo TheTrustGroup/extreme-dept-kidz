@@ -32,6 +32,7 @@ import {
   PackageSearch,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+import { getRoleDisplayLabel } from "@/lib/auth/rbac";
 import { AdminSidebarText, AdminCaption } from "@/components/admin/AdminTypography";
 import { cn } from "@/lib/utils";
 import { apiUrl } from "@/lib/config/api-base";
@@ -499,8 +500,8 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
                   <AdminSidebarText className="font-semibold text-white truncate">
                     {user.name}
                   </AdminSidebarText>
-                  <AdminCaption className="text-xs text-white/60 truncate capitalize">
-                    {user.role.replace("_", " ")}
+                  <AdminCaption className="text-xs text-white/60 truncate">
+                    {getRoleDisplayLabel(user.role)}
                   </AdminCaption>
                 </div>
               )}

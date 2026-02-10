@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { getRoleDisplayLabel } from "@/lib/auth/rbac";
 
 export interface AdminUser {
   id: string;
@@ -199,8 +200,7 @@ export function AdminUserTable({
     }
   };
 
-  const getRoleLabel = (role: string): string =>
-    role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const getRoleLabel = (role: string): string => getRoleDisplayLabel(role);
 
   if (loading) {
     return (

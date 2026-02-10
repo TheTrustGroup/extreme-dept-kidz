@@ -29,6 +29,25 @@ const ROLE_HIERARCHY: Record<AdminRole, number> = {
   super_admin: 4,
 };
 
+/** Display labels for admin roles (single source of truth for sidebar, header, etc.) */
+export const ROLE_DISPLAY_LABELS: Record<AdminRole, string> = {
+  super_admin: "Super Admin",
+  admin: "Admin",
+  manager: "Manager",
+  cashier: "Cashier",
+  warehouse: "Warehouse",
+  driver: "Driver",
+  viewer: "Viewer",
+};
+
+/**
+ * Get the display label for a role (e.g. "Cashier" for cashier).
+ * Falls back to capitalized role string if unknown.
+ */
+export function getRoleDisplayLabel(role: string): string {
+  return ROLE_DISPLAY_LABELS[role as AdminRole] ?? role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /**
  * Check if user role meets or exceeds required role
  * 
