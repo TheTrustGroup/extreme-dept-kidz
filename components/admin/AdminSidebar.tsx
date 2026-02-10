@@ -41,6 +41,8 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: number;
+  /** Permission required to see this item (and all children unless they have their own). */
+  permission?: string;
   children?: NavItem[];
 }
 
@@ -56,7 +58,7 @@ interface AdminSidebarProps {
  */
 export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Element {
   const pathname = usePathname();
-  const { user } = useAdminAuth();
+  const { user, hasPermission } = useAdminAuth();
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = React.useState(false);
   const [isDesktop, setIsDesktop] = React.useState(false);
@@ -130,37 +132,36 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
   // On desktop (1024px+), use collapsed state; on tablet/mobile, use isOpen
   const sidebarExpanded = isDesktop ? !collapsed : isOpen;
 
-  const navItems: NavItem[] = [
-    {
-      label: "Dashboard",
-      href: "/admin",
-      icon: LayoutDashboard,
-    },
+  const allNavItems: NavItem[] = [
+    { label: "Dashboard", href: "/admin", icon: LayoutDashboard, permission: "view_dashboard" },
     {
       label: "Products",
       href: "/admin/products",
       icon: Package,
       badge: lowStockCount ?? undefined,
+      permission: "view_products",
       children: [
         { label: "All Products", href: "/admin/products", icon: PackageSearch },
-        { label: "Add New", href: "/admin/products/new", icon: Plus },
-        { label: "Categories", href: "/admin/categories", icon: FolderOpen },
+        { label: "Add New", href: "/admin/products/new", icon: Plus, permission: "manage_products" },
+        { label: "Categories", href: "/admin/categories", icon: FolderOpen, permission: "manage_categories" },
       ],
     },
     {
       label: "Inventory",
       href: "/admin/inventory",
       icon: Boxes,
+      permission: "view_inventory",
       children: [
         { label: "Dashboard", href: "/admin/inventory", icon: Boxes },
-        { label: "Forecast", href: "/admin/inventory/forecast", icon: TrendingUp },
-        { label: "Reports", href: "/admin/inventory/reports", icon: FileText },
+        { label: "Forecast", href: "/admin/inventory/forecast", icon: TrendingUp, permission: "manage_inventory" },
+        { label: "Reports", href: "/admin/inventory/reports", icon: FileText, permission: "manage_inventory" },
       ],
     },
     {
       label: "Complete Looks",
       href: "/admin/looks",
       icon: Shirt,
+      permission: "manage_looks",
       children: [
         { label: "All Looks", href: "/admin/looks", icon: Shirt },
         { label: "Create Look", href: "/admin/looks/new", icon: Plus },
@@ -171,6 +172,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       href: "/admin/orders",
       icon: ShoppingBag,
       badge: pendingOrdersCount ?? undefined,
+      permission: "view_orders",
       children: [
         { label: "All Orders", href: "/admin/orders", icon: ShoppingBag },
         { label: "Processing", href: "/admin/orders?status=pending", icon: PackageCheck },
@@ -182,6 +184,7 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       label: "Customers",
       href: "/admin/customers",
       icon: Users,
+      permission: "manage_customers",
       children: [
         { label: "All Customers", href: "/admin/customers", icon: Users },
         { label: "Customer Groups", href: "/admin/customers/groups", icon: Users },
@@ -191,23 +194,36 @@ export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Eleme
       label: "Analytics",
       href: "/admin/analytics",
       icon: BarChart3,
+      permission: "view_analytics",
       children: [
         { label: "Sales", href: "/admin/analytics/sales", icon: TrendingUp },
         { label: "Traffic", href: "/admin/analytics/traffic", icon: Eye },
         { label: "Products", href: "/admin/analytics/products", icon: Package },
       ],
     },
-    {
-      label: "Admin Users",
-      href: "/admin/users",
-      icon: UserCog,
-    },
-    {
-      label: "Settings",
-      href: "/admin/settings",
-      icon: Settings,
-    },
+    { label: "Admin Users", href: "/admin/users", icon: UserCog, permission: "manage_users" },
+    { label: "Settings", href: "/admin/settings", icon: Settings, permission: "manage_settings" },
   ];
+
+  const canSee = (item: NavItem): boolean => {
+    const perm = item.permission;
+    if (!perm) return true;
+    return hasPermission(perm);
+  };
+
+  const filterNavItem = (item: NavItem): NavItem | null => {
+    if (!canSee(item)) return null;
+    if (!item.children || item.children.length === 0) return item;
+    const filteredChildren = item.children
+      .map((child) => filterNavItem(child))
+      .filter((c): c is NavItem => c !== null);
+    if (filteredChildren.length === 0) return null;
+    return { ...item, children: filteredChildren };
+  };
+
+  const navItems: NavItem[] = allNavItems
+    .map((item) => filterNavItem(item))
+    .filter((item): item is NavItem => item !== null);
 
   // Auto-expand parent items when a child is active
   React.useEffect(() => {

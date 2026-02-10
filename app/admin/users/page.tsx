@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { AdminUserTable, type AdminUser } from "@/components/admin/users/AdminUserTable";
 import { AdminUserForm, type AdminUserFormData } from "@/components/admin/users/AdminUserForm";
 import { H1 } from "@/components/ui/typography";
@@ -9,6 +10,7 @@ import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function AdminUsersPage(): JSX.Element {
+  const router = useRouter();
   const [users, setUsers] = React.useState<AdminUser[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [showForm, setShowForm] = React.useState(false);
@@ -16,11 +18,23 @@ export default function AdminUsersPage(): JSX.Element {
   const [formLoading, setFormLoading] = React.useState(false);
   const [deleteConfirm, setDeleteConfirm] = React.useState<AdminUser | null>(null);
   const { showToast } = useToast();
-  const { user: currentUser } = useAdminAuth();
+  const { user: currentUser, hasPermission } = useAdminAuth();
 
   React.useEffect(() => {
-    loadUsers();
-  }, []);
+    if (currentUser && !hasPermission("manage_users")) {
+      router.replace("/admin");
+    }
+  }, [currentUser, hasPermission, router]);
+
+  React.useEffect(() => {
+    if (currentUser && hasPermission("manage_users")) {
+      loadUsers();
+    }
+  }, [currentUser, hasPermission]);
+
+  if (currentUser && !hasPermission("manage_users")) {
+    return <></>;
+  }
 
   async function loadUsers(): Promise<void> {
     setLoading(true);
