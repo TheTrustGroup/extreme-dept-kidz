@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { m } from "framer-motion";
 import {
   Users,
@@ -66,6 +67,7 @@ export function AdminUserTable({
   const [sortField, setSortField] = React.useState<SortField>('createdAt');
   const [sortDirection, setSortDirection] = React.useState<SortDirection>('desc');
   const [showActionsMenu, setShowActionsMenu] = React.useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
 
   // Filter and sort users
   const filteredAndSorted = React.useMemo(() => {
@@ -387,81 +389,24 @@ export function AdminUserTable({
                     <td className="text-charcoal-600">
                       {format(new Date(user.createdAt), 'MMM d, yyyy')}
                     </td>
-                    <td className="text-right">
-                      <div className="relative">
+                    <td className="text-right overflow-visible">
+                      <div className="relative inline-block">
                         <button
-                          onClick={() => setShowActionsMenu(
-                            showActionsMenu === user.id ? null : user.id
-                          )}
+                          type="button"
+                          onClick={(e) => {
+                            if (showActionsMenu === user.id) {
+                              setShowActionsMenu(null);
+                              setMenuPosition(null);
+                            } else {
+                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                              setMenuPosition({ top: rect.bottom + 4, left: rect.right });
+                              setShowActionsMenu(user.id);
+                            }
+                          }}
                           className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
-
-                        {showActionsMenu === user.id && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-10"
-                              onClick={() => setShowActionsMenu(null)}
-                            />
-                            <m.div
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              className="absolute right-0 top-full mt-1 min-w-[11rem] w-max bg-white rounded-lg shadow-lg border border-gray-200 z-20 overflow-hidden"
-                            >
-                              <div className="py-1">
-                                {onEdit && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onEdit(user);
-                                      setShowActionsMenu(null);
-                                    }}
-                                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 whitespace-nowrap min-h-[2.5rem]"
-                                  >
-                                    <Edit className="w-4 h-4 flex-shrink-0" />
-                                    Edit
-                                  </button>
-                                )}
-                                {onToggleStatus && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onToggleStatus(user);
-                                      setShowActionsMenu(null);
-                                    }}
-                                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 whitespace-nowrap min-h-[2.5rem]"
-                                  >
-                                    {user.isActive ? (
-                                      <>
-                                        <UserX className="w-4 h-4 flex-shrink-0" />
-                                        Deactivate
-                                      </>
-                                    ) : (
-                                      <>
-                                        <UserCheck className="w-4 h-4 flex-shrink-0" />
-                                        Activate
-                                      </>
-                                    )}
-                                  </button>
-                                )}
-                                {onDelete && !isCurrentUser && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onDelete(user);
-                                      setShowActionsMenu(null);
-                                    }}
-                                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 whitespace-nowrap min-h-[2.5rem]"
-                                  >
-                                    <Trash2 className="w-4 h-4 flex-shrink-0" />
-                                    Delete
-                                  </button>
-                                )}
-                              </div>
-                            </m.div>
-                          </>
-                        )}
                       </div>
                     </td>
                   </m.tr>
@@ -478,6 +423,94 @@ export function AdminUserTable({
           </div>
         )}
       </div>
+
+      {/* Actions dropdown: render in portal so it is not clipped by table overflow */}
+      {showActionsMenu && menuPosition && typeof document !== "undefined" &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[100]"
+              aria-hidden
+              onClick={() => {
+                setShowActionsMenu(null);
+                setMenuPosition(null);
+              }}
+            />
+            <m.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.12 }}
+              className="fixed z-[101] min-w-[11rem] bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+              style={{
+                top: menuPosition.top,
+                left: menuPosition.left,
+                transform: "translateX(-100%)",
+              }}
+            >
+              {(() => {
+                const menuUser = users.find((u) => u.id === showActionsMenu);
+                if (!menuUser) return null;
+                const isCurrentUser = menuUser.id === currentUserId;
+                return (
+                  <>
+                    {onEdit && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onEdit(menuUser);
+                          setShowActionsMenu(null);
+                          setMenuPosition(null);
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      >
+                        <Edit className="w-4 h-4 flex-shrink-0" />
+                        Edit
+                      </button>
+                    )}
+                    {onToggleStatus && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onToggleStatus(menuUser);
+                          setShowActionsMenu(null);
+                          setMenuPosition(null);
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 border-t border-gray-100"
+                      >
+                        {menuUser.isActive ? (
+                          <>
+                            <UserX className="w-4 h-4 flex-shrink-0" />
+                            Deactivate
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="w-4 h-4 flex-shrink-0" />
+                            Activate
+                          </>
+                        )}
+                      </button>
+                    )}
+                    {onDelete && !isCurrentUser && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onDelete(menuUser);
+                          setShowActionsMenu(null);
+                          setMenuPosition(null);
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100"
+                      >
+                        <Trash2 className="w-4 h-4 flex-shrink-0" />
+                        Delete
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
+            </m.div>
+          </>,
+          document.body
+        )}
     </div>
   );
 }
