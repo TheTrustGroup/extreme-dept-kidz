@@ -69,13 +69,13 @@ const PERMISSIONS: Record<AdminRole, string[]> = {
     "manage_inventory",
     "view_inventory",
   ],
+  // POS only: Inventory, Orders (and minimal dashboard as home)
   cashier: [
     "view_dashboard",
-    "view_products",
+    "view_inventory",
+    "manage_inventory",
     "view_orders",
     "manage_orders",
-    "view_analytics",
-    "view_inventory",
   ],
   warehouse: [
     "view_dashboard",
