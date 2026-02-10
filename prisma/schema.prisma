@@ -307,6 +307,7 @@ model AdminUser {
   displayName              String?     // Optional in schema; DB may have it NOT NULL (set from name when creating)
   passwordHash            String      // Hashed password (never store plain text!)
   role                    AdminRole   @default(viewer)
+  assignedPos             AssignedPos? // POS location this user can access (Main Town or Store)
   isActive                Boolean     @default(true)
   lastLoginAt             DateTime?
   passwordResetToken      String?     // Token for password reset
@@ -320,7 +321,14 @@ model AdminUser {
 
   @@index([email])
   @@index([role])
+  @@index([assignedPos])
   @@index([passwordResetToken])
+}
+
+/// POS/location this user can access (used for Cashier and similar roles).
+enum AssignedPos {
+  main_town
+  store
 }
 
 enum AdminRole {

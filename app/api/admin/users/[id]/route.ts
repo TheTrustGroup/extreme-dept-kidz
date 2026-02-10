@@ -14,6 +14,7 @@ const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   email: z.string().email("Invalid email address").optional(),
   role: z.enum(["super_admin", "admin", "manager", "cashier", "warehouse", "driver", "viewer"]).optional(),
+  assignedPos: z.enum(["main_town", "store"]).optional().nullable(),
   isActive: z.boolean().optional(),
   password: z.string().min(8).optional(),
 });
@@ -50,6 +51,7 @@ export async function GET(
         email: true,
         name: true,
         role: true,
+        assignedPos: true,
         isActive: true,
         lastLoginAt: true,
         createdAt: true,
@@ -118,7 +120,7 @@ export async function PUT(
       return apiValidationError(errors);
     }
 
-    const { name, email, role, isActive, password } = validation.data;
+    const { name, email, role, assignedPos, isActive, password } = validation.data;
 
     // Check if user exists
     const existingUser = await prisma.adminUser.findUnique({
@@ -157,10 +159,11 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (name) updateData.name = name;
     if (email && isSuperAdmin) updateData.email = email.toLowerCase();
     if (role && isSuperAdmin) updateData.role = role;
+    if (assignedPos !== undefined && isSuperAdmin) updateData.assignedPos = assignedPos;
     if (typeof isActive === 'boolean' && isSuperAdmin) updateData.isActive = isActive;
 
     // Track if we need to increment token version (for session invalidation)
@@ -191,18 +194,19 @@ export async function PUT(
       };
     }
 
-    type UserShape = { id: string; email: string; name: string; role: string; isActive: boolean; updatedAt: Date };
+    type UserShape = { id: string; email: string; name: string; role: string; assignedPos: string | null; isActive: boolean; updatedAt: Date };
     let user: UserShape;
 
     try {
       user = await prisma.adminUser.update({
         where: { id },
-        data: updateData,
+        data: updateData as Parameters<typeof prisma.adminUser.update>[0]["data"],
         select: {
           id: true,
           email: true,
           name: true,
           role: true,
+          assignedPos: true,
           isActive: true,
           updatedAt: true,
         },
@@ -219,6 +223,7 @@ export async function PUT(
         if (updateData.name !== undefined) setParts.push(Prisma.sql`"name" = ${updateData.name}`);
         if (updateData.email !== undefined) setParts.push(Prisma.sql`"email" = ${updateData.email}`);
         if (updateData.role !== undefined) setParts.push(Prisma.sql`"role" = ${updateData.role}::"AdminRole_new"`);
+        if (updateData.assignedPos !== undefined) setParts.push(Prisma.sql`"assignedPos" = ${updateData.assignedPos}::"AssignedPos"`);
         if (updateData.isActive !== undefined) setParts.push(Prisma.sql`"isActive" = ${updateData.isActive}`);
         if (updateData.passwordHash !== undefined) setParts.push(Prisma.sql`"passwordHash" = ${updateData.passwordHash}`);
         if (updateData.tokenVersion && typeof updateData.tokenVersion === "object" && "increment" in updateData.tokenVersion) {
@@ -230,7 +235,7 @@ export async function PUT(
         );
         const updated = await prisma.adminUser.findUnique({
           where: { id },
-          select: { id: true, email: true, name: true, role: true, isActive: true, updatedAt: true },
+          select: { id: true, email: true, name: true, role: true, assignedPos: true, isActive: true, updatedAt: true },
         });
         if (!updated) throw new Error("User updated but not found");
         user = updated;
@@ -250,6 +255,9 @@ export async function PUT(
     }
     if (role && role !== existingUser.role) {
       activityDetails.roleChanged = { from: existingUser.role, to: role };
+    }
+    if (assignedPos !== undefined && assignedPos !== existingUser.assignedPos) {
+      activityDetails.assignedPosChanged = { from: existingUser.assignedPos, to: assignedPos };
     }
     if (typeof isActive === 'boolean' && isActive !== existingUser.isActive) {
       activityDetails.statusChanged = { from: existingUser.isActive, to: isActive };

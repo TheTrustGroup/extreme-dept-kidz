@@ -27,6 +27,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         email: true,
         name: true,
         role: true,
+        assignedPos: true,
         isActive: true,
       },
     });
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           email: fullUser.email,
           name: fullUser.name,
           role: fullUser.role,
+          assignedPos: fullUser.assignedPos,
         },
       },
       'User fetched successfully'

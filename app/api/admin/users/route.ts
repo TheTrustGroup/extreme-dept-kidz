@@ -12,12 +12,14 @@ export const dynamic = "force-dynamic";
 
 // Validation schemas (roles must match Prisma AdminRole enum)
 const adminRoleEnum = z.enum(["super_admin", "admin", "manager", "cashier", "warehouse", "driver", "viewer"]);
+const assignedPosEnum = z.enum(["main_town", "store"]);
 
 const createUserSchema = z.object({
   email: z.string().email("Invalid email address"),
   name: z.string().min(1, "Name is required").max(100, "Name too long"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: adminRoleEnum,
+  assignedPos: assignedPosEnum.optional().nullable(),
 });
 
 /**
@@ -71,6 +73,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         email: true,
         name: true,
         role: true,
+        assignedPos: true,
         isActive: true,
         lastLoginAt: true,
         createdAt: true,
@@ -136,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return apiValidationError(errors);
     }
 
-    const { email, name, password, role } = validation.data;
+    const { email, name, password, role, assignedPos } = validation.data;
 
     // Validate password strength
     const passwordValidation = validatePasswordStrength(password);
@@ -159,7 +162,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const passwordHash = await hashPassword(password);
 
     const normalizedEmail = email.toLowerCase();
-    let user: { id: string; email: string; name: string; role: string; isActive: boolean; createdAt: Date };
+    let user: { id: string; email: string; name: string; role: string; assignedPos: string | null; isActive: boolean; createdAt: Date };
 
     let createErr: unknown = null;
     try {
@@ -171,6 +174,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           displayName: name, // DB may have NOT NULL displayName (legacy column)
           passwordHash,
           role,
+          assignedPos: assignedPos ?? undefined,
           isActive: true,
         },
         select: {
@@ -178,6 +182,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           email: true,
           name: true,
           role: true,
+          assignedPos: true,
           isActive: true,
           createdAt: true,
         },
@@ -191,12 +196,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         await prisma.$executeRaw(
           Prisma.sql`
             INSERT INTO "AdminUser" (
-              "id", "email", "name", "displayName", "passwordHash", "role", "isActive",
+              "id", "email", "name", "displayName", "passwordHash", "role", "assignedPos", "isActive",
               "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
               "tokenVersion", "createdAt", "updatedAt"
             ) VALUES (
               gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${name}, ${passwordHash},
-              ${role}::"AdminRole", true,
+              ${role}::"AdminRole", ${assignedPos ?? null}::"AssignedPos", true,
               NULL, NULL, NULL, NULL, 0, NOW(), NOW()
             )
           `
@@ -207,12 +212,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           await prisma.$executeRaw(
             Prisma.sql`
               INSERT INTO "AdminUser" (
-                "id", "email", "name", "displayName", "passwordHash", "role", "isActive",
+                "id", "email", "name", "displayName", "passwordHash", "role", "assignedPos", "isActive",
                 "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
                 "tokenVersion", "createdAt", "updatedAt"
               ) VALUES (
                 gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${name}, ${passwordHash},
-                ${role}::"AdminRole_new", true,
+                ${role}::"AdminRole_new", ${assignedPos ?? null}::"AssignedPos", true,
                 NULL, NULL, NULL, NULL, 0, NOW(), NOW()
               )
             `
@@ -225,7 +230,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (inserted) {
         const created = await prisma.adminUser.findUnique({
           where: { email: normalizedEmail },
-          select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+          select: { id: true, email: true, name: true, role: true, assignedPos: true, isActive: true, createdAt: true },
         });
         if (!created) throw new Error("User created but not found");
         user = created;

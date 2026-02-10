@@ -166,9 +166,10 @@ export default function AdminUsersPage(): JSX.Element {
       const url = isEdit ? apiUrl(`/api/admin/users/${editingUser.id}`) : apiUrl('/api/admin/users');
       const method = isEdit ? 'PUT' : 'POST';
 
-      const body: any = {
+      const body: Record<string, unknown> = {
         name: data.name,
         role: data.role,
+        assignedPos: data.assignedPos,
       };
 
       if (isEdit) {

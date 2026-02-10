@@ -5,7 +5,8 @@ import { m } from "framer-motion";
 import { X, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { AdminRole } from "@/lib/auth/rbac";
+import type { AdminRole, AssignedPos } from "@/lib/auth/rbac";
+import { ASSIGNED_POS_LABELS } from "@/lib/auth/rbac";
 
 // Must match Prisma AdminRole enum and API createUserSchema (app/api/admin/users/route.ts)
 const ADMIN_ROLES: { value: AdminRole; label: string }[] = [
@@ -23,6 +24,7 @@ export interface AdminUserFormData {
   name: string;
   password: string;
   role: AdminRole;
+  assignedPos: AssignedPos | null;
   isActive: boolean;
 }
 
@@ -32,6 +34,7 @@ interface AdminUserFormProps {
     email: string;
     name: string;
     role: AdminRole;
+    assignedPos?: AssignedPos | null;
     isActive: boolean;
   } | null;
   isOpen: boolean;
@@ -52,6 +55,7 @@ export function AdminUserForm({
     name: user?.name || '',
     password: '',
     role: user?.role || 'viewer',
+    assignedPos: user?.assignedPos ?? null,
     isActive: user?.isActive ?? true,
   });
   const [showPassword, setShowPassword] = React.useState(false);
@@ -74,6 +78,7 @@ export function AdminUserForm({
         name: user.name,
         password: '',
         role: user.role,
+        assignedPos: user.assignedPos ?? null,
         isActive: user.isActive,
       });
     } else {
@@ -82,6 +87,7 @@ export function AdminUserForm({
         name: '',
         password: '',
         role: 'viewer',
+        assignedPos: null,
         isActive: true,
       });
     }
@@ -300,6 +306,29 @@ export function AdminUserForm({
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
+          </div>
+
+          {/* Assigned POS */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              POS access
+            </label>
+            <select
+              value={formData.assignedPos ?? ''}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                assignedPos: (e.target.value === '' ? null : e.target.value) as AssignedPos | null,
+              }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white"
+            >
+              <option value="">— None —</option>
+              {(Object.entries(ASSIGNED_POS_LABELS) as [AssignedPos, string][]).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              Which POS this user can access (e.g. Main Town or Store). Leave unset for no restriction.
+            </p>
           </div>
 
           {/* Active Status */}

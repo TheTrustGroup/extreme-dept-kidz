@@ -23,13 +23,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { getRoleDisplayLabel } from "@/lib/auth/rbac";
+import { getRoleDisplayLabel, getAssignedPosDisplayLabel } from "@/lib/auth/rbac";
+import type { AssignedPos } from "@/lib/auth/rbac";
 
 export interface AdminUser {
   id: string;
   email: string;
   name: string;
   role: "super_admin" | "admin" | "manager" | "cashier" | "warehouse" | "driver" | "viewer";
+  assignedPos?: AssignedPos | null;
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
@@ -296,6 +298,9 @@ export function AdminUserTable({
                     {getSortIcon('role')}
                   </button>
                 </th>
+                <th className="text-left font-semibold text-charcoal-700">
+                  POS
+                </th>
                 <th className="text-left">
                   <button
                     onClick={() => handleSort('isActive')}
@@ -365,6 +370,9 @@ export function AdminUserTable({
                       )}>
                         {getRoleLabel(user.role)}
                       </span>
+                    </td>
+                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem] text-charcoal-600 text-sm">
+                      {getAssignedPosDisplayLabel(user.assignedPos)}
                     </td>
                     <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">
                       <span className={cn(

@@ -11,11 +11,14 @@ import { apiUrl } from "@/lib/config/api-base";
 // Must match Prisma AdminRole enum and lib/auth/rbac.ts
 export type AdminRole = "super_admin" | "admin" | "manager" | "cashier" | "warehouse" | "driver" | "viewer";
 
+export type AssignedPos = "main_town" | "store";
+
 export interface AdminUser {
   id: string;
   email: string;
   name: string;
   role: AdminRole;
+  assignedPos?: AssignedPos | null;
 }
 
 interface AdminAuthState {

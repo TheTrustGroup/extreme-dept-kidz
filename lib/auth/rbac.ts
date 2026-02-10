@@ -15,6 +15,20 @@
 
 export type AdminRole = 'super_admin' | 'admin' | 'manager' | 'cashier' | 'warehouse' | 'driver' | 'viewer';
 
+/** POS/location a user can be assigned to (Main Town or Store). */
+export type AssignedPos = 'main_town' | 'store';
+
+/** Display labels for assigned POS. */
+export const ASSIGNED_POS_LABELS: Record<AssignedPos, string> = {
+  main_town: 'Main Town',
+  store: 'Store',
+};
+
+export function getAssignedPosDisplayLabel(pos: AssignedPos | null | undefined): string {
+  if (pos == null) return '—';
+  return ASSIGNED_POS_LABELS[pos] ?? pos;
+}
+
 /**
  * Role hierarchy mapping
  * Higher number = more permissions
