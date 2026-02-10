@@ -171,6 +171,7 @@ export default function AdminUsersPage(): JSX.Element {
       };
 
       if (isEdit) {
+        body.email = data.email;
         if (data.password) {
           body.password = data.password;
         }

@@ -407,53 +407,58 @@ export function AdminUserTable({
                             <m.div
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 py-1"
+                              className="absolute right-0 top-full mt-1 min-w-[11rem] w-max bg-white rounded-lg shadow-lg border border-gray-200 z-20 overflow-hidden"
                             >
-                              {onEdit && (
-                                <button
-                                  onClick={() => {
-                                    onEdit(user);
-                                    setShowActionsMenu(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                  Edit
-                                </button>
-                              )}
-                              {onToggleStatus && (
-                                <button
-                                  onClick={() => {
-                                    onToggleStatus(user);
-                                    setShowActionsMenu(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                >
-                                  {user.isActive ? (
-                                    <>
-                                      <UserX className="w-4 h-4" />
-                                      Deactivate
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserCheck className="w-4 h-4" />
-                                      Activate
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                              {onDelete && !isCurrentUser && (
-                                <button
-                                  onClick={() => {
-                                    onDelete(user);
-                                    setShowActionsMenu(null);
-                                  }}
-                                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                  Delete
-                                </button>
-                              )}
+                              <div className="py-1">
+                                {onEdit && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onEdit(user);
+                                      setShowActionsMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 whitespace-nowrap min-h-[2.5rem]"
+                                  >
+                                    <Edit className="w-4 h-4 flex-shrink-0" />
+                                    Edit
+                                  </button>
+                                )}
+                                {onToggleStatus && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onToggleStatus(user);
+                                      setShowActionsMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 whitespace-nowrap min-h-[2.5rem]"
+                                  >
+                                    {user.isActive ? (
+                                      <>
+                                        <UserX className="w-4 h-4 flex-shrink-0" />
+                                        Deactivate
+                                      </>
+                                    ) : (
+                                      <>
+                                        <UserCheck className="w-4 h-4 flex-shrink-0" />
+                                        Activate
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+                                {onDelete && !isCurrentUser && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onDelete(user);
+                                      setShowActionsMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 whitespace-nowrap min-h-[2.5rem]"
+                                  >
+                                    <Trash2 className="w-4 h-4 flex-shrink-0" />
+                                    Delete
+                                  </button>
+                                )}
+                              </div>
                             </m.div>
                           </>
                         )}

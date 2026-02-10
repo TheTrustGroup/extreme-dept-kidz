@@ -188,11 +188,9 @@ export function AdminUserForm({
               type="email"
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              disabled={isEditMode}
               className={cn(
                 "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white",
-                errors.email ? "border-red-300" : "border-gray-300",
-                isEditMode && "bg-gray-100 cursor-not-allowed"
+                errors.email ? "border-red-300" : "border-gray-300"
               )}
               placeholder="user@example.com"
             />

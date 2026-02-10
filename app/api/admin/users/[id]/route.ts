@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
+  email: z.string().email("Invalid email address").optional(),
   role: z.enum(["super_admin", "admin", "manager", "cashier", "warehouse", "driver", "viewer"]).optional(),
   isActive: z.boolean().optional(),
   password: z.string().min(8).optional(),
@@ -117,7 +118,7 @@ export async function PUT(
       return apiValidationError(errors);
     }
 
-    const { name, role, isActive, password } = validation.data;
+    const { name, email, role, isActive, password } = validation.data;
 
     // Check if user exists
     const existingUser = await prisma.adminUser.findUnique({
@@ -137,9 +138,28 @@ export async function PUT(
       return apiError("Only super admins can change user status", 403);
     }
 
+    if (email !== undefined && !isSuperAdmin) {
+      return apiError("Only super admins can change user email", 403);
+    }
+
+    // If email is being changed, ensure it's not taken by another user
+    if (email) {
+      const normalizedEmail = email.toLowerCase();
+      const taken = await prisma.adminUser.findFirst({
+        where: {
+          email: normalizedEmail,
+          id: { not: id },
+        },
+      });
+      if (taken) {
+        return apiError("User with this email already exists", 409);
+      }
+    }
+
     // Build update data
     const updateData: any = {};
     if (name) updateData.name = name;
+    if (email && isSuperAdmin) updateData.email = email.toLowerCase();
     if (role && isSuperAdmin) updateData.role = role;
     if (typeof isActive === 'boolean' && isSuperAdmin) updateData.isActive = isActive;
 
@@ -197,6 +217,7 @@ export async function PUT(
       try {
         const setParts: Prisma.Sql[] = [];
         if (updateData.name !== undefined) setParts.push(Prisma.sql`"name" = ${updateData.name}`);
+        if (updateData.email !== undefined) setParts.push(Prisma.sql`"email" = ${updateData.email}`);
         if (updateData.role !== undefined) setParts.push(Prisma.sql`"role" = ${updateData.role}::"AdminRole_new"`);
         if (updateData.isActive !== undefined) setParts.push(Prisma.sql`"isActive" = ${updateData.isActive}`);
         if (updateData.passwordHash !== undefined) setParts.push(Prisma.sql`"passwordHash" = ${updateData.passwordHash}`);
@@ -223,6 +244,9 @@ export async function PUT(
     const activityDetails: Record<string, any> = {};
     if (name && name !== existingUser.name) {
       activityDetails.nameChanged = { from: existingUser.name, to: name };
+    }
+    if (email && email.toLowerCase() !== existingUser.email) {
+      activityDetails.emailChanged = { from: existingUser.email, to: email.toLowerCase() };
     }
     if (role && role !== existingUser.role) {
       activityDetails.roleChanged = { from: existingUser.role, to: role };
