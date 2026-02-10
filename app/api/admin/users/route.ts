@@ -183,8 +183,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch (createErr: unknown) {
       const msg = String((createErr as { message?: string })?.message ?? "");
       const code = (createErr as { meta?: { code?: string } })?.meta?.code;
-      // DB column may be AdminRole_new while Prisma uses AdminRole → type mismatch
-      if (msg.includes("AdminRole_new") || msg.includes("42804") || code === "P5010") {
+      const isRoleTypeError =
+        msg.includes("AdminRole") ||
+        msg.includes("42804") ||
+        msg.includes("invalid input value") ||
+        code === "P5010";
+      if (isRoleTypeError) {
+        // Try raw INSERT with AdminRole first, then AdminRole_new (DB may use either)
+        let inserted = false;
         try {
           await prisma.$executeRaw(
             Prisma.sql`
@@ -194,20 +200,41 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 "tokenVersion", "createdAt", "updatedAt"
               ) VALUES (
                 gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
-                ${role}::"AdminRole_new", true,
+                ${role}::"AdminRole", true,
                 NULL, NULL, NULL, NULL, 0, NOW(), NOW()
               )
             `
           );
+          inserted = true;
+        } catch {
+          try {
+            await prisma.$executeRaw(
+              Prisma.sql`
+                INSERT INTO "AdminUser" (
+                  "id", "email", "name", "passwordHash", "role", "isActive",
+                  "lastLoginAt", "passwordResetToken", "passwordResetExpiresAt", "passwordResetRequestedAt",
+                  "tokenVersion", "createdAt", "updatedAt"
+                ) VALUES (
+                  gen_random_uuid()::text, ${normalizedEmail}, ${name}, ${passwordHash},
+                  ${role}::"AdminRole_new", true,
+                  NULL, NULL, NULL, NULL, 0, NOW(), NOW()
+                )
+              `
+            );
+            inserted = true;
+          } catch (rawErr) {
+            logger.error("Failed to create user (raw fallback):", rawErr);
+          }
+        }
+        if (inserted) {
           const created = await prisma.adminUser.findUnique({
             where: { email: normalizedEmail },
             select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
           });
           if (!created) throw new Error("User created but not found");
           user = created;
-        } catch (rawErr) {
-          logger.error("Failed to create user (raw fallback):", rawErr);
-          throw createErr; // rethrow original so existing error handling can run
+        } else {
+          throw createErr;
         }
       } else {
         throw createErr;
@@ -241,20 +268,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     logger.error("Failed to create user:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
+    const prismaCode = error && typeof error === "object" && "code" in error ? (error as { code?: string }).code : undefined;
     const isEnumError =
       message.includes("enum") ||
       message.includes("AdminRole") ||
-      message.includes("invalid input value");
+      message.includes("invalid input value") ||
+      message.includes("42804") ||
+      prismaCode === "P5010" ||
+      /type.*mismatch|invalid.*enum/i.test(message);
     const isUniqueError =
-      (error &&
-        typeof error === "object" &&
-        "code" in error &&
-        (error as { code?: string }).code === "P2002") ||
+      prismaCode === "P2002" ||
       message.toLowerCase().includes("unique") ||
       message.toLowerCase().includes("already exists");
     if (isEnumError && !isUniqueError) {
       return apiError(
-        "Invalid role or database schema out of date. Ensure the migration that adds cashier, warehouse, and driver roles has been applied (prisma/migrations/20250202120000_add_admin_roles_cashier_warehouse_driver).",
+        "Invalid role or database schema out of date. For POS/warehouse users, run the migration that adds cashier and warehouse roles: prisma/migrations/20250202120000_add_admin_roles_cashier_warehouse_driver (or run fix_admin_role_enum_one_time.sql in your DB SQL editor).",
         400,
         message
       );

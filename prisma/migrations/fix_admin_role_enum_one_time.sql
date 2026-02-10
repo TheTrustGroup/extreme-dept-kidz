@@ -42,12 +42,17 @@ BEGIN
   END IF;
 END $$;
 
--- 3) Migrate any columns that use "AdminRole" to "AdminRole_new" (so we can drop AdminRole)
+-- 3) Migrate any columns that use "AdminRole" to "AdminRole_new" ONLY if AdminRole_new exists.
+--    (If only "AdminRole" exists, skip this—step 2 already added the new values to AdminRole.)
 --    e.g. AdminUser_backup.role and any other tables
 DO $$
 DECLARE
   r RECORD;
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'AdminRole_new') THEN
+    RAISE NOTICE 'AdminRole_new does not exist; skipping column migration. AdminRole already has new values from step 2.';
+    RETURN;
+  END IF;
   FOR r IN
     SELECT c.table_schema, c.table_name, c.column_name
     FROM information_schema.columns c
