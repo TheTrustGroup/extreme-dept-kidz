@@ -25,6 +25,7 @@ export function PageTransition({ children }: PageTransitionProps): JSX.Element {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
+        style={{ position: "relative", zIndex: 0 }}
       >
         {children}
       </motion.div>

@@ -7,10 +7,38 @@ import { Container } from "@/components/ui/container";
 import { H2 } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-import { ProductCard } from "@/components/products/ProductCard";
+import ProductCard, { type ProductCardProps } from "@/components/product/ProductCard";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import type { Product } from "@/types";
 import { cn } from "@/lib/utils";
+
+function productToCardProps(p: Product): ProductCardProps {
+  const priceNum = typeof p.price === "number" ? p.price : Number(p.price);
+  const originalNum =
+    p.originalPrice != null
+      ? typeof p.originalPrice === "number"
+        ? p.originalPrice
+        : Number(p.originalPrice)
+      : undefined;
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    price: priceNum / 100,
+    compareAtPrice: originalNum != null ? originalNum / 100 : undefined,
+    currency: "GHS ₵",
+    imageUrl: p.images?.find((img) => img.isPrimary)?.url ?? p.images?.[0]?.url ?? "/placeholder.jpg",
+    imageAlt: p.images?.[0]?.alt ?? p.name,
+    badge: p.tags?.includes("new")
+      ? "new"
+      : !p.inStock
+        ? "sold-out"
+        : originalNum != null && originalNum > priceNum
+          ? "sale"
+          : null,
+    isAvailable: p.inStock ?? true,
+  };
+}
 import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface NewArrivalsSectionProps {
@@ -252,8 +280,8 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
                   className="w-full"
                   role="listitem"
                 >
-                  <ProductCard 
-                    product={product} 
+                  <ProductCard
+                    {...productToCardProps(product)}
                     priority={index < 2} // Prioritize first 2 products for LCP
                   />
                 </m.div>

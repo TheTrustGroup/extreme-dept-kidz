@@ -7,9 +7,37 @@ import { Container } from "@/components/ui/container";
 import { H2, Body } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-import { ProductCard } from "@/components/products/ProductCard";
+import ProductCard, { type ProductCardProps } from "@/components/product/ProductCard";
 import type { Product } from "@/types";
 import { cn } from "@/lib/utils";
+
+function productToCardProps(p: Product): ProductCardProps {
+  const priceNum = typeof p.price === "number" ? p.price : Number(p.price);
+  const originalNum =
+    p.originalPrice != null
+      ? typeof p.originalPrice === "number"
+        ? p.originalPrice
+        : Number(p.originalPrice)
+      : undefined;
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    price: priceNum / 100,
+    compareAtPrice: originalNum != null ? originalNum / 100 : undefined,
+    currency: "GHS ₵",
+    imageUrl: p.images?.find((img) => img.isPrimary)?.url ?? p.images?.[0]?.url ?? "/placeholder.jpg",
+    imageAlt: p.images?.[0]?.alt ?? p.name,
+    badge: p.tags?.includes("new")
+      ? "new"
+      : !p.inStock
+        ? "sold-out"
+        : originalNum != null && originalNum > priceNum
+          ? "sale"
+          : null,
+    isAvailable: p.inStock ?? true,
+  };
+}
 
 interface GirlsCollectionSectionProps {
   products?: Product[];
@@ -72,7 +100,7 @@ export function GirlsCollectionSection({ products }: GirlsCollectionSectionProps
                 transition={{ duration: 0.4, delay: index * 0.05 }}
                 role="listitem"
               >
-                <ProductCard product={product} />
+                <ProductCard {...productToCardProps(product)} />
               </m.div>
             ))}
           </div>

@@ -1,4 +1,4 @@
-import { CompleteLookSlider } from '@/components/products/CompleteLookSlider';
+import { CompleteLookSlider } from '@/components/product/CompleteLookSlider';
 import { completeLooks } from '@/lib/mock-data';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';

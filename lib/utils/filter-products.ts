@@ -5,8 +5,8 @@
  */
 
 import type { Product } from "@/types";
-import type { FilterState } from "@/components/products/FilterSidebar";
-import type { SortOption } from "@/components/products/ProductToolbar";
+import type { FilterState } from "../../components/products/FilterSidebar";
+import type { SortOption } from "../../components/products/ProductToolbar";
 
 /**
  * Filter products based on filter state

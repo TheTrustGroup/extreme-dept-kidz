@@ -157,7 +157,8 @@ function FooterColumn({ id, heading, links }: typeof COLUMNS[number]) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="footer-col__links overflow-hidden md:hidden"
+            className="footer-col__links flex flex-col pb-4 md:hidden"
+            style={{ overflow: 'hidden', margin: 0 }}
           >
             {links.map(l => (
               <li key={l.href}>
@@ -169,7 +170,7 @@ function FooterColumn({ id, heading, links }: typeof COLUMNS[number]) {
       </AnimatePresence>
 
       {/* ── Desktop: always-visible links ────────────────────── */}
-      <ul className="footer-col__links hidden md:block">
+      <ul className="footer-col__links hidden md:flex md:flex-col">
         {links.map(l => (
           <li key={l.href}>
             <Link href={l.href} className="footer-col__link">{l.label}</Link>
@@ -193,12 +194,14 @@ export default function Footer() {
           <div className="footer-grid">
 
             {/* Brand column */}
-            <div className="footer-brand">
+            <div className="footer-brand" style={{ backgroundColor: 'var(--color-navy)' }}>
               <Link href="/" aria-label="Extreme Dept Kidz home">
                 <Image
                   src="/IMG_8640.PNG"
                   alt="Extreme Dept Kidz"
-                  width={110} height={33}
+                  width={110}
+                  height={33}
+                  priority={false}
                   className="h-8 w-auto object-contain brightness-0 invert"
                 />
               </Link>

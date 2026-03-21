@@ -15,12 +15,41 @@ import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { ProductErrorBoundary } from "@/components/errors/ProductErrorBoundary";
 import { NetworkError } from "@/components/errors/NetworkError";
-import { ProductGrid } from "@/components/products/ProductGrid";
+import ProductGrid from "@/components/product/ProductGrid";
+import type { ProductCardProps } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/button";
 import { useOptimisticCart } from "@/lib/hooks/useOptimisticCart";
 import { useOptimisticWishlist } from "@/lib/hooks/useOptimisticWishlist";
 import { useToast } from "@/components/ui/Toast";
 import type { Product } from "@/types";
+
+function productToCardProps(p: Product): ProductCardProps {
+  const priceNum = typeof p.price === "number" ? p.price : Number(p.price);
+  const originalNum =
+    p.originalPrice != null
+      ? typeof p.originalPrice === "number"
+        ? p.originalPrice
+        : Number(p.originalPrice)
+      : undefined;
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    price: priceNum / 100,
+    compareAtPrice: originalNum != null ? originalNum / 100 : undefined,
+    currency: "GHS ₵",
+    imageUrl: p.images?.find((img) => img.isPrimary)?.url ?? p.images?.[0]?.url ?? "/placeholder.jpg",
+    imageAlt: p.images?.[0]?.alt ?? p.name,
+    badge: p.tags?.includes("new")
+      ? "new"
+      : !p.inStock
+        ? "sold-out"
+        : originalNum != null && originalNum > priceNum
+          ? "sale"
+          : null,
+    isAvailable: p.inStock ?? true,
+  };
+}
 
 // ============================================================================
 // Example 1: Product Grid with Loading State
@@ -53,7 +82,7 @@ export function ProductGridWithLoadingExample(): JSX.Element {
       {isLoading ? (
         <ProductGridSkeleton count={8} columns={{ mobile: 2, tablet: 3, desktop: 4 }} />
       ) : (
-        <ProductGrid products={products} isLoading={isLoading} columns={4} />
+        <ProductGrid products={products.map(productToCardProps)} columns={4} />
       )}
     </div>
   );

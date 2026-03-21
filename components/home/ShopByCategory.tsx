@@ -22,8 +22,8 @@ function Panel({ label, sublabel, href, src, alt, objectPosition, delay, inView 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={inView ? { opacity: 1, scale: 1 } : {}}
       transition={{ duration: 0.55, delay, ease: [0.16, 1, 0.3, 1] }}
       className="cat-panel"
       onMouseEnter={() => setHovered(true)}
@@ -31,13 +31,13 @@ function Panel({ label, sublabel, href, src, alt, objectPosition, delay, inView 
     >
       <Link href={href} className="cat-panel__link" aria-label={`Shop ${label}`}>
 
-        {/* Image */}
+        {/* Image fills entire panel via absolute positioning */}
         <div className="cat-panel__img-wrap">
           <Image
             src={src}
             alt={alt}
             fill
-            sizes="(max-width: 767px) 100vw, 50vw"
+            sizes="(max-width: 639px) 100vw, 50vw"
             quality={90}
             className={[
               'cat-panel__img object-cover',
@@ -48,11 +48,10 @@ function Panel({ label, sublabel, href, src, alt, objectPosition, delay, inView 
             style={{ objectPosition }}
             onLoad={() => setLoaded(true)}
           />
-          {/* Gradient — bottom-heavy */}
           <div className="cat-panel__gradient" aria-hidden="true" />
         </div>
 
-        {/* Text overlay */}
+        {/* Text sits over image via z-index in CSS */}
         <div className="cat-panel__content">
           <p className="cat-panel__sublabel">{sublabel}</p>
           <h3 className="cat-panel__title">{label}</h3>
