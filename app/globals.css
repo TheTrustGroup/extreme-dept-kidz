@@ -7,6 +7,7 @@
 @layer base {
   html {
     @apply scroll-smooth;
+    -webkit-overflow-scrolling: touch;
   }
 
   body {
@@ -634,14 +635,46 @@ body {
   max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 @media (min-width: 640px) {
   .container-luxury { padding-left: 32px; padding-right: 32px; }
 }
 @media (min-width: 1024px) {
   .container-luxury { padding-left: 48px; padding-right: 48px; }
+}
+
+/* Header — mobile 56px / desktop 64px below TopBar */
+.header-site {
+  height: 56px;
+}
+@media (min-width: 1024px) {
+  .header-site {
+    height: 64px;
+  }
+}
+@media (max-width: 1023px) {
+  header.header-site {
+    height: 56px !important;
+  }
+}
+.header-spacer {
+  height: calc(var(--topbar-height, 0px) + 56px);
+}
+@media (min-width: 1024px) {
+  .header-spacer {
+    height: calc(var(--topbar-height, 0px) + 64px);
+  }
+}
+
+/* Hero mobile — primary + ghost CTAs */
+.hero-mobile-primary-cta.btn-primary-full {
+  height: 52px;
+}
+.hero-mobile-ghost-cta:hover,
+.hero-mobile-ghost-cta:active {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 /* EDK — Button system (razor-sharp, luxury editorial) */
@@ -1394,6 +1427,14 @@ textarea:focus-visible {
   }
 }
 
+/* Home sections — tighter top on small screens (trust bar → Just Dropped) */
+@media (max-width: 639px) {
+  .section {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+}
+
 /* Last section before footer: refined gap so "Explore the collection" → footer feels balanced */
 .section-before-footer {
   padding-bottom: var(--space-before-footer-mobile);
@@ -1472,6 +1513,11 @@ textarea:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+@media (max-width: 639px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 @media (min-width: 640px) {
   .product-grid {
@@ -1680,6 +1726,22 @@ textarea:focus-visible {
 @media (min-width: 768px) {
   .product-card__price {
     font-size: 16px;
+  }
+}
+
+@media (max-width: 639px) {
+  .product-card__name {
+    font-size: 12px;
+  }
+  .product-card__price {
+    font-size: 14px;
+  }
+  .product-card__info {
+    padding: 10px 10px 12px;
+  }
+  .product-card__mobile-cta {
+    min-height: 44px;
+    height: 44px;
   }
 }
 
@@ -3333,8 +3395,14 @@ aside {
 .trust-bar__inner {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 20px 16px;
+  gap: 10px;
+  padding: 16px 12px;
+}
+@media (min-width: 768px) {
+  .trust-bar__inner {
+    gap: 14px;
+    padding: 20px 16px;
+  }
 }
 @media (min-width: 1024px) {
   .trust-bar__inner {
@@ -3361,19 +3429,29 @@ aside {
 }
 .trust-bar__title {
   font-family: "Montserrat", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(250, 248, 245, 0.9);
   line-height: 1;
 }
+@media (min-width: 768px) {
+  .trust-bar__title {
+    font-size: 11px;
+  }
+}
 .trust-bar__desc {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
   color: rgba(250, 248, 245, 0.45);
   line-height: 1.4;
+}
+@media (min-width: 768px) {
+  .trust-bar__desc {
+    font-size: 12px;
+  }
 }
 
 /* ── Shop by Category panels ──────────────────────────────────── */
@@ -3401,7 +3479,8 @@ aside {
   position: relative;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  background-color: var(--bg-surface-2);
+  background-color: #1a1f2e;
+  width: 100%;
 }
 @media (min-width: 768px) {
   .category-panel__image-wrap {
@@ -3469,12 +3548,20 @@ aside {
 /* ── Newsletter section ───────────────────────────────────────── */
 .newsletter-section {
   background-color: var(--color-navy);
-  padding: 80px 0;
+  margin-bottom: 0;
+  padding-top: 80px;
+  padding-bottom: 80px;
 }
 @media (min-width: 1024px) {
   .newsletter-section {
-    padding: 96px 0;
+    padding-top: 96px;
+    padding-bottom: 96px;
   }
+}
+
+#main-content {
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 .newsletter-inner {
   display: grid;
@@ -4235,7 +4322,7 @@ aside {
 .site-footer {
   background-color: var(--color-navy);
   color: rgba(250, 248, 245, 0.6);
-  margin-top: auto;
+  margin-top: 0;
 }
 
 .site-footer__body {
@@ -4318,6 +4405,7 @@ aside {
   }
 }
 
+/* Base typography only — do not set display here; Tailwind hidden/md:block must win on the desktop <p> */
 .footer-column__heading {
   font-family: "Montserrat", system-ui, sans-serif;
   font-size: 11px;
@@ -4325,8 +4413,13 @@ aside {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(250, 248, 245, 0.9);
-  margin-bottom: 16px;
-  display: block;
+  margin-bottom: 0;
+}
+@media (min-width: 768px) {
+  .footer-column__heading {
+    display: block;
+    margin-bottom: 16px;
+  }
 }
 .footer-column__heading-btn {
   width: 100%;
@@ -4349,11 +4442,12 @@ aside {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 20px;
+  gap: 8px;
+  padding-bottom: 16px;
 }
 @media (min-width: 768px) {
   .footer-column__links {
+    gap: 10px;
     padding-bottom: 0;
   }
 }

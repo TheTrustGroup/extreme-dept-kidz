@@ -12,9 +12,9 @@ export function supabaseLoader({ src, width, quality }: ImageLoaderProps): strin
 }
 
 /**
- * Blur placeholder — cream-colour base64 JPEG for use as blurDataURL.
- * Reduces layout shift and improves perceived LCP.
+ * Legacy hook for blur placeholders — return empty; use skeleton CSS / solid
+ * backgrounds instead to avoid broken blur placeholders in some browsers.
  */
-export function getBlurDataUrl(_width = 10, _height = 13): string {
-  return "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAANAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABQQD/8QAIBAAAgIBBAMAAAAAAAAAAAAAAQIDBAUREiExQf/EABQBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCl1bVqOp2ba3LZlleRuN2TnAAA4AHoBRRQB//Z";
+export function getBlurDataUrl(): string {
+  return "";
 }

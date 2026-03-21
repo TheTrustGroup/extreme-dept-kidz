@@ -50,23 +50,22 @@ const WhatsAppIcon = () => (
 // ─── Payment icons — inline SVG marks ─────────────────────────────
 const MoMoIcon = () => (
   <svg
-    width="40"
-    height="24"
-    viewBox="0 0 40 24"
+    width="44"
+    height="26"
+    viewBox="0 0 44 26"
     aria-label="MTN Mobile Money"
     role="img"
   >
-    <rect width="40" height="24" rx="3" fill="#FFCC00" />
+    <rect width="44" height="26" rx="3" fill="#FFCC00" />
     <text
-      x="20"
-      y="16"
+      x="22"
+      y="17"
       textAnchor="middle"
-      fill="#000"
+      fill="#000000"
       style={{
-        fontSize: "8px",
+        fontSize: "9px",
         fontWeight: 700,
         fontFamily: "Montserrat,sans-serif",
-        letterSpacing: "0.02em",
       }}
     >
       MoMo
@@ -233,7 +232,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="site-footer" aria-label="Site footer">
+    <footer id="footer" className="site-footer" aria-label="Site footer">
       <div className="site-footer__body">
         <div className="container-luxury">
           <div className="footer-grid">

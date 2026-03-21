@@ -102,7 +102,7 @@ export default function Header() {
       {/* ── Main header ─────────────────────────────────────────── */}
       <header
         className={[
-          "fixed left-0 right-0 z-[100]",
+          "header-site fixed left-0 right-0 z-[100]",
           "transition-all duration-250",
           scrolled
             ? "bg-[var(--bg-page)]/95 backdrop-blur-md border-b border-[var(--border-default)]"
@@ -110,7 +110,6 @@ export default function Header() {
         ].join(" ")}
         style={{
           top: "var(--topbar-height, 0px)",
-          height: "64px",
           transition: "top 0.3s ease, background-color 0.25s ease",
         }}
       >
@@ -125,9 +124,9 @@ export default function Header() {
               src="/IMG_8640.PNG"
               alt="Extreme Dept Kidz"
               width={120}
-              height={36}
+              height={28}
               priority
-              className="h-9 w-auto object-contain dark:brightness-0 dark:invert"
+              className="h-7 w-auto object-contain lg:h-9 dark:brightness-0 dark:invert"
             />
           </Link>
 
@@ -353,12 +352,7 @@ export default function Header() {
       </header>
 
       {/* ── Spacer — total height = topbar + header ───────────────── */}
-      <div
-        style={{
-          height: "calc(var(--topbar-height, 0px) + 64px)",
-        }}
-        aria-hidden="true"
-      />
+      <div className="header-spacer" aria-hidden="true" />
 
       {/* ── Mobile nav ──────────────────────────────────────────── */}
       <MobileNav

@@ -6,7 +6,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Eye } from "lucide-react";
 import { useToast } from "@/lib/stores/toast-store";
-import { getBlurDataUrl } from "@/lib/imageLoader";
 
 // ─── Types ────────────────────────────────────────────────────────
 export interface ProductCardProps {
@@ -167,8 +166,6 @@ export default function ProductCard({
               alt={imageAlt ?? name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              placeholder="blur"
-              blurDataURL={getBlurDataUrl()}
               className={[
                 "object-cover object-center",
                 "transition-all duration-500 ease-out",

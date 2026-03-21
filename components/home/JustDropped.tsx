@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import ProductGrid from "@/components/product/ProductGrid";
-import CollectionTabs from "@/components/collection/CollectionTabs";
 import type { ProductCardProps } from "@/components/product/ProductCard";
 
 interface JustDroppedProps {
@@ -54,10 +53,6 @@ export default function JustDropped({
           </svg>
         </Link>
       </motion.div>
-
-      <div className="container-luxury mb-6">
-        <CollectionTabs />
-      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

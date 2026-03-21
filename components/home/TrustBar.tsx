@@ -3,8 +3,8 @@ import Link from "next/link";
 // ─── Custom SVG icons — thin 1.5px stroke, luxury line style ─────
 const TruckIcon = () => (
   <svg
-    width="20"
-    height="20"
+    width="18"
+    height="18"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -21,8 +21,8 @@ const TruckIcon = () => (
 );
 const ReturnIcon = () => (
   <svg
-    width="20"
-    height="20"
+    width="18"
+    height="18"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -37,8 +37,8 @@ const ReturnIcon = () => (
 );
 const ShieldIcon = () => (
   <svg
-    width="20"
-    height="20"
+    width="18"
+    height="18"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -52,8 +52,8 @@ const ShieldIcon = () => (
 );
 const StarIcon = () => (
   <svg
-    width="20"
-    height="20"
+    width="18"
+    height="18"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"

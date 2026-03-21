@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
 
 interface CategoryPanelProps {
   label: string;
@@ -30,6 +30,7 @@ function CategoryPanel({
   objectPosition = "center",
 }: CategoryPanelProps) {
   const [hovered, setHovered] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <motion.div
@@ -46,17 +47,20 @@ function CategoryPanel({
         aria-label={`Shop ${label}`}
       >
         <div className="category-panel__image-wrap">
-          <ImageWithSkeleton
+          <Image
             src={imageSrc}
             alt={imageAlt}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
+            quality={90}
+            priority={false}
             className={[
-              "object-cover",
-              "transition-transform duration-700 ease-out",
+              "object-cover transition-[transform,opacity] duration-700 ease-out",
               hovered ? "scale-[1.04]" : "scale-100",
+              imgLoaded ? "opacity-100" : "opacity-0",
             ].join(" ")}
             style={{ objectPosition }}
+            onLoad={() => setImgLoaded(true)}
           />
           <div
             className="absolute inset-0 pointer-events-none"
@@ -141,7 +145,7 @@ export default function ShopByCategory() {
             align="left"
             delay={0}
             inView={inView}
-            objectPosition="center 20%"
+            objectPosition="center 10%"
           />
           <CategoryPanel
             label="Girls"
@@ -152,7 +156,7 @@ export default function ShopByCategory() {
             align="right"
             delay={0.1}
             inView={inView}
-            objectPosition="center 15%"
+            objectPosition="center 5%"
           />
         </div>
       </div>

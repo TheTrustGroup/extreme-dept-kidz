@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
-import { getBlurDataUrl } from "@/lib/imageLoader";
 import { heroLineReveal, staggerContainer } from "@/lib/motion";
 
 // ─── Scroll cue chevron ───────────────────────────────────────────
@@ -78,6 +78,8 @@ function DesktopScrollCue() {
 // ─── Main component ───────────────────────────────────────────────
 export default function HeroSection() {
   const shouldReduceMotion = useReducedMotion();
+  const [mobileHeroLoaded, setMobileHeroLoaded] = useState(false);
+  const [desktopHeroLoaded, setDesktopHeroLoaded] = useState(false);
 
   // Stagger timing for text lines
   const lineDelay = (i: number) => ({
@@ -95,20 +97,27 @@ export default function HeroSection() {
           ════════════════════════════════════════════════════════════ */}
       <div
         className="relative lg:hidden"
-        style={{ height: "100svh", minHeight: "560px", maxHeight: "900px" }}
+        style={{
+          height: "100svh",
+          minHeight: "560px",
+          maxHeight: "900px",
+          backgroundColor: "var(--color-navy)",
+        }}
       >
         {/* Background image */}
         <div className="absolute inset-0">
-          <ImageWithSkeleton
+          <Image
             src="/Extreme 1.png"
             alt="Young boy in premium streetwear"
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 55vw"
             quality={85}
-            placeholder="blur"
-            blurDataURL={getBlurDataUrl()}
-            className="object-cover object-center hero-image-reveal"
+            className={[
+              "object-cover object-center transition-opacity duration-700 hero-image-reveal",
+              mobileHeroLoaded ? "opacity-100" : "opacity-0",
+            ].join(" ")}
+            onLoad={() => setMobileHeroLoaded(true)}
           />
         </div>
 
@@ -169,7 +178,7 @@ export default function HeroSection() {
               transition={lineDelay(1)}
               className="font-playfair text-white mb-2"
               style={{
-                fontSize: "clamp(38px, 10vw, 60px)",
+                fontSize: "clamp(40px, 11vw, 60px)",
                 lineHeight: "1.05",
                 letterSpacing: "-0.02em",
                 fontWeight: 400,
@@ -182,7 +191,7 @@ export default function HeroSection() {
               transition={lineDelay(2)}
               className="font-playfair text-white/90 mb-6"
               style={{
-                fontSize: "clamp(38px, 10vw, 60px)",
+                fontSize: "clamp(40px, 11vw, 60px)",
                 lineHeight: "1.05",
                 letterSpacing: "-0.02em",
                 fontWeight: 400,
@@ -213,11 +222,13 @@ export default function HeroSection() {
             >
               <Link
                 href="/collections/new-arrivals"
-                className="btn-primary btn-primary-full"
+                className="btn-primary btn-primary-full hero-mobile-primary-cta"
                 style={{
                   background: "var(--color-cream)",
                   color: "var(--color-navy)",
-                  borderColor: "var(--color-cream)",
+                  border: "none",
+                  height: "52px",
+                  letterSpacing: "0.16em",
                 }}
               >
                 Shop New Arrivals
@@ -226,15 +237,25 @@ export default function HeroSection() {
               <div className="flex gap-3">
                 <Link
                   href="/collections/boys"
-                  className="flex-1 h-12 flex items-center justify-center text-label border border-white/30 text-white/80 hover:border-white/60 hover:text-white transition-all duration-200"
-                  style={{ fontSize: "11px", letterSpacing: "0.14em" }}
+                  className="hero-mobile-ghost-cta flex-1 flex items-center justify-center text-label border text-white/90 transition-all duration-200"
+                  style={{
+                    height: "48px",
+                    borderColor: "rgba(255,255,255,0.5)",
+                    fontSize: "11px",
+                    letterSpacing: "0.18em",
+                  }}
                 >
                   Boys
                 </Link>
                 <Link
                   href="/collections/girls"
-                  className="flex-1 h-12 flex items-center justify-center text-label border border-white/30 text-white/80 hover:border-white/60 hover:text-white transition-all duration-200"
-                  style={{ fontSize: "11px", letterSpacing: "0.14em" }}
+                  className="hero-mobile-ghost-cta flex-1 flex items-center justify-center text-label border text-white/90 transition-all duration-200"
+                  style={{
+                    height: "48px",
+                    borderColor: "rgba(255,255,255,0.5)",
+                    fontSize: "11px",
+                    letterSpacing: "0.18em",
+                  }}
                 >
                   Girls
                 </Link>
@@ -420,17 +441,22 @@ export default function HeroSection() {
         </div>
 
         {/* ── Right panel — full-bleed image ────────────────────── */}
-        <div className="relative overflow-hidden">
-          <ImageWithSkeleton
+        <div
+          className="relative overflow-hidden"
+          style={{ backgroundColor: "var(--color-navy)" }}
+        >
+          <Image
             src="/Extreme 1.png"
             alt="Young boy in premium streetwear — Extreme Dept Kidz"
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 55vw"
             quality={85}
-            placeholder="blur"
-            blurDataURL={getBlurDataUrl()}
-            className="object-cover object-center hero-image-reveal"
+            className={[
+              "object-cover object-center transition-opacity duration-700 hero-image-reveal",
+              desktopHeroLoaded ? "opacity-100" : "opacity-0",
+            ].join(" ")}
+            onLoad={() => setDesktopHeroLoaded(true)}
           />
           <div
             className="absolute inset-y-0 left-0 w-24 pointer-events-none hero-desktop-vignette"
