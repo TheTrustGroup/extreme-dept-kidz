@@ -1,61 +1,155 @@
-import * as React from "react";
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
-import { Container } from "@/components/ui/container";
-import { H2 } from "@/components/ui/typography";
-import { getAllCategories } from "@/lib/db";
-import type { Category } from "@/types";
-import { CategoryCard } from "./CategoryCard";
+import { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
+import ImageWithSkeleton from "@/components/ui/ImageWithSkeleton";
 
-/**
- * ShopByCategory Component
- * 
- * Fetches real categories from database and displays them in a grid.
- * Only shows active categories.
- */
-export async function ShopByCategory(): Promise<JSX.Element> {
-  // Fetch categories from database
-  let categories: Category[] = [];
-  try {
-    categories = await getAllCategories();
-    // Filter to only active categories
-    categories = categories.filter(cat => cat.isActive !== false);
-    // Limit to first 4 categories for grid layout
-    categories = categories.slice(0, 4);
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
-    // Fallback to empty array - component will render empty section
-    categories = [];
-  }
+interface CategoryPanelProps {
+  label: string;
+  sublabel: string;
+  href: string;
+  imageSrc: string;
+  imageAlt: string;
+  align: "left" | "right";
+  delay?: number;
+  inView: boolean;
+}
 
-  // Don't render section if no categories
-  if (categories.length === 0) {
-    return <></>;
-  }
+function CategoryPanel({
+  label,
+  sublabel,
+  href,
+  imageSrc,
+  imageAlt,
+  align,
+  delay = 0,
+  inView,
+}: CategoryPanelProps) {
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <section className="py-12 xs:py-14 sm:py-16 md:py-20 lg:py-24 xl:py-32 bg-cream-50">
-      <Container size="lg">
-        <div className="space-y-8 xs:space-y-10 sm:space-y-12 md:space-y-14 lg:space-y-16">
-          {/* Section Title */}
-          <div className="text-center">
-            <H2 className="text-charcoal-900 text-2xl xs:text-3xl sm:text-4xl">Shop by Category</H2>
-          </div>
-
-          {/* Categories Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 xs:gap-4 sm:gap-5 md:gap-6 lg:gap-8">
-            {categories.map((category, index) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                index={index}
-              />
-            ))}
-          </div>
+    <motion.div
+      className="category-panel"
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Link
+        href={href}
+        className="category-panel__link"
+        aria-label={`Shop ${label}`}
+      >
+        <div className="category-panel__image-wrap">
+          <ImageWithSkeleton
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className={[
+              "object-cover object-center",
+              "transition-transform duration-700 ease-out",
+              hovered ? "scale-[1.04]" : "scale-100",
+            ].join(" ")}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(to top,
+                rgba(15,23,42,0.78) 0%,
+                rgba(15,23,42,0.30) 45%,
+                rgba(15,23,42,0.0) 70%)`,
+            }}
+            aria-hidden="true"
+          />
         </div>
-      </Container>
-    </section>
+
+        <div
+          className={[
+            "category-panel__content",
+            align === "right"
+              ? "items-end text-right"
+              : "items-start text-left",
+          ].join(" ")}
+        >
+          <p className="category-panel__sublabel">{sublabel}</p>
+          <h3 className="category-panel__title">{label}</h3>
+          <motion.span
+            className="category-panel__cta"
+            animate={{ x: hovered ? 4 : 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            Shop Now
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </motion.span>
+        </div>
+      </Link>
+    </motion.div>
   );
 }
 
+export default function ShopByCategory() {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px 0px" });
 
+  return (
+    <section
+      ref={ref}
+      className="section-lg"
+      aria-labelledby="category-heading"
+    >
+      <div className="container-luxury">
+        <motion.div
+          className="home-section-header mb-8"
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div>
+            <p className="home-section-eyebrow">Collections</p>
+            <h2 id="category-heading" className="home-section-title">
+              Shop by Category
+            </h2>
+          </div>
+        </motion.div>
+
+        <div className="category-panels-grid">
+          <CategoryPanel
+            label="Boys"
+            sublabel="Ages 2–12"
+            href="/collections/boys"
+            imageSrc="/Extreme 1.png"
+            imageAlt="Boys premium streetwear collection"
+            align="left"
+            delay={0}
+            inView={inView}
+          />
+          <CategoryPanel
+            label="Girls"
+            sublabel="Ages 2–12"
+            href="/collections/girls"
+            imageSrc="/Extreme 1.png"
+            imageAlt="Girls premium streetwear collection"
+            align="right"
+            delay={0.1}
+            inView={inView}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}

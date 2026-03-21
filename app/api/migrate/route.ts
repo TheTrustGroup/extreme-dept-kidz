@@ -21,13 +21,16 @@ const execAsync = promisify(exec);
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request): Promise<NextResponse> {
+  if (process.env.NODE_ENV === 'production' && !process.env.ENABLE_DEBUG_ENDPOINTS) {
+    return NextResponse.json({ error: 'Migrations only available when ENABLE_DEBUG_ENDPOINTS is set' }, { status: 404 });
+  }
   try {
     const body = await request.json();
     const { secret } = body;
 
     // Check for secret key (set this in Vercel environment variables)
     const expectedSecret = process.env.MIGRATION_SECRET || "change-this-secret";
-    
+
     if (secret !== expectedSecret) {
       return NextResponse.json(
         { error: "Unauthorized. Invalid secret key." },
@@ -36,7 +39,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     // Run migrations
-    console.log("Running Prisma migrations...");
     const { stdout, stderr } = await execAsync("npx prisma migrate deploy");
 
     return NextResponse.json({

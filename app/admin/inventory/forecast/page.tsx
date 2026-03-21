@@ -35,7 +35,6 @@ export default function ForecastPage(): JSX.Element {
 
   const handleVariantClick = React.useCallback((variantId: string) => {
     // Navigate to variant detail or open edit modal
-    console.log("Variant clicked:", variantId);
   }, []);
 
   return (

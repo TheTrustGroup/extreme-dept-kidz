@@ -191,7 +191,7 @@ export function CartPreviewDropdown({
                     theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
                   )}
                 >
-                  Your Cart
+                  Your Bag
                 </h3>
                 {items.length > 0 && (
                   <Body

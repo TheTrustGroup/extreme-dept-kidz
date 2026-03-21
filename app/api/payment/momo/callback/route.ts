@@ -11,8 +11,6 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    console.log('🔔 MoMo webhook received:', body);
 
     const { referenceId, status } = body;
 

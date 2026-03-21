@@ -22,7 +22,7 @@ export function ReturnsExchangePageClient(): JSX.Element {
   ];
 
   return (
-    <div className={cn(
+    <main className={cn(
       "min-h-screen transition-colors duration-300",
       theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
     )}>
@@ -375,6 +375,6 @@ export function ReturnsExchangePageClient(): JSX.Element {
           </div>
         </Container>
       </section>
-    </div>
+    </main>
   );
 }

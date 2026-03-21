@@ -41,12 +41,10 @@ export default function InventoryPage(): JSX.Element {
 
   const handleExport = React.useCallback(() => {
     // Export functionality will be implemented
-    console.log("Export inventory data");
   }, []);
 
   const handleItemClick = React.useCallback((productId: string, variantId: string) => {
     // Navigate to product/variant detail or open edit modal
-    console.log("Item clicked:", productId, variantId);
   }, []);
 
   return (

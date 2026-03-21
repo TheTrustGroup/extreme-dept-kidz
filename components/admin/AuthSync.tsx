@@ -44,7 +44,6 @@ export function AuthSync(): JSX.Element {
       refreshAuth().catch((error) => {
         console.error("[AuthSync] Periodic refresh error:", error);
       });
-      console.log("[AuthSync] Periodic auth refresh");
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
@@ -64,7 +63,6 @@ export function AuthSync(): JSX.Element {
             console.error("[AuthSync] Visibility change refresh error:", error);
             // Don't logout on refresh errors - might be transient
           });
-          console.log("[AuthSync] Refreshed on visibility change");
         }
       }
     };

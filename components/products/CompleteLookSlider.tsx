@@ -154,7 +154,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
                         onClick={() => handleAddIndividualItem(items[currentSlide])}
                         className="px-8 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors pointer-events-auto"
                       >
-                        Add to Cart
+                        Add to Bag
                       </button>
                       {items[currentSlide].type === 'individual' && (() => {
                         const item = items[currentSlide];
@@ -283,7 +283,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
               }}
               className="w-full px-4 py-2 border-2 border-black text-black font-semibold rounded-lg hover:bg-black hover:text-white transition-colors"
             >
-              Add to Cart
+              Add to Bag
             </button>
           </div>
         ))}

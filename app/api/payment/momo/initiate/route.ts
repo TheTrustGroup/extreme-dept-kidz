@@ -34,8 +34,6 @@ export async function POST(request: NextRequest) {
 
     const { amount, phoneNumber, orderId, customerName, customerEmail } = validation.data;
 
-    console.log('💳 Initiating payment:', { amount, phoneNumber, orderId });
-
     // Initiate MoMo payment (with retry for transient failures)
     const { retry } = await import('@/lib/utils/retry');
     const result = await retry(

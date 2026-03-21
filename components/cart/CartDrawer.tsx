@@ -1,331 +1,312 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { m, AnimatePresence } from "framer-motion";
-import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
-import type { CartItem as CartItemType } from "@/types";
-import { cn } from "@/lib/utils";
-import { useFormattedPrice } from "@/components/providers/CurrencyProvider";
+import { AnimatePresence, motion } from "framer-motion";
+import { X, ShoppingBag, Minus, Plus, ArrowRight } from "lucide-react";
+import { slideInRight, fadeIn } from "@/lib/motion";
+import { useToast } from "@/lib/stores/toast-store";
+import { FreeShippingBar } from "./FreeShippingBar";
 
-export interface CartDrawerProps {
-  isOpen: boolean;
+// ─── Types ────────────────────────────────────────────────────────
+export interface CartItem {
+  id: string;
+  productId: string;
+  variantId: string;
+  slug: string;
+  name: string;
+  variantName?: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+  imageAlt?: string;
+  currency?: string;
+}
+
+interface CartDrawerProps {
+  open: boolean;
   onClose: () => void;
-  items: CartItemType[];
-  onUpdateQuantity: (id: string, quantity: number) => void;
-  onRemove: (id: string) => void;
+  items: CartItem[];
+  onUpdateQty: (lineId: string, qty: number) => void;
+  onRemove: (lineId: string) => void;
+  onClearCart?: () => void;
 }
 
-/**
- * Luxury cart drawer: slide-in from right, glassmorphism overlay,
- * product list with thumbnails, quantity controls, subtotal, checkout, empty state.
- * Pure UI — all behavior via props.
- */
-export function CartDrawer({
-  isOpen,
-  onClose,
-  items,
-  onUpdateQuantity,
-  onRemove,
-}: CartDrawerProps): JSX.Element {
-  const drawerRef = React.useRef<HTMLDivElement>(null);
-  const formatPrice = useFormattedPrice();
-
-  const subtotal = React.useMemo(
-    () => items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
-    [items]
-  );
-
-  React.useEffect(() => {
-    if (isOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Glassmorphism overlay */}
-          <m.div
-            className="fixed inset-0 z-50 bg-luxury-navy-950/50 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={onClose}
-            aria-hidden
-          />
-
-          {/* Drawer panel — slide-in from right */}
-          <m.div
-            ref={drawerRef}
-            className={cn(
-              "fixed top-0 right-0 bottom-0 z-50 w-full max-w-[100vw] xs:max-w-sm sm:max-w-md",
-              "flex flex-col bg-luxury-cream/95 backdrop-blur-md border-l border-white/20 shadow-2xl"
-            )}
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 32, stiffness: 320 }}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Shopping cart"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between flex-shrink-0 px-4 py-5 sm:px-6 border-b border-luxury-navy-200/30 bg-luxury-cream">
-              <div>
-                <h2
-                  className={cn(
-                    "text-lg sm:text-xl font-semibold text-luxury-navy tracking-tight",
-                    "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
-                  )}
-                >
-                  Your Cart
-                </h2>
-                {items.length > 0 && (
-                  <p className="text-sm text-luxury-navy-600 mt-0.5" aria-live="polite">
-                    {items.length} {items.length === 1 ? "item" : "items"}
-                  </p>
-                )}
-              </div>
-              <m.button
-                type="button"
-                onClick={onClose}
-                className="p-2 text-luxury-navy-600 hover:text-luxury-navy rounded-lg hover:bg-luxury-navy-100/50 focus:outline-none focus:ring-2 focus:ring-luxury-gold focus:ring-offset-2"
-                aria-label="Close cart"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <X className="w-5 h-5" />
-              </m.button>
-            </div>
-
-            {/* Scrollable content */}
-            <div
-              className="flex-1 overflow-y-auto min-h-0"
-              style={{
-                WebkitOverflowScrolling: "touch",
-                contain: "layout style paint",
-              }}
-            >
-              {items.length === 0 ? (
-                <EmptyState onClose={onClose} />
-              ) : (
-                <ul className="p-4 sm:p-6 space-y-4" role="list">
-                  {items.map((item, index) => (
-                    <DrawerCartItem
-                      key={item.id ?? `${item.product.id}-${item.selectedSize}`}
-                      item={item}
-                      index={index}
-                      onUpdateQuantity={onUpdateQuantity}
-                      onRemove={onRemove}
-                    />
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            {/* Footer: subtotal + checkout (only when not empty) */}
-            {items.length > 0 && (
-              <div className="flex-shrink-0 p-4 sm:p-6 border-t border-luxury-navy-200/30 bg-luxury-cream space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-luxury-navy">Subtotal</span>
-                  <span
-                    className={cn(
-                      "text-lg font-semibold text-luxury-navy",
-                      "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
-                    )}
-                  >
-                    {formatPrice(subtotal)}
-                  </span>
-                </div>
-                <Link
-                  href="/checkout"
-                  onClick={onClose}
-                  className={cn(
-                    "block w-full py-3.5 text-center text-sm font-medium tracking-wider uppercase",
-                    "bg-luxury-navy text-white rounded-none",
-                    "hover:bg-luxury-navy/90 transition-colors",
-                    "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
-                  )}
-                >
-                  Checkout
-                </Link>
-              </div>
-            )}
-          </m.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
+// ─── Helpers ──────────────────────────────────────────────────────
+function fmt(n: number, cur = "GHS ₵") {
+  return `${cur}${n.toLocaleString("en-GH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
-function getItemId(item: CartItemType): string {
-  if (item.id) return item.id;
-  return `${item.product.id}-${item.selectedSize}`;
-}
-
-interface DrawerCartItemProps {
-  item: CartItemType;
-  index: number;
-  onUpdateQuantity: (id: string, quantity: number) => void;
-  onRemove: (id: string) => void;
-}
-
-function DrawerCartItem({
+// ─── Single line item ─────────────────────────────────────────────
+function CartLineItem({
   item,
-  index,
-  onUpdateQuantity,
+  onUpdateQty,
   onRemove,
-}: DrawerCartItemProps): JSX.Element {
-  const id = getItemId(item);
-  const formatPrice = useFormattedPrice();
-  const thumb = item.product.images?.[0];
-  const thumbUrl = thumb?.url;
-  const thumbAlt = thumb?.alt ?? item.product.name;
+}: {
+  item: CartItem;
+  onUpdateQty: (lineId: string, qty: number) => void;
+  onRemove: (lineId: string) => void;
+}) {
+  const cur = item.currency ?? "GHS ₵";
 
   return (
-    <m.li
+    <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -12 }}
-      transition={{ duration: 0.25, delay: index * 0.04 }}
-      className={cn(
-        "flex gap-4 p-4 rounded-lg border border-luxury-navy-200/30",
-        "bg-white/60 backdrop-blur-sm hover:border-luxury-gold/30 transition-colors"
-      )}
+      initial={{ opacity: 0, x: 16 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 16, transition: { duration: 0.18 } }}
+      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      className="cart-line-item"
     >
-      {/* Thumbnail */}
       <Link
-        href={`/products/${item.product.slug}`}
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-luxury-navy-100/50 border border-luxury-navy-200/20"
+        href={`/products/${item.slug}`}
+        className="cart-line-item__thumb"
+        tabIndex={-1}
+        aria-hidden="true"
       >
-        {thumbUrl ? (
-          <Image
-            src={thumbUrl}
-            alt={thumbAlt}
-            fill
-            className="object-cover"
-            sizes="96px"
-            quality={80}
-          />
-        ) : (
-          <div className="w-full h-full bg-luxury-navy-200/30 flex items-center justify-center">
-            <ShoppingBag className="w-8 h-8 text-luxury-navy-400" />
-          </div>
-        )}
+        <Image
+          src={item.imageUrl}
+          alt={item.imageAlt ?? item.name}
+          fill
+          sizes="64px"
+          className="object-cover object-center"
+        />
       </Link>
 
-      <div className="flex-1 min-w-0">
-        <Link
-          href={`/products/${item.product.slug}`}
-          onClick={(e) => e.stopPropagation()}
-          className={cn(
-            "block font-medium text-luxury-navy line-clamp-2 hover:text-luxury-gold-700 transition-colors",
-            "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
-          )}
-        >
-          {item.product.name}
-        </Link>
-        <p className="text-xs text-luxury-navy-600 mt-0.5">
-          Size: <span className="font-medium">{item.selectedSize}</span>
-        </p>
-        <p className="text-sm font-semibold text-luxury-gold-700 mt-1">
-          {formatPrice(item.product.price)}
-          {item.quantity > 1 && (
-            <span className="text-luxury-navy-600 font-normal ml-1">
-              × {item.quantity} = {formatPrice(item.product.price * item.quantity)}
-            </span>
-          )}
-        </p>
+      <div className="cart-line-item__info">
+        <div className="cart-line-item__top">
+          <Link href={`/products/${item.slug}`} className="cart-line-item__name">
+            {item.name}
+          </Link>
+          <button
+            className="cart-line-item__remove"
+            onClick={() => onRemove(item.id)}
+            aria-label={`Remove ${item.name} from cart`}
+          >
+            <X size={14} strokeWidth={1.5} />
+          </button>
+        </div>
 
-        {/* Quantity controls */}
-        <div className="flex items-center gap-2 mt-3">
-          <div className="inline-flex items-center border border-luxury-navy-200/40 rounded-md bg-luxury-cream">
+        {item.variantName && (
+          <p className="cart-line-item__variant">{item.variantName}</p>
+        )}
+
+        <div className="cart-line-item__bottom">
+          <div
+            className="cart-qty-stepper"
+            role="group"
+            aria-label={`Quantity for ${item.name}`}
+          >
             <button
-              type="button"
-              onClick={() => onUpdateQuantity(id, item.quantity - 1)}
-              disabled={item.quantity <= 1}
-              className="p-2 text-luxury-navy-700 hover:text-luxury-navy disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cart-qty-btn"
+              onClick={() =>
+                item.quantity > 1
+                  ? onUpdateQty(item.id, item.quantity - 1)
+                  : onRemove(item.id)
+              }
               aria-label="Decrease quantity"
             >
-              <Minus className="w-3.5 h-3.5" />
+              <Minus size={12} strokeWidth={2} />
             </button>
-            <span className="min-w-[2rem] text-center text-sm font-medium text-luxury-navy" aria-live="polite">
+            <span
+              className="cart-qty-value"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               {item.quantity}
             </span>
             <button
-              type="button"
-              onClick={() => onUpdateQuantity(id, item.quantity + 1)}
-              disabled={item.quantity >= 99}
-              className="p-2 text-luxury-navy-700 hover:text-luxury-navy disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cart-qty-btn"
+              onClick={() => onUpdateQty(item.id, item.quantity + 1)}
               aria-label="Increase quantity"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus size={12} strokeWidth={2} />
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => onRemove(id)}
-            className="p-2 text-luxury-navy-500 hover:text-luxury-navy rounded-md hover:bg-luxury-navy-100/50"
-            aria-label="Remove item"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+
+          <span className="cart-line-item__price">
+            {fmt(item.price * item.quantity, cur)}
+          </span>
         </div>
       </div>
-    </m.li>
+    </motion.div>
   );
 }
 
-function EmptyState({ onClose }: { onClose: () => void }): JSX.Element {
+// ─── Empty state ──────────────────────────────────────────────────
+function CartEmpty({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center min-h-[280px]">
-      <m.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="mb-5"
-      >
-        <ShoppingBag className="w-16 h-16 text-luxury-navy-300" aria-hidden />
-      </m.div>
-      <h3
-        className={cn(
-          "text-lg font-semibold text-luxury-navy mb-2",
-          "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
-        )}
-      >
-        Your cart is empty
-      </h3>
-      <p className="text-sm text-luxury-navy-600 mb-6 max-w-xs">
-        Discover our curated collection of premium pieces for young legends.
+    <div className="cart-empty">
+      <ShoppingBag
+        size={36}
+        strokeWidth={1}
+        className="text-[var(--text-tertiary)] mb-4"
+      />
+      <p className="cart-empty__title">Your bag is empty</p>
+      <p className="cart-empty__desc">
+        Add something beautiful for a young legend.
       </p>
-      <Link
-        href="/collections"
+      <button
         onClick={onClose}
-        className={cn(
-          "inline-block px-6 py-3 text-sm font-medium tracking-wider uppercase",
-          "bg-luxury-navy text-white rounded-none hover:bg-luxury-navy/90 transition-colors",
-          "font-[family-name:var(--font-playfair),'Playfair_Display',Georgia,serif]"
-        )}
+        className="btn-primary mt-6"
+        style={{ height: "48px", padding: "0 28px", fontSize: "11px" }}
       >
-        Shop Collections
-      </Link>
+        Start Shopping
+      </button>
     </div>
+  );
+}
+
+// ─── Main drawer ──────────────────────────────────────────────────
+export default function CartDrawer({
+  open,
+  onClose,
+  items,
+  onUpdateQty,
+  onRemove,
+}: CartDrawerProps) {
+  const { info } = useToast();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+  const handleRemove = (lineId: string) => {
+    const item = items.find((i) => i.id === lineId);
+    onRemove(lineId);
+    if (item) info("Removed from bag", item.name);
+  };
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const currency = items[0]?.currency ?? "GHS ₵";
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => closeRef.current?.focus(), 100);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            key="backdrop"
+            variants={fadeIn}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="fixed inset-0 z-[195] bg-[var(--color-navy)]/50 backdrop-blur-sm"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+
+          <motion.div
+            key="drawer"
+            variants={slideInRight}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="cart-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Shopping bag, ${itemCount} ${itemCount === 1 ? "item" : "items"}`}
+          >
+            <div className="cart-drawer__header">
+              <div className="flex items-center gap-2">
+                <h2 className="cart-drawer__title">Your Bag</h2>
+                {itemCount > 0 && (
+                  <span className="cart-drawer__count">{itemCount}</span>
+                )}
+              </div>
+              <button
+                ref={closeRef}
+                className="icon-btn"
+                onClick={onClose}
+                aria-label="Close bag"
+              >
+                <X size={18} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {items.length === 0 ? (
+              <CartEmpty onClose={onClose} />
+            ) : (
+              <>
+                <div className="cart-drawer__items">
+                  <AnimatePresence initial={false}>
+                    {items.map((item) => (
+                      <CartLineItem
+                        key={item.id}
+                        item={item}
+                        onUpdateQty={onUpdateQty}
+                        onRemove={handleRemove}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                <div className="cart-drawer__footer">
+                  <FreeShippingBar subtotal={subtotal} currency={currency} />
+
+                  <div className="cart-summary">
+                    <div className="cart-summary__row">
+                      <span className="cart-summary__label">Subtotal</span>
+                      <span className="cart-summary__value">
+                        {fmt(subtotal, currency)}
+                      </span>
+                    </div>
+                    <div className="cart-summary__row">
+                      <span className="cart-summary__label cart-summary__label--muted">
+                        Shipping
+                      </span>
+                      <span className="cart-summary__value cart-summary__value--muted">
+                        Calculated at checkout
+                      </span>
+                    </div>
+                    <div className="cart-summary__row cart-summary__row--total">
+                      <span className="cart-summary__total-label">Total</span>
+                      <span className="cart-summary__total-value">
+                        {fmt(subtotal, currency)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/checkout"
+                    onClick={onClose}
+                    className="cart-checkout-btn"
+                    aria-label="Proceed to checkout"
+                  >
+                    Checkout
+                    <ArrowRight size={15} strokeWidth={1.5} />
+                  </Link>
+
+                  <button onClick={onClose} className="cart-continue-btn">
+                    Continue Shopping
+                  </button>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

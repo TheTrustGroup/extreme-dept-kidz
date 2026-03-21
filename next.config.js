@@ -18,6 +18,12 @@ const nextConfig = {
       { source: '/admin/api/products/:path*', destination: '/api/admin/products/:path*' },
     ];
   },
+
+  async redirects() {
+    return [
+      { source: '/shop', destination: '/collections/all', permanent: true },
+    ];
+  },
   
   // TypeScript configuration
   typescript: {
@@ -28,6 +34,9 @@ const nextConfig = {
   // NEXT/IMAGE STRICT CONFIG: Optimized image configuration
   images: {
     domains: ['localhost', 'extremedeptkidz.com'],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [375, 430, 640, 768, 1024, 1280, 1920],
+    imageSizes: [16, 32, 48, 64, 80, 96, 128, 256],
     remotePatterns: [
       {
         protocol: "https",
@@ -36,13 +45,20 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.in",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
         hostname: "**",
       },
     ],
-    // NEXT/IMAGE STRICT CONFIG: Modern formats only
-    formats: ['image/avif', 'image/webp'],
-    // NEXT/IMAGE STRICT CONFIG: 24-hour cache TTL for optimal balance
-    minimumCacheTTL: 86400,
+    minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days for product images
     // NEXT/IMAGE STRICT CONFIG: Disable SVG for security
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -102,6 +118,10 @@ const nextConfig = {
   
   // Webpack Optimizations - CRITICAL: Enhanced bundle optimization
   webpack: (config, { isServer, dev }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      lodash: 'lodash-es',
+    };
     // Optimize bundle size
     if (!isServer) {
       config.resolve.fallback = {

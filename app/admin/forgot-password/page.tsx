@@ -54,8 +54,6 @@ export default function ForgotPasswordPage(): JSX.Element {
 
       const data = await response.json();
 
-      console.log('[ForgotPassword] API Response:', { status: response.status, data });
-
       if (!response.ok || !data.success) {
         const errorMessage = data.error || data.message || data.details || "Failed to send reset email. Please try again.";
         console.error('[ForgotPassword] API Error:', errorMessage);
@@ -69,7 +67,7 @@ export default function ForgotPasswordPage(): JSX.Element {
       setLoading(false);
 
       // In development, show token if provided
-      if (data.data?.token) {
+      if (process.env.NODE_ENV === 'development' && data.data?.token) {
         console.log('[ForgotPassword] Development mode - Reset token:', data.data.token);
         console.log('[ForgotPassword] Reset URL:', data.data.resetUrl);
         console.log('[ForgotPassword] Full response:', data);

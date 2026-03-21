@@ -1,223 +1,363 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { m } from "framer-motion";
-import { Search, ShoppingBag, Menu } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { MobileNav } from "./MobileNav";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
+import { AnimatePresence, motion } from "framer-motion";
+import { ShoppingBag, Search, User, Sun, Moon, ChevronDown, Menu, X } from "lucide-react";
+import { dropdownIn } from "@/lib/motion";
+import { useScrolled } from "@/lib/useScrolled";
 import { useCartStore } from "@/lib/stores/cart-store";
+import MobileNav from "./MobileNav";
 
-const SearchOverlay = React.lazy(() => import("./SearchOverlay").then((m) => ({ default: m.SearchOverlay })));
-const CartPreviewDropdown = React.lazy(() =>
-  import("@/components/cart/CartPreviewDropdown").then((m) => ({ default: m.CartPreviewDropdown }))
-);
-
-interface HeaderProps {
-  cartItemCount?: number;
+// ─── Types ────────────────────────────────────────────────────────
+interface NavItem {
+  label: string;
+  href?: string;
+  children?: { label: string; href: string }[];
 }
 
-/** PHASE 4 — Single row: [ Logo ] [ Shop | New | Collections ] [ Search ] [ Cart ]. No duplicates. */
-export function Header({ cartItemCount: _initialCartCount = 0 }: HeaderProps): JSX.Element {
-  const { theme } = useTheme();
-  const [isScrolled, setIsScrolled] = React.useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const [isMobile, setIsMobile] = React.useState(typeof window !== "undefined" && window.innerWidth < 768);
-  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
-  const [isCartPreviewOpen, setIsCartPreviewOpen] = React.useState(false);
-  const { open: openCart } = useCartDrawer();
-  const cartItemCount = useCartStore((state) => state.getItemCount());
-  const cartIconRef = React.useRef<HTMLButtonElement>(null);
+const NAV_ITEMS: NavItem[] = [
+  { label: "Shop", href: "/collections/all" },
+  {
+    label: "Collections",
+    children: [
+      { label: "All", href: "/collections/all" },
+      { label: "Boys", href: "/collections/boys" },
+      { label: "Girls", href: "/collections/girls" },
+      { label: "New Arrivals", href: "/collections/new-arrivals" },
+    ],
+  },
+  { label: "New", href: "/collections/new-arrivals" },
+];
 
-  React.useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setIsSearchOpen(true);
-        setIsMobileMenuOpen(false);
-      }
-    };
-    handleResize();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+// ─── Theme toggle hook ─────────────────────────────────────────────
+function useTheme() {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
+  const toggle = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
+    localStorage.setItem("theme", next ? "dark" : "light");
+  };
+
+  return { isDark, toggle };
+}
+
+// ─── Component ────────────────────────────────────────────────────
+export default function Header() {
   const pathname = usePathname();
-  const isDark = theme === "dark";
-  const navLinks = [
-    { label: "Shop", href: "/collections/all" },
-    { label: "New", href: "/collections/new-arrivals" },
-    { label: "Collections", href: "/collections" },
-  ];
+  const items = useCartStore((s) => s.items);
+  const cartCount = items.reduce((n, i) => n + i.quantity, 0);
+  const { isDark, toggle } = useTheme();
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const scrolled = useScrolled(8);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Close mobile nav on route change
+  useEffect(() => {
+    setMobileOpen(false);
+    setOpenDropdown(null);
+  }, [pathname]);
+
+  // Focus search input when opened
+  useEffect(() => {
+    if (searchOpen) searchRef.current?.focus();
+  }, [searchOpen]);
+
+  // Lock body scroll when mobile nav open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  const isActive = (href?: string) =>
+    href ? pathname === href || pathname.startsWith(href + "/") : false;
 
   return (
     <>
-      <m.header
-        className={cn(
-          "header glass sticky top-0 left-0 right-0 z-[1000] border-b"
-        )}
-        initial={false}
-        animate={{
-          height: isScrolled ? (isMobile ? "3.25rem" : "4rem") : isMobile ? "3.5rem" : "4.5rem",
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+      {/* ── Main header ─────────────────────────────────────────── */}
+      <header
+        className={[
+          "fixed top-0 left-0 right-0 z-header",
+          "transition-all duration-250",
+          scrolled
+            ? "bg-[var(--bg-page)]/95 backdrop-blur-md border-b border-[var(--border-default)]"
+            : "bg-[var(--bg-page)]",
+        ].join(" ")}
+        style={{ height: "64px" }}
       >
-        <div className="h-full max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center" aria-label="Extreme Dept Kidz Home">
-              <OptimizedImage
-                src="/IMG_8640.PNG"
-                alt="EXTREME DEPT KIDZ"
-                width={1080}
-                height={720}
-                variant="custom"
-                customSizes="(max-width: 768px) 100px, 120px"
-                isLCP={false}
-                useIntersectionObserver={false}
-                enablePrefetch={false}
-                quality={75}
-                className={cn(
-                  "h-10 md:h-12 w-auto object-contain max-w-[100px] md:max-w-[120px]",
-                  isDark && "brightness-0 invert"
-                )}
-              />
-            </Link>
-          </div>
+        <div className="container-luxury h-full flex items-center justify-between gap-6">
+          {/* ── Logo ───────────────────────────────────────────── */}
+          <Link
+            href="/"
+            className="flex-shrink-0 flex items-center"
+            aria-label="Extreme Dept Kidz home"
+          >
+            <Image
+              src="/IMG_8640.PNG"
+              alt="Extreme Dept Kidz"
+              width={120}
+              height={36}
+              priority
+              className="h-9 w-auto object-contain dark:brightness-0 dark:invert"
+            />
+          </Link>
 
-          {/* Center: Nav — Shop | New | Collections (desktop only) */}
+          {/* ── Desktop nav ────────────────────────────────────── */}
           <nav
-            id="main-navigation"
-            className="hidden md:flex items-center gap-6 lg:gap-8"
+            className="hidden lg:flex items-center gap-1"
+            ref={dropdownRef}
             aria-label="Main navigation"
           >
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={cn(
-                  "text-[var(--text-sm)] font-medium uppercase tracking-wide transition-colors",
-                  pathname === link.href
-                    ? isDark
-                      ? "text-accent-primary"
-                      : "text-navy-900"
-                    : isDark
-                      ? "text-white/90 hover:text-white"
-                      : "text-charcoal-700 hover:text-charcoal-900"
+            {NAV_ITEMS.map((item) => (
+              <div key={item.label} className="relative">
+                {item.children ? (
+                  <button
+                    className={[
+                      "header-nav-link flex items-center gap-1",
+                      openDropdown === item.label ? "text-[var(--color-navy)]" : "",
+                    ].join(" ")}
+                    onClick={() =>
+                      setOpenDropdown(openDropdown === item.label ? null : item.label)
+                    }
+                    aria-expanded={openDropdown === item.label}
+                    aria-haspopup="true"
+                  >
+                    {item.label}
+                    <motion.span
+                      animate={{ rotate: openDropdown === item.label ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center"
+                    >
+                      <ChevronDown size={13} strokeWidth={2} />
+                    </motion.span>
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href!}
+                    className={[
+                      "header-nav-link",
+                      isActive(item.href) ? "header-nav-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Link>
                 )}
-                aria-current={pathname === link.href ? "page" : undefined}
-              >
-                {link.label}
-              </Link>
+
+                <AnimatePresence>
+                  {item.children && openDropdown === item.label && (
+                    <motion.div
+                      variants={dropdownIn}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 origin-top"
+                      style={{ zIndex: 200 }}
+                    >
+                      <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-card shadow-dropdown overflow-hidden py-1">
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className={[
+                              "block px-4 py-3 text-label-lg",
+                              "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
+                              "hover:bg-[var(--bg-surface-2)]",
+                              "transition-colors duration-150",
+                              isActive(child.href)
+                                ? "text-[var(--color-navy)] font-semibold"
+                                : "",
+                            ].join(" ")}
+                            onClick={() => setOpenDropdown(null)}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ))}
           </nav>
 
-          {/* Right: Search + Cart (single row) */}
-          <div className="flex items-center gap-1 md:gap-2">
-            <IconButton
-              aria-label="Search products"
-              onClick={() => setIsSearchOpen(true)}
-              title="Search (⌘K)"
-            >
-              <Search className="w-5 h-5" />
-            </IconButton>
-            <IconButton
-              ref={cartIconRef}
-              aria-label="Cart"
-              onClick={() => setIsCartPreviewOpen(!isCartPreviewOpen)}
-              aria-expanded={isCartPreviewOpen}
-            >
-              <ShoppingBag className="w-5 h-5" />
-              {cartItemCount > 0 && (
-                <span
-                  className={cn(
-                    "absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold",
-                    isDark ? "bg-accent-primary text-dark-bg-primary" : "bg-navy-900 text-cream-50"
-                  )}
-                >
-                  {cartItemCount > 9 ? "9+" : cartItemCount}
-                </span>
-              )}
-            </IconButton>
+          {/* ── Right actions ───────────────────────────────────── */}
+          <div className="flex items-center gap-1">
+            {/* Search — expands inline on desktop */}
+            <div className="hidden lg:flex items-center relative">
+              <AnimatePresence>
+                {searchOpen && (
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{
+                      width: 220,
+                      opacity: 1,
+                      transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
+                    }}
+                    exit={{ width: 0, opacity: 0, transition: { duration: 0.2 } }}
+                    className="overflow-hidden mr-2"
+                  >
+                    <input
+                      ref={searchRef}
+                      type="search"
+                      placeholder="Search products…"
+                      className="w-full h-9 px-3 text-body-sm bg-[var(--bg-surface-2)] border border-[var(--border-default)] rounded-input outline-none focus:border-[var(--color-gold)] transition-colors"
+                      onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                className="icon-btn"
+                onClick={() => setSearchOpen(!searchOpen)}
+                aria-label={searchOpen ? "Close search" : "Open search"}
+              >
+                {searchOpen ? (
+                  <X size={18} strokeWidth={1.5} />
+                ) : (
+                  <Search size={18} strokeWidth={1.5} />
+                )}
+              </button>
+            </div>
 
-            {/* Mobile: Menu */}
-            <button
-              type="button"
-              className={cn(
-                "md:hidden flex items-center justify-center w-11 h-11 rounded-lg transition-colors",
-                isDark ? "text-white hover:bg-white/10" : "text-charcoal-900 hover:bg-cream-200/60"
-              )}
-              aria-label="Toggle menu"
-              aria-expanded={isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            {/* Account */}
+            <Link
+              href="/account"
+              className="icon-btn hidden lg:flex"
+              aria-label="Account"
             >
-              <Menu className="w-5 h-5" />
+              <User size={18} strokeWidth={1.5} />
+            </Link>
+
+            {/* Theme toggle */}
+            <button
+              className="icon-btn hidden lg:flex"
+              onClick={toggle}
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {isDark ? (
+                  <motion.span
+                    key="sun"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center"
+                  >
+                    <Sun size={18} strokeWidth={1.5} />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="moon"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center"
+                  >
+                    <Moon size={18} strokeWidth={1.5} />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+
+            {/* Cart */}
+            <Link
+              href="/cart"
+              className="icon-btn relative"
+              aria-label={
+                cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"
+              }
+            >
+              <ShoppingBag size={18} strokeWidth={1.5} />
+              <AnimatePresence>
+                {cartCount > 0 && (
+                  <motion.span
+                    key="badge"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-pill bg-[var(--color-gold)] text-[var(--color-navy)] text-[10px] font-bold flex items-center justify-center leading-none"
+                  >
+                    {cartCount > 9 ? "9+" : cartCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Link>
+
+            {/* Mobile menu button */}
+            <button
+              className="icon-btn lg:hidden ml-1"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {mobileOpen ? (
+                  <motion.span
+                    key="x"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center"
+                  >
+                    <X size={20} strokeWidth={1.5} />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center"
+                  >
+                    <Menu size={20} strokeWidth={1.5} />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
           </div>
         </div>
-      </m.header>
+      </header>
 
+      {/* ── Spacer — pushes page content below fixed header ─────── */}
+      <div style={{ height: "64px" }} aria-hidden="true" />
+
+      {/* ── Mobile nav ──────────────────────────────────────────── */}
       <MobileNav
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        cartItemCount={cartItemCount}
-        onSearchOpen={() => {
-          setIsMobileMenuOpen(false);
-          setIsSearchOpen(true);
-        }}
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        isDark={isDark}
+        onThemeToggle={toggle}
       />
-
-      {isSearchOpen && (
-        <React.Suspense fallback={null}>
-          <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-        </React.Suspense>
-      )}
-
-      {isCartPreviewOpen && (
-        <React.Suspense fallback={null}>
-          <CartPreviewDropdown
-            isOpen={isCartPreviewOpen}
-            onClose={() => setIsCartPreviewOpen(false)}
-            triggerRef={cartIconRef}
-          />
-        </React.Suspense>
-      )}
     </>
   );
 }
-
-const IconButton = React.forwardRef<
-  HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }
->(({ className, children, ...props }, ref) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  return (
-    <button
-      type="button"
-      ref={ref}
-      className={cn(
-        "relative flex items-center justify-center w-11 h-11 rounded-lg transition-colors",
-        isDark ? "text-white hover:bg-white/10" : "text-charcoal-700 hover:bg-cream-200/60 hover:text-charcoal-900",
-        "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-});
-IconButton.displayName = "IconButton";

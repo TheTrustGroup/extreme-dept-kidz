@@ -103,7 +103,7 @@ export function ButtonWithLoadingExample(): JSX.Element {
 }
 
 // ============================================================================
-// Example 3: Optimistic Add to Cart
+// Example 3: Optimistic Add to Bag
 // ============================================================================
 export function OptimisticCartExample({ product }: { product: Product }): JSX.Element {
   const [isAdding, setIsAdding] = React.useState(false);
@@ -135,7 +135,7 @@ export function OptimisticCartExample({ product }: { product: Product }): JSX.El
       loading={isAdding}
       disabled={isAdding}
     >
-      Add to Cart
+      Add to Bag
     </Button>
   );
 }
@@ -174,7 +174,7 @@ export function ImageWithErrorFallbackExample(): JSX.Element {
         fill
         showPulse={true}
         onError={() => {
-          console.log("Image failed to load");
+          // Image failed to load (handled silently in example)
         }}
       />
     </div>

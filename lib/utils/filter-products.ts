@@ -72,9 +72,10 @@ export function filterProducts(
 }
 
 /**
- * Get product age range from metadata or infer from product data
+ * Get product age range from metadata or infer from product data.
+ * Exported for collection toolbar filter (e.g. 0-2, 2-4, 4-6, 6-8, 8-10, 10-12).
  */
-function getProductAgeRange(product: Product): string | null {
+export function getProductAgeRange(product: Product): string | null {
   // Check metadata first
   if (product.metadata && typeof product.metadata.ageRange === "string") {
     return product.metadata.ageRange;

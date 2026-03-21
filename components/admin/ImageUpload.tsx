@@ -93,25 +93,11 @@ export function ImageUpload({
 
     // Authentication is handled by httpOnly cookie sent automatically with credentials: 'include'
     // No need to check token in store - middleware validates cookie on server
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[ImageUpload] Starting upload - cookie will be sent automatically');
-    }
-
     setUploading(true);
 
     try {
       
-      const uploadPromises = Array.from(files).map(async (file, index) => {
-        // Enhanced logging for debugging
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[ImageUpload] Processing file ${index + 1}/${files.length}:`, {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-          });
-        }
-        
+      const uploadPromises = Array.from(files).map(async (file) => {
         // Validate file type - accept all image types (JPEG, PNG, WebP, HEIC, etc.)
         // Some mobile browsers don't set MIME type correctly, so we're lenient
         const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
@@ -125,15 +111,6 @@ export function ImageUpload({
         // If no MIME type and no valid extension, reject
         if (!hasValidMimeType && !hasValidExtension) {
           throw new Error(`${file.name} is not a supported image file. Supported formats: JPEG, PNG, WebP, GIF, HEIC`);
-        }
-        
-        // Log validation result
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[ImageUpload] File validation passed for ${file.name}:`, {
-            hasValidMimeType,
-            hasValidExtension,
-            mimeType: file.type || '(not set)',
-          });
         }
 
         // Validate file size (max 5MB)
@@ -150,10 +127,6 @@ export function ImageUpload({
           // Don't set Content-Type - browser will set it with boundary for FormData
         };
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[ImageUpload] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)}KB)`);
-        }
-        
         let response: Response | null = null;
         let retryCount = 0;
         const maxRetries = 2;
@@ -206,33 +179,18 @@ export function ImageUpload({
           throw new Error("Failed to upload: No response received after retries");
         }
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[ImageUpload] Upload response status:', response.status, response.statusText);
-        }
-        
         // Parse response body - clone first to avoid reading body twice
         const responseClone = response.clone();
         let responseData: any;
         try {
           const contentType = response.headers.get('content-type') || '';
           
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[ImageUpload] Parsing response for ${file.name}:`, {
-              status: response.status,
-              contentType,
-              ok: response.ok,
-            });
-          }
-          
           if (contentType.includes('application/json')) {
             responseData = await response.json();
           } else {
             // Try to parse as JSON even if content-type is not set
             const responseText = await response.text();
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[ImageUpload] Response body (text, first 500 chars):', responseText.substring(0, 500));
-            }
-            
+
             if (!responseText || responseText.trim().length === 0) {
               throw new Error("Server returned empty response. Please try again.");
             }
@@ -250,10 +208,7 @@ export function ImageUpload({
               throw new Error("Server returned invalid JSON response. Please try again.");
             }
           }
-          
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`[ImageUpload] Response data for ${file.name}:`, responseData);
-          }
+
         } catch (parseError) {
           if (process.env.NODE_ENV === 'development') {
             console.error('[ImageUpload] Failed to parse response:', parseError);
@@ -303,10 +258,6 @@ export function ImageUpload({
             throw new Error(errorMessage || `Upload failed: ${response.statusText}`);
           }
         }
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[ImageUpload] ✅ Upload successful, response:', responseData);
-        }
 
         // Ensure we get a valid URL string - accept multiple response shapes (API, proxy, or wrapped)
         const rawUrl =
@@ -342,10 +293,7 @@ export function ImageUpload({
           console.warn('[ImageUpload] URL format may be invalid:', urlString);
           // Don't throw, just warn - some servers might return non-standard URLs
         }
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[ImageUpload] ✅ Valid URL received:', urlString);
-        }
+
         return urlString;
       });
 
@@ -380,9 +328,6 @@ export function ImageUpload({
             title: "Images Uploaded",
             message: `Successfully uploaded ${validUrls.length} image${validUrls.length > 1 ? 's' : ''}`,
           });
-        }
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[ImageUpload] ✅ Added', validUrls.length, 'image(s):', validUrls);
         }
       }
 

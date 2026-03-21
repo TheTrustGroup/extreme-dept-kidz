@@ -1,49 +1,50 @@
 "use client";
 
-import Link from "next/link";
-import { HeadphonesIcon } from "lucide-react";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
 
-export function TopBar(): JSX.Element {
-  const { theme } = useTheme();
+const MESSAGES = [
+  "Free shipping on orders over GHS ₵500 · Ghana-wide delivery",
+  "New arrivals just dropped — Boys & Girls collections",
+  "30-day easy returns · Secure checkout",
+];
+
+export default function TopBar() {
+  const [dismissed, setDismissed] = useState(false);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex((prev) => (prev + 1) % MESSAGES.length);
+    }, 4000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <div className={cn(
-      "hidden md:block fixed top-0 left-0 right-0 z-[60] h-8 text-xs border-b backdrop-blur-md transition-colors duration-300",
-      theme === "dark"
-        ? "bg-dark-bg-secondary text-dark-text-secondary border-dark-border-glass shadow-dark-soft"
-        : "bg-[var(--brand-text)]/95 text-cream-50 border-charcoal-800/50 shadow-glass" // COLOR SYSTEM NORMALIZATION: Use brand-text
-    )}>
-      <div className="container h-full max-w-7xl mx-auto">
-        <div className="h-full flex items-center justify-between gap-[var(--space-4)]">
-          {/* Left Side - Navigation Links - Consistent spacing */}
-          <div className="flex items-center gap-[var(--space-4)] sm:gap-[var(--space-6)] lg:gap-[var(--space-6)]">
-            <Link
-              href="/contact"
-              className={cn(
-                "flex items-center gap-[var(--space-2)] transition-colors duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-offset-2 rounded",
-                theme === "dark"
-                  ? "hover:text-dark-text-primary focus:ring-accent-primary focus:ring-offset-dark-bg-primary"
-                  : "hover:text-cream-200 focus:ring-cream-200/50 focus:ring-offset-charcoal-900"
-              )}
-              aria-label="Customer Care"
+    <AnimatePresence>
+      {!dismissed && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 36, opacity: 1, transition: { duration: 0.3 } }}
+          exit={{ height: 0, opacity: 0, transition: { duration: 0.2 } }}
+          className="relative overflow-hidden bg-[var(--color-navy)] text-[var(--color-cream)]"
+          style={{ zIndex: 101 }}
+        >
+          <div className="container-luxury h-full flex items-center justify-center">
+            <p className="text-label text-[var(--color-cream)]/80 text-center">
+              {MESSAGES[index]}
+            </p>
+            <button
+              onClick={() => setDismissed(true)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--color-cream)]/60 hover:text-[var(--color-cream)] transition-colors"
+              aria-label="Dismiss announcement"
             >
-              <HeadphonesIcon className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
-              <span className="whitespace-nowrap">Customer Care</span>
-            </Link>
-            {/* TODO: Track Order link removed until order tracking functionality is fully implemented */}
+              <X size={14} strokeWidth={2} />
+            </button>
           </div>
-
-          {/* Right Side - Brand Tagline */}
-          <div className={cn(
-            "text-[10px] sm:text-xs font-medium whitespace-nowrap transition-opacity duration-300",
-            theme === "dark" ? "text-dark-text-muted" : "text-cream-200/80"
-          )}>
-            Premium Streetwear for Young Legends
-          </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

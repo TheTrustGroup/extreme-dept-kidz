@@ -61,9 +61,9 @@ export default function AboutPage(): JSX.Element {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <div className="min-h-screen bg-cream-50">
+      <main className="min-h-screen bg-cream-50">
         {/* Breadcrumb */}
-        <div className="pt-20 md:pt-24 pb-4">
+        <div className="container-luxury pt-20 md:pt-24 pb-4">
           <Container size="lg">
             <Breadcrumb items={breadcrumbItems} generateStructuredData={false} />
           </Container>
@@ -98,7 +98,7 @@ export default function AboutPage(): JSX.Element {
             </div>
 
             {/* Story Content */}
-            <div className="space-y-8">
+            <div className="prose space-y-8 max-w-none">
               <div>
                 <H2 className="text-charcoal-900 mb-6">Our Story</H2>
                 <div className="space-y-6">
@@ -288,7 +288,7 @@ export default function AboutPage(): JSX.Element {
           </div>
         </Container>
       </section>
-    </div>
+    </main>
     </>
   );
 }

@@ -1,25 +1,11 @@
 import type { Metadata } from "next";
-import { CartPageClient } from "./CartPageClient";
+import CartPageClient from "./CartPageClient";
 
 export const metadata: Metadata = {
-  title: "Shopping Cart | Extreme Dept Kidz",
-  description:
-    "Review your shopping cart at Extreme Dept Kidz. Add items, update quantities, and proceed to checkout for premium kids fashion.",
-  robots: {
-    index: false,
-    follow: true,
-  },
-  alternates: {
-    canonical: "/cart",
-  },
+  title: "Your Bag | Extreme Dept Kidz",
+  description: "Review your selected items and proceed to checkout.",
 };
 
-/**
- * Cart Page
- * 
- * Full cart page with items and order summary.
- */
-export default function CartPage(): JSX.Element {
+export default function CartRoute() {
   return <CartPageClient />;
 }
-

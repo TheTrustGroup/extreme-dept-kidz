@@ -1,145 +1,170 @@
 "use client";
 
-import * as React from "react";
-import { m, AnimatePresence } from "framer-motion";
-import { Check, Heart } from "lucide-react";
-import type { Product } from "@/types";
-import { useCartStore } from "@/lib/stores/cart-store";
-import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
-import { useProductPurchase } from "@/lib/hooks/use-product-purchase";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ShoppingBag, Check } from "lucide-react";
+import { stickyBarReveal } from "@/lib/motion";
 
 interface StickyAddToCartProps {
-  product: Product;
-  className?: string;
-  purchaseState?: ReturnType<typeof useProductPurchase>;
+  productName: string;
+  price: number;
+  currency?: string;
+  imageUrl?: string;
+  selectedSize?: string;
+  isAvailable?: boolean;
+  onAddToCart: () => Promise<void>;
 }
 
-/**
- * StickyAddToCart — Polo Ralph Lauren–style: one primary CTA + wishlist heart only.
- * Mobile: Always visible. Desktop: Appears on scroll.
- */
-export function StickyAddToCart({ product, className, purchaseState }: StickyAddToCartProps): JSX.Element {
-  const [isVisible, setIsVisible] = React.useState(false);
-  const [showSuccess, setShowSuccess] = React.useState(false);
-  const [isAddingToCart, setIsAddingToCart] = React.useState(false);
+function fmt(n: number, cur = "GHS ₵") {
+  return `${cur}${n.toLocaleString("en-GH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
 
-  const addItem = useCartStore((state) => state.addItem);
-  const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const { open: openCart } = useCartDrawer();
+export default function StickyAddToCart({
+  productName,
+  price,
+  currency = "GHS ₵",
+  imageUrl,
+  selectedSize,
+  isAvailable = true,
+  onAddToCart,
+}: StickyAddToCartProps) {
+  const [visible, setVisible] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
 
-  const localPurchaseState = useProductPurchase(product);
-  const { selectedSize, quantity } = purchaseState || localPurchaseState;
+  useEffect(() => {
+    const mainBtn = document.getElementById("pdp-add-btn");
+    if (!mainBtn) return;
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      if (window.innerWidth < 1024) {
-        setIsVisible(true);
-        return;
-      }
-      setIsVisible(window.scrollY > 400);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll, { passive: true } as EventListenerOptions);
-      window.removeEventListener("resize", handleScroll, { passive: true } as EventListenerOptions);
-    };
-  }, []);
-
-  const handleAddToCart = async () => {
-    const sizeToAdd = selectedSize?.size ?? (isOneSizeOrNoSizes ? "One Size" : null);
-    if (!sizeToAdd || !product.inStock) return;
-    setIsAddingToCart(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    const currentItems = useCartStore.getState().items;
-    const existingItem = currentItems.find(
-      (item) => item.product.id === product.id && item.selectedSize === sizeToAdd
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setVisible(!entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: "0px 0px -20px 0px" }
     );
 
-    if (existingItem?.id) {
-      updateQuantity(existingItem.id, existingItem.quantity + quantity);
-    } else {
-      addItem(product, sizeToAdd);
-      if (quantity > 1) {
-        setTimeout(() => {
-          const updatedItems = useCartStore.getState().items;
-          const newItem = updatedItems.find(
-            (item) => item.product.id === product.id && item.selectedSize === sizeToAdd
-          );
-          if (newItem?.id) updateQuantity(newItem.id, quantity);
-        }, 10);
-      }
+    observer.observe(mainBtn);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const footer = document.getElementById("footer");
+    if (!footer) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(false);
+      },
+      { threshold: 0, rootMargin: "0px 0px 0px 0px" }
+    );
+
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleAdd = async () => {
+    if (adding || added) return;
+    setAdding(true);
+    try {
+      await onAddToCart();
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2500);
+    } finally {
+      setAdding(false);
     }
-
-    setIsAddingToCart(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2500);
-    openCart();
   };
-
-  const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-  const isOneSizeOrNoSizes = sizes.length === 0;
-  const canAddToCart = product.inStock && (selectedSize != null || isOneSizeOrNoSizes);
 
   return (
     <AnimatePresence>
-      {isVisible && (
-        <m.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className={cn(
-            "fixed bottom-0 left-0 right-0 z-[45] bg-white dark:bg-dark-bg-primary border-t border-cream-200 dark:border-dark-border-glass shadow-[0_-4px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_12px_rgba(0,0,0,0.2)]",
-            "pb-safe lg:pb-0",
-            className
-          )}
+      {visible && isAvailable && (
+        <motion.div
+          key="sticky"
+          variants={stickyBarReveal}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="sticky-cart"
+          role="complementary"
+          aria-label="Quick add to bag"
         >
-          <div
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4"
-            style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-          >
-            {/* Polo: one row — primary button + heart */}
-            <div className="flex items-center gap-3">
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={handleAddToCart}
-                disabled={!canAddToCart || isAddingToCart}
-                loading={isAddingToCart}
-                loadingText="Adding..."
-                className={cn(
-                  "flex-1 min-h-[48px] font-semibold uppercase tracking-wide",
-                  showSuccess && "bg-green-600 hover:bg-green-700"
+          <div className="container-luxury h-full flex items-center gap-4">
+            {imageUrl != null && imageUrl !== "" && (
+              <div className="sticky-cart__thumb">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt=""
+                  aria-hidden="true"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <div className="flex-1 min-w-0">
+              <p className="sticky-cart__name">{productName}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="sticky-cart__price">{fmt(price, currency)}</span>
+                {selectedSize != null && selectedSize !== "" && (
+                  <>
+                    <span
+                      className="text-[var(--text-tertiary)]"
+                      aria-hidden="true"
+                    >
+                      ·
+                    </span>
+                    <span
+                      className="text-label text-[var(--text-tertiary)]"
+                      style={{ fontSize: "10px" }}
+                    >
+                      {selectedSize}
+                    </span>
+                  </>
                 )}
-              >
-                {showSuccess ? (
-                  <span className="flex items-center gap-2">
-                    <Check className="w-5 h-5" />
-                    Added!
-                  </span>
-                ) : !product.inStock ? (
-                  "Out of Stock"
-                ) : !selectedSize && !isOneSizeOrNoSizes ? (
-                  "Select Size"
-                ) : (
-                  "Add to Bag"
-                )}
-              </Button>
-              <button
-                type="button"
-                className="min-h-[48px] min-w-[48px] flex items-center justify-center rounded-lg border-2 border-cream-300 dark:border-dark-border-glass bg-white dark:bg-dark-surface text-charcoal-900 dark:text-dark-text-primary hover:border-navy-900 dark:hover:border-accent-primary focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2 shrink-0"
-                aria-label="Add to wishlist"
-              >
-                <Heart className="w-5 h-5" />
-              </button>
+              </div>
             </div>
+
+            <button
+              onClick={handleAdd}
+              disabled={adding}
+              className={[
+                "sticky-cart__btn",
+                added ? "sticky-cart__btn--added" : "",
+              ].join(" ")}
+              aria-label={added ? "Added to bag" : "Add to bag"}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {added ? (
+                  <motion.span
+                    key="done"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Check size={14} strokeWidth={2.5} />
+                    Added
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="add"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <ShoppingBag size={14} strokeWidth={1.5} />
+                    Add to Bag
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
           </div>
-        </m.div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

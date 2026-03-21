@@ -9,6 +9,7 @@ import { mockProducts } from "@/lib/mock-data";
 import type { Product, ProductSize } from "@/types";
 import { DEFAULT_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
 import { offlineSyncService } from "@/lib/services/offline-sync";
+import { useToast } from "@/lib/stores/toast-store";
 
 interface ProductWithStock extends Product {
   totalStock: number;
@@ -17,6 +18,7 @@ interface ProductWithStock extends Product {
 }
 
 export function InventoryManagement(): JSX.Element {
+  const { success, info } = useToast();
   const [products, setProducts] = useState<ProductWithStock[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'low' | 'out'>('all');
@@ -150,14 +152,13 @@ export function InventoryManagement(): JSX.Element {
       if (result.success > 0) {
         // Reload inventory to reflect synced changes
         loadInventory();
-        // Show success message
-        console.log(`✅ Successfully synced ${result.success} update(s)`);
+        success(`Synced`, `Successfully synced ${result.success} update(s)`);
       }
       if (result.failed > 0) {
         console.warn(`⚠️ ${result.failed} update(s) failed to sync`);
       }
       if (result.success === 0 && result.failed === 0) {
-        console.log('ℹ️ No pending updates to sync');
+        info('No pending updates', 'No pending updates to sync');
       }
     } catch (error) {
       console.error('Manual sync failed:', error);

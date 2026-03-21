@@ -17,7 +17,7 @@ export function TermsOfServicePageClient(): JSX.Element {
   const { theme } = useTheme();
 
   return (
-    <div className={cn(
+    <main className={cn(
       "min-h-screen transition-colors duration-300",
       theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
     )}>
@@ -57,7 +57,7 @@ export function TermsOfServicePageClient(): JSX.Element {
 
       {/* Content Section */}
       <section className="py-16 md:py-24 lg:py-32">
-        <Container size="lg">
+        <Container size="lg" className="prose max-w-[720px] pb-24">
           <div className="max-w-4xl mx-auto prose prose-lg">
             {/* Introduction */}
             <div className="mb-12">
@@ -565,6 +565,6 @@ export function TermsOfServicePageClient(): JSX.Element {
           </div>
         </Container>
       </section>
-    </div>
+    </main>
   );
 }

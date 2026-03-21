@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { LuxuryFooter } from "./LuxuryFooter";
+import Footer from "./Footer";
 
 /**
  * Conditionally renders the frontend Footer only on non-admin routes.
@@ -14,9 +14,9 @@ import { LuxuryFooter } from "./LuxuryFooter";
 export function ConditionalFooter(): JSX.Element | null {
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/admin")) {
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/checkout")) {
     return null;
   }
 
-  return <LuxuryFooter />;
+  return <Footer />;
 }

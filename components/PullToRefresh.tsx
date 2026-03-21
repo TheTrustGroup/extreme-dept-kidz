@@ -96,9 +96,7 @@ export function PullToRefresh({
             <span className="text-xs font-medium">Refreshing…</span>
           ) : pullY >= PULL_THRESHOLD ? (
             <span className="text-xs font-medium">Release to refresh</span>
-          ) : (
-            <span className="text-xs font-medium">Pull to refresh</span>
-          )}
+          ) : null}
         </div>
       </div>
       {children}

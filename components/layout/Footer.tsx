@@ -1,656 +1,334 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { m, AnimatePresence } from "framer-motion";
-import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { cn } from "@/lib/utils";
-import { InstagramIcon, TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
-import { isValidEmail } from "@/lib/utils/validation";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
-interface NewsletterFormState {
-  email: string;
-  error: string | null;
-  isSubmitting: boolean;
-  isSuccess: boolean;
-}
+// ─── Social icons ─────────────────────────────────────────────────
+const InstagramIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="2" y="2" width="20" height="20" rx="5" />
+    <circle cx="12" cy="12" r="4.5" />
+    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+  </svg>
+);
+const TikTokIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" />
+  </svg>
+);
+const WhatsAppIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+  </svg>
+);
 
-export function Footer(): JSX.Element {
-  const { theme } = useTheme();
-  const [formState, setFormState] = React.useState<NewsletterFormState>({
-    email: "",
-    error: null,
-    isSubmitting: false,
-    isSuccess: false,
-  });
-  const [hasSubmitted, setHasSubmitted] = React.useState(false);
+// ─── Payment icons — inline SVG marks ─────────────────────────────
+const MoMoIcon = () => (
+  <svg
+    width="40"
+    height="24"
+    viewBox="0 0 40 24"
+    aria-label="MTN Mobile Money"
+    role="img"
+  >
+    <rect width="40" height="24" rx="3" fill="#FFCC00" />
+    <text
+      x="20"
+      y="16"
+      textAnchor="middle"
+      fill="#000"
+      style={{
+        fontSize: "8px",
+        fontWeight: 700,
+        fontFamily: "Montserrat,sans-serif",
+        letterSpacing: "0.02em",
+      }}
+    >
+      MoMo
+    </text>
+  </svg>
+);
+const VisaIcon = () => (
+  <svg width="40" height="24" viewBox="0 0 40 24" aria-label="Visa" role="img">
+    <rect width="40" height="24" rx="3" fill="#1a1f71" />
+    <text
+      x="20"
+      y="16"
+      textAnchor="middle"
+      fill="#fff"
+      style={{
+        fontSize: "10px",
+        fontWeight: 700,
+        fontFamily: "Arial,sans-serif",
+        letterSpacing: "0.02em",
+        fontStyle: "italic",
+      }}
+    >
+      VISA
+    </text>
+  </svg>
+);
+const MastercardIcon = () => (
+  <svg
+    width="40"
+    height="24"
+    viewBox="0 0 40 24"
+    aria-label="Mastercard"
+    role="img"
+  >
+    <rect width="40" height="24" rx="3" fill="#252525" />
+    <circle cx="15" cy="12" r="7" fill="#EB001B" />
+    <circle cx="25" cy="12" r="7" fill="#F79E1B" />
+    <path
+      d="M20 6.8a7 7 0 0 1 0 10.4A7 7 0 0 1 20 6.8z"
+      fill="#FF5F00"
+    />
+  </svg>
+);
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
-    setHasSubmitted(true);
-    setFormState((prev) => ({ ...prev, error: null }));
+// ─── Nav columns ──────────────────────────────────────────────────
+const NAV_COLUMNS = [
+  {
+    heading: "Shop",
+    links: [
+      { label: "All Products", href: "/collections/all" },
+      { label: "Boys", href: "/collections/boys" },
+      { label: "Girls", href: "/collections/girls" },
+      { label: "New Arrivals", href: "/collections/new-arrivals" },
+      { label: "Collections", href: "/collections" },
+    ],
+  },
+  {
+    heading: "Help",
+    links: [
+      { label: "Contact Us", href: "/contact" },
+      { label: "Shipping Info", href: "/shipping-info" },
+      { label: "Returns", href: "/returns-exchange" },
+      { label: "Size Guide", href: "/size-guide" },
+      { label: "Track Order", href: "/track-order" },
+      { label: "FAQ", href: "/contact#faq" },
+    ],
+  },
+  {
+    heading: "Company",
+    links: [
+      { label: "About Us", href: "/about" },
+      { label: "Style Guide", href: "/style-guide" },
+      { label: "Accessibility", href: "/accessibility" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+    ],
+  },
+];
 
-    const trimmedEmail = formState.email.trim();
+const SOCIAL_LINKS = [
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/extreme_dept_kidz",
+    icon: <InstagramIcon />,
+  },
+  {
+    label: "TikTok",
+    href: "https://www.tiktok.com/@extreme_dept_kidz",
+    icon: <TikTokIcon />,
+  },
+  {
+    label: "WhatsApp",
+    href: "https://wa.me/233000000000",
+    icon: <WhatsAppIcon />,
+  },
+];
 
-    // Validate email
-    if (!trimmedEmail) {
-      setFormState((prev) => ({
-        ...prev,
-        error: "Email is required",
-      }));
-      return;
-    }
-
-    if (!isValidEmail(trimmedEmail)) {
-      setFormState((prev) => ({
-        ...prev,
-        error: "Please enter a valid email address",
-      }));
-      return;
-    }
-
-    // Prevent duplicate submissions
-    if (formState.isSubmitting) {
-      return;
-    }
-
-    setFormState((prev) => ({ ...prev, isSubmitting: true, error: null }));
-
-    try {
-      const response = await fetch("/api/newsletter/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: trimmedEmail,
-          source: "footer",
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to subscribe. Please try again.");
-      }
-
-      // Success
-      setFormState({
-        email: "",
-        error: null,
-        isSubmitting: false,
-        isSuccess: true,
-      });
-      setHasSubmitted(false);
-
-      // Hide success message after 5 seconds
-      setTimeout(() => {
-        setFormState((prev) => ({ ...prev, isSuccess: false }));
-      }, 5000);
-    } catch (error) {
-      setFormState((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : "Failed to subscribe. Please try again.",
-        isSubmitting: false,
-      }));
-    }
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const value = e.target.value;
-    setFormState((prev) => ({
-      ...prev,
-      email: value,
-      // Clear error when user starts typing
-      error: hasSubmitted && prev.error ? null : prev.error,
-    }));
-  };
+// ─── Mobile accordion column ───────────────────────────────────────
+function FooterColumn({
+  heading,
+  links,
+}: {
+  heading: string;
+  links: { label: string; href: string }[];
+}) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <footer 
-      id="footer" 
-      className={cn(
-        "text-cream-50 transition-colors duration-300",
-        theme === "dark" 
-          ? "bg-dark-bg-secondary text-dark-text-primary" 
-          : "bg-charcoal-950 text-cream-50" // COLOR SYSTEM NORMALIZATION: Use token
-      )} 
-      role="contentinfo"
-    >
-      <div className="container max-w-7xl mx-auto">
-        {/* Top Section — reduced top padding to close gap from last content section */}
-        <div className="pt-[var(--space-6)] pb-[var(--space-12)] md:pt-[var(--space-8)] md:pb-[var(--space-13)] lg:pt-[var(--space-8)] lg:pb-[var(--space-13)]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-[var(--space-12)] lg:gap-[var(--space-13)]">
-            {/* Brand Section */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-              className="space-y-[var(--space-6)]"
-            >
-              <div className="flex items-center">
-                <Link href="/" className="flex items-center">
-                  <Image
-                    src="/IMG_8640.PNG"
-                    alt="EXTREME DEPT KIDZ"
-                    width={1080}
-                    height={720}
-                    className={cn(
-                      "h-10 sm:h-12 md:h-14 w-auto object-contain max-w-[80px] sm:max-w-[100px] md:max-w-[120px]",
-                      "transition-opacity duration-300",
-                      theme === "dark"
-                        ? "brightness-0 invert opacity-90" // Invert logo for dark mode visibility
-                        : ""
-                    )}
-                    priority={false}
-                    quality={75}
-                    sizes="(max-width: 640px) 80px, (max-width: 768px) 100px, 120px"
-                    decoding="async"
-                    loading="lazy"
-                  />
+    <div className="footer-column">
+      <button
+        className="footer-column__heading-btn md:hidden"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+      >
+        <span className="footer-column__heading">{heading}</span>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex items-center text-[rgba(250,248,245,0.3)]"
+        >
+          <ChevronDown size={15} strokeWidth={1.5} />
+        </motion.span>
+      </button>
+
+      <p className="footer-column__heading hidden md:block">{heading}</p>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.ul
+            key="mobile-links"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="footer-column__links md:hidden overflow-hidden"
+            style={{ margin: 0, padding: 0 }}
+          >
+            {links.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="footer-link">
+                  {link.label}
                 </Link>
-              </div>
-              <p className={cn(
-                "font-sans text-base leading-relaxed max-w-md transition-colors duration-300",
-                theme === "dark" 
-                  ? "text-dark-text-secondary" 
-                  : "text-cream-200/80"
-              )}>
-                Elevated style for young legends. Premium streetwear and luxury essentials for kids.
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+
+      <ul className="footer-column__links hidden md:block">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href} className="footer-link">
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ─── Main footer ──────────────────────────────────────────────────
+export default function Footer() {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="site-footer" aria-label="Site footer">
+      <div className="site-footer__body">
+        <div className="container-luxury">
+          <div className="footer-grid">
+            <div className="footer-brand">
+              <Link href="/" aria-label="Extreme Dept Kidz — home">
+                <Image
+                  src="/IMG_8640.PNG"
+                  alt="Extreme Dept Kidz"
+                  width={110}
+                  height={33}
+                  className="h-8 w-auto object-contain brightness-0 invert"
+                />
+              </Link>
+
+              <p className="footer-brand__tagline">
+                Premium streetwear for young legends.
+                <br />
+                Accra, Ghana.
               </p>
-              {/* Social Icons - Consistent spacing */}
-              <div className="flex items-center gap-[var(--space-4)] pt-[var(--space-2)]">
-                <SocialIcon 
-                  href="https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl" 
-                  icon={InstagramIcon} 
-                  label="Instagram" 
-                />
-                <SocialIcon 
-                  href="https://www.tiktok.com/@extreme_dept_kidz?_r=1&_t=ZM-92wJ2AMJUoS" 
-                  icon={TikTokIcon} 
-                  label="TikTok" 
-                />
-                <SocialIcon 
-                  href="https://snapchat.com/t/dE3hKeZX" 
-                  icon={SnapchatIcon} 
-                  label="Snapchat" 
-                />
+
+              <div
+                className="footer-social"
+                role="list"
+                aria-label="Follow us on social media"
+              >
+                {SOCIAL_LINKS.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="footer-social__icon"
+                    aria-label={`Follow us on ${s.label}`}
+                    role="listitem"
+                  >
+                    {s.icon}
+                  </a>
+                ))}
               </div>
-            </m.div>
+            </div>
 
-            {/* Newsletter Section - Refined */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="space-y-[var(--space-5)]"
-            >
-              <div>
-                <h3 className={cn(
-                  "font-serif text-2xl md:text-3xl font-bold mb-3 transition-colors duration-300",
-                  theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
-                )}>
-                  STAY IN THE LOOP
-                </h3>
-                <p className={cn(
-                  "font-sans text-base md:text-lg leading-relaxed transition-colors duration-300",
-                  theme === "dark" 
-                    ? "text-dark-text-secondary" 
-                    : "text-cream-200/90"
-                )}>
-                  Sign up for exclusive drops, style tips, and early access to new collections.
-                </p>
-              </div>
-
-              {/* First Order Incentive - Enhanced */}
-              <div className={cn(
-                "flex items-center gap-3 px-5 py-4 rounded-xl border-2",
-                theme === "dark"
-                  ? "bg-dark-surface border-accent-primary/60"
-                  : "bg-navy-900/40 border-navy-900/60 backdrop-blur-sm"
-              )}>
-                <span className={cn(
-                  "text-2xl",
-                  theme === "dark" ? "text-accent-primary" : "text-cream-50"
-                )}>
-                  🎁
-                </span>
-                <div className="flex-1">
-                  <p className={cn(
-                    "font-sans text-base font-bold mb-1",
-                    theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
-                  )}>
-                    First Order: 10% OFF
-                  </p>
-                  <p className={cn(
-                    "font-sans text-sm",
-                    theme === "dark" ? "text-dark-text-secondary" : "text-cream-200/90"
-                  )}>
-                    Use code: <span className="font-mono font-bold text-base">WELCOME10</span>
-                  </p>
-                </div>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-[var(--space-3)]" noValidate>
-                <div className="relative flex flex-col gap-2">
-                  <div className="relative flex items-center">
-                    <input
-                      type="email"
-                      value={formState.email}
-                      onChange={handleEmailChange}
-                      placeholder="Enter your email"
-                      className={cn(
-                        "flex-1 bg-transparent border rounded-lg px-4 py-3",
-                        "text-cream-50 placeholder:text-cream-400/60",
-                        "focus:outline-none focus:ring-2 focus:ring-offset-2",
-                        "transition-all duration-300",
-                        "font-sans text-sm",
-                        "disabled:opacity-50 disabled:cursor-not-allowed",
-                        formState.error
-                          ? theme === "dark"
-                            ? "border-red-400/50 focus:border-red-400 focus:ring-red-400/20"
-                            : "border-red-400/50 focus:border-red-400 focus:ring-red-400/20"
-                          : theme === "dark"
-                            ? "border-dark-border-glass focus:border-accent-primary focus:ring-accent-primary/20"
-                            : "border-cream-200/30 focus:border-cream-50 focus:ring-cream-50/20"
-                      )}
-                      disabled={formState.isSubmitting}
-                      aria-invalid={formState.error ? "true" : "false"}
-                      aria-describedby={formState.error ? "newsletter-error" : undefined}
-                    />
-                    <m.button
-                      type="submit"
-                      disabled={formState.isSubmitting || !formState.email.trim()}
-                      className={cn(
-                        "ml-2 p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center",
-                        "transition-colors duration-200",
-                        "focus:outline-none focus:ring-2 focus:ring-offset-2",
-                        theme === "dark"
-                          ? "bg-accent-primary text-dark-bg-primary hover:bg-accent-primary/90 focus:ring-accent-primary focus:ring-offset-dark-bg-secondary"
-                          : "bg-navy-900 text-cream-50 hover:bg-navy-800 focus:ring-navy-500 focus:ring-offset-charcoal-950",
-                        "disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                      whileHover={{ scale: formState.isSubmitting ? 1 : 1.05 }}
-                      whileTap={{ scale: formState.isSubmitting ? 1 : 0.95 }}
-                      aria-label="Subscribe to newsletter"
-                    >
-                      {formState.isSubmitting ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"
-                          />
-                        </svg>
-                      )}
-                    </m.button>
-                  </div>
-
-                  {/* Error Message */}
-                  <AnimatePresence>
-                    {formState.error && (
-                      <m.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        id="newsletter-error"
-                        className="flex items-center gap-2 text-sm"
-                        role="alert"
-                      >
-                        <AlertCircle className={cn(
-                          "w-4 h-4 flex-shrink-0",
-                          theme === "dark" ? "text-red-400" : "text-red-300"
-                        )} />
-                        <span className={cn(
-                          theme === "dark" ? "text-red-400" : "text-red-300"
-                        )}>
-                          {formState.error}
-                        </span>
-                      </m.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Success Message */}
-                  <AnimatePresence>
-                    {formState.isSuccess && (
-                      <m.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center gap-2 text-sm"
-                        role="status"
-                        aria-live="polite"
-                      >
-                        <CheckCircle2 className={cn(
-                          "w-4 h-4 flex-shrink-0",
-                          theme === "dark" ? "text-green-400" : "text-green-300"
-                        )} />
-                        <span className={cn(
-                          theme === "dark" ? "text-green-400" : "text-green-300"
-                        )}>
-                          Successfully subscribed! Check your email for your welcome code.
-                        </span>
-                      </m.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* GDPR Compliance Text */}
-                <div className={cn(
-                  "text-xs leading-relaxed space-y-1",
-                  theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
-                )}>
-                  <p>
-                    By subscribing, you agree to receive marketing emails from EXTREME DEPT KIDZ. 
-                    You can unsubscribe at any time. We respect your privacy and will never share your email address.
-                  </p>
-                  <p>
-                    <Link 
-                      href="/privacy-policy" 
-                      className={cn(
-                        "underline hover:no-underline transition-colors duration-200",
-                        theme === "dark" ? "text-dark-text-secondary hover:text-dark-text-primary" : "text-cream-200/80 hover:text-cream-50"
-                      )}
-                    >
-                      View our Privacy Policy
-                    </Link>
-                  </p>
-                </div>
-              </form>
-            </m.div>
-          </div>
-
-          {/* Navigation Columns - Consistent spacing using 8px base scale */}
-          <div className={cn(
-            "grid grid-cols-2 sm:grid-cols-4",
-            "gap-[var(--space-8)] lg:gap-[var(--space-12)]",
-            "mt-[var(--space-12)] lg:mt-[var(--space-13)]",
-            "pt-[var(--space-12)] lg:pt-[var(--space-13)]",
-            "border-t transition-colors duration-300",
-            theme === "dark" ? "border-dark-border-glass" : "border-cream-200/10"
-          )}>
-            {/* SHOP */}
-            <m.nav
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              aria-label="Shop navigation"
-            >
-              <h4 className={cn(
-                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
-                theme === "dark" 
-                  ? "text-dark-text-muted" 
-                  : "text-cream-200/60"
-              )}>
-                SHOP
-              </h4>
-              <ul className="space-y-[var(--space-3)]">
-                <FooterNavLink href="/collections/all">All Products</FooterNavLink>
-                <FooterNavLink href="/collections/boys">Boys</FooterNavLink>
-                <FooterNavLink href="/collections/girls">Girls</FooterNavLink>
-                <FooterNavLink href="/collections/new-arrivals">New Arrivals</FooterNavLink>
-                <FooterNavLink href="/collections">Collections</FooterNavLink>
-                {/* TODO: Gift Cards functionality needs to be implemented - create gift card purchase and redemption system */}
-                {/* <FooterNavLink href="#">Gift Cards</FooterNavLink> */}
-                {/* When you add a "Sale" category in Admin → Categories (slug: sale), change to /collections/sale */}
-                <FooterNavLink href="/collections/all?sort=price-low">Sale</FooterNavLink>
-              </ul>
-            </m.nav>
-
-            {/* CUSTOMER CARE */}
-            <m.nav
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              aria-label="Customer care navigation"
-            >
-              <h4 className={cn(
-                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
-                theme === "dark" 
-                  ? "text-dark-text-muted" 
-                  : "text-cream-200/60"
-              )}>
-                CUSTOMER CARE
-              </h4>
-              <ul className="space-y-[var(--space-3)]">
-                <FooterNavLink href="/shipping-info">Shipping Info</FooterNavLink>
-                <FooterNavLink href="/returns-exchange">Returns & Exchange</FooterNavLink>
-                <FooterNavLink href="/size-guide">Size Guide</FooterNavLink>
-                <FooterNavLink href="/track-order">Order Tracking</FooterNavLink>
-                <FooterNavLink href="/contact">Contact Us</FooterNavLink>
-                <FooterNavLink href="mailto:info@extremedeptkidz.com">info@extremedeptkidz.com</FooterNavLink>
-                {/* TODO: FAQs page needs to be created - add common questions and answers */}
-                {/* <FooterNavLink href="#">FAQs</FooterNavLink> */}
-              </ul>
-            </m.nav>
-
-            {/* COMPANY */}
-            <m.nav
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              aria-label="Company navigation"
-            >
-              <h4 className={cn(
-                "font-sans text-xs font-semibold uppercase tracking-wider mb-4 transition-colors duration-300",
-                theme === "dark" 
-                  ? "text-dark-text-muted" 
-                  : "text-cream-200/60"
-              )}>
-                COMPANY
-              </h4>
-              <ul className="space-y-[var(--space-3)]">
-                <FooterNavLink href="/about">About Us</FooterNavLink>
-                <FooterNavLink href="/about">Our Story</FooterNavLink>
-                {/* TODO: Careers page needs to be created - add job listings, company culture, application process */}
-                {/* <FooterNavLink href="#">Careers</FooterNavLink> */}
-                {/* TODO: Press page needs to be created - add press releases, media kit, brand assets */}
-                {/* <FooterNavLink href="#">Press</FooterNavLink> */}
-                {/* TODO: Wholesale page needs to be created - add wholesale inquiry form, minimum order requirements, pricing */}
-                {/* <FooterNavLink href="#">Wholesale</FooterNavLink> */}
-                {/* TODO: Sustainability page needs to be created - add sustainability practices, materials, environmental impact */}
-                {/* <FooterNavLink href="#">Sustainability</FooterNavLink> */}
-              </ul>
-            </m.nav>
-
-            {/* CONNECT section removed - social links are in Brand section above */}
+            {NAV_COLUMNS.map((col) => (
+              <FooterColumn
+                key={col.heading}
+                heading={col.heading}
+                links={col.links}
+              />
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Bottom Bar - Consistent spacing */}
-        <div className={cn(
-          "border-t py-[var(--space-6)] transition-colors duration-300",
-          theme === "dark"
-            ? "bg-dark-bg-primary border-dark-border-glass"
-            : "bg-charcoal-950 border-cream-200/10" // COLOR SYSTEM NORMALIZATION: Use token
-        )}>
-          <div className="container max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-[var(--space-4)]">
-            {/* Left: Copyright - Consistent spacing */}
-            <div className={cn(
-              "flex flex-col sm:flex-row items-center gap-[var(--space-2)] sm:gap-[var(--space-4)] text-sm transition-colors duration-300",
-              theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
-            )}>
-              <span>© {new Date().getFullYear()} <span className={cn(
-                "font-semibold transition-colors duration-300",
-                theme === "dark" ? "text-dark-text-primary" : "text-cream-50"
-              )}>Extreme Dept Kidz</span>. All rights reserved.</span>
+      <div className="site-footer__bottom">
+        <div className="container-luxury">
+          <div className="footer-bottom-inner">
+            <p className="footer-copyright">
+              © {year} Extreme Dept Kidz. All rights reserved.
+            </p>
+
+            <div
+              className="footer-payments"
+              role="list"
+              aria-label="Accepted payment methods"
+            >
+              <span role="listitem" aria-label="MTN Mobile Money">
+                <MoMoIcon />
+              </span>
+              <span role="listitem" aria-label="Visa">
+                <VisaIcon />
+              </span>
+              <span role="listitem" aria-label="Mastercard">
+                <MastercardIcon />
+              </span>
             </div>
 
-            {/* Center: Legal Links - Consistent spacing */}
-            <nav className={cn(
-              "flex items-center gap-[var(--space-4)] text-sm transition-colors duration-300",
-              theme === "dark" ? "text-dark-text-muted" : "text-cream-200/60"
-            )} aria-label="Legal links">
-              <FooterNavLink href="/privacy-policy" className="text-sm">Privacy Policy</FooterNavLink>
-              <span className={cn(
-                "transition-colors duration-300",
-                theme === "dark" ? "text-dark-text-muted" : "text-cream-200/30"
-              )}>|</span>
-              <FooterNavLink href="/terms-of-service" className="text-sm">Terms of Service</FooterNavLink>
-              <span className={cn(
-                "transition-colors duration-300",
-                theme === "dark" ? "text-dark-text-muted" : "text-cream-200/30"
-              )}>|</span>
-              <FooterNavLink href="/accessibility" className="text-sm">Accessibility</FooterNavLink>
+            <nav className="footer-legal" aria-label="Legal links">
+              <Link href="/privacy" className="footer-legal__link">
+                Privacy
+              </Link>
+              <span className="footer-legal__sep" aria-hidden="true">
+                ·
+              </span>
+              <Link href="/terms" className="footer-legal__link">
+                Terms
+              </Link>
+              <span className="footer-legal__sep" aria-hidden="true">
+                ·
+              </span>
+              <Link href="/accessibility" className="footer-legal__link">
+                Accessibility
+              </Link>
             </nav>
-
-            {/* Right: Payment Icons - Consistent spacing */}
-            <div className="flex items-center gap-[var(--space-2)]">
-              <PaymentIcon name="visa" />
-              <PaymentIcon name="mastercard" />
-              <PaymentIcon name="amex" />
-              <PaymentIcon name="paypal" />
-              <PaymentIcon name="apple-pay" />
-              <PaymentIcon name="google-pay" />
-            </div>
           </div>
         </div>
       </div>
     </footer>
-  );
-}
-
-// Footer Navigation Link Component
-interface FooterNavLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  children: React.ReactNode;
-  icon?: React.ComponentType<{ className?: string }>;
-}
-
-function FooterNavLink({ className, children, icon: Icon, href, ...props }: FooterNavLinkProps): JSX.Element {
-  const { theme } = useTheme();
-  const pathname = usePathname();
-  const Component = href?.startsWith("/") ? Link : "a";
-  const linkProps = href?.startsWith("/") 
-    ? { href } 
-    : { href: href || "#" };
-  const isCurrentPage = typeof href === "string" && href.startsWith("/") && pathname === href;
-  return (
-    <Component
-      aria-current={isCurrentPage ? "page" : undefined}
-      className={cn(
-        "font-sans text-sm transition-colors duration-200 relative group",
-        "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:rounded px-1",
-        theme === "dark"
-          ? "text-dark-text-secondary hover:text-dark-text-primary focus:ring-accent-primary focus:ring-offset-dark-bg-secondary"
-          : "text-cream-200/80 hover:text-cream-50 focus:ring-cream-50 focus:ring-offset-charcoal-950", // COLOR SYSTEM NORMALIZATION: Use token
-        className
-      )}
-      {...linkProps}
-      {...props}
-    >
-      <span className="relative inline-flex items-center space-x-2">
-        {Icon && <Icon className="w-4 h-4" />}
-        <span>{children}</span>
-        <span className={cn(
-          "absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full",
-          theme === "dark" ? "bg-dark-text-primary" : "bg-cream-50"
-        )} aria-hidden="true" />
-      </span>
-    </Component>
-  );
-}
-
-// Social Icon Component
-interface SocialIconProps {
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-}
-
-function SocialIcon({ href, icon: Icon, label }: SocialIconProps): JSX.Element {
-  return (
-    <m.a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="w-10 h-10 flex items-center justify-center rounded-full bg-cream-200/10 text-cream-200/80 hover:text-cream-50 hover:bg-cream-200/20 transition-colors duration-300"
-      aria-label={label}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      <Icon className="w-5 h-5" />
-    </m.a>
-  );
-}
-
-// Payment Icon Component
-interface PaymentIconProps {
-  name: string;
-}
-
-function PaymentIcon({ name }: PaymentIconProps): JSX.Element {
-  const icons: Record<string, string> = {
-    visa: "VISA",
-    mastercard: "MC",
-    amex: "AMEX",
-    paypal: "PP",
-    "apple-pay": "AP",
-    "google-pay": "GP",
-  };
-
-  // Brand-specific colors for each payment method
-  const paymentStyles: Record<string, { bg: string; text: string; border?: string }> = {
-    visa: {
-      bg: "bg-gradient-to-br from-[#1A1F71] to-[#1434A4]",
-      text: "text-white",
-    },
-    mastercard: {
-      bg: "bg-gradient-to-br from-[#EB001B] to-[#F79E1B]",
-      text: "text-white",
-    },
-    amex: {
-      bg: "bg-gradient-to-br from-[#006FCF] to-[#0052A5]",
-      text: "text-white",
-    },
-    paypal: {
-      bg: "bg-gradient-to-br from-[#0070BA] to-[#003087]",
-      text: "text-white",
-    },
-    "apple-pay": {
-      bg: "bg-black",
-      text: "text-white",
-    },
-    "google-pay": {
-      bg: "bg-gradient-to-br from-[#4285F4] via-[#34A853] via-[#FBBC05] to-[#EA4335]",
-      text: "text-white",
-    },
-  };
-
-  const style = paymentStyles[name] || {
-    bg: "bg-cream-200/10",
-    text: "text-cream-200/60",
-  };
-
-  return (
-    <div
-      className={cn(
-        "w-10 h-6 flex items-center justify-center rounded text-[10px] font-semibold",
-        "transition-all duration-300 hover:scale-110 hover:shadow-lg",
-        style.bg,
-        style.text,
-        style.border
-      )}
-      title={name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, " ")}
-    >
-      {icons[name] || name}
-    </div>
   );
 }

@@ -1,343 +1,234 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, User, ShoppingBag, Search, HeadphonesIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { InstagramIcon, TikTokIcon, SnapchatIcon } from "@/components/ui/social-icons";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Search,
+  User,
+  Sun,
+  Moon,
+  ChevronRight,
+  X,
+  ShoppingBag,
+} from "lucide-react";
+import { slideInRight, fadeIn } from "@/lib/motion";
+import { useState } from "react";
 
+// ─── Types ────────────────────────────────────────────────────────
 interface MobileNavProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
-  cartItemCount?: number;
-  onSearchOpen?: () => void;
+  isDark: boolean;
+  onThemeToggle: () => void;
 }
 
-const navLinks = [
-  { label: "ALL", href: "/collections/all" },
-  { label: "BOYS", href: "/collections/boys", isEmphasized: true },
-  { label: "NEW ARRIVALS", href: "/collections/new-arrivals" },
-  { label: "GIRLS", href: "/collections/girls" },
-  { label: "COLLECTIONS", href: "/collections" },
+const PRIMARY_LINKS = [
+  { label: "All", href: "/collections/all" },
+  { label: "Boys", href: "/collections/boys" },
+  { label: "Girls", href: "/collections/girls" },
+  { label: "New Arrivals", href: "/collections/new-arrivals" },
+  { label: "Collections", href: "/collections" },
 ];
 
-const socialLinks = [
-  { 
-    href: "https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl", 
-    icon: InstagramIcon, 
-    label: "Instagram" 
-  },
-  { 
-    href: "https://www.tiktok.com/@extreme_dept_kidz?_r=1&_t=ZM-92wJ2AMJUoS", 
-    icon: TikTokIcon, 
-    label: "TikTok" 
-  },
-  { 
-    href: "https://snapchat.com/t/dE3hKeZX", 
-    icon: SnapchatIcon, 
-    label: "Snapchat" 
-  },
+const SECONDARY_LINKS = [
+  { label: "Customer Care", href: "/contact" },
+  { label: "About Us", href: "/about" },
+  { label: "Shipping", href: "/shipping-info" },
+  { label: "Returns", href: "/returns-exchange" },
 ];
 
-export function MobileNav({
-  isOpen,
+// ─── Component ────────────────────────────────────────────────────
+export default function MobileNav({
+  open,
   onClose,
-  cartItemCount = 0,
-  onSearchOpen,
+  isDark,
+  onThemeToggle,
 }: MobileNavProps) {
   const pathname = usePathname();
-  const { open: openCart } = useCartDrawer();
-  const { theme } = useTheme();
-  const drawerRef = React.useRef<HTMLDivElement>(null);
-  const previousFocusRef = React.useRef<HTMLElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Focus trap implementation
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    // Store the previously focused element
-    previousFocusRef.current =
-      (document.activeElement as HTMLElement) || null;
-
-    // Focus the drawer when it opens
-    const timer = setTimeout(() => {
-      const firstFocusable = drawerRef.current?.querySelector(
-        'a, button, [tabindex]:not([tabindex="-1"])'
-      ) as HTMLElement;
-      firstFocusable?.focus();
-    }, 100);
-
-    // Handle keyboard navigation
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-        return;
-      }
-
-      if (e.key !== "Tab") return;
-
-      const focusableElements = drawerRef.current?.querySelectorAll(
-        'a, button, [tabindex]:not([tabindex="-1"])'
-      );
-
-      if (!focusableElements || focusableElements.length === 0) return;
-
-      const firstElement = focusableElements[0] as HTMLElement;
-      const lastElement = focusableElements[
-        focusableElements.length - 1
-      ] as HTMLElement;
-
-      // Trap focus within drawer
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          e.preventDefault();
-          lastElement.focus();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          e.preventDefault();
-          firstElement.focus();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    // Prevent body scroll when drawer is open
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-
-      // Restore focus to previously focused element
-      if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
-      }
-    };
-  }, [isOpen, onClose]);
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
 
   return (
-    <div
-      className={cn(
-        "fixed inset-0 z-50",
-        isOpen ? "block" : "hidden"
-      )}
-      aria-hidden={!isOpen}
-    >
-      {/* Backdrop — closes menu on click */}
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            key="backdrop"
+            variants={fadeIn}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="fixed inset-0 z-[190] bg-[var(--color-navy)]/40 backdrop-blur-sm lg:hidden"
+            onClick={onClose}
+            aria-hidden="true"
+          />
 
-      {/* Menu Panel — fixed overlay, slides from right */}
-      <div
-        ref={drawerRef}
-        className={cn(
-          "fixed top-0 right-0 h-screen w-80 max-w-[85vw] shadow-2xl",
-          "transform transition-transform duration-300 ease-out focus:outline-none",
-          theme === "dark" ? "glass border-l border-dark-border-glass" : "bg-white",
-          isOpen ? "translate-x-0" : "translate-x-full"
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
-      >
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className={cn(
-            "absolute top-4 right-4 p-2 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
-            theme === "dark"
-              ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
-              : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
-          )}
-          aria-label="Close menu"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
-        {/* Menu content with scroll */}
-        <div className="h-full overflow-y-auto pt-16 pb-6 px-6">
-          {/* Quick Actions — Account, Cart, Search, Theme */}
-          <div className={cn(
-            "py-4 border-b transition-colors duration-300",
-            theme === "dark" ? "border-dark-border-glass" : "border-cream-200"
-          )}>
-            <div className="grid grid-cols-4 gap-2">
-              <Link
-                href="/account"
-                className={cn(
-                  "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
-                  theme === "dark"
-                    ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
-                    : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
-                )}
+          {/* Drawer */}
+          <motion.nav
+            key="drawer"
+            variants={slideInRight}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="fixed top-0 right-0 bottom-0 z-drawer w-[min(320px,90vw)] bg-[var(--bg-page)] lg:hidden flex flex-col"
+            aria-label="Mobile navigation"
+          >
+            {/* ── Header row ──────────────────────────────────────── */}
+            <div className="flex items-center justify-between px-6 h-16 border-b border-[var(--border-default)] flex-shrink-0">
+              <span className="text-label text-[var(--text-tertiary)]">Menu</span>
+              <button
+                className="icon-btn"
                 onClick={onClose}
+                aria-label="Close menu"
               >
-                <User className="w-5 h-5" aria-hidden="true" />
-                <span className="font-sans text-xs font-medium">Account</span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  openCart();
-                }}
-                className={cn(
-                  "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 relative",
-                  theme === "dark"
-                    ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
-                    : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
-                )}
-                aria-label={`View shopping cart with ${cartItemCount} items`}
-              >
-                <div className="relative">
-                  <ShoppingBag className="w-5 h-5" aria-hidden="true" />
-                  {cartItemCount > 0 && (
-                    <span className={cn(
-                      "absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-medium",
-                      theme === "dark" ? "bg-accent-primary text-dark-bg-primary" : "bg-navy-900 text-cream-50"
-                    )}>
-                      {cartItemCount > 9 ? "9+" : cartItemCount}
-                    </span>
-                  )}
-                </div>
-                <span className="font-sans text-xs font-medium">Cart</span>
+                <X size={20} strokeWidth={1.5} />
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onSearchOpen?.();
-                }}
-                className={cn(
-                  "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
-                  theme === "dark"
-                    ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
-                    : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
-                )}
-                aria-label="Search products"
-              >
-                <Search className="w-5 h-5" aria-hidden="true" />
-                <span className="font-sans text-xs font-medium">Search</span>
-              </button>
-              <div className="flex flex-col items-center gap-1">
-                <div className={cn(
-                  "glass p-2 rounded-lg transition-all duration-300",
-                  theme === "dark"
-                    ? "bg-dark-surface/50 backdrop-blur-md border-dark-border-glass"
-                    : "bg-cream-100/80 backdrop-blur-sm border-cream-200/50"
-                )}>
-                  <ThemeToggle size="sm" />
-                </div>
-                <span className={cn(
-                  "font-sans text-xs font-medium",
-                  theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-                )}>
-                  Theme
-                </span>
+            </div>
+
+            {/* ── Search ──────────────────────────────────────────── */}
+            <div className="px-6 py-4 flex-shrink-0">
+              <div className="relative">
+                <Search
+                  size={15}
+                  strokeWidth={1.5}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
+                />
+                <input
+                  type="search"
+                  placeholder="Search products…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-10 pl-9 pr-4 text-body-sm bg-[var(--bg-surface-2)] border border-[var(--border-default)] rounded-input outline-none focus:border-[var(--color-gold)] transition-colors"
+                />
               </div>
             </div>
-          </div>
 
-          {/* Social */}
-          <div className={cn(
-            "py-3 border-b transition-colors duration-300",
-            theme === "dark" ? "border-dark-border-glass" : "border-cream-200"
-          )}>
-            <div className="flex items-center justify-center gap-3">
-              {socialLinks.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      "min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2",
-                      theme === "dark"
-                        ? "text-dark-text-primary hover:text-accent-primary hover:bg-dark-surface focus:ring-accent-primary"
-                        : "text-charcoal-900 hover:text-navy-900 hover:bg-cream-200 focus:ring-navy-500"
-                    )}
-                    aria-label={social.label}
-                    onClick={onClose}
+            {/* ── Primary nav links ────────────────────────────────── */}
+            <div className="flex-1 overflow-y-auto px-6 pb-6">
+              <div className="space-y-1 mb-8">
+                {PRIMARY_LINKS.map((link, i) => (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                      transition: {
+                        delay: 0.05 + i * 0.04,
+                        duration: 0.3,
+                        ease: [0.16, 1, 0.3, 1],
+                      },
+                    }}
                   >
-                    <Icon className="w-5 h-5" aria-hidden="true" />
-                  </a>
-                );
-              })}
+                    <Link
+                      href={link.href}
+                      onClick={onClose}
+                      className={[
+                        "flex items-center justify-between",
+                        "py-3.5 border-b border-[var(--border-default)]",
+                        "transition-colors duration-150",
+                        isActive(link.href)
+                          ? "text-[var(--text-primary)]"
+                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "text-h3",
+                          isActive(link.href)
+                            ? "text-[var(--color-navy)] dark:text-[var(--color-cream)]"
+                            : "",
+                        ].join(" ")}
+                        style={{ fontSize: "13px", letterSpacing: "0.1em" }}
+                      >
+                        {link.label}
+                      </span>
+                      {isActive(link.href) && (
+                        <span className="w-1.5 h-1.5 rounded-pill bg-[var(--color-gold)]" />
+                      )}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Secondary links */}
+              <div className="space-y-1">
+                <p className="text-label text-[var(--text-tertiary)] mb-3">
+                  Support
+                </p>
+                {SECONDARY_LINKS.map((link, i) => (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, x: 12 }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                      transition: {
+                        delay: 0.2 + i * 0.03,
+                        duration: 0.3,
+                        ease: [0.16, 1, 0.3, 1],
+                      },
+                    }}
+                  >
+                    <Link
+                      href={link.href}
+                      onClick={onClose}
+                      className="flex items-center justify-between py-2.5 text-body-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                    >
+                      {link.label}
+                      <ChevronRight
+                        size={13}
+                        strokeWidth={1.5}
+                        className="text-[var(--text-tertiary)]"
+                      />
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Navigation Links */}
-          <nav className="pt-4" aria-label="Navigation menu">
-            <ul className="space-y-1">
-              {navLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    aria-current={pathname === link.href ? "page" : undefined}
-                    className={cn(
-                      "flex items-center font-serif text-xl font-semibold transition-colors duration-300 py-2 rounded-lg px-2 -mx-2 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-offset-2",
-                      theme === "dark"
-                        ? link.isEmphasized || pathname === link.href
-                          ? "text-accent-primary"
-                          : "text-dark-text-primary hover:text-accent-primary"
-                        : link.isEmphasized || pathname === link.href
-                          ? "text-navy-900"
-                          : "text-charcoal-900 hover:text-navy-900",
-                      theme === "dark" ? "focus:ring-accent-primary" : "focus:ring-navy-500"
-                    )}
-                    onClick={onClose}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
+            {/* ── Bottom actions ───────────────────────────────────── */}
+            <div className="flex-shrink-0 border-t border-[var(--border-default)] px-6 py-4 flex items-center justify-between pb-[max(16px,env(safe-area-inset-bottom))]">
+              <div className="flex items-center gap-2">
                 <Link
-                  href="/contact"
-                  className={cn(
-                    "flex items-center gap-2 font-serif text-lg font-medium transition-colors duration-300 py-2 rounded-lg px-2 -mx-2 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-offset-2",
-                    theme === "dark"
-                      ? "text-dark-text-primary hover:text-accent-primary focus:ring-accent-primary"
-                      : "text-charcoal-900 hover:text-navy-900 focus:ring-navy-500"
-                  )}
+                  href="/account"
                   onClick={onClose}
+                  className="icon-btn"
+                  aria-label="Account"
                 >
-                  <HeadphonesIcon className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-                  <span>Customer Care</span>
+                  <User size={18} strokeWidth={1.5} />
                 </Link>
-              </li>
-              <li>
                 <Link
-                  href="/about"
-                  className={cn(
-                    "flex items-center font-serif text-lg font-medium transition-colors duration-300 py-2 rounded-lg px-2 -mx-2 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-offset-2",
-                    theme === "dark"
-                      ? "text-dark-text-primary hover:text-accent-primary focus:ring-accent-primary"
-                      : "text-charcoal-900 hover:text-navy-900 focus:ring-navy-500"
-                  )}
+                  href="/cart"
                   onClick={onClose}
+                  className="icon-btn"
+                  aria-label="Cart"
                 >
-                  About Us
+                  <ShoppingBag size={18} strokeWidth={1.5} />
                 </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-    </div>
+              </div>
+              <button
+                className="flex items-center gap-2 text-body-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                onClick={onThemeToggle}
+                aria-label={
+                  isDark ? "Switch to light mode" : "Switch to dark mode"
+                }
+              >
+                {isDark ? (
+                  <Sun size={16} strokeWidth={1.5} />
+                ) : (
+                  <Moon size={16} strokeWidth={1.5} />
+                )}
+                <span className="text-label">{isDark ? "Light" : "Dark"}</span>
+              </button>
+            </div>
+          </motion.nav>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
-

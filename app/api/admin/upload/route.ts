@@ -93,13 +93,10 @@ async function verifyAdminAuth(
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    console.log('[Upload] Starting upload request...');
-    
     // Get formData first to extract token if needed
     let formData: FormData;
     try {
       formData = await request.formData();
-      console.log('[Upload] FormData parsed successfully');
     } catch (formDataError) {
       console.error('[Upload] Failed to parse FormData:', formDataError);
       return NextResponse.json(
@@ -113,7 +110,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const tokenInFormData = formData.get('token') as string | null;
-    console.log('[Upload] Token in FormData:', !!tokenInFormData);
 
     // CRITICAL: Verify authentication and authorization
     // First check authentication
@@ -155,8 +151,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    console.log('[Upload] ✅ Authentication and authorization successful via', authResult.method);
-
     const file = formData.get('file') as File | null;
 
     if (!file) {
@@ -169,12 +163,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 400 }
       );
     }
-
-    console.log('[Upload] File received:', {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -206,34 +194,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const randomStr = Math.random().toString(36).substring(2, 15);
     const originalExtension = file.name.split('.').pop() || 'jpg';
     const filename = `${timestamp}-${randomStr}.${originalExtension}`;
-    console.log('[Upload] Generated filename:', filename);
 
     // Check if we're in a serverless environment (Vercel, etc.)
     const isServerless = !!process.env.VERCEL || process.env.NODE_ENV === 'production';
-    console.log('[Upload] Environment:', {
-      isServerless,
-      vercel: !!process.env.VERCEL,
-      nodeEnv: process.env.NODE_ENV,
-      cwd: process.cwd(),
-    });
 
     // Read file bytes
-    console.log('[Upload] Reading file bytes...');
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     // In serverless environments, we can't write to the filesystem permanently
     // So we'll convert to base64 and return as data URL
     if (isServerless) {
-      console.log('[Upload] Serverless environment detected - using base64 encoding');
-      
       try {
         // Convert to base64
         const base64 = buffer.toString('base64');
         const dataUrl = `data:${file.type};base64,${base64}`;
-        
-        console.log('[Upload] ✅ File converted to base64, size:', base64.length, 'chars');
-        
+
         return NextResponse.json({ 
           url: dataUrl,
           filename: file.name,
@@ -256,20 +232,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // For non-serverless environments, try to write to filesystem
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
-    console.log('[Upload] Uploads directory:', uploadsDir);
-    
+
     try {
       if (!existsSync(uploadsDir)) {
-        console.log('[Upload] Creating uploads directory...');
         await mkdir(uploadsDir, { recursive: true });
-        console.log('[Upload] ✅ Uploads directory created');
-      } else {
-        console.log('[Upload] ✅ Uploads directory exists');
       }
     } catch (dirError) {
       console.error('[Upload] ❌ Failed to create uploads directory:', dirError);
       // Fallback to base64 if directory creation fails
-      console.log('[Upload] Falling back to base64 encoding...');
       const base64 = buffer.toString('base64');
       const dataUrl = `data:${file.type};base64,${base64}`;
       
@@ -286,16 +256,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Save file to filesystem
     try {
       const filepath = join(uploadsDir, filename);
-      
-      console.log('[Upload] Writing file to:', filepath);
+
       await writeFile(filepath, buffer);
-      console.log('[Upload] ✅ File written successfully');
 
       // Verify file was written
       if (!existsSync(filepath)) {
         console.error('[Upload] ❌ File was not written (verification failed)');
         // Fallback to base64
-        console.log('[Upload] Falling back to base64 encoding...');
         const base64 = buffer.toString('base64');
         const dataUrl = `data:${file.type};base64,${base64}`;
         
@@ -311,7 +278,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Return public URL
       const url = `/uploads/${filename}`;
-      console.log('[Upload] ✅ Upload successful, returning URL:', url);
 
       return NextResponse.json({ 
         url,
@@ -322,9 +288,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
     } catch (writeError) {
       console.error('[Upload] ❌ Failed to write file:', writeError);
-      
+
       // Fallback to base64 encoding
-      console.log('[Upload] Falling back to base64 encoding due to write error...');
       try {
         const base64 = buffer.toString('base64');
         const dataUrl = `data:${file.type};base64,${base64}`;

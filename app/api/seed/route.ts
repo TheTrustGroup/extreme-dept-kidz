@@ -69,10 +69,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    console.log("🌱 Starting database seed...");
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("🌱 Starting database seed...");
+    }
 
     // Clear existing data
-    console.log("🧹 Cleaning existing data...");
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("🧹 Cleaning existing data...");
+    }
     await prisma.orderItem.deleteMany();
     await prisma.order.deleteMany();
     await prisma.inventoryLog.deleteMany();
@@ -85,7 +89,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     await prisma.category.deleteMany();
 
     // Create Categories
-    console.log("📁 Creating categories...");
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("📁 Creating categories...");
+    }
     const boysCategory = await prisma.category.create({
       data: {
         name: "Boys",
@@ -139,7 +145,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     // Create Sample Products
-    console.log("👕 Creating products...");
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("👕 Creating products...");
+    }
 
     // Product 1: Heritage Denim Jacket
     await prisma.product.create({
@@ -298,11 +306,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Disconnect Prisma client
     await prisma.$disconnect();
 
-    console.log("✅ Database seeded successfully!");
-    console.log(`   - Created ${categoryCount} categories`);
-    console.log(`   - Created ${collectionCount} collections`);
-    console.log(`   - Created ${productCount} products`);
-    console.log(`   - Created ${variantCount} product variants`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("✅ Database seeded successfully!");
+      console.log(`   - Created ${categoryCount} categories`);
+      console.log(`   - Created ${collectionCount} collections`);
+      console.log(`   - Created ${productCount} products`);
+      console.log(`   - Created ${variantCount} product variants`);
+    }
 
     return NextResponse.json({
       success: true,

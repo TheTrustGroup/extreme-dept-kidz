@@ -8,7 +8,7 @@ import { Search, ShoppingBag, Menu, ChevronDown, User, LogIn } from "lucide-reac
 import { Menu as HeadlessMenu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { cn } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { MobileNav } from "./MobileNav";
+import MobileNav from "./MobileNav";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useCartDrawer } from "@/lib/hooks/use-cart-drawer";
 import { useCartStore } from "@/lib/stores/cart-store";
@@ -37,7 +37,7 @@ export function LuxuryHeader({
   user = null,
   categories = DEFAULT_CATEGORIES,
 }: HeaderProps): JSX.Element {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(
@@ -355,13 +355,10 @@ export function LuxuryHeader({
       </m.header>
 
       <MobileNav
-        isOpen={isMobileMenuOpen}
+        open={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
-        cartItemCount={cartCount}
-        onSearchOpen={() => {
-          setIsMobileMenuOpen(false);
-          setIsSearchOpen(true);
-        }}
+        isDark={theme === "dark"}
+        onThemeToggle={toggleTheme}
       />
 
       {isSearchOpen && (

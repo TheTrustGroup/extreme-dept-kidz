@@ -270,7 +270,9 @@ export function CategoryManagement(): JSX.Element {
           categories = data.data;
         }
         
-        console.log(`[CategoryManagement] Fetched ${categories.length} categories:`, categories.map(c => c.name));
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[CategoryManagement] Fetched ${categories.length} categories:`, categories.map(c => c.name));
+        }
         setCategories(categories);
       } else {
         const errorText = await response.text().catch(() => '');

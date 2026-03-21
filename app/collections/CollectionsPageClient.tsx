@@ -6,6 +6,7 @@ import Image from "next/image";
 import { m } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { H1, H2, H3, Body, Caption } from "@/components/ui/typography";
+import CollectionTabs from "@/components/collection/CollectionTabs";
 
 interface CollectionItem {
   id: string;
@@ -31,29 +32,31 @@ interface CollectionsPageClientProps {
 export function CollectionsPageClient({ items }: CollectionsPageClientProps): JSX.Element {
   return (
     <div className="min-h-screen bg-cream-50">
-      {/* Hero Section */}
-      <section className="pt-20 md:pt-28 pb-12 md:pb-16 lg:pb-20">
-        <Container size="lg">
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
+      <div className="pt-20 md:pt-24 pb-12">
+        <div className="collection-header container-luxury">
+          <m.h1
+            className="text-h1 font-playfair text-[var(--text-primary)]"
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-center max-w-3xl mx-auto mb-16 md:mb-20"
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Caption className="text-charcoal-500 uppercase tracking-[0.15em] mb-4 md:mb-6">
-              Discover Our Collections
-            </Caption>
-            <H1 className="mb-6 md:mb-8">
-              Our Collections
-            </H1>
-            <Body className="text-charcoal-600 max-w-2xl mx-auto">
-              Discover thoughtfully curated collections designed for every moment
-              and occasion. Each piece is crafted with uncompromising attention to
-              detail and premium materials.
-            </Body>
-          </m.div>
-        </Container>
-      </section>
+            Our Collections
+          </m.h1>
+          <m.p
+            className="collection-header__desc"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          >
+            Discover thoughtfully curated collections designed for every moment
+            and occasion.
+          </m.p>
+        </div>
+
+        <div className="container-luxury">
+          <CollectionTabs />
+        </div>
+      </div>
 
       {/* Collections Grid */}
       <section className="pb-20 md:pb-28 lg:pb-32">

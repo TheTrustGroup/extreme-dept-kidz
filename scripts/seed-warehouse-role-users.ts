@@ -2,8 +2,9 @@
  * Seed warehouse role users (manager, cashier, warehouse, driver, viewer).
  * Run after: npx prisma generate
  * Usage: npx tsx scripts/seed-warehouse-role-users.ts
+ * Optional: set SEED_ADMIN_PASSWORD=YourPassword to use your own password (min 8 chars).
  *
- * Creates or updates these users with password EDK-!@# (see HAND_TO_BACKEND.md):
+ * Creates or updates these users (default password EDK-!@# if SEED_ADMIN_PASSWORD not set):
  *   manager@extremedeptkidz.com       (role: manager)
  *   cashier@extremedeptkidz.com       (role: cashier, POS: DC/Mainstore)
  *   maintown_cashier@extremedeptkidz.com (role: cashier, POS: Main Town only)
@@ -37,7 +38,8 @@ import { hashPassword } from '../lib/auth/password';
 
 const prisma = new PrismaClient();
 
-const ROLE_PASSWORD = 'EDK-!@#';
+const DEFAULT_ROLE_PASSWORD = 'EDK-!@#';
+const ROLE_PASSWORD = process.env.SEED_ADMIN_PASSWORD?.trim() || DEFAULT_ROLE_PASSWORD;
 
 type AssignedPos = 'main_town' | 'store';
 
@@ -71,7 +73,16 @@ async function ensureEnumValues(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log('Seeding warehouse role users (password: EDK-!@#)...');
+  if (ROLE_PASSWORD.length < 8) {
+    console.error('Error: Password must be at least 8 characters. Set SEED_ADMIN_PASSWORD=YourPassword');
+    process.exit(1);
+  }
+  console.log('Seeding warehouse role users...');
+  if (ROLE_PASSWORD !== DEFAULT_ROLE_PASSWORD) {
+    console.log('  (using custom password from SEED_ADMIN_PASSWORD)');
+  } else {
+    console.log('  (default password: EDK-!@#)');
+  }
   const passwordHash = await hashPassword(ROLE_PASSWORD);
 
   await ensureEnumValues();

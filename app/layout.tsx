@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Inter, Montserrat } from "next/font/google";
 import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
@@ -17,6 +17,7 @@ import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
 import PageTransition from "@/components/ui/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProductsUpdateListener } from "@/components/ProductsUpdateListener";
+import ToastProvider from "@/components/ui/ToastProvider";
 import "./globals.css";
 
 // CRITICAL FIX: Optimize font loading to prevent blocking render
@@ -39,6 +40,14 @@ const inter = Inter({
   weight: ["300", "400", "500", "600", "700"],
   preload: true,
   fallback: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "SF Pro Display", "system-ui", "sans-serif"],
+  adjustFontFallback: true,
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
   adjustFontFallback: true,
 });
 
@@ -135,10 +144,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`} data-theme="light" suppressHydrationWarning>
+    <html lang="en" className={`${playfair.variable} ${inter.variable} ${montserrat.variable}`} data-theme="light" suppressHydrationWarning>
       <head>
+        {/* Prevents dark mode flash on reload — runs before React hydrates */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var stored = localStorage.getItem('theme');
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  var isDark = stored === 'dark' || (!stored && prefersDark);
+                  if (isDark) document.documentElement.classList.add('dark');
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
         {/* CRITICAL: Prevent theme FOUC - inline script must execute before paint */}
-        {/* Performance: Minimal, synchronous script to prevent layout shift */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);document.documentElement.className=t}else{var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var i=d?'dark':'light';document.documentElement.setAttribute('data-theme',i);document.documentElement.className=i}}catch(e){document.documentElement.setAttribute('data-theme','light');document.documentElement.className='light'}})();`,
@@ -147,7 +170,13 @@ export default function RootLayout({
         {/* CRITICAL: Preconnect to font domains for faster font loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* CRITICAL: DNS prefetch for external image CDN */}
+        {/* Resource hints — Supabase storage (set NEXT_PUBLIC_SUPABASE_URL if using Supabase) */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <>
+            <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
+            <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
+          </>
+        )}
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         {/* CRITICAL: Preload hero image for LCP optimization (mobile-first) */}
         {/* Note: Next.js Image component handles optimization, preload is handled by priority prop */}
@@ -191,6 +220,24 @@ export default function RootLayout({
         
         {/* Fallback splash screen (uses largest icon) */}
         <link rel="apple-touch-startup-image" href="/icon-512x512.png" />
+        {/* Structured data — ClothingStore for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ClothingStore",
+              name: "Extreme Dept Kidz",
+              description: "Premium streetwear for young legends. Based in Accra, Ghana.",
+              url: process.env.NEXT_PUBLIC_SITE_URL || "https://extremedeptkidz.com",
+              logo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://extremedeptkidz.com"}/IMG_8640.PNG`,
+              address: { "@type": "PostalAddress", addressLocality: "Accra", addressCountry: "GH" },
+              priceRange: "₵₵",
+              currenciesAccepted: "GHS",
+              paymentAccepted: "MoMo, Visa, Mastercard",
+            }),
+          }}
+        />
       </head>
       <body className="min-h-screen flex flex-col">
         <ErrorBoundary>
@@ -199,7 +246,7 @@ export default function RootLayout({
           <Providers>
             <ProductsUpdateListener />
             <Suspense fallback={<PageLoader />}>
-              <ConditionalHeader cartItemCount={0} />
+              <ConditionalHeader />
             </Suspense>
             <main id="main-content" className="flex-1" role="main">
               <Suspense fallback={<PageLoader />}>
@@ -234,6 +281,7 @@ export default function RootLayout({
             <LazyFloatingCurrencySelector />
             {/* WebVitals: Deferred hydration (requestIdleCallback) */}
             <LazyWebVitals />
+            <ToastProvider />
           </Providers>
         </ErrorBoundary>
       </body>

@@ -158,13 +158,6 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
     const category = categories.find((c) => c.slug === slug && c.isActive);
     let products: Product[] = productsByCategory;
 
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[CollectionPage] Loading collection: ${slug}`);
-      console.log(`[CollectionPage] Category found:`, category ? `${category.name} (${category.slug})` : 'none');
-      console.log(`[CollectionPage] Products from getProductsByCategory:`, productsByCategory.length);
-    }
-
     // When no products from category: use tag/collection fallback (e.g. new-arrivals by "new" tag)
     // Also when slug is new-arrivals and category has 0 products (products assigned to Boys only)
     if (products.length === 0) {
@@ -180,9 +173,6 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
             const bT = b.createdAt ? new Date(b.createdAt).getTime() : 0;
             return bT - aT;
           });
-        }
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[CollectionPage] Fallback products for ${slug}:`, products.length);
         }
       } catch (fallbackError) {
         if (process.env.NODE_ENV === 'development') {

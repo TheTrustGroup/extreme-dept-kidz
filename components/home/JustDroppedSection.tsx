@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/container";
 import { H2 } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-import { ProductCard } from "@/components/products/ProductCard";
+import { JustDroppedGrid } from "@/components/home/JustDroppedGrid";
 import type { Product } from "@/types";
 import {
   type JustDroppedFilter,
@@ -16,34 +16,6 @@ interface JustDroppedSectionProps {
   products: Product[];
   /** Current filter from URL (?filter=). */
   currentFilter: JustDroppedFilter;
-}
-
-/** Placeholder when fewer than 4 products. Not a product — no link, no Quick View. */
-function PlaceholderCard(): JSX.Element {
-  return (
-    <div
-      className={cn(
-        "product-card-placeholder w-full flex flex-col items-center justify-center p-8 rounded-xl",
-        "bg-cream-50 dark:bg-dark-surface border-2 border-dashed border-cream-200 dark:border-dark-border-glass",
-        "text-charcoal-600 dark:text-dark-text-secondary cursor-default select-none",
-        "min-h-[280px] sm:min-h-[320px]"
-      )}
-      style={{ aspectRatio: "4 / 5" }}
-      aria-hidden="true"
-    >
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center bg-cream-100 dark:bg-dark-bg-secondary">
-          <ChevronRight className="w-8 h-8 rotate-[-90deg] text-charcoal-400 dark:text-dark-text-muted" />
-        </div>
-        <p className="font-serif text-lg font-semibold text-charcoal-900 dark:text-dark-text-primary">
-          More Styles Coming Soon
-        </p>
-        <p className="text-sm text-charcoal-600 dark:text-dark-text-secondary">
-          Check back for new arrivals
-        </p>
-      </div>
-    </div>
-  );
 }
 
 function viewAllHref(filter: JustDroppedFilter): string {
@@ -141,23 +113,11 @@ export function JustDroppedSection({
             })}
           </nav>
 
-          {/* Product grid — mobile-first: contained, no text behind cards */}
-          <div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-[var(--space-5)] lg:gap-[var(--space-6)] overflow-hidden"
-            role="list"
-            aria-label={`${currentFilter === "all" ? "New arrivals" : currentFilter} products`}
-          >
-            {displayed.map((product, index) => (
-              <div key={product.id} className="w-full min-w-0" role="listitem">
-                <ProductCard product={product} priority={index < 2} />
-              </div>
-            ))}
-            {Array.from({ length: placeholdersNeeded }, (_, i) => (
-              <div key={`placeholder-${i}`} className="w-full min-w-0" role="listitem">
-                <PlaceholderCard />
-              </div>
-            ))}
-          </div>
+          {/* Product grid — new ProductCard, add-to-cart, quick-view; placeholders when < 4 */}
+          <JustDroppedGrid
+            products={displayed}
+            placeholdersNeeded={placeholdersNeeded}
+          />
 
           {/* Mobile View All */}
           <div className="lg:hidden text-center pt-[var(--space-4)]">

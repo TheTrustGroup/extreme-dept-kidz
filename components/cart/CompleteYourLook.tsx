@@ -153,7 +153,7 @@ export function CompleteYourLook(): JSX.Element | null {
                     }}
                   >
                     <ShoppingBag className="w-4 h-4 mr-2" />
-                    Add to Cart
+                    Add to Bag
                   </Button>
                 </m.div>
               );

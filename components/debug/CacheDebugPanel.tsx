@@ -27,6 +27,7 @@ export function CacheDebugPanel({
     }
   }, []);
 
+  if (process.env.NODE_ENV === "production") return null;
   if (!show || !mounted) return null;
 
   // Product data is server-only — no client fetch. Show server-passed count only.

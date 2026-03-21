@@ -20,9 +20,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (auth.user && !auth.error) {
       user = auth.user;
     }
-  } catch (error) {
+  } catch {
     // Ignore authentication errors - we still want to clear the cookie
-    console.log('[Logout] User not authenticated or token invalid, clearing cookie anyway');
   }
 
   const response = apiSuccess({}, "Logged out successfully");
@@ -53,8 +52,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   });
 
   // Cookie is set without domain (exact host); path=/ clear above is sufficient
-  
-  console.log('[Logout] Cookie cleared in response headers');
 
   // Log logout activity (if user was authenticated)
   if (user) {
