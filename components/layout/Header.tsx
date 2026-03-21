@@ -360,6 +360,7 @@ export default function Header() {
         onClose={() => setMobileOpen(false)}
         isDark={isDark}
         onThemeToggle={toggle}
+        cartCount={cartCount}
       />
     </>
   );

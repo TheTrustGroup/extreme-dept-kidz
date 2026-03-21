@@ -12,8 +12,7 @@ import {
   X,
   ShoppingBag,
 } from "lucide-react";
-import { slideInRight, fadeIn } from "@/lib/motion";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────
 interface MobileNavProps {
@@ -21,6 +20,7 @@ interface MobileNavProps {
   onClose: () => void;
   isDark: boolean;
   onThemeToggle: () => void;
+  cartCount?: number;
 }
 
 const PRIMARY_LINKS = [
@@ -32,11 +32,54 @@ const PRIMARY_LINKS = [
 ];
 
 const SECONDARY_LINKS = [
-  { label: "Customer Care", href: "/contact" },
-  { label: "About Us", href: "/about" },
+  { label: "Contact Us", href: "/contact" },
   { label: "Shipping", href: "/shipping-info" },
   { label: "Returns", href: "/returns-exchange" },
 ];
+
+const DRAWER_EASE_OPEN: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const DRAWER_EASE_CLOSE: [number, number, number, number] = [0.7, 0, 1, 1];
+const LINK_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const primaryListVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.04,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const linkItemVariants = {
+  hidden: { opacity: 0, x: 16 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.28,
+      ease: LINK_EASE,
+    },
+  },
+};
+
+const secondaryListVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.04,
+      delayChildren: 0.08 + 5 * 0.04 + 0.08,
+    },
+  },
+};
+
+function isNavActive(pathname: string, href: string): boolean {
+  if (pathname === href) return true;
+  if (href === "/collections") {
+    return false;
+  }
+  return pathname.startsWith(href + "/");
+}
 
 // ─── Component ────────────────────────────────────────────────────
 export default function MobileNav({
@@ -44,12 +87,46 @@ export default function MobileNav({
   onClose,
   isDark,
   onThemeToggle,
+  cartCount = 0,
 }: MobileNavProps) {
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const pathnameCloseSkipRef = useRef(true);
 
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + "/");
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
+  useEffect(() => {
+    if (pathnameCloseSkipRef.current) {
+      pathnameCloseSkipRef.current = false;
+      return;
+    }
+    onClose();
+  }, [pathname, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const t = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
+    return () => window.clearTimeout(t);
+  }, [open]);
 
   return (
     <AnimatePresence>
@@ -57,31 +134,59 @@ export default function MobileNav({
         <>
           {/* Backdrop */}
           <motion.div
-            key="backdrop"
-            variants={fadeIn}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="fixed inset-0 z-[190] bg-[var(--color-navy)]/40 backdrop-blur-sm lg:hidden"
+            key="mobile-nav-backdrop"
+            role="presentation"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { duration: 0.2 } }}
+            exit={{ opacity: 0, transition: { duration: 0.2 } }}
+            className="fixed inset-0 z-[190] bg-[rgba(15,23,42,0.5)] backdrop-blur-[4px] lg:hidden"
             onClick={onClose}
             aria-hidden="true"
           />
 
           {/* Drawer */}
-          <motion.nav
-            key="drawer"
-            variants={slideInRight}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="fixed top-0 right-0 bottom-0 z-drawer w-[min(320px,90vw)] bg-[var(--bg-page)] lg:hidden flex flex-col"
-            aria-label="Mobile navigation"
+          <motion.div
+            key="mobile-nav-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{
+              x: 0,
+              opacity: 1,
+              transition: { duration: 0.32, ease: DRAWER_EASE_OPEN },
+            }}
+            exit={{
+              x: "100%",
+              opacity: 0,
+              transition: { duration: 0.26, ease: DRAWER_EASE_CLOSE },
+            }}
+            style={{
+              boxShadow: "-8px 0 32px rgba(15,23,42,0.12)",
+            }}
+            className={[
+              "fixed right-0 top-0 bottom-0 z-[200] flex flex-col lg:hidden",
+              "w-[min(320px,88vw)] bg-[var(--bg-page)]",
+              "pb-[env(safe-area-inset-bottom,0px)]",
+            ].join(" ")}
           >
-            {/* ── Header row ──────────────────────────────────────── */}
-            <div className="flex items-center justify-between px-6 h-16 border-b border-[var(--border-default)] flex-shrink-0">
-              <span className="text-label text-[var(--text-tertiary)]">Menu</span>
+            {/* 1. Header row */}
+            <div
+              className="flex h-14 flex-shrink-0 items-center justify-between border-b border-[var(--border-default)] px-5"
+              style={{ height: 56 }}
+            >
+              <span
+                className="font-montserrat font-semibold uppercase text-[var(--text-tertiary)]"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.16em",
+                }}
+              >
+                MENU
+              </span>
               <button
-                className="icon-btn"
+                type="button"
+                className="icon-btn h-11 w-11 shrink-0"
                 onClick={onClose}
                 aria-label="Close menu"
               >
@@ -89,110 +194,114 @@ export default function MobileNav({
               </button>
             </div>
 
-            {/* ── Search ──────────────────────────────────────────── */}
-            <div className="px-6 py-4 flex-shrink-0">
+            {/* 2. Search */}
+            <div className="flex-shrink-0 border-b border-[var(--border-default)] px-5 py-4">
               <div className="relative">
                 <Search
                   size={15}
                   strokeWidth={1.5}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
+                  aria-hidden
                 />
                 <input
+                  ref={searchInputRef}
                   type="search"
                   placeholder="Search products…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-10 pl-9 pr-4 text-body-sm bg-[var(--bg-surface-2)] border border-[var(--border-default)] rounded-input outline-none focus:border-[var(--color-gold)] transition-colors"
+                  className={[
+                    "h-11 w-full rounded-none border border-[var(--border-default)] bg-[var(--bg-surface-2)] pl-9 pr-4",
+                    "font-inter text-[14px] text-[var(--text-primary)] outline-none transition-colors",
+                    "placeholder:text-[var(--text-tertiary)]",
+                    "focus:border-[var(--color-gold)]",
+                  ].join(" ")}
+                  style={{ height: 44 }}
                 />
               </div>
             </div>
 
-            {/* ── Primary nav links ────────────────────────────────── */}
-            <div className="flex-1 overflow-y-auto px-6 pb-6">
-              <div className="space-y-1 mb-8">
-                {PRIMARY_LINKS.map((link, i) => (
-                  <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{
-                      opacity: 1,
-                      x: 0,
-                      transition: {
-                        delay: 0.05 + i * 0.04,
-                        duration: 0.3,
-                        ease: [0.16, 1, 0.3, 1],
-                      },
-                    }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={onClose}
-                      className={[
-                        "flex items-center justify-between",
-                        "py-3.5 border-b border-[var(--border-default)]",
-                        "transition-colors duration-150",
-                        isActive(link.href)
-                          ? "text-[var(--text-primary)]"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-                      ].join(" ")}
-                    >
-                      <span
+            {/* 3. Navigation */}
+            <div
+              role="navigation"
+              aria-label="Main"
+              className="flex min-h-0 flex-1 flex-col overflow-y-auto py-2"
+            >
+              <motion.ul
+                className="list-none p-0 m-0"
+                variants={primaryListVariants}
+                initial="hidden"
+                animate="show"
+              >
+                {PRIMARY_LINKS.map((link) => {
+                  const active = isNavActive(pathname, link.href);
+                  return (
+                    <motion.li key={link.href} variants={linkItemVariants}>
+                      <Link
+                        href={link.href}
+                        onClick={onClose}
                         className={[
-                          "text-h3",
-                          isActive(link.href)
-                            ? "text-[var(--color-navy)] dark:text-[var(--color-cream)]"
-                            : "",
+                          "relative flex h-[52px] min-h-[52px] items-center border-b border-[var(--border-default)] px-5",
+                          "font-montserrat font-semibold uppercase",
+                          active
+                            ? "text-[var(--text-primary)]"
+                            : "text-[var(--text-secondary)]",
                         ].join(" ")}
-                        style={{ fontSize: "13px", letterSpacing: "0.1em" }}
+                        style={{ fontSize: 12, letterSpacing: "0.1em" }}
                       >
                         {link.label}
-                      </span>
-                      {isActive(link.href) && (
-                        <span className="w-1.5 h-1.5 rounded-pill bg-[var(--color-gold)]" />
-                      )}
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
+                        {active && (
+                          <span
+                            className="absolute right-5 top-1/2 size-[6px] -translate-y-1/2 rounded-full bg-[var(--color-gold)]"
+                            aria-hidden
+                          />
+                        )}
+                      </Link>
+                    </motion.li>
+                  );
+                })}
+              </motion.ul>
 
-              {/* Secondary links */}
-              <div className="space-y-1">
-                <p className="text-label text-[var(--text-tertiary)] mb-3">
+              <div className="pt-5">
+                <p
+                  className="mb-2 px-5 font-montserrat font-medium text-[var(--text-tertiary)]"
+                  style={{ fontSize: 10, letterSpacing: "0.12em" }}
+                >
                   Support
                 </p>
-                {SECONDARY_LINKS.map((link, i) => (
-                  <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{
-                      opacity: 1,
-                      x: 0,
-                      transition: {
-                        delay: 0.2 + i * 0.03,
-                        duration: 0.3,
-                        ease: [0.16, 1, 0.3, 1],
-                      },
-                    }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={onClose}
-                      className="flex items-center justify-between py-2.5 text-body-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                    >
-                      {link.label}
-                      <ChevronRight
-                        size={13}
-                        strokeWidth={1.5}
-                        className="text-[var(--text-tertiary)]"
-                      />
-                    </Link>
-                  </motion.div>
-                ))}
+                <motion.ul
+                  className="list-none p-0 m-0"
+                  variants={secondaryListVariants}
+                  initial="hidden"
+                  animate="show"
+                >
+                  {SECONDARY_LINKS.map((link) => (
+                    <motion.li key={link.href} variants={linkItemVariants}>
+                      <Link
+                        href={link.href}
+                        onClick={onClose}
+                        className="flex h-11 min-h-[44px] items-center justify-between px-5 font-inter text-[13px] text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
+                      >
+                        {link.label}
+                        <ChevronRight
+                          size={13}
+                          strokeWidth={1.5}
+                          className="shrink-0 text-[var(--text-tertiary)]"
+                          aria-hidden
+                        />
+                      </Link>
+                    </motion.li>
+                  ))}
+                </motion.ul>
               </div>
             </div>
 
-            {/* ── Bottom actions ───────────────────────────────────── */}
-            <div className="flex-shrink-0 border-t border-[var(--border-default)] px-6 py-4 flex items-center justify-between pb-[max(16px,env(safe-area-inset-bottom))]">
+            {/* 4. Bottom row */}
+            <div
+              className="flex flex-shrink-0 items-center justify-between border-t border-[var(--border-default)] px-5 py-4"
+              style={{
+                paddingBottom: "max(16px, env(safe-area-inset-bottom, 0px))",
+              }}
+            >
               <div className="flex items-center gap-2">
                 <Link
                   href="/account"
@@ -205,28 +314,39 @@ export default function MobileNav({
                 <Link
                   href="/cart"
                   onClick={onClose}
-                  className="icon-btn"
-                  aria-label="Cart"
+                  className="icon-btn relative"
+                  aria-label={
+                    cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"
+                  }
                 >
                   <ShoppingBag size={18} strokeWidth={1.5} />
+                  {cartCount > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--color-gold)] px-1 text-[10px] font-semibold leading-none text-[var(--color-navy)]">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
                 </Link>
               </div>
               <button
-                className="flex items-center gap-2 text-body-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                type="button"
+                className="flex items-center gap-2 text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                 onClick={onThemeToggle}
-                aria-label={
-                  isDark ? "Switch to light mode" : "Switch to dark mode"
-                }
+                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {isDark ? (
                   <Sun size={16} strokeWidth={1.5} />
                 ) : (
                   <Moon size={16} strokeWidth={1.5} />
                 )}
-                <span className="text-label">{isDark ? "Light" : "Dark"}</span>
+                <span
+                  className="font-montserrat font-semibold text-[var(--text-secondary)]"
+                  style={{ fontSize: 10, letterSpacing: "0.1em" }}
+                >
+                  {isDark ? "Light" : "Dark"}
+                </span>
               </button>
             </div>
-          </motion.nav>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

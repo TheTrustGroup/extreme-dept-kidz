@@ -7,7 +7,6 @@ import { Playfair_Display, Inter, Montserrat } from "next/font/google";
 import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
-import { LazyFloatingCurrencySelector } from "@/components/layout/LazyFloatingCurrencySelector";
 import { Providers } from "@/components/providers";
 import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { LazyWebVitals } from "./LazyWebVitals";
@@ -275,8 +274,6 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <CartDrawerWrapper />
             </Suspense>
-            {/* FloatingCurrencySelector: Deferred hydration (100ms delay) */}
-            <LazyFloatingCurrencySelector />
             {/* WebVitals: Deferred hydration (requestIdleCallback) */}
             <LazyWebVitals />
             <ToastProvider />
