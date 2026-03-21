@@ -73,8 +73,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* GPU hints for non-root: body has contain:paint so position:fixed is not viewport-relative anyway.
- * Currency selector lives in #global-utility-layer as a sticky pill above footer, not viewport-fixed. */
+/* GPU hints for non-root elements. Avoid contain on html/body/main — it breaks position:fixed to the viewport. */
 *:not(html):not(body) {
   -webkit-transform: translateZ(0);
   -webkit-backface-visibility: hidden;
@@ -225,8 +224,6 @@ html {
   -moz-osx-font-smoothing: grayscale;
   /* CRITICAL: Reduce layout shifts */
   text-rendering: optimizeLegibility;
-  /* CRITICAL: Prevent layout thrashing */
-  contain: layout style;
   /* CRITICAL: Optimize paint performance */
   will-change: scroll-position;
   /* COLOR SYSTEM NORMALIZATION: Force sRGB color space - ensures pixel-identical colors */
@@ -965,8 +962,6 @@ body {
   font-family: var(--font-sans);
   line-height: 1.6;
   overflow-x: hidden;
-  /* CRITICAL: Prevent layout thrashing */
-  contain: layout style paint;
   /* Default: Light theme (primary) - COLOR SYSTEM NORMALIZATION: Use brand tokens */
   background-color: var(--brand-bg);
   color: var(--brand-text);
@@ -1006,14 +1001,11 @@ img {
   /* Prevent layout shift - ensure aspect ratio is maintained */
   max-width: 100%;
   height: auto;
-  /* CRITICAL: Prevent layout thrashing */
-  contain: layout style paint;
 }
 
 /* CRITICAL: Next.js Image optimization - prevent CLS - Cross-browser */
 img[data-nimg],
 [data-nimg] {
-  contain: layout style paint;
   /* Prevent layout shift - maintain aspect ratio */
   aspect-ratio: attr(width) / attr(height);
   /* CRITICAL: Ensure images don't cause layout shifts */
@@ -1141,8 +1133,6 @@ header img {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   will-change: transform;
-  /* CRITICAL: Prevent layout shift */
-  contain: layout style paint;
   /* CRITICAL: Maintain aspect ratio */
   height: auto;
   width: auto;
@@ -1999,7 +1989,6 @@ textarea:focus-visible {
 
 /* Performance: Optimize repaints */
 .optimize-repaint {
-  contain: layout style paint;
   content-visibility: auto;
 }
 
@@ -2060,8 +2049,6 @@ body {
   transform: translateZ(0);
   will-change: scroll-position;
   backface-visibility: hidden;
-  /* Prevent layout shifts */
-  contain: layout style paint;
   /* Smooth scrolling */
   scroll-behavior: smooth;
 }
@@ -2081,8 +2068,6 @@ body {
 /* CRITICAL: Reduce forced reflows */
 /* Batch DOM reads/writes */
 [data-optimize-reflow] {
-  /* Prevent layout thrashing */
-  contain: layout style paint;
   /* GPU acceleration */
   transform: translateZ(0);
   will-change: contents;
@@ -2098,8 +2083,6 @@ body {
   will-change: transform;
   backface-visibility: hidden;
   perspective: 1000px;
-  /* Prevent layout shifts */
-  contain: layout style paint;
 }
 
 /* CRITICAL: Mobile-specific optimizations */
@@ -2122,12 +2105,6 @@ body {
     /* GPU acceleration */
     transform: translateZ(0);
     will-change: scroll-position;
-  }
-  
-  /* Prevent forced reflows on mobile */
-  * {
-    /* Batch layout calculations */
-    contain: layout style;
   }
 }
 
@@ -2400,8 +2377,6 @@ main,
   /* Only prevent horizontal overflow, allow vertical scrolling */
   overflow-x: hidden;
   overflow-y: visible;
-  /* Prevent layout shifts */
-  contain: layout style;
 }
 
 /* CRITICAL: Fix nested scroll containers */
