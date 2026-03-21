@@ -102,13 +102,17 @@ export default function Header() {
       {/* ── Main header ─────────────────────────────────────────── */}
       <header
         className={[
-          "fixed top-0 left-0 right-0 z-header",
+          "fixed left-0 right-0 z-[100]",
           "transition-all duration-250",
           scrolled
             ? "bg-[var(--bg-page)]/95 backdrop-blur-md border-b border-[var(--border-default)]"
             : "bg-[var(--bg-page)]",
         ].join(" ")}
-        style={{ height: "64px" }}
+        style={{
+          top: "var(--topbar-height, 0px)",
+          height: "64px",
+          transition: "top 0.3s ease, background-color 0.25s ease",
+        }}
       >
         <div className="container-luxury h-full flex items-center justify-between gap-6">
           {/* ── Logo ───────────────────────────────────────────── */}
@@ -348,8 +352,13 @@ export default function Header() {
         </div>
       </header>
 
-      {/* ── Spacer — pushes page content below fixed header ─────── */}
-      <div style={{ height: "64px" }} aria-hidden="true" />
+      {/* ── Spacer — total height = topbar + header ───────────────── */}
+      <div
+        style={{
+          height: "calc(var(--topbar-height, 0px) + 64px)",
+        }}
+        aria-hidden="true"
+      />
 
       {/* ── Mobile nav ──────────────────────────────────────────── */}
       <MobileNav

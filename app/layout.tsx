@@ -245,6 +245,7 @@ export default function RootLayout({
           <SkipLinks />
           <Providers>
             <ProductsUpdateListener />
+            {/* Site chrome: TopBar → Header (ConditionalHeader hides both on /admin, /checkout) */}
             <Suspense fallback={<PageLoader />}>
               <ConditionalHeader />
             </Suspense>

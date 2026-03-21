@@ -14,6 +14,8 @@ interface CategoryPanelProps {
   align: "left" | "right";
   delay?: number;
   inView: boolean;
+  /** CSS object-position for `object-cover` (e.g. full-body portraits) */
+  objectPosition?: string;
 }
 
 function CategoryPanel({
@@ -25,6 +27,7 @@ function CategoryPanel({
   align,
   delay = 0,
   inView,
+  objectPosition = "center",
 }: CategoryPanelProps) {
   const [hovered, setHovered] = useState(false);
 
@@ -49,10 +52,11 @@ function CategoryPanel({
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             className={[
-              "object-cover object-center",
+              "object-cover",
               "transition-transform duration-700 ease-out",
               hovered ? "scale-[1.04]" : "scale-100",
             ].join(" ")}
+            style={{ objectPosition }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
@@ -132,21 +136,23 @@ export default function ShopByCategory() {
             label="Boys"
             sublabel="Ages 2–12"
             href="/collections/boys"
-            imageSrc="/Extreme 1.png"
-            imageAlt="Boys premium streetwear collection"
+            imageSrc="/boys-hero.jpg"
+            imageAlt="Young boy in premium streetwear — Extreme Dept Kidz Boys Collection"
             align="left"
             delay={0}
             inView={inView}
+            objectPosition="center 20%"
           />
           <CategoryPanel
             label="Girls"
             sublabel="Ages 2–12"
             href="/collections/girls"
-            imageSrc="/Extreme 1.png"
-            imageAlt="Girls premium streetwear collection"
+            imageSrc="/girls-hero.jpg"
+            imageAlt="Young girl in premium streetwear — Extreme Dept Kidz Girls Collection"
             align="right"
             delay={0.1}
             inView={inView}
+            objectPosition="center 15%"
           />
         </div>
       </div>

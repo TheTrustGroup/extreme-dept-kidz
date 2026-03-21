@@ -280,6 +280,9 @@ html {
   --dur-base: 250ms;
   --dur-slow: 400ms;
 
+  /* Top announcement bar — updated by TopBar component via JS */
+  --topbar-height: 36px;
+
   /* ── Status + semantic colours ──────────────────────── */
   --color-error:           #c0392b;
   --color-error-light:     #e07b7b;
@@ -1540,6 +1543,7 @@ textarea:focus-visible {
   aspect-ratio: 4 / 5;
   overflow: hidden;
   background-color: var(--bg-surface-2);
+  width: 100%;
 }
 
 /* ── Image itself ─────────────────────────────────────────────── */
@@ -1629,6 +1633,8 @@ textarea:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  background-color: var(--bg-surface);
+  position: relative;
 }
 @media (min-width: 768px) {
   .product-card__info {
