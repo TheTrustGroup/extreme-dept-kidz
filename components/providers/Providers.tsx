@@ -20,18 +20,17 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps): JSX.Element {
   return (
     <ThemeProvider>
-      <RevealProvider>
-        <LazyMotionProvider>
-          <ToastProvider>
-            <CurrencyProvider>
-              <CartProvider>
-                <CartDrawerProvider>{children}</CartDrawerProvider>
-              </CartProvider>
-            </CurrencyProvider>
-          </ToastProvider>
-        </LazyMotionProvider>
-      </RevealProvider>
+      <LazyMotionProvider>
+        <ToastProvider>
+          <CurrencyProvider>
+            <CartProvider>
+              <CartDrawerProvider>
+                <RevealProvider>{children}</RevealProvider>
+              </CartDrawerProvider>
+            </CartProvider>
+          </CurrencyProvider>
+        </ToastProvider>
+      </LazyMotionProvider>
     </ThemeProvider>
   );
 }
-

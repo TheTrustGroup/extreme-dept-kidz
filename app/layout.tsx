@@ -10,12 +10,8 @@ import { CartDrawerWrapper } from "@/components/layout/CartDrawerWrapper";
 import { Providers } from "@/components/providers";
 import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { LazyWebVitals } from "./LazyWebVitals";
-import { PageLoader } from "@/components/ui/PageLoader";
-import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
-import PageTransition from "@/components/ui/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProductsUpdateListener } from "@/components/ProductsUpdateListener";
-import ToastProvider from "@/components/ui/ToastProvider";
 import "./globals.css";
 
 // CRITICAL FIX: Optimize font loading to prevent blocking render
@@ -239,18 +235,13 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col">
         <ErrorBoundary>
-          <PageLoadingBar />
           <SkipLinks />
           <Providers>
             <ProductsUpdateListener />
             {/* Site chrome: TopBar → Header (ConditionalHeader hides both on /admin, /checkout) */}
-            <Suspense fallback={<PageLoader />}>
-              <ConditionalHeader />
-            </Suspense>
+            <ConditionalHeader />
             <main id="main-content" className="flex-1" role="main">
-              <Suspense fallback={<PageLoader />}>
-                <PageTransition>{children}</PageTransition>
-              </Suspense>
+              {children}
             </main>
             {/*
              * GLOBAL UTILITY LAYER — Currency selector and other global utilities.
@@ -276,7 +267,6 @@ export default function RootLayout({
             </Suspense>
             {/* WebVitals: Deferred hydration (requestIdleCallback) */}
             <LazyWebVitals />
-            <ToastProvider />
           </Providers>
         </ErrorBoundary>
       </body>

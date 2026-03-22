@@ -1,85 +1,107 @@
 "use client";
-
 import * as React from "react";
-import { Skeleton } from "./Skeleton";
-import { cn } from "@/lib/utils";
 
 /**
- * PageLoader Component
- * 
- * Full-page loading indicator with elegant skeleton placeholders.
- * Used for page-level loading states.
+ * BrandSpinner — EDK luxury loading indicator
+ * Gold ring on navy background, minimal and fast.
  */
-export interface PageLoaderProps {
-  className?: string;
-  variant?: "default" | "minimal";
-}
-
-export function PageLoader({ className, variant = "default" }: PageLoaderProps): JSX.Element {
-  if (variant === "minimal") {
-    return (
-      <div className={cn("flex items-center justify-center min-h-[400px]", className)}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-navy-900 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-charcoal-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={cn("py-16 md:py-24", className)}>
-      <div className="space-y-8">
-        {/* Header skeleton */}
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-64 mx-auto" />
-          <Skeleton className="h-6 w-96 mx-auto" />
-        </div>
-
-        {/* Grid skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 lg:gap-10">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="space-y-3">
-              <Skeleton className="aspect-square rounded-lg" />
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-6 w-1/3" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Spinner Component
- * 
- * Simple loading spinner for inline use.
- */
-export interface SpinnerProps {
-  size?: "sm" | "md" | "lg";
-  className?: string;
-}
-
-export function Spinner({ size = "md", className }: SpinnerProps): JSX.Element {
-  const sizes = {
-    sm: "w-4 h-4",
-    md: "w-6 h-6",
-    lg: "w-8 h-8",
-  };
-
+export function BrandSpinner(): JSX.Element {
   return (
     <div
-      className={cn(
-        "border-4 border-navy-900 border-t-transparent rounded-full animate-spin",
-        sizes[size],
-        className
-      )}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100svh",
+        backgroundColor: "var(--bg-page, #faf8f5)",
+      }}
       role="status"
       aria-label="Loading"
     >
-      <span className="sr-only">Loading...</span>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+        {/* Outer ring — navy */}
+        <div style={{ position: "relative", width: "44px", height: "44px" }}>
+          {/* Track */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "50%",
+            border: "2px solid rgba(15,23,42,0.1)",
+          }} />
+          {/* Spinning arc — gold */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "50%",
+            border: "2px solid transparent",
+            borderTopColor: "#c9a227",
+            borderRightColor: "#c9a227",
+            animation: "edk-spin 0.8s cubic-bezier(0.4,0,0.2,1) infinite",
+          }} />
+        </div>
+        {/* Brand wordmark */}
+        <p style={{
+          fontFamily: "var(--font-montserrat, Montserrat, sans-serif)",
+          fontSize: "10px",
+          fontWeight: 600,
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          color: "rgba(15,23,42,0.35)",
+          margin: 0,
+        }}>
+          Extreme Dept Kidz
+        </p>
+      </div>
+      <style>{`
+        @keyframes edk-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
 
+/**
+ * PageLoader — thin wrapper used in Suspense fallbacks.
+ * Defaults to the brand spinner.
+ */
+export function PageLoader(): JSX.Element {
+  return <BrandSpinner />;
+}
+
+/**
+ * Spinner — inline variant for buttons and small contexts.
+ */
+export function Spinner({ size = "md" }: { size?: "sm" | "md" | "lg" }): JSX.Element {
+  const dim = size === "sm" ? "16px" : size === "lg" ? "28px" : "20px";
+  return (
+    <div
+      role="status"
+      aria-label="Loading"
+      style={{
+        width: dim,
+        height: dim,
+        borderRadius: "50%",
+        border: "2px solid rgba(15,23,42,0.1)",
+        borderTopColor: "#c9a227",
+        borderRightColor: "#c9a227",
+        animation: "edk-spin 0.8s cubic-bezier(0.4,0,0.2,1) infinite",
+        flexShrink: 0,
+        display: "inline-block",
+      }}
+    >
+      <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
+        Loading
+      </span>
+      <style>{`
+        @keyframes edk-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default PageLoader;

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { m, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard,
   Package,
@@ -12,503 +12,288 @@ import {
   BarChart3,
   Settings,
   Shirt,
-  Building2,
   ChevronDown,
-  ChevronRight,
-  ChevronLeft,
-  Menu,
-  X,
-  FileText,
-  UserCog,
-  Plus,
-  FolderOpen,
+  PanelLeftClose,
+  PanelLeft,
   Boxes,
-  PackageCheck,
-  Truck,
-  CheckCircle,
-  RotateCcw,
-  TrendingUp,
-  Eye,
-  PackageSearch,
+  UserCog,
+  Activity,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
-import { getRoleDisplayLabel } from "@/lib/auth/rbac";
-import { AdminSidebarText, AdminCaption } from "@/components/admin/AdminTypography";
-import { cn } from "@/lib/utils";
 import { apiUrl } from "@/lib/config/api-base";
+
+interface NavChild {
+  label: string;
+  href: string;
+  permission?: string;
+}
 
 interface NavItem {
   label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: number;
-  /** Permission required to see this item (and all children unless they have their own). */
+  href?: string;
+  icon: React.ElementType;
+  badge?: number | null;
   permission?: string;
-  children?: NavItem[];
+  children?: NavChild[];
 }
 
 interface AdminSidebarProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  collapsed: boolean;
+  onCollapse: () => void;
 }
 
-/**
- * Admin Sidebar Component
- * 
- * Navigation sidebar for admin dashboard with collapsible sections.
- */
-export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Element {
+/** Map nav keys to any store permission that should grant access (view vs manage). */
+function hasNavPermission(
+  hasPermission: (p: string) => boolean,
+  perm?: string,
+): boolean {
+  if (!perm) return true;
+  const groups: Record<string, string[]> = {
+    view_products: ["view_products", "manage_products"],
+    view_orders: ["view_orders", "manage_orders"],
+    view_inventory: ["view_inventory", "manage_inventory"],
+  };
+  const keys = groups[perm] ?? [perm];
+  return keys.some((k) => hasPermission(k));
+}
+
+const NAV: NavItem[] = [
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard, permission: "view_dashboard" },
+  {
+    label: "Products",
+    icon: Package,
+    permission: "view_products",
+    children: [
+      { label: "All Products", href: "/admin/products", permission: "view_products" },
+      { label: "Add Product", href: "/admin/products/new", permission: "manage_products" },
+      { label: "Categories", href: "/admin/categories", permission: "manage_categories" },
+      { label: "Collections", href: "/admin/collections", permission: "manage_collections" },
+      { label: "Pricing", href: "/admin/pricing", permission: "manage_products" },
+    ],
+  },
+  {
+    label: "Orders",
+    icon: ShoppingBag,
+    permission: "view_orders",
+    children: [{ label: "All Orders", href: "/admin/orders", permission: "view_orders" }],
+  },
+  {
+    label: "Inventory",
+    icon: Boxes,
+    permission: "view_inventory",
+    children: [
+      { label: "Stock", href: "/admin/inventory", permission: "view_inventory" },
+      { label: "Forecast", href: "/admin/inventory/forecast", permission: "manage_inventory" },
+      { label: "Reports", href: "/admin/inventory/reports", permission: "manage_inventory" },
+    ],
+  },
+  {
+    label: "Complete Looks",
+    icon: Shirt,
+    permission: "manage_looks",
+    children: [
+      { label: "All Looks", href: "/admin/looks" },
+      { label: "Create Look", href: "/admin/looks/new" },
+    ],
+  },
+  {
+    label: "Customers",
+    icon: Users,
+    permission: "manage_customers",
+    children: [
+      { label: "All Customers", href: "/admin/customers" },
+      { label: "Groups", href: "/admin/customers/groups" },
+    ],
+  },
+  {
+    label: "Analytics",
+    icon: BarChart3,
+    permission: "view_analytics",
+    children: [
+      { label: "Overview", href: "/admin/analytics" },
+      { label: "Sales", href: "/admin/analytics/sales" },
+      { label: "Traffic", href: "/admin/analytics/traffic" },
+      { label: "Products", href: "/admin/analytics/products" },
+    ],
+  },
+  { label: "Activity", href: "/admin/activity", icon: Activity, permission: "view_analytics" },
+  { label: "Admin Users", href: "/admin/users", icon: UserCog, permission: "manage_users" },
+  { label: "Settings", href: "/admin/settings", icon: Settings, permission: "manage_settings" },
+];
+
+function NavItemRow({
+  item,
+  collapsed,
+  badge,
+  hasPermission,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  badge?: number | null;
+  hasPermission: (p: string) => boolean;
+}) {
   const pathname = usePathname();
-  const { user, hasPermission } = useAdminAuth();
-  const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
-  const [collapsed, setCollapsed] = React.useState(false);
-  const [isDesktop, setIsDesktop] = React.useState(false);
-  const [pendingOrdersCount, setPendingOrdersCount] = React.useState<number | null>(null);
-  const [lowStockCount, setLowStockCount] = React.useState<number | null>(null);
-  
-  // Fetch pending orders count for badge
-  React.useEffect(() => {
-    const fetchPendingOrdersCount = async (): Promise<void> => {
-      try {
-        const response = await fetch(apiUrl("/api/admin/orders"), {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const orders = data.data?.orders || data.orders || [];
-          const pendingCount = orders.filter((order: { status: string }) => order.status === 'PENDING').length;
-          setPendingOrdersCount(pendingCount > 0 ? pendingCount : null);
-        }
-      } catch (error) {
-        console.error('[AdminSidebar] Failed to fetch pending orders count:', error);
-        // Fail silently - don't break the UI
-      }
-    };
+  if (!hasNavPermission(hasPermission, item.permission)) {
+    return null;
+  }
 
-    if (user) {
-      fetchPendingOrdersCount();
-      // Refresh every 30 seconds
-      const interval = setInterval(fetchPendingOrdersCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
+  const hasChildren = !!item.children?.length;
+  const visibleChildren =
+    item.children?.filter((c) => hasNavPermission(hasPermission, c.permission)) ?? [];
 
-  // Fetch low stock count for Products badge
-  React.useEffect(() => {
-    const fetchLowStockCount = async (): Promise<void> => {
-      try {
-        const response = await fetch(apiUrl("/api/admin/inventory"), {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const lowStock = data.data?.lowStock || data.lowStock || 0;
-          setLowStockCount(lowStock > 0 ? lowStock : null);
-        }
-      } catch (error) {
-        console.error('[AdminSidebar] Failed to fetch low stock count:', error);
-        // Fail silently - don't break the UI
-      }
-    };
+  const isActive = item.href
+    ? item.href === "/admin"
+      ? pathname === "/admin"
+      : pathname?.startsWith(item.href)
+    : visibleChildren.some(
+        (c) =>
+          pathname === c.href ||
+          (c.href !== "/admin" && pathname?.startsWith(c.href)),
+      );
 
-    if (user) {
-      fetchLowStockCount();
-      // Refresh every 60 seconds
-      const interval = setInterval(fetchLowStockCount, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
+  const [open, setOpen] = React.useState(!!isActive);
 
-  // Responsive breakpoint detection - Desktop: 1024px+, Tablet: 768px-1023px, Mobile: <768px
-  React.useEffect(() => {
-    const checkScreenSize = (): void => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-  
-  // On desktop (1024px+), use collapsed state; on tablet/mobile, use isOpen
-  const sidebarExpanded = isDesktop ? !collapsed : isOpen;
+  if (hasChildren && visibleChildren.length === 0) {
+    return null;
+  }
 
-  const allNavItems: NavItem[] = [
-    { label: "Dashboard", href: "/admin", icon: LayoutDashboard, permission: "view_dashboard" },
-    {
-      label: "Products",
-      href: "/admin/products",
-      icon: Package,
-      badge: lowStockCount ?? undefined,
-      permission: "view_products",
-      children: [
-        { label: "All Products", href: "/admin/products", icon: PackageSearch },
-        { label: "Add New", href: "/admin/products/new", icon: Plus, permission: "manage_products" },
-        { label: "Categories", href: "/admin/categories", icon: FolderOpen, permission: "manage_categories" },
-      ],
-    },
-    {
-      label: "Inventory",
-      href: "/admin/inventory",
-      icon: Boxes,
-      permission: "view_inventory",
-      children: [
-        { label: "Dashboard", href: "/admin/inventory", icon: Boxes },
-        { label: "Forecast", href: "/admin/inventory/forecast", icon: TrendingUp, permission: "manage_inventory" },
-        { label: "Reports", href: "/admin/inventory/reports", icon: FileText, permission: "manage_inventory" },
-      ],
-    },
-    {
-      label: "Complete Looks",
-      href: "/admin/looks",
-      icon: Shirt,
-      permission: "manage_looks",
-      children: [
-        { label: "All Looks", href: "/admin/looks", icon: Shirt },
-        { label: "Create Look", href: "/admin/looks/new", icon: Plus },
-      ],
-    },
-    {
-      label: "Orders",
-      href: "/admin/orders",
-      icon: ShoppingBag,
-      badge: pendingOrdersCount ?? undefined,
-      permission: "view_orders",
-      children: [
-        { label: "All Orders", href: "/admin/orders", icon: ShoppingBag },
-        { label: "Processing", href: "/admin/orders?status=pending", icon: PackageCheck },
-        { label: "Completed", href: "/admin/orders?status=delivered", icon: CheckCircle },
-        { label: "Returns", href: "/admin/orders?status=returned", icon: RotateCcw },
-      ],
-    },
-    {
-      label: "Customers",
-      href: "/admin/customers",
-      icon: Users,
-      permission: "manage_customers",
-      children: [
-        { label: "All Customers", href: "/admin/customers", icon: Users },
-        { label: "Customer Groups", href: "/admin/customers/groups", icon: Users },
-      ],
-    },
-    {
-      label: "Analytics",
-      href: "/admin/analytics",
-      icon: BarChart3,
-      permission: "view_analytics",
-      children: [
-        { label: "Sales", href: "/admin/analytics/sales", icon: TrendingUp },
-        { label: "Traffic", href: "/admin/analytics/traffic", icon: Eye },
-        { label: "Products", href: "/admin/analytics/products", icon: Package },
-      ],
-    },
-    { label: "Admin Users", href: "/admin/users", icon: UserCog, permission: "manage_users" },
-    { label: "Settings", href: "/admin/settings", icon: Settings, permission: "manage_settings" },
-  ];
-
-  const canSee = (item: NavItem): boolean => {
-    const perm = item.permission;
-    if (!perm) return true;
-    return hasPermission(perm);
-  };
-
-  const filterNavItem = (item: NavItem): NavItem | null => {
-    if (!canSee(item)) return null;
-    if (!item.children || item.children.length === 0) return item;
-    const filteredChildren = item.children
-      .map((child) => filterNavItem(child))
-      .filter((c): c is NavItem => c !== null);
-    if (filteredChildren.length === 0) return null;
-    return { ...item, children: filteredChildren };
-  };
-
-  const navItems: NavItem[] = allNavItems
-    .map((item) => filterNavItem(item))
-    .filter((item): item is NavItem => item !== null);
-
-  // Auto-expand parent items when a child is active
-  React.useEffect(() => {
-    navItems.forEach((item) => {
-      if (item.children) {
-        const hasActiveChild = item.children.some((child) => {
-          if (child.href === "/admin") {
-            return pathname === "/admin";
-          }
-          return pathname.startsWith(child.href);
-        });
-        if (hasActiveChild) {
-          setExpandedItems((prev) => {
-            if (!prev.has(item.label)) {
-              return new Set(prev).add(item.label);
-            }
-            return prev;
-          });
-        }
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
-  const toggleExpanded = (label: string): void => {
-    setExpandedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(label)) {
-        next.delete(label);
-      } else {
-        next.add(label);
-      }
-      return next;
-    });
-  };
-
-  const isActive = (href: string): boolean => {
-    if (href === "/admin") {
-      return pathname === "/admin";
-    }
-    return pathname.startsWith(href);
-  };
-
-  const renderNavItem = (item: NavItem, level = 0): JSX.Element => {
-    const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.has(item.label);
-    const active = isActive(item.href);
-    const hasActiveChild = hasChildren && item.children?.some((child) => isActive(child.href));
-    const isItemActive = active || hasActiveChild;
-    const Icon = item.icon;
-
-    // Base padding: level 0 = 1rem, level 1+ = 1rem + (level * 0.75rem)
-    const paddingLeft = level === 0 ? "1rem" : `${1 + level * 0.75}rem`;
-
+  if (hasChildren) {
     return (
-      <div key={item.href} className="mb-0.5">
-        {hasChildren ? (
-          <>
-            <button
-              onClick={() => toggleExpanded(item.label)}
-              className={cn(
-                "w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 text-left group relative",
-                "text-sm font-medium",
-                isItemActive
-                  ? "bg-navy-600/90 text-white shadow-lg shadow-navy-500/20"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              )}
-              style={{ 
-                paddingLeft,
-                transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
-              }}
+      <div>
+        <button
+          type="button"
+          className={[
+            "adm-nav-item",
+            isActive ? "adm-nav-item--active" : "",
+          ].join(" ")}
+          onClick={() => !collapsed && setOpen((v) => !v)}
+          title={collapsed ? item.label : undefined}
+        >
+          <item.icon className="adm-nav-item__icon" size={15} />
+          <span className="adm-nav-item__label">{item.label}</span>
+          {badge != null && badge > 0 && (
+            <span className="adm-nav-item__badge">{badge}</span>
+          )}
+          {!collapsed && (
+            <ChevronDown
+              size={12}
+              className={[
+                "adm-nav-item__chevron",
+                open ? "adm-nav-item__chevron--open" : "",
+              ].join(" ")}
+            />
+          )}
+        </button>
+        <AnimatePresence initial={false}>
+          {open && !collapsed && (
+            <motion.div
+              key="sub"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+              style={{ overflow: "hidden" }}
             >
-              {/* Active state left border accent (3-4px) */}
-              {isItemActive && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-navy-400 rounded-r-full" />
-              )}
-              
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <Icon className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-transform duration-200",
-                  isItemActive && "text-white"
-                )} />
-                <span className={cn(
-                  "transition-opacity duration-300 truncate text-sm",
-                  sidebarExpanded ? "opacity-100" : "opacity-0 w-0"
-                )}>{item.label}</span>
-                {item.badge && sidebarExpanded && (
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
-                    {item.badge}
-                  </span>
-                )}
+              <div className="adm-nav-sub">
+                {visibleChildren.map((child) => (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    className={[
+                      "adm-nav-sub-item",
+                      pathname === child.href ||
+                      (child.href !== "/admin" && pathname?.startsWith(child.href))
+                        ? "adm-nav-sub-item--active"
+                        : "",
+                    ].join(" ")}
+                  >
+                    {child.label}
+                  </Link>
+                ))}
               </div>
-              
-              {/* Arrow indicator - always show for parent items */}
-              {sidebarExpanded && (
-                <ChevronRight className={cn(
-                  "w-4 h-4 flex-shrink-0 transition-transform duration-200 ml-2",
-                  isExpanded && "rotate-90",
-                  isItemActive ? "text-white" : "text-white/50"
-                )} />
-              )}
-            </button>
-            <AnimatePresence>
-              {isExpanded && (
-                <m.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="py-1">
-                    {item.children?.map((child) => renderNavItem(child, level + 1))}
-                  </div>
-                </m.div>
-              )}
-            </AnimatePresence>
-          </>
-        ) : (
-          <Link
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
-              "text-sm font-medium",
-              active
-                ? "bg-navy-600/90 text-white shadow-lg shadow-navy-500/20"
-                : "text-white/70 hover:bg-white/10 hover:text-white"
-            )}
-            style={{ 
-              paddingLeft,
-              transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
-            }}
-          >
-            {/* Active state left border accent (3-4px) */}
-            {active && (
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-navy-400 rounded-r-full" />
-            )}
-            
-            <Icon className={cn(
-              "w-5 h-5 flex-shrink-0 transition-transform duration-200",
-              active && "text-white"
-            )} />
-            <span className={cn(
-              "transition-opacity duration-300 truncate text-sm",
-              sidebarExpanded ? "opacity-100" : "opacity-0 w-0"
-            )}>{item.label}</span>
-            {item.badge && sidebarExpanded && (
-              <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
-                {item.badge}
-              </span>
-            )}
-          </Link>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
-  };
+  }
 
   return (
-    <>
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <m.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-charcoal-900/50 z-40 lg:hidden"
-          onClick={onToggle}
-        />
+    <Link
+      href={item.href!}
+      className={[
+        "adm-nav-item",
+        isActive ? "adm-nav-item--active" : "",
+      ].join(" ")}
+      title={collapsed ? item.label : undefined}
+    >
+      <item.icon className="adm-nav-item__icon" size={15} />
+      <span className="adm-nav-item__label">{item.label}</span>
+      {badge != null && badge > 0 && (
+        <span className="adm-nav-item__badge">{badge}</span>
       )}
-
-      {/* Sidebar */}
-      <m.aside
-        initial={false}
-        animate={{
-          width: isDesktop 
-            ? (sidebarExpanded ? 250 : 80)
-            : (isOpen ? '100%' : 0),
-          x: isDesktop || isOpen ? 0 : "-100%",
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 bg-[#0f0f0f] text-white flex flex-col",
-          "border-r border-[rgba(255,255,255,0.08)] shadow-2xl",
-          "lg:translate-x-0 overflow-hidden",
-          "backdrop-blur-sm"
-        )}
-        style={{
-          boxShadow: "4px 0 24px rgba(0, 0, 0, 0.12), 2px 0 8px rgba(0, 0, 0, 0.08)"
-        }}
-      >
-        {/* Header */}
-        <div className="admin-flex-md items-center justify-between admin-section-sm lg:admin-section-md border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
-          {sidebarExpanded ? (
-            <div className="admin-flex-sm items-center">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-navy-600 to-navy-800 flex items-center justify-center shadow-lg">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <AdminSidebarText className="font-bold text-white leading-tight">EXTREME</AdminSidebarText>
-                <AdminCaption className="text-xs text-white/60 leading-tight normal-case">DEPT KIDZ</AdminCaption>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center w-full">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-navy-600 to-navy-800 flex items-center justify-center shadow-lg">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
-            </div>
-          )}
-          <button
-            onClick={onToggle}
-            className={cn(
-              "p-[var(--admin-space-2)] text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 flex-shrink-0",
-              "lg:hidden"
-            )}
-            aria-label="Close sidebar"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          {sidebarExpanded && (
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className={cn(
-                "hidden lg:flex p-[var(--admin-space-2)] text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 flex-shrink-0",
-              )}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          )}
-          {!sidebarExpanded && (
-            <button
-              onClick={() => setCollapsed(false)}
-              className={cn(
-                "hidden lg:flex p-[var(--admin-space-2)] text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 flex-shrink-0",
-              )}
-              aria-label="Expand sidebar"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-
-        {sidebarExpanded && (
-          <div className="admin-section-sm px-[var(--admin-space-4)] flex-shrink-0">
-            <AdminCaption className="text-xs font-semibold text-white/40">Menu</AdminCaption>
-          </div>
-        )}
-
-        {/* Navigation */}
-        {/* CRITICAL: Optimized scroll container with native momentum scrolling */}
-        <nav 
-          className="admin-scroll-container flex-1 px-[var(--admin-space-2)] py-[var(--admin-space-2)] admin-rhythm-sm"
-          data-scroll-container
-        >
-          {navItems.map((item) => renderNavItem(item))}
-        </nav>
-
-        {/* User Section - Includes Sign Out button as backup */}
-        {user && (
-          <div className="admin-section-sm border-t border-[rgba(255,255,255,0.1)] flex-shrink-0">
-            <div className={cn(
-              "admin-flex-md items-center transition-opacity duration-300",
-              sidebarExpanded ? "opacity-100" : "opacity-0"
-            )}>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-navy-600 to-navy-800 flex items-center justify-center flex-shrink-0 shadow-lg">
-                <span className="text-white font-semibold text-sm">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              {sidebarExpanded && (
-                <div className="flex-1 min-w-0">
-                  <AdminSidebarText className="font-semibold text-white truncate">
-                    {user.name}
-                  </AdminSidebarText>
-                  <AdminCaption className="text-xs text-white/60 truncate">
-                    {getRoleDisplayLabel(user.role)}
-                  </AdminCaption>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </m.aside>
-    </>
+    </Link>
   );
 }
+
+export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps): JSX.Element {
+  const { hasPermission } = useAdminAuth();
+  const [orderBadge, setOrderBadge] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    fetch(apiUrl("/api/admin/orders"), { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        const orders = data.data?.orders ?? data.orders ?? [];
+        const n = orders.filter((o: { status: string }) => o.status === "PENDING").length;
+        setOrderBadge(n > 0 ? n : null);
+      })
+      .catch(() => {});
+  }, []);
+
+  return (
+    <aside
+      className={["adm-sidebar", collapsed ? "adm-sidebar--collapsed" : ""].join(" ")}
+    >
+      <Link href="/admin" className="adm-sidebar__logo">
+        <div className="adm-sidebar__logo-mark">E3</div>
+        <span className="adm-sidebar__logo-text">EDK Admin</span>
+      </Link>
+
+      <nav className="adm-sidebar__nav" aria-label="Admin navigation">
+        <div className="adm-sidebar__section">
+          {NAV.map((item) => (
+            <NavItemRow
+              key={item.label}
+              item={item}
+              collapsed={collapsed}
+              badge={item.label === "Orders" ? orderBadge : null}
+              hasPermission={hasPermission}
+            />
+          ))}
+        </div>
+      </nav>
+
+      <div className="adm-sidebar__footer">
+        <button
+          type="button"
+          className="adm-sidebar__collapse-btn"
+          onClick={onCollapse}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <PanelLeft size={14} />
+          ) : (
+            <>
+              <PanelLeftClose size={14} />
+              <span style={{ fontSize: 12 }}>Collapse</span>
+            </>
+          )}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+export default AdminSidebar;
