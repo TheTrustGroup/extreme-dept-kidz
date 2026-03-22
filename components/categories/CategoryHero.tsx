@@ -30,7 +30,7 @@ export function CategoryHero({
 
   return (
     <section
-      className="relative w-full min-h-[40vh] sm:min-h-[45vh] md:min-h-[50vh] lg:min-h-[55vh] flex items-center justify-center overflow-hidden"
+      className="relative w-full min-h-[28vh] sm:min-h-[38vh] md:min-h-[45vh] lg:min-h-[50vh] xl:min-h-[55vh] flex items-center justify-center overflow-hidden"
       aria-label={`Category: ${title}`}
     >
       {/* Background image */}
@@ -56,7 +56,7 @@ export function CategoryHero({
       {/* Glassmorphism overlay for text */}
       <div
         className={cn(
-          "relative z-10 w-full max-w-5xl mx-auto px-4 py-12 sm:px-6 sm:py-16 md:px-8 md:py-20",
+          "relative z-10 w-full max-w-5xl mx-auto px-4 py-8 sm:px-6 sm:py-12 md:px-8 md:py-20",
           "rounded-none md:rounded-lg",
           "backdrop-blur-md border border-white/10",
           "bg-white/5 md:bg-white/10",

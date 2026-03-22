@@ -10,7 +10,6 @@ import { H1, Body } from "@/components/ui/typography";
 import CollectionToolbar, {
   type FilterState,
 } from "@/components/collection/CollectionToolbar";
-import CollectionTabs from "@/components/collection/CollectionTabs";
 import ProductGrid from "@/components/product/ProductGrid";
 import type { ProductCardProps } from "@/components/product/ProductCard";
 import { useCartStore } from "@/lib/stores/cart-store";
@@ -249,34 +248,32 @@ export function CollectionPageClient({
         className={skipHero ? "pt-0" : "pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16"}
       >
         <div className="collection-page">
-          <div className="collection-header container-luxury">
-            <motion.h1
-              className="text-h1 font-playfair text-[var(--text-primary)]"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {collection.name}
-            </motion.h1>
-            {collection.description ? (
-              <motion.p
-                className="collection-header__desc"
-                initial={{ opacity: 0, y: 8 }}
+          {!skipHero && (
+            <div className="collection-header container-luxury">
+              <motion.h1
+                className="text-h1 font-playfair text-[var(--text-primary)]"
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.4,
-                  delay: 0.1,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               >
-                {collection.description}
-              </motion.p>
-            ) : null}
-          </div>
-
-          <div className="container-luxury">
-            <CollectionTabs />
-          </div>
+                {collection.name}
+              </motion.h1>
+              {collection.description ? (
+                <motion.p
+                  className="collection-header__desc"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.4,
+                    delay: 0.1,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  {collection.description}
+                </motion.p>
+              ) : null}
+            </div>
+          )}
 
           <div className="container-luxury section-sm">
             <CollectionToolbar

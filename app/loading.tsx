@@ -1,9 +1,9 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { BrandSpinner } from "@/components/ui/PageLoader";
 
 export default function Loading(): JSX.Element {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <LoadingSpinner size="lg" />
+      <BrandSpinner />
     </div>
   );
 }

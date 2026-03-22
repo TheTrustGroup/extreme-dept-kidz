@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Spinner } from "@/components/ui/PageLoader";
 import { CategoryHero } from "@/components/categories";
 import { CollectionPageClient } from "./CollectionPageClient";
 import { getAllCategories } from "@/lib/db";
@@ -295,7 +296,7 @@ export default async function CollectionPage({ params }: CollectionPageProps): P
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-16">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luxury-navy"></div>
+                <Spinner size="lg" />
               </div>
             }
           >

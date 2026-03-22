@@ -14,7 +14,7 @@ interface LazyMotionProviderProps {
  */
 export function LazyMotionProvider({ children }: LazyMotionProviderProps): JSX.Element {
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={domAnimation} strict={false}>
       {children}
     </LazyMotion>
   );

@@ -314,38 +314,19 @@ export default function Header() {
               </AnimatePresence>
             </Link>
 
-            {/* Mobile menu button */}
+            {/* Mobile menu — no Framer Motion wrappers (avoids transform conflicts with drawer) */}
             <button
+              type="button"
               className="icon-btn lg:hidden ml-1"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
             >
-              <AnimatePresence mode="wait" initial={false}>
-                {mobileOpen ? (
-                  <motion.span
-                    key="x"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex items-center"
-                  >
-                    <X size={20} strokeWidth={1.5} />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="menu"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex items-center"
-                  >
-                    <Menu size={20} strokeWidth={1.5} />
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              {mobileOpen ? (
+                <X size={20} strokeWidth={1.5} />
+              ) : (
+                <Menu size={20} strokeWidth={1.5} />
+              )}
             </button>
           </div>
         </div>

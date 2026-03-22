@@ -1623,7 +1623,7 @@ textarea:focus-visible {
   display: block;
 }
 
-/* ── Hover CTA overlay (desktop) ─────────────────────────────── */
+/* ── Hover CTA overlay (desktop only — base hidden so mobile never stacks with inline CTA) */
 .product-card__hover-cta {
   position: absolute;
   bottom: 0;
@@ -1635,8 +1635,13 @@ textarea:focus-visible {
     rgba(15, 23, 42, 0.75) 0%,
     rgba(15, 23, 42, 0) 100%
   );
-  display: flex;
+  display: none;
   align-items: flex-end;
+}
+@media (min-width: 768px) {
+  .product-card__hover-cta {
+    display: flex;
+  }
 }
 .product-card__hover-btn {
   width: 100%;
@@ -1771,6 +1776,11 @@ textarea:focus-visible {
   background-color: var(--color-navy);
   color: var(--color-cream);
   border-color: var(--color-navy);
+}
+@media (min-width: 768px) {
+  .product-card__mobile-cta {
+    display: none !important;
+  }
 }
 
 .product-card__sold-out-label {
@@ -2980,6 +2990,13 @@ aside {
 .collection-header {
   padding-top: 40px;
   padding-bottom: 24px;
+  margin-bottom: 0;
+}
+@media (max-width: 767px) {
+  .collection-header {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
 }
 .collection-header__desc {
   font-family: "Inter", system-ui, sans-serif;

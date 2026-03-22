@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import HeroSection from '@/components/home/HeroSection'
-import TrustBar from '@/components/home/TrustBar'
 import JustDroppedClient from '@/components/home/JustDroppedClient'
 import ShopByCategory from '@/components/home/ShopByCategory'
 import NewsletterSection from '@/components/home/NewsletterSection'
@@ -36,8 +35,6 @@ export default async function HomePage() {
   return (
     <main id="main-content">
       <HeroSection />
-
-      <TrustBar />
 
       <ClientErrorBoundary message="Unable to load new arrivals.">
         <JustDroppedClient products={products} />

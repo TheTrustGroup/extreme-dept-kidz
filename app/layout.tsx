@@ -12,6 +12,7 @@ import { SkipLinks } from "@/components/a11y/SkipLinks";
 import { LazyWebVitals } from "./LazyWebVitals";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProductsUpdateListener } from "@/components/ProductsUpdateListener";
+import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import "./globals.css";
 
 // CRITICAL FIX: Optimize font loading to prevent blocking render
@@ -265,6 +266,7 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <CartDrawerWrapper />
             </Suspense>
+            <WhatsAppButton />
             {/* WebVitals: Deferred hydration (requestIdleCallback) */}
             <LazyWebVitals />
           </Providers>

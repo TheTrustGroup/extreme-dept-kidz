@@ -191,7 +191,7 @@ export default function ProductCard({
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: "100%", opacity: 0 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="product-card__hover-cta hidden md:flex"
+                className="product-card__hover-cta"
                 aria-hidden="true"
               >
                 <button
@@ -256,7 +256,7 @@ export default function ProductCard({
 
           {!isSoldOut && (
             <button
-              className="product-card__mobile-cta md:hidden"
+              className="product-card__mobile-cta"
               onClick={handleAddToCart}
               aria-label={`Add ${name} to bag`}
             >

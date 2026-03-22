@@ -547,3 +547,67 @@
   color: var(--adm-text-2);
   margin-bottom: 28px;
 }
+
+/* ── Force dark background on all admin content (Tailwind utility overrides) ── */
+[data-admin] .bg-white,
+[data-admin] .bg-gray-50,
+[data-admin] .bg-gray-100 {
+  background-color: var(--adm-surface) !important;
+}
+[data-admin] .bg-gray-200 {
+  background-color: var(--adm-surface-2) !important;
+}
+[data-admin] .text-gray-900,
+[data-admin] .text-gray-800,
+[data-admin] .text-black {
+  color: var(--adm-text-1) !important;
+}
+[data-admin] .text-gray-600,
+[data-admin] .text-gray-700 {
+  color: var(--adm-text-2) !important;
+}
+[data-admin] .text-gray-400,
+[data-admin] .text-gray-500 {
+  color: var(--adm-text-3) !important;
+}
+[data-admin] .border-gray-200,
+[data-admin] .border-gray-100 {
+  border-color: var(--adm-border) !important;
+}
+[data-admin] .border-gray-300 {
+  border-color: var(--adm-border-mid) !important;
+}
+[data-admin] .divide-gray-200 > * {
+  border-color: var(--adm-border) !important;
+}
+[data-admin] .shadow,
+[data-admin] .shadow-sm,
+[data-admin] .shadow-md {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+[data-admin] input,
+[data-admin] select,
+[data-admin] textarea {
+  background-color: var(--adm-surface-2) !important;
+  border-color: var(--adm-border-mid) !important;
+  color: var(--adm-text-1) !important;
+}
+[data-admin] input::placeholder,
+[data-admin] select::placeholder,
+[data-admin] textarea::placeholder {
+  color: var(--adm-text-3) !important;
+}
+[data-admin] table thead {
+  background-color: var(--adm-surface-2) !important;
+}
+[data-admin] table th {
+  color: var(--adm-text-3) !important;
+  border-color: var(--adm-border) !important;
+}
+[data-admin] table td {
+  border-color: var(--adm-border) !important;
+  color: var(--adm-text-2) !important;
+}
+[data-admin] table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
