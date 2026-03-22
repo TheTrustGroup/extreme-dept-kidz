@@ -73,8 +73,8 @@ const COLUMNS = [
       { label: 'About Us',       href: '/about' },
       { label: 'Style Guide',    href: '/style-guide' },
       { label: 'Accessibility',  href: '/accessibility' },
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms',          href: '/terms' },
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms',          href: '/terms-of-service' },
     ],
   },
 ]
@@ -224,8 +224,8 @@ export default function Footer() {
             </div>
             <nav className="footer-legal" aria-label="Legal">
               {[
-                { l: 'Privacy',       h: '/privacy' },
-                { l: 'Terms',         h: '/terms' },
+                { l: 'Privacy',       h: '/privacy-policy' },
+                { l: 'Terms',         h: '/terms-of-service' },
                 { l: 'Accessibility', h: '/accessibility' },
               ].map(({ l, h }) => (
                 <Link key={h} href={h} className="footer-legal__link">{l}</Link>

@@ -113,8 +113,8 @@ export default function CheckoutLayout({
       <footer className="checkout-footer">
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
           {[
-            { label: "Privacy", href: "/privacy" },
-            { label: "Terms", href: "/terms" },
+            { label: "Privacy", href: "/privacy-policy" },
+            { label: "Terms", href: "/terms-of-service" },
             { label: "Returns", href: "/returns-exchange" },
             { label: "Contact", href: "/contact" },
           ].map((l) => (

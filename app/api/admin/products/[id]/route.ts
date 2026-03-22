@@ -95,6 +95,7 @@ export async function PUT(
       description?: string;
       slug?: string;
       categoryId?: string;
+      visibleOnStore?: boolean;
       variants?: Array<{
         id: string;
         name?: string;
@@ -106,7 +107,7 @@ export async function PUT(
       images?: Array<{ id?: string; url: string; alt?: string; position?: number }>;
     };
 
-    const { name, description, slug, categoryId, variants, images } = body;
+    const { name, description, slug, categoryId, variants, images, visibleOnStore } = body;
 
     // Update product base fields
     const product = await prisma.product.update({
@@ -116,6 +117,7 @@ export async function PUT(
         ...(description !== undefined && { description }),
         ...(slug !== undefined && { slug }),
         ...(categoryId !== undefined && { categoryId }),
+        ...(typeof visibleOnStore === "boolean" && { visibleOnStore }),
       },
     });
 

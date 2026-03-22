@@ -1,228 +1,556 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Lock } from "lucide-react";
-import { H1, Body } from "@/components/ui/typography";
-import { Container } from "@/components/ui/container";
-import { LazyMotion, m, domAnimation } from "framer-motion";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 
-/**
- * Admin Login Page
- * 
- * Premium login interface for admin dashboard access.
- */
 export default function AdminLoginPage(): JSX.Element {
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { login } = useAdminAuth();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [rememberMe, setRememberMe] = React.useState(false);
-  const [error, setError] = React.useState("");
+  const [showPw, setShowPw] = React.useState(false);
+  const [remember, setRemember] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
 
-  async function handleLogin(): Promise<void> {
-    setError("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
     setLoading(true);
-
+    setError("");
     try {
-      const res = await fetch('/api/admin/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // REQUIRED for cookies
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-        // Try to parse error response
-        let errorMessage = 'Login failed. Please check your credentials.';
-        try {
-          const data = await res.json();
-          errorMessage = data.error || data.message || errorMessage;
-          // Include details if available (for debugging)
-          if (data.details && process.env.NODE_ENV === 'development') {
-            errorMessage += ` (${data.details})`;
-          }
-        } catch (parseError) {
-          // If JSON parsing fails, use status text
-          errorMessage = `Login failed: ${res.status} ${res.statusText}`;
-        }
-        setError(errorMessage);
-        setLoading(false);
-        return;
+      const ok = await login(email, password);
+      if (ok) {
+        router.replace("/admin");
+      } else {
+        setError("Invalid email or password. Please try again.");
       }
-
-      // Success - give the browser time to commit Set-Cookie before navigation.
-      const from = searchParams.get('from');
-      const redirectTo =
-        from && from.startsWith('/admin') && !from.startsWith('/admin/login')
-          ? from
-          : '/admin';
-      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 250)));
-      window.location.href = redirectTo;
-    } catch (fetchError) {
-      // Network error or other fetch failures
-      console.error('Login fetch error:', fetchError);
-      setError('Network error. Please check your connection and try again.');
+    } catch {
+      setError("Unable to connect. Please try again.");
+    } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const s = {
+    page: {
+      minHeight: "100vh",
+      display: "flex",
+      background: "var(--adm-bg)",
+      fontFamily: "var(--font-inter, system-ui, sans-serif)",
+    } as React.CSSProperties,
+
+    left: {
+      width: 360,
+      flexShrink: 0,
+      background: "var(--adm-s1)",
+      borderRight: "1px solid var(--adm-b1)",
+      display: "flex",
+      flexDirection: "column" as const,
+      padding: "40px 36px",
+      minHeight: "100vh",
+    } as React.CSSProperties,
+
+    right: {
+      flex: 1,
+      background: "var(--adm-bg)",
+      display: "flex",
+      flexDirection: "column" as const,
+      padding: "40px 40px",
+    } as React.CSSProperties,
+  };
 
   return (
-    <LazyMotion features={domAnimation} strict>
-      <div className="min-h-screen bg-gradient-to-br from-cream-50 via-cream-100 to-navy-50 flex items-center justify-center p-4">
-        <Container size="sm">
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="bg-cream-50 rounded-2xl shadow-2xl overflow-hidden"
+    <div style={s.page}>
+      {/* ── Left: form ── */}
+      <div className="adm-login-left" style={s.left}>
+        {/* Brand */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 52,
+          }}
+        >
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              background: "var(--adm-gold)",
+              borderRadius: "var(--adm-radius)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#0a0a0f",
+              flexShrink: 0,
+            }}
           >
-          {/* Header */}
-          <div className="bg-navy-900 px-8 py-12 text-center">
-            <div className="flex justify-center mb-4">
-              <Image
-                src="/Extreme Logo.png"
-                alt="EXTREME DEPT KIDZ"
-                width={200}
-                height={40}
-                className="h-10 w-auto object-contain"
-                priority
-              />
-            </div>
-            <H1 className="text-cream-50 text-2xl md:text-3xl font-serif font-bold mb-2">
-              Admin Dashboard
-            </H1>
-            <Body className="text-cream-100/80 text-sm">
-              Secure admin access
-            </Body>
+            E3
           </div>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+              color: "var(--adm-t1)",
+            }}
+          >
+            EDK Admin
+          </span>
+        </div>
 
-          {/* Login Form */}
-          <div className="p-8 space-y-6">
-            {error && (
-              <m.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
-              >
-                {error}
-              </m.div>
-            )}
+        {/* Heading */}
+        <h1
+          style={{
+            fontSize: 22,
+            fontWeight: 600,
+            color: "var(--adm-t1)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.2,
+            marginBottom: 8,
+          }}
+        >
+          Welcome back
+        </h1>
+        <p
+          style={{
+            fontSize: 13,
+            color: "var(--adm-t3)",
+            marginBottom: 36,
+            lineHeight: 1.5,
+          }}
+        >
+          Sign in to manage your store.
+        </p>
 
-            {/* Email Input */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-charcoal-900 mb-2"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent transition-all"
-                placeholder="info@extremedeptkidz.com"
-                autoComplete="email"
-              />
-            </div>
+        {/* Error */}
+        {error && (
+          <div
+            style={{
+              background: "var(--adm-ro2)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              borderRadius: "var(--adm-radius)",
+              padding: "10px 12px",
+              fontSize: 12,
+              color: "var(--adm-rose)",
+              marginBottom: 16,
+              lineHeight: 1.5,
+            }}
+          >
+            {error}
+          </div>
+        )}
 
-            {/* Password Input */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-charcoal-900 mb-2"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 pr-12 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent transition-all"
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal-600 hover:text-charcoal-900 transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-navy-900 border-cream-300 rounded focus:ring-navy-500"
-                />
-                <span className="text-sm text-charcoal-700">Remember me</span>
-              </label>
-              <a
-                href="/admin/forgot-password"
-                className="text-sm text-navy-900 hover:text-navy-700 font-medium transition-colors"
-              >
-                Forgot password?
-              </a>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="button"
-              onClick={handleLogin}
-              disabled={loading || !email.trim() || !password.trim()}
-              className="w-full px-6 py-3 bg-navy-900 text-cream-50 font-semibold rounded-lg hover:bg-navy-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          {/* Email */}
+          <div style={{ marginBottom: 14 }}>
+            <label
+              style={{
+                display: "block",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--adm-t3)",
+                marginBottom: 6,
+              }}
             >
-              {loading ? (
-                <>
-                  <span className="animate-spin">⏳</span>
-                  Signing in...
-                </>
-              ) : (
-                "SIGN IN"
-              )}
-            </button>
-
-            {/* Security Note */}
-            <div className="flex items-center justify-center gap-2 text-xs text-charcoal-600 pt-4 border-t border-cream-200">
-              <Lock className="w-4 h-4" />
-              <span>Secure admin access</span>
-            </div>
-
-            {/* Development Credentials Hint */}
-            {process.env.NODE_ENV === "development" && (
-              <div className="mt-6 p-4 bg-navy-50 rounded-lg border border-navy-200">
-                <p className="text-xs font-semibold text-navy-900 mb-2">
-                  Admin Credentials:
-                </p>
-                <div className="text-xs text-navy-700 space-y-1">
-                  <p>Email: info@extremedeptkidz.com</p>
-                  <p>Password: Admin123!@#</p>
-                </div>
-              </div>
-            )}
+              Email address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@extremedeptkidz.com"
+              autoComplete="email"
+              required
+              style={{
+                width: "100%",
+                height: 42,
+                background: "var(--adm-s2)",
+                border: "1px solid var(--adm-b2)",
+                borderRadius: "var(--adm-radius)",
+                padding: "0 12px",
+                color: "var(--adm-t1)",
+                fontSize: 13,
+                outline: "none",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "var(--adm-gold)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "var(--adm-b2)";
+              }}
+            />
           </div>
-          </m.div>
-        </Container>
+
+          {/* Password */}
+          <div style={{ marginBottom: 18 }}>
+            <label
+              style={{
+                display: "block",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--adm-t3)",
+                marginBottom: 6,
+              }}
+            >
+              Password
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                required
+                style={{
+                  width: "100%",
+                  height: 42,
+                  background: "var(--adm-s2)",
+                  border: "1px solid var(--adm-b2)",
+                  borderRadius: "var(--adm-radius)",
+                  padding: "0 40px 0 12px",
+                  color: "var(--adm-t1)",
+                  fontSize: 13,
+                  outline: "none",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "var(--adm-gold)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "var(--adm-b2)";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((v) => !v)}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  color: "var(--adm-t3)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                aria-label={showPw ? "Hide password" : "Show password"}
+              >
+                {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember + forgot */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 24,
+            }}
+          >
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                cursor: "pointer",
+              }}
+            >
+              <div
+                className="adm-login-remember"
+                onClick={() => setRemember((v) => !v)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setRemember((v) => !v);
+                  }
+                }}
+                role="checkbox"
+                aria-checked={remember}
+                tabIndex={0}
+                style={{
+                  width: 14,
+                  height: 14,
+                  border: "1px solid var(--adm-b2)",
+                  borderRadius: 3,
+                  background: remember ? "var(--adm-gold)" : "var(--adm-s2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  transition: "background 150ms ease",
+                }}
+              >
+                {remember && (
+                  <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#0a0a0f" strokeWidth="2.5">
+                    <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+              <span style={{ fontSize: 12, color: "var(--adm-t2)" }}>Remember me</span>
+            </label>
+            <Link
+              href="/admin/forgot-password"
+              style={{
+                fontSize: 12,
+                color: "var(--adm-t3)",
+                textDecoration: "none",
+                transition: "color 150ms ease",
+              }}
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              height: 42,
+              background: loading ? "rgba(201,162,39,0.5)" : "var(--adm-gold)",
+              border: "none",
+              borderRadius: "var(--adm-radius)",
+              color: "#0a0a0f",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: loading ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              transition: "background 150ms ease",
+              marginBottom: 0,
+            }}
+          >
+            {loading ? (
+              <>
+                <span
+                  style={{
+                    width: 14,
+                    height: 14,
+                    border: "2px solid rgba(10,10,15,0.3)",
+                    borderTopColor: "#0a0a0f",
+                    borderRadius: "50%",
+                    animation: "edk-spin 0.7s linear infinite",
+                    flexShrink: 0,
+                  }}
+                />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <div
+          style={{
+            marginTop: "auto",
+            paddingTop: 32,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <ShieldCheck size={13} style={{ color: "var(--adm-t3)", flexShrink: 0 }} />
+          <span style={{ fontSize: 11, color: "var(--adm-t3)" }}>
+            Secured · Extreme Dept Kidz © {new Date().getFullYear()}
+          </span>
+        </div>
       </div>
-    </LazyMotion>
+
+      {/* ── Right: store preview ── */}
+      <div className="adm-login-right" style={s.right}>
+        <p
+          style={{
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--adm-t3)",
+            marginBottom: 20,
+          }}
+        >
+          Store overview
+        </p>
+
+        {/* Stat grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          {(
+            [
+              { label: "Revenue", value: "₵0", gold: true },
+              { label: "Orders", value: "0" },
+              { label: "Products", value: "1" },
+              { label: "Low Stock", value: "6", red: true },
+            ] satisfies ReadonlyArray<{
+              label: string;
+              value: string;
+              gold?: boolean;
+              red?: boolean;
+            }>
+          ).map(({ label, value, gold, red }) => (
+            <div
+              key={label}
+              style={{
+                background: "var(--adm-s1)",
+                border: "1px solid var(--adm-b1)",
+                borderRadius: "var(--adm-radius)",
+                padding: "14px 16px",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 20,
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em",
+                  color: gold ? "var(--adm-gold)" : red ? "var(--adm-rose)" : "var(--adm-t1)",
+                  lineHeight: 1,
+                  marginBottom: 5,
+                }}
+              >
+                {value}
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: "0.07em",
+                  textTransform: "uppercase",
+                  color: "var(--adm-t3)",
+                }}
+              >
+                {label}
+              </div>
+              {red && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "var(--adm-rose)",
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Activity feed */}
+        <div
+          style={{
+            background: "var(--adm-s1)",
+            border: "1px solid var(--adm-b1)",
+            borderRadius: "var(--adm-radius)",
+            padding: "16px",
+            flex: 1,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--adm-t3)",
+              marginBottom: 14,
+            }}
+          >
+            Recent activity
+          </p>
+          {[
+            { dot: "var(--adm-gold)", text: "New product added — Jordan Legacy T-Shirt", time: "2h ago" },
+            { dot: "var(--adm-emerald)", text: "Store published · extremedeptkidz.com", time: "1d ago" },
+            { dot: "var(--adm-sky)", text: "Admin account created", time: "2d ago" },
+            { dot: "var(--adm-t3)", text: "6 inventory items below threshold", time: "now" },
+          ].map(({ dot, text, time }) => (
+            <div
+              key={text}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 11,
+              }}
+            >
+              <div
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: dot,
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 12, color: "var(--adm-t2)", flex: 1 }}>{text}</span>
+              <span style={{ fontSize: 11, color: "var(--adm-t3)", flexShrink: 0 }}>{time}</span>
+            </div>
+          ))}
+        </div>
+
+        <p
+          style={{
+            marginTop: "auto",
+            paddingTop: 20,
+            fontSize: 10,
+            color: "var(--adm-t3)",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Extreme Dept Kidz · Admin Portal · Accra, Ghana
+        </p>
+      </div>
+
+      <style>{`
+        @keyframes edk-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @media (max-width: 640px) {
+          .adm-login-right { display: none !important; }
+          .adm-login-left {
+            width: 100% !important;
+            min-width: 0 !important;
+            border-right: none !important;
+          }
+        }
+      `}</style>
+    </div>
   );
 }

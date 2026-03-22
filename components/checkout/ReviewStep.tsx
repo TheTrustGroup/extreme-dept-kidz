@@ -186,11 +186,11 @@ export default function ReviewStep({
         />
         <span className="review-agree__text">
           I agree to the{" "}
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">
+          <a href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline">
             Terms of Service
           </a>{" "}
           and{" "}
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">
+          <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline">
             Privacy Policy
           </a>
         </span>

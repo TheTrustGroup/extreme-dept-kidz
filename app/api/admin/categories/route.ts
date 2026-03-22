@@ -10,6 +10,7 @@ import { authenticateAndAuthorize } from "@/lib/auth/middleware";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
 import { CACHE_TAGS, revalidateCollectionPage } from "@/lib/utils/cache-revalidation";
 import { withCors } from "@/lib/utils/cors";
+import { normalizeUrlSlug } from "@/lib/utils/slug";
 
 export const dynamic = "force-dynamic";
 
@@ -76,8 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { name, description, image, isActive } = validation.data;
 
-    // Generate slug if not provided
-    const slug = validation.data.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+    const slug = normalizeUrlSlug(validation.data.slug ?? name, "category");
 
     // Check if slug already exists
     const existingCategory = await prisma.category.findUnique({

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const results = await searchProducts(query);
+    const results = await searchProducts(query, { storefrontOnly: true });
 
     return apiSuccess(
       {

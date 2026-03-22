@@ -11,6 +11,7 @@ import { logActivity, ActivityActions } from "@/lib/services/admin/activity.serv
 import { CACHE_TAGS, revalidateCollectionPage } from "@/lib/utils/cache-revalidation";
 import type { Prisma } from "@prisma/client";
 import { withCors } from "@/lib/utils/cors";
+import { normalizeUrlSlug } from "@/lib/utils/slug";
 
 export const dynamic = "force-dynamic";
 
@@ -116,25 +117,12 @@ export async function PUT(
       return withCors(request, apiNotFound("Category"));
     }
 
-    // Check slug uniqueness if slug is being updated
-    if (validatedData.slug && validatedData.slug !== existing.slug) {
-      const slugExists = await prisma.category.findUnique({
-        where: { slug: validatedData.slug },
-      });
-      if (slugExists) {
-        return withCors(request, apiError(
-          "Category with this slug already exists",
-          409,
-          `A category with slug "${validatedData.slug}" already exists. Please use a different slug.`
-        ));
-      }
-    }
-
-    // Generate slug from name if slug is empty and name is provided
-    let finalSlug = validatedData.slug;
-    if (!finalSlug && validatedData.name) {
-      finalSlug = validatedData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      // Check if generated slug already exists (excluding current category)
+    // Resolve slug: explicit (normalized) or derived from name
+    let finalSlug: string | undefined;
+    if (validatedData.slug) {
+      finalSlug = normalizeUrlSlug(validatedData.slug, "category");
+    } else if (validatedData.name) {
+      finalSlug = normalizeUrlSlug(validatedData.name, "category");
       const generatedSlugExists = await prisma.category.findFirst({
         where: {
           slug: finalSlug,
@@ -142,8 +130,21 @@ export async function PUT(
         },
       });
       if (generatedSlugExists) {
-        // Append timestamp to make it unique
         finalSlug = `${finalSlug}-${Date.now()}`;
+      }
+    }
+
+    // Uniqueness when slug changes (explicit or regenerated)
+    if (finalSlug !== undefined && finalSlug !== existing.slug) {
+      const slugExists = await prisma.category.findUnique({
+        where: { slug: finalSlug },
+      });
+      if (slugExists) {
+        return withCors(request, apiError(
+          "Category with this slug already exists",
+          409,
+          `A category with slug "${finalSlug}" already exists. Please use a different slug.`
+        ));
       }
     }
 

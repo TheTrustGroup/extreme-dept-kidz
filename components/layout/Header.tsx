@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShoppingBag, Search, User, Sun, Moon, ChevronDown, Menu, X } from "lucide-react";
 import { dropdownIn } from "@/lib/motion";
@@ -52,13 +52,17 @@ function useTheme() {
 }
 
 // ─── Component ────────────────────────────────────────────────────
+const MIN_SEARCH_LEN = 2;
+
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const items = useCartStore((s) => s.items);
   const cartCount = items.reduce((n, i) => n + i.quantity, 0);
   const { isDark, toggle } = useTheme();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobileNav = useCallback(() => setMobileOpen(false), []);
   const scrolled = useScrolled(8);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -86,16 +90,15 @@ export default function Header() {
     if (searchOpen) searchRef.current?.focus();
   }, [searchOpen]);
 
-  // Lock body scroll when mobile nav open
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen]);
-
   const isActive = (href?: string) =>
     href ? pathname === href || pathname.startsWith(href + "/") : false;
+
+  function submitDesktopSearch(): void {
+    const q = (searchRef.current?.value ?? "").trim();
+    if (q.length < MIN_SEARCH_LEN) return;
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+    setSearchOpen(false);
+  }
 
   return (
     <>
@@ -228,9 +231,19 @@ export default function Header() {
                     <input
                       ref={searchRef}
                       type="search"
+                      name="q"
+                      autoComplete="off"
                       placeholder="Search products…"
+                      aria-label="Search products"
+                      enterKeyHint="search"
                       className="w-full h-9 px-3 text-body-sm bg-[var(--bg-surface-2)] border border-[var(--border-default)] rounded-input outline-none focus:border-[var(--color-gold)] transition-colors"
-                      onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") setSearchOpen(false);
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          submitDesktopSearch();
+                        }
+                      }}
                     />
                   </motion.div>
                 )}
@@ -339,7 +352,7 @@ export default function Header() {
       {/* ── Mobile nav ──────────────────────────────────────────── */}
       <MobileNav
         open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
+        onClose={closeMobileNav}
         isDark={isDark}
         onThemeToggle={toggle}
         cartCount={cartCount}
