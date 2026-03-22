@@ -1,3 +1,9 @@
+/* Kill cream body behind the admin shell (theme rules load later in globals.css). */
+html:has(body [data-admin]),
+body:has([data-admin]) {
+  background-color: #08080d !important;
+}
+
 [data-admin] {
   --adm-bg:       #08080d;
   --adm-s1:       #0e0e16;
@@ -474,8 +480,17 @@
   border-color: var(--adm-b1) !important;
   color: var(--adm-t2) !important;
 }
+/* Row hover: tr often uses Tailwind hover:bg-gray-50 (light) which is not remapped; nearly-transparent td would show that through — use a solid dark hover. */
+[data-admin] table tbody tr {
+  background-color: transparent;
+}
+[data-admin] table tbody tr:hover,
 [data-admin] table tbody tr:hover td {
-  background-color: rgba(255,255,255,.02) !important;
+  background-color: var(--adm-s2) !important;
+}
+[data-admin] .hover\:bg-gray-50:hover,
+[data-admin] .hover\:bg-slate-50:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
 }
 [data-admin] .rounded,
 [data-admin] .rounded-md,

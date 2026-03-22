@@ -74,10 +74,19 @@ html {
 }
 
 /* GPU hints for non-root elements. Avoid contain on html/body/main — it breaks position:fixed to the viewport. */
-*:not(html):not(body) {
+*:not(html):not(body):not(main):not(#main-content) {
   -webkit-transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   -webkit-perspective: 1000;
+}
+
+/* Admin dashboard: fixed header/sidebar must use the viewport; GPU transform on main/[data-admin] breaks fixed + shows body (cream) above the shell. */
+#main-content:has([data-admin]),
+#main-content:has([data-admin]) [data-admin] {
+  transform: none !important;
+  -webkit-transform: none !important;
+  -webkit-backface-visibility: visible;
+  -webkit-perspective: none;
 }
 
 /* Global utility layer: currency pill and similar. DO NOT add overflow:hidden or contain:paint
