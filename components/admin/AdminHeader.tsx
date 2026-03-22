@@ -1,106 +1,87 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, LogOut, ExternalLink, Menu } from "lucide-react";
+import { Bell, LogOut, ExternalLink } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
-import { getRoleDisplayLabel } from "@/lib/auth/rbac";
 
 interface AdminHeaderProps {
   sidebarCollapsed: boolean;
-  onToggleSidebar: () => void;
+  onToggleSidebar:  () => void;
 }
 
 function usePageTitle(): string {
-  const pathname = usePathname() ?? "";
-  const segments = pathname.replace("/admin", "").split("/").filter(Boolean);
-  if (segments.length === 0) return "Dashboard";
-  return segments
+  const p = usePathname() ?? "";
+  const segs = p.replace("/admin", "").split("/").filter(Boolean);
+  if (!segs.length) return "Dashboard";
+  return segs
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1).replace(/-/g, " "))
     .join(" / ");
 }
 
 export function AdminHeader({
   sidebarCollapsed,
-  onToggleSidebar,
+  onToggleSidebar: _onToggleSidebar,
 }: AdminHeaderProps): JSX.Element {
-  const router = useRouter();
-  const { user, logout } = useAdminAuth();
+  const router    = useRouter();
+  const { logout } = useAdminAuth();
   const pageTitle = usePageTitle();
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "A";
 
-  const handleLogout = async (): Promise<void> => {
+  const handleLogout = async () => {
     await logout();
     router.replace("/admin/login");
   };
 
   return (
     <header
-      className={[
-        "adm-header",
-        sidebarCollapsed ? "adm-header--collapsed" : "",
-      ].join(" ")}
+      className={`adm-header${sidebarCollapsed ? " adm-header--col" : ""}`}
     >
-      <button
-        type="button"
-        className="adm-header__btn md:hidden"
-        onClick={onToggleSidebar}
-        aria-label="Toggle sidebar"
-      >
-        <Menu size={14} />
-      </button>
-
-      <div className="adm-header__breadcrumb">
-        <span style={{ color: "var(--adm-text-3)", fontSize: 12 }}>EDK</span>
-        <span className="adm-header__breadcrumb-sep">/</span>
-        <span className="adm-header__breadcrumb-current">{pageTitle}</span>
+      {/* Breadcrumb */}
+      <div className="adm-hdr-path">
+        <span className="adm-hdr-seg">EDK</span>
+        <span className="adm-hdr-sep">/</span>
+        <span className="adm-hdr-cur">{pageTitle}</span>
       </div>
 
-      <div className="adm-header__actions">
+      {/* Actions — minimal, purposeful */}
+      <div className="adm-hdr-r">
         <Link
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="adm-header__btn"
-          title="View storefront"
+          href="/" target="_blank"
+          className="adm-ic-btn" title="View storefront"
         >
-          <ExternalLink size={14} />
+          <ExternalLink size={14} strokeWidth={1.5} />
         </Link>
 
-        <button type="button" className="adm-header__btn" title="Notifications">
-          <Bell size={14} />
-          <span className="adm-header__badge" />
+        <button className="adm-ic-btn" title="Notifications">
+          <Bell size={14} strokeWidth={1.5} />
+          <span className="adm-ic-btn-dot" />
         </button>
 
-        <div className="adm-header__divider" />
+        <div className="adm-hdiv" />
 
-        <div className="adm-header__user">
-          <div className="adm-header__avatar">{initials}</div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span className="adm-header__user-name">{user?.name ?? "Admin"}</span>
-            <span className="adm-header__user-role">
-              {user?.role ? getRoleDisplayLabel(user.role) : ""}
-            </span>
-          </div>
-        </div>
+        <Link
+          href="/admin/products/new"
+          className="adm-new-btn"
+        >
+          <svg
+            style={{ width: 12, height: 12 }}
+            viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5"  y1="12" x2="19" y2="12"/>
+          </svg>
+          New Product
+        </Link>
 
-        <div className="adm-header__divider" />
+        <div className="adm-hdiv" />
 
         <button
-          type="button"
-          className="adm-header__btn"
+          className="adm-ic-btn"
           onClick={handleLogout}
           title="Sign out"
         >
-          <LogOut size={14} />
+          <LogOut size={14} strokeWidth={1.5} />
         </button>
       </div>
     </header>

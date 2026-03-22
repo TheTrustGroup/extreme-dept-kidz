@@ -12,15 +12,15 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "@/app/admin/admin-globals.css";
 
-interface AdminLayoutProps {
+export default function AdminLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element {
+}): JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
   const { checkAuth, user, isAuthenticated } = useAdminAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(false);
   const [checkingAuth, setCheckingAuth] = React.useState(true);
 
   const publicRoutes = [
@@ -28,12 +28,12 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
     "/admin/forgot-password",
     "/admin/reset-password",
   ];
-  const isPublicRoute = publicRoutes.some((r) => pathname?.startsWith(r));
+  const isPublic = publicRoutes.some((r) => pathname?.startsWith(r));
 
   useAdminKeyboards();
 
   React.useEffect(() => {
-    if (isPublicRoute) {
+    if (isPublic) {
       setCheckingAuth(false);
       return;
     }
@@ -60,14 +60,14 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
       });
   }, [
     pathname,
-    isPublicRoute,
+    isPublic,
     user,
     isAuthenticated,
     checkAuth,
     router,
   ]);
 
-  if (isPublicRoute) {
+  if (isPublic) {
     return (
       <div data-admin style={{ minHeight: "100vh" }}>
         <ErrorBoundary>
@@ -99,18 +99,15 @@ export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element
         <ToastProvider>
           <AdminBreadcrumbProvider>
             <AdminSidebar
-              collapsed={sidebarCollapsed}
-              onCollapse={() => setSidebarCollapsed((v) => !v)}
+              collapsed={collapsed}
+              onCollapse={() => setCollapsed((v) => !v)}
             />
             <AdminHeader
-              sidebarCollapsed={sidebarCollapsed}
-              onToggleSidebar={() => setSidebarCollapsed((v) => !v)}
+              sidebarCollapsed={collapsed}
+              onToggleSidebar={() => setCollapsed((v) => !v)}
             />
             <main
-              className={[
-                "adm-main",
-                sidebarCollapsed ? "adm-main--collapsed" : "",
-              ].join(" ")}
+              className={`adm-main${collapsed ? " adm-main--col" : ""}`}
             >
               <div className="adm-page">{children}</div>
             </main>

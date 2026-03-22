@@ -1,213 +1,141 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingBag,
-  Users,
-  BarChart3,
-  Settings,
-  Shirt,
-  ChevronDown,
-  PanelLeftClose,
-  PanelLeft,
-  Boxes,
-  UserCog,
-  Activity,
+  LayoutDashboard, Package, ShoppingBag,
+  Users, BarChart2, Settings, Boxes,
+  Activity, ChevronDown, PanelLeftClose,
+  PanelLeft, Shirt,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { apiUrl } from "@/lib/config/api-base";
 
-interface NavChild {
-  label: string;
-  href: string;
-  permission?: string;
-}
-
+interface NavChild { label: string; href: string }
 interface NavItem {
-  label: string;
-  href?: string;
-  icon: React.ElementType;
-  badge?: number | null;
-  permission?: string;
+  label:    string;
+  href?:    string;
+  icon:     React.ElementType;
+  badge?:   number | null;
   children?: NavChild[];
 }
 
 interface AdminSidebarProps {
-  collapsed: boolean;
+  collapsed:  boolean;
   onCollapse: () => void;
 }
 
-/** Map nav keys to any store permission that should grant access (view vs manage). */
-function hasNavPermission(
-  hasPermission: (p: string) => boolean,
-  perm?: string,
-): boolean {
-  if (!perm) return true;
-  const groups: Record<string, string[]> = {
-    view_products: ["view_products", "manage_products"],
-    view_orders: ["view_orders", "manage_orders"],
-    view_inventory: ["view_inventory", "manage_inventory"],
-  };
-  const keys = groups[perm] ?? [perm];
-  return keys.some((k) => hasPermission(k));
-}
-
 const NAV: NavItem[] = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard, permission: "view_dashboard" },
-  {
-    label: "Products",
-    icon: Package,
-    permission: "view_products",
-    children: [
-      { label: "All Products", href: "/admin/products", permission: "view_products" },
-      { label: "Add Product", href: "/admin/products/new", permission: "manage_products" },
-      { label: "Categories", href: "/admin/categories", permission: "manage_categories" },
-      { label: "Collections", href: "/admin/collections", permission: "manage_collections" },
-      { label: "Pricing", href: "/admin/pricing", permission: "manage_products" },
-    ],
-  },
-  {
-    label: "Orders",
-    icon: ShoppingBag,
-    permission: "view_orders",
-    children: [{ label: "All Orders", href: "/admin/orders", permission: "view_orders" }],
-  },
-  {
-    label: "Inventory",
-    icon: Boxes,
-    permission: "view_inventory",
-    children: [
-      { label: "Stock", href: "/admin/inventory", permission: "view_inventory" },
-      { label: "Forecast", href: "/admin/inventory/forecast", permission: "manage_inventory" },
-      { label: "Reports", href: "/admin/inventory/reports", permission: "manage_inventory" },
-    ],
-  },
-  {
-    label: "Complete Looks",
-    icon: Shirt,
-    permission: "manage_looks",
-    children: [
-      { label: "All Looks", href: "/admin/looks" },
-      { label: "Create Look", href: "/admin/looks/new" },
-    ],
-  },
-  {
-    label: "Customers",
-    icon: Users,
-    permission: "manage_customers",
-    children: [
-      { label: "All Customers", href: "/admin/customers" },
-      { label: "Groups", href: "/admin/customers/groups" },
-    ],
-  },
-  {
-    label: "Analytics",
-    icon: BarChart3,
-    permission: "view_analytics",
-    children: [
-      { label: "Overview", href: "/admin/analytics" },
-      { label: "Sales", href: "/admin/analytics/sales" },
-      { label: "Traffic", href: "/admin/analytics/traffic" },
-      { label: "Products", href: "/admin/analytics/products" },
-    ],
-  },
-  { label: "Activity", href: "/admin/activity", icon: Activity, permission: "view_analytics" },
-  { label: "Admin Users", href: "/admin/users", icon: UserCog, permission: "manage_users" },
-  { label: "Settings", href: "/admin/settings", icon: Settings, permission: "manage_settings" },
+  { label: "Dashboard",  href: "/admin",                  icon: LayoutDashboard },
+  { label: "Products",   icon: Package, children: [
+    { label: "All Products",  href: "/admin/products"       },
+    { label: "Add Product",   href: "/admin/products/new"   },
+    { label: "Categories",    href: "/admin/categories"     },
+    { label: "Collections",   href: "/admin/collections"    },
+    { label: "Pricing",       href: "/admin/pricing"        },
+  ]},
+  { label: "Orders",     icon: ShoppingBag, children: [
+    { label: "All Orders",    href: "/admin/orders"         },
+  ]},
+  { label: "Inventory",  icon: Boxes, children: [
+    { label: "Stock",         href: "/admin/inventory"      },
+    { label: "Forecast",      href: "/admin/inventory/forecast" },
+    { label: "Reports",       href: "/admin/inventory/reports" },
+  ]},
+  { label: "Looks",      icon: Shirt, children: [
+    { label: "All Looks",     href: "/admin/looks"          },
+    { label: "Create Look",   href: "/admin/looks/new"      },
+  ]},
+  { label: "Customers",  icon: Users, children: [
+    { label: "All Customers", href: "/admin/customers"      },
+    { label: "Groups",        href: "/admin/customers/groups" },
+  ]},
+  { label: "Analytics",  icon: BarChart2, children: [
+    { label: "Sales",         href: "/admin/analytics/sales" },
+    { label: "Traffic",       href: "/admin/analytics/traffic" },
+    { label: "Products",      href: "/admin/analytics/products" },
+  ]},
+  { label: "Activity",   href: "/admin/activity",         icon: Activity },
+  { label: "Settings",   href: "/admin/settings",         icon: Settings },
 ];
 
-function NavItemRow({
-  item,
-  collapsed,
-  badge,
-  hasPermission,
-}: {
-  item: NavItem;
-  collapsed: boolean;
-  badge?: number | null;
-  hasPermission: (p: string) => boolean;
-}) {
-  const pathname = usePathname();
-  if (!hasNavPermission(hasPermission, item.permission)) {
-    return null;
-  }
-
+function NavRow({
+  item, collapsed, badge,
+}: { item: NavItem; collapsed: boolean; badge?: number | null }) {
+  const pathname   = usePathname();
   const hasChildren = !!item.children?.length;
-  const visibleChildren =
-    item.children?.filter((c) => hasNavPermission(hasPermission, c.permission)) ?? [];
-
-  const isActive = item.href
+  const isActive   = item.href
     ? item.href === "/admin"
       ? pathname === "/admin"
       : pathname?.startsWith(item.href)
-    : visibleChildren.some(
-        (c) =>
-          pathname === c.href ||
-          (c.href !== "/admin" && pathname?.startsWith(c.href)),
-      );
-
+    : item.children?.some((c) => pathname?.startsWith(c.href));
   const [open, setOpen] = React.useState(!!isActive);
-
-  if (hasChildren && visibleChildren.length === 0) {
-    return null;
-  }
 
   if (hasChildren) {
     return (
       <div>
         <button
-          type="button"
-          className={[
-            "adm-nav-item",
-            isActive ? "adm-nav-item--active" : "",
-          ].join(" ")}
+          className={`adm-ni${isActive ? " adm-ni--on" : ""}`}
           onClick={() => !collapsed && setOpen((v) => !v)}
           title={collapsed ? item.label : undefined}
         >
-          <item.icon className="adm-nav-item__icon" size={15} />
-          <span className="adm-nav-item__label">{item.label}</span>
+          <item.icon size={14} strokeWidth={1.5} />
+          <span className="adm-ni-lbl">{item.label}</span>
           {badge != null && badge > 0 && (
-            <span className="adm-nav-item__badge">{badge}</span>
+            <span
+              className="adm-ni-badge"
+              style={{ background: "var(--adm-ro2)", color: "var(--adm-rose)" }}
+            >
+              {badge}
+            </span>
           )}
           {!collapsed && (
             <ChevronDown
-              size={12}
-              className={[
-                "adm-nav-item__chevron",
-                open ? "adm-nav-item__chevron--open" : "",
-              ].join(" ")}
+              size={11}
+              style={{
+                marginLeft: "auto",
+                color: "var(--adm-t3)",
+                transition: "transform .18s",
+                transform: open ? "rotate(180deg)" : "none",
+                flexShrink: 0,
+              }}
             />
           )}
         </button>
         <AnimatePresence initial={false}>
           {open && !collapsed && (
             <motion.div
-              key="sub"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               style={{ overflow: "hidden" }}
             >
-              <div className="adm-nav-sub">
-                {visibleChildren.map((child) => (
+              <div style={{ paddingLeft: 22 }}>
+                {item.children!.map((c) => (
                   <Link
-                    key={child.href}
-                    href={child.href}
-                    className={[
-                      "adm-nav-sub-item",
-                      pathname === child.href ||
-                      (child.href !== "/admin" && pathname?.startsWith(child.href))
-                        ? "adm-nav-sub-item--active"
-                        : "",
-                    ].join(" ")}
+                    key={c.href} href={c.href}
+                    style={{
+                      display: "flex", alignItems: "center",
+                      height: 30, padding: "0 8px",
+                      borderRadius: "var(--adm-radius)",
+                      fontSize: 12, textDecoration: "none",
+                      color: pathname === c.href ||
+                        (c.href !== "/admin" && pathname?.startsWith(c.href))
+                        ? "var(--adm-gold)" : "var(--adm-t3)",
+                      transition: "background 100ms, color 100ms",
+                      marginBottom: 1,
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        "rgba(255,255,255,0.04)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "none";
+                    }}
                   >
-                    {child.label}
+                    {c.label}
                   </Link>
                 ))}
               </div>
@@ -221,23 +149,25 @@ function NavItemRow({
   return (
     <Link
       href={item.href!}
-      className={[
-        "adm-nav-item",
-        isActive ? "adm-nav-item--active" : "",
-      ].join(" ")}
+      className={`adm-ni${isActive ? " adm-ni--on" : ""}`}
       title={collapsed ? item.label : undefined}
     >
-      <item.icon className="adm-nav-item__icon" size={15} />
-      <span className="adm-nav-item__label">{item.label}</span>
+      <item.icon size={14} strokeWidth={1.5} />
+      <span className="adm-ni-lbl">{item.label}</span>
       {badge != null && badge > 0 && (
-        <span className="adm-nav-item__badge">{badge}</span>
+        <span
+          className="adm-ni-badge"
+          style={{ background: "var(--adm-ro2)", color: "var(--adm-rose)" }}
+        >
+          {badge}
+        </span>
       )}
     </Link>
   );
 }
 
-export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps): JSX.Element {
-  const { hasPermission } = useAdminAuth();
+export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps) {
+  const { user } = useAdminAuth();
   const [orderBadge, setOrderBadge] = React.useState<number | null>(null);
 
   React.useEffect(() => {
@@ -245,51 +175,108 @@ export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps): JSX.
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!data) return;
-        const orders = data.data?.orders ?? data.orders ?? [];
-        const n = orders.filter((o: { status: string }) => o.status === "PENDING").length;
+        const all = data.data?.orders ?? data.orders ?? [];
+        const n   = all.filter((o: { status: string }) =>
+          o.status === "PENDING"
+        ).length;
         setOrderBadge(n > 0 ? n : null);
       })
       .catch(() => {});
   }, []);
 
+  const initials = user?.name
+    ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "AU";
+
   return (
     <aside
-      className={["adm-sidebar", collapsed ? "adm-sidebar--collapsed" : ""].join(" ")}
+      className={`adm-sidebar${collapsed ? " adm-sidebar--col" : ""}`}
     >
-      <Link href="/admin" className="adm-sidebar__logo">
-        <div className="adm-sidebar__logo-mark">E3</div>
-        <span className="adm-sidebar__logo-text">EDK Admin</span>
-      </Link>
+      {/* Brand */}
+      <div className="adm-sb-top">
+        <Link href="/admin" className="adm-brand">
+          <div className="adm-brand-mark">
+            {/* EDK logo mark — try to load the real logo,
+                fall back to the SVG grid icon */}
+            <svg
+              viewBox="0 0 24 24" fill="none"
+              stroke="#08080d" strokeWidth="2.5"
+              strokeLinecap="round"
+              style={{ width: 16, height: 16 }}
+            >
+              <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0z"/>
+            </svg>
+          </div>
+          <div className="adm-brand-text">
+            <b>Extreme Dept</b>
+            <span>Kidz · Admin</span>
+          </div>
+        </Link>
+      </div>
 
-      <nav className="adm-sidebar__nav" aria-label="Admin navigation">
-        <div className="adm-sidebar__section">
-          {NAV.map((item) => (
-            <NavItemRow
-              key={item.label}
-              item={item}
-              collapsed={collapsed}
+      {/* Nav */}
+      <nav className="adm-nav" aria-label="Admin navigation">
+        <div style={{ padding: "0 0" }}>
+          <p className="adm-nl">Menu</p>
+          {NAV.slice(0, 6).map((item) => (
+            <NavRow
+              key={item.label} item={item} collapsed={collapsed}
               badge={item.label === "Orders" ? orderBadge : null}
-              hasPermission={hasPermission}
             />
+          ))}
+          <p className="adm-nl" style={{ marginTop: 4 }}>Insights</p>
+          {NAV.slice(6, 8).map((item) => (
+            <NavRow key={item.label} item={item} collapsed={collapsed} />
+          ))}
+          <p className="adm-nl" style={{ marginTop: 4 }}>Config</p>
+          {NAV.slice(8).map((item) => (
+            <NavRow key={item.label} item={item} collapsed={collapsed} />
           ))}
         </div>
       </nav>
 
-      <div className="adm-sidebar__footer">
+      {/* User + collapse */}
+      <div className="adm-sb-foot">
+        <div className="adm-user">
+          <div className="adm-avatar">{initials}</div>
+          <div className="adm-user-info">
+            <b>{user?.name ?? "Admin User"}</b>
+            <span>{user?.role ?? "Admin"}</span>
+          </div>
+          <svg
+            className="adm-user-chevron"
+            viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2"
+          >
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
         <button
-          type="button"
-          className="adm-sidebar__collapse-btn"
           onClick={onCollapse}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand" : "Collapse"}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            width: "100%", padding: "6px 8px",
+            background: "none", border: "none",
+            borderRadius: "var(--adm-radius)",
+            color: "var(--adm-t3)", fontSize: 11,
+            cursor: "pointer", marginTop: 4,
+            transition: "background 100ms, color 100ms",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background =
+              "rgba(255,255,255,0.04)";
+            (e.currentTarget as HTMLElement).style.color = "var(--adm-t2)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "none";
+            (e.currentTarget as HTMLElement).style.color = "var(--adm-t3)";
+          }}
         >
-          {collapsed ? (
-            <PanelLeft size={14} />
-          ) : (
-            <>
-              <PanelLeftClose size={14} />
-              <span style={{ fontSize: 12 }}>Collapse</span>
-            </>
-          )}
+          {collapsed
+            ? <PanelLeft size={14} />
+            : <><PanelLeftClose size={14} /><span>Collapse</span></>
+          }
         </button>
       </div>
     </aside>
