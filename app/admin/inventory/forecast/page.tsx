@@ -22,7 +22,17 @@ export default function ForecastPage(): JSX.Element {
         }
 
         const data = await response.json();
-        setForecasts(data.data || []);
+        const raw = data.success && data.data != null ? data.data : data.data ?? [];
+        const list = Array.isArray(raw) ? raw : [];
+        setForecasts(
+          list.map((f: StockForecast & { predictedOutDate?: string | Date | null }) => ({
+            ...f,
+            predictedOutDate:
+              f.predictedOutDate != null
+                ? new Date(f.predictedOutDate as string | Date)
+                : null,
+          }))
+        );
       } catch (error) {
         console.error("Failed to load forecasts:", error);
       } finally {

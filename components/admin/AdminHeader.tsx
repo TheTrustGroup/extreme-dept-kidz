@@ -19,6 +19,20 @@ function usePageTitle(): string {
     .join(" / ");
 }
 
+function usePrimaryAction(): { href: string; label: string } {
+  const pathname = usePathname() ?? "";
+  if (pathname.startsWith("/admin/collections")) {
+    return { href: "/admin/collections/new", label: "Add Collection" };
+  }
+  if (pathname.startsWith("/admin/categories")) {
+    return { href: "/admin/categories/new", label: "Add Category" };
+  }
+  if (pathname.startsWith("/admin/looks")) {
+    return { href: "/admin/looks/new", label: "Create Look" };
+  }
+  return { href: "/admin/products/new", label: "New Product" };
+}
+
 export function AdminHeader({
   sidebarCollapsed,
   onToggleSidebar: _onToggleSidebar,
@@ -26,6 +40,7 @@ export function AdminHeader({
   const router    = useRouter();
   const { logout } = useAdminAuth();
   const pageTitle = usePageTitle();
+  const primary = usePrimaryAction();
 
   const handleLogout = async () => {
     await logout();
@@ -60,7 +75,7 @@ export function AdminHeader({
         <div className="adm-hdiv" />
 
         <Link
-          href="/admin/products/new"
+          href={primary.href}
           className="adm-new-btn"
         >
           <svg
@@ -71,7 +86,7 @@ export function AdminHeader({
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5"  y1="12" x2="19" y2="12"/>
           </svg>
-          New Product
+          {primary.label}
         </Link>
 
         <div className="adm-hdiv" />

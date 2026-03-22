@@ -25,25 +25,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return apiError("Database not available", 500);
     }
 
-    const looks = await (prisma as any).completeLook.findMany({
+    const looks = await prisma.completeLook.findMany({
+      orderBy: { createdAt: "desc" },
       include: {
         products: {
+          orderBy: { order: "asc" },
           include: {
             product: {
-              include: {
-                category: true,
-                images: true,
-                variants: true,
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                images: {
+                  orderBy: { order: "asc" },
+                  take: 1,
+                  select: { url: true, alt: true },
+                },
               },
             },
           },
-          orderBy: {
-            order: 'asc',
-          },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
       },
     });
 
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       validatedData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     // Check if slug already exists
-    const existingLook = await (prisma as any).completeLook.findUnique({
+    const existingLook = await prisma.completeLook.findUnique({
       where: { slug },
     });
     if (existingLook) {
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create complete look
-    const completeLook = await (prisma as any).completeLook.create({
+    const completeLook = await prisma.completeLook.create({
       data: {
         name: validatedData.name,
         slug,
@@ -172,10 +173,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         products: {
           include: {
             product: {
-              include: {
-                category: true,
-                images: true,
-                variants: true,
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                images: {
+                  orderBy: { order: "asc" },
+                  take: 1,
+                  select: { url: true, alt: true },
+                },
               },
             },
           },

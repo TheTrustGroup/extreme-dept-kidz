@@ -103,6 +103,14 @@ function parseApiValidationMessage(status: number, data: Record<string, unknown>
   return main ?? "Validation failed";
 }
 
+/** Only storefront-visible when status is Active and the checkbox is on */
+function effectiveVisibleOnStore(formData: {
+  status: string;
+  visibleOnStore?: boolean;
+}): boolean {
+  return formData.status === "active" && Boolean(formData.visibleOnStore);
+}
+
 export function ProductFormComprehensive({
   productId,
   initialData,
@@ -131,7 +139,7 @@ export function ProductFormComprehensive({
       sku: initialData?.sku || "",
       barcode: initialData?.barcode || "",
       status: initialData?.status || "draft",
-      visibleOnStore: initialData?.visibleOnStore ?? true,
+      visibleOnStore: initialData?.visibleOnStore ?? false,
       price: initialData?.price || 0,
       salePrice: initialData?.salePrice,
       costPerItem: initialData?.costPerItem,
@@ -175,6 +183,13 @@ export function ProductFormComprehensive({
   const metaTitle = watch("metaTitle");
   const metaDescription = watch("metaDescription");
   const shortDescription = watch("shortDescription");
+  const status = watch("status");
+
+  React.useEffect(() => {
+    if (status === "draft" || status === "archived") {
+      setValue("visibleOnStore", false, { shouldDirty: true });
+    }
+  }, [status, setValue]);
 
   // When server didn't provide initialData (e.g. warehouse with no DB), fetch product from API
   React.useEffect(() => {
@@ -201,7 +216,7 @@ export function ProductFormComprehensive({
           sku: (data.sku ?? "") as string,
           barcode: (meta.barcode as string) ?? "",
           status: (data.inStock ? "active" : "draft") as "active" | "draft" | "archived",
-          visibleOnStore: data.visibleOnStore !== false,
+          visibleOnStore: Boolean(data.inStock && data.visibleOnStore !== false),
           price: typeof data.price === "number" ? data.price / 100 : 0,
           salePrice: typeof data.originalPrice === "number" ? data.originalPrice / 100 : undefined,
           costPerItem: meta.costPerItem as number | undefined,
@@ -316,7 +331,7 @@ export function ProductFormComprehensive({
           categoryId: formData?.categoryId ?? "",
           images: formData?.images || [],
           inStock: formData?.status === "active",
-          visibleOnStore: formData?.visibleOnStore ?? true,
+          visibleOnStore: effectiveVisibleOnStore(formData as ProductFormData),
           sizes: (formData?.variants || [])
             .filter((v: { size?: string }) => (v?.size ?? "").toString().trim() !== "")
             .map((v: { size?: string; stock?: number }) => ({
@@ -406,7 +421,7 @@ export function ProductFormComprehensive({
         categoryId: formData?.categoryId ?? "",
         images: formData?.images || [],
         inStock: formData?.status === "active",
-        visibleOnStore: formData?.visibleOnStore ?? true,
+        visibleOnStore: effectiveVisibleOnStore(formData as ProductFormData),
         sizes: (formData?.variants || [])
           .filter(v => (v?.size ?? "").toString().trim() !== "")
           .map(v => ({
@@ -502,7 +517,7 @@ export function ProductFormComprehensive({
         categoryId: data.categoryId,
         images: data.images || [],
         inStock: data.status === "active",
-        visibleOnStore: data.visibleOnStore,
+        visibleOnStore: effectiveVisibleOnStore(data),
         sizes: (data.variants || [])
           .filter(v => (v?.size ?? "").toString().trim() !== "")
           .map(v => ({
@@ -864,15 +879,17 @@ export function ProductFormComprehensive({
                 <input
                   type="checkbox"
                   id="visibleOnStore"
+                  disabled={status !== "active"}
                   {...register("visibleOnStore")}
-                  className="mt-1 h-4 w-4 rounded border-cream-300 text-navy-600 focus:ring-navy-500"
+                  className="mt-1 h-4 w-4 rounded border-cream-300 text-navy-600 focus:ring-navy-500 disabled:opacity-40 disabled:cursor-not-allowed"
                 />
                 <div>
                   <label htmlFor="visibleOnStore" className="block text-sm font-medium text-charcoal-700">
                     Visible on website
                   </label>
                   <p className="text-xs text-charcoal-500 mt-0.5">
-                    When off, product is warehouse-only and hidden from the storefront.
+                    When off, product is warehouse-only and hidden from the storefront. Set{" "}
+                    <strong>Status</strong> to <strong>Active</strong> to enable this option.
                   </p>
                 </div>
               </div>

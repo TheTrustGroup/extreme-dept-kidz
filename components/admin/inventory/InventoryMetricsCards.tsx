@@ -127,10 +127,10 @@ export function InventoryMetricsCards({
             transition={{ delay: index * 0.1 }}
             whileHover={{ y: -4, scale: 1.02 }}
             className={cn(
-              "bg-white rounded-xl p-6 border shadow-sm transition-all duration-200 group",
+              "rounded-xl p-6 border shadow-sm transition-all duration-200 group",
               isHighlighted
-                ? "border-red-200 bg-gradient-to-br from-red-50 to-orange-50"
-                : "border-gray-200 hover:shadow-lg"
+                ? "border-red-500/35 bg-red-500/[0.07]"
+                : "border-gray-200 bg-white hover:shadow-lg"
             )}
           >
             <div className="flex items-center justify-between mb-4">

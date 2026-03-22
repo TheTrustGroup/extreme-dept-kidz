@@ -96,6 +96,9 @@ export async function PUT(
       slug?: string;
       categoryId?: string;
       visibleOnStore?: boolean;
+      /** Base price in major units (e.g. dollars); stored as cents in DB */
+      price?: number;
+      originalPrice?: number | null;
       variants?: Array<{
         id: string;
         name?: string;
@@ -107,18 +110,36 @@ export async function PUT(
       images?: Array<{ id?: string; url: string; alt?: string; position?: number }>;
     };
 
-    const { name, description, slug, categoryId, variants, images, visibleOnStore } = body;
+    const { name, description, slug, categoryId, variants, images, visibleOnStore, price, originalPrice } =
+      body;
+
+    const updateData: Parameters<typeof prisma.product.update>[0]["data"] = {
+      ...(name !== undefined && { name }),
+      ...(description !== undefined && { description }),
+      ...(slug !== undefined && { slug }),
+      ...(categoryId !== undefined && { categoryId }),
+      ...(typeof visibleOnStore === "boolean" && { visibleOnStore }),
+      ...(typeof price === "number" && Number.isFinite(price) && price >= 0 && {
+        price: Math.round(price * 100),
+      }),
+    };
+
+    if (Object.prototype.hasOwnProperty.call(body, "originalPrice")) {
+      if (originalPrice === null) {
+        updateData.originalPrice = null;
+      } else if (
+        typeof originalPrice === "number" &&
+        Number.isFinite(originalPrice) &&
+        originalPrice >= 0
+      ) {
+        updateData.originalPrice = Math.round(originalPrice * 100);
+      }
+    }
 
     // Update product base fields
     const product = await prisma.product.update({
       where: { id },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(description !== undefined && { description }),
-        ...(slug !== undefined && { slug }),
-        ...(categoryId !== undefined && { categoryId }),
-        ...(typeof visibleOnStore === "boolean" && { visibleOnStore }),
-      },
+      data: updateData,
     });
 
     // Sync variants (schema: size, sku, price in cents, stock; form sends name -> size, price in dollars)

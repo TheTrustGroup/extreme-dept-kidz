@@ -51,7 +51,7 @@ export default async function ProductEditPage({ params }: PageProps) {
     sku: product.sku ?? "",
     barcode: (metadata.barcode as string) ?? "",
     status: product.inStock ? "active" : "draft",
-    visibleOnStore: product.visibleOnStore !== false,
+    visibleOnStore: Boolean(product.inStock && product.visibleOnStore !== false),
     price: product.price ? product.price / 100 : 0,
     salePrice: product.originalPrice ? product.originalPrice / 100 : undefined,
     costPerItem: (metadata.costPerItem as number) ?? undefined,

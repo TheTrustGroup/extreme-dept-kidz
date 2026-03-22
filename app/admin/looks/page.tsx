@@ -11,6 +11,7 @@ import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { apiUrl } from "@/lib/config/api-base";
 
 /**
  * Complete Looks Management Page
@@ -56,13 +57,13 @@ export default function LooksPage(): JSX.Element {
   async function loadLooks(): Promise<void> {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/complete-looks', {
-        credentials: 'include',
+      const response = await fetch(apiUrl("/api/admin/complete-looks"), {
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
-        const looksList = data.data?.looks || data.looks || [];
-        setLooks(looksList);
+        const looksList = data.data?.looks ?? data.looks ?? [];
+        setLooks(Array.isArray(looksList) ? looksList : []);
       } else {
         showToast({
           type: "error",
@@ -97,9 +98,9 @@ export default function LooksPage(): JSX.Element {
     setDeleteConfirm(null);
 
     try {
-      const response = await fetch(`/api/admin/complete-looks/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
+      const response = await fetch(apiUrl(`/api/admin/complete-looks/${id}`), {
+        method: "DELETE",
+        credentials: "include",
       });
 
       if (response.ok) {

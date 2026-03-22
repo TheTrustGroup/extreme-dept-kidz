@@ -63,11 +63,23 @@ export function StockForecastChart({
     });
   }, [filteredForecasts]);
 
-  const getStatusColor = (forecast: StockForecast): string => {
-    if (forecast.daysUntilOut === null) return "bg-green-100 text-green-800 border-green-200";
-    if (forecast.daysUntilOut <= 7) return "bg-red-100 text-red-800 border-red-200";
-    if (forecast.daysUntilOut <= 30) return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    return "bg-blue-100 text-blue-800 border-blue-200";
+  /** Dark-admin friendly surfaces (avoids light bg + forced light text from admin CSS). */
+  const getStatusRowClass = (forecast: StockForecast): string => {
+    if (forecast.daysUntilOut === null) {
+      return "border-emerald-500/30 bg-emerald-500/[0.07]";
+    }
+    if (forecast.daysUntilOut <= 7) return "border-red-500/35 bg-red-500/[0.08]";
+    if (forecast.daysUntilOut <= 30) return "border-amber-500/35 bg-amber-500/[0.08]";
+    return "border-sky-500/30 bg-sky-500/[0.07]";
+  };
+
+  const getStatusBadgeClass = (forecast: StockForecast): string => {
+    if (forecast.daysUntilOut === null) {
+      return "bg-emerald-500/15 text-emerald-200 border border-emerald-500/25";
+    }
+    if (forecast.daysUntilOut <= 7) return "bg-red-500/15 text-red-200 border border-red-500/25";
+    if (forecast.daysUntilOut <= 30) return "bg-amber-500/15 text-amber-100 border border-amber-500/25";
+    return "bg-sky-500/15 text-sky-200 border border-sky-500/25";
   };
 
   const getStatusLabel = (forecast: StockForecast): string => {
@@ -117,11 +129,7 @@ export function StockForecastChart({
 
   return (
     <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Stock Forecast</h3>
-          <p className="text-sm text-gray-500">Predictions based on sales velocity</p>
-        </div>
+      <div className="flex items-center justify-end mb-6">
         <div className="flex gap-2">
           {[
             { id: 'all', label: 'All' },
@@ -155,7 +163,7 @@ export function StockForecastChart({
             onClick={() => onVariantClick?.(forecast.variantId)}
             className={cn(
               "p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md",
-              getStatusColor(forecast)
+              getStatusRowClass(forecast)
             )}
           >
             <div className="flex items-start justify-between">
@@ -165,10 +173,12 @@ export function StockForecastChart({
                   <span className="px-2 py-0.5 text-xs font-medium bg-white/50 rounded">
                     Size {forecast.size}
                   </span>
-                  <span className={cn(
-                    "px-2 py-0.5 text-xs font-medium rounded",
-                    getStatusColor(forecast)
-                  )}>
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 text-xs font-medium rounded",
+                      getStatusBadgeClass(forecast)
+                    )}
+                  >
                     {getStatusLabel(forecast)}
                   </span>
                 </div>
@@ -195,7 +205,9 @@ export function StockForecastChart({
                           {forecast.daysUntilOut} days
                         </span>
                       ) : (
-                        <span className="text-green-600">∞</span>
+                        <span className="text-[var(--adm-t2)]" title="No sales in the last 30 days">
+                          —
+                        </span>
                       )}
                     </p>
                   </div>
@@ -208,7 +220,7 @@ export function StockForecastChart({
                           {format(forecast.predictedOutDate, 'MMM d, yyyy')}
                         </span>
                       ) : (
-                        <span className="text-green-600">N/A</span>
+                        <span className="text-[var(--adm-t3)]">—</span>
                       )}
                     </p>
                   </div>

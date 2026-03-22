@@ -57,7 +57,6 @@ export function PricingManagement(): JSX.Element {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          ...products.find((p) => p.id === productId),
           price: editData.price,
           originalPrice: editData.originalPrice,
         }),
@@ -69,8 +68,11 @@ export function PricingManagement(): JSX.Element {
             p.id === productId
               ? {
                   ...p,
-                  price: editData.price,
-                  originalPrice: editData.originalPrice,
+                  price: Math.round(editData.price * 100),
+                  originalPrice:
+                    editData.originalPrice != null
+                      ? Math.round(editData.originalPrice * 100)
+                      : null,
                 }
               : p
           )

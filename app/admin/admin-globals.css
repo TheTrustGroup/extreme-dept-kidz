@@ -438,6 +438,14 @@
 [data-admin] .text-gray-400,
 [data-admin] .text-gray-500,
 [data-admin] .text-slate-400 { color: var(--adm-t3) !important; }
+/* Custom palette (Category/Pricing tables) — same contrast as gray-* */
+[data-admin] .text-charcoal-900,
+[data-admin] .text-charcoal-800 { color: var(--adm-t1) !important; }
+[data-admin] .text-charcoal-700,
+[data-admin] .text-charcoal-600 { color: var(--adm-t2) !important; }
+[data-admin] .text-charcoal-500,
+[data-admin] .text-charcoal-400,
+[data-admin] .text-charcoal-300 { color: var(--adm-t3) !important; }
 [data-admin] .border,
 [data-admin] .border-gray-200,
 [data-admin] .border-slate-200 { border-color: var(--adm-b1) !important; }
