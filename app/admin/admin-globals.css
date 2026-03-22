@@ -471,6 +471,11 @@ body:has([data-admin]) {
 }
 [data-admin] input::placeholder,
 [data-admin] textarea::placeholder { color: var(--adm-t3) !important; }
+/* Floating label inputs use placeholder={label} + Tailwind placeholder-transparent; adm rule above must not win. */
+[data-admin] input.placeholder-transparent::placeholder,
+[data-admin] textarea.placeholder-transparent::placeholder {
+  color: transparent !important;
+}
 [data-admin] table thead th {
   background-color: var(--adm-s2) !important;
   color: var(--adm-t3) !important;
