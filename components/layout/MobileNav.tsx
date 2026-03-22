@@ -1,20 +1,19 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import {
+  X,
   Search,
+  ShoppingBag,
   User,
   Sun,
   Moon,
   ChevronRight,
-  X,
-  ShoppingBag,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────
 interface MobileNavProps {
   open: boolean;
   onClose: () => void;
@@ -23,63 +22,19 @@ interface MobileNavProps {
   cartCount?: number;
 }
 
-const PRIMARY_LINKS = [
+const PRIMARY = [
   { label: "All", href: "/collections/all" },
   { label: "Boys", href: "/collections/boys" },
   { label: "Girls", href: "/collections/girls" },
   { label: "New Arrivals", href: "/collections/new-arrivals" },
   { label: "Collections", href: "/collections" },
 ];
-
-const SECONDARY_LINKS = [
+const SECONDARY = [
   { label: "Contact Us", href: "/contact" },
   { label: "Shipping", href: "/shipping-info" },
   { label: "Returns", href: "/returns-exchange" },
 ];
 
-const LINK_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
-
-const primaryListVariants = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.08,
-    },
-  },
-};
-
-const linkItemVariants = {
-  hidden: { opacity: 0, x: 16 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.28,
-      ease: LINK_EASE,
-    },
-  },
-};
-
-const secondaryListVariants = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.08 + 5 * 0.04 + 0.08,
-    },
-  },
-};
-
-function isNavActive(pathname: string, href: string): boolean {
-  if (pathname === href) return true;
-  if (href === "/collections") {
-    return false;
-  }
-  return pathname.startsWith(href + "/");
-}
-
-// ─── Component ────────────────────────────────────────────────────
 export default function MobileNav({
   open,
   onClose,
@@ -88,28 +43,15 @@ export default function MobileNav({
   cartCount = 0,
 }: MobileNavProps) {
   const pathname = usePathname();
-  const [searchQuery, setSearchQuery] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const pathnameCloseSkipRef = useRef(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+    setMounted(true);
+  }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
-
+  // Close on route change
   useEffect(() => {
     if (pathnameCloseSkipRef.current) {
       pathnameCloseSkipRef.current = false;
@@ -119,243 +61,364 @@ export default function MobileNav({
   }, [pathname, onClose]);
 
   useEffect(() => {
-    if (!open) return;
-    const t = window.setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 100);
-    return () => window.clearTimeout(t);
+    if (open) {
+      document.body.style.overflow = "hidden";
+      setTimeout(() => searchRef.current?.focus(), 350);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
-  return (
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
+  if (!mounted) return null;
+
+  const drawer = (
     <>
-      {/* Backdrop — always mounted; opacity + pointer-events when open */}
-      <motion.div
-        animate={{
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? "auto" : "none",
-        }}
-        initial={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+      <div
         onClick={onClose}
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 9990,
-          background: "rgba(15,23,42,0.5)",
+          zIndex: 99990,
+          background: "rgba(10,10,15,0.65)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
+          opacity: open ? 1 : 0,
           pointerEvents: open ? "auto" : "none",
+          transition: "opacity 0.25s ease",
         }}
-        className="mobile-nav-backdrop lg:hidden"
         aria-hidden="true"
       />
 
-      {/* Drawer — always in DOM, slides on x-axis */}
-      <motion.div
-        animate={{ x: open ? 0 : "100%" }}
-        initial={{ x: "100%" }}
-        transition={{
-          duration: open ? 0.32 : 0.24,
-          ease: open ? [0.16, 1, 0.3, 1] : [0.7, 0, 1, 1],
-        }}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        aria-hidden={!open}
         style={{
           position: "fixed",
           top: 0,
           right: 0,
           bottom: 0,
+          zIndex: 99999,
           width: "min(320px, 88vw)",
-          zIndex: 9999,
-          backgroundColor: "var(--bg-page)",
-          boxShadow: "-8px 0 32px rgba(15,23,42,0.12)",
+          background: "var(--bg-page, #faf8f5)",
+          boxShadow: "-12px 0 40px rgba(0,0,0,0.18)",
           display: "flex",
           flexDirection: "column",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
-          paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+          transform: open ? "translateX(0)" : "translateX(100%)",
+          transition: open
+            ? "transform 0.32s cubic-bezier(0.16,1,0.3,1)"
+            : "transform 0.22s cubic-bezier(0.7,0,1,1)",
+          willChange: "transform",
+          paddingBottom: "max(20px, env(safe-area-inset-bottom))",
         }}
-        className="lg:hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
-        aria-hidden={!open}
       >
-        {/* 1. Header row */}
         <div
-          className="flex h-14 flex-shrink-0 items-center justify-between border-b border-[var(--border-default)] px-5"
-          style={{ height: 56 }}
+          style={{
+            height: 56,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 20px",
+            borderBottom: "1px solid var(--border-default)",
+            flexShrink: 0,
+          }}
         >
           <span
-            className="font-montserrat font-semibold uppercase text-[var(--text-tertiary)]"
             style={{
+              fontFamily:
+                "var(--font-montserrat, Montserrat, sans-serif)",
               fontSize: 10,
+              fontWeight: 600,
               letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "var(--text-tertiary)",
             }}
           >
-            MENU
+            Menu
           </span>
           <button
             type="button"
-            className="icon-btn h-11 w-11 shrink-0"
             onClick={onClose}
             aria-label="Close menu"
+            style={{
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--text-secondary)",
+              marginRight: -10,
+            }}
           >
             <X size={20} strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* 2. Search */}
-        <div className="flex-shrink-0 border-b border-[var(--border-default)] px-5 py-4">
-          <div className="relative">
-            <Search
-              size={15}
-              strokeWidth={1.5}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]"
-              aria-hidden
-            />
-            <input
-              ref={searchInputRef}
-              type="search"
-              placeholder="Search products…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={[
-                "h-11 w-full rounded-none border border-[var(--border-default)] bg-[var(--bg-surface-2)] pl-9 pr-4",
-                "font-inter text-[14px] text-[var(--text-primary)] outline-none transition-colors",
-                "placeholder:text-[var(--text-tertiary)]",
-                "focus:border-[var(--color-gold)]",
-              ].join(" ")}
-              style={{ height: 44 }}
-            />
-          </div>
-        </div>
-
-        {/* 3. Navigation */}
         <div
-          role="navigation"
-          aria-label="Main"
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto py-2"
-        >
-          <motion.ul
-            className="list-none p-0 m-0"
-            variants={primaryListVariants}
-            initial="hidden"
-            animate="show"
-          >
-            {PRIMARY_LINKS.map((link) => {
-              const active = isNavActive(pathname, link.href);
-              return (
-                <motion.li key={link.href} variants={linkItemVariants}>
-                  <Link
-                    href={link.href}
-                    onClick={onClose}
-                    className={[
-                      "relative flex h-[52px] min-h-[52px] items-center border-b border-[var(--border-default)] px-5",
-                      "font-montserrat font-semibold uppercase",
-                      active
-                        ? "text-[var(--text-primary)]"
-                        : "text-[var(--text-secondary)]",
-                    ].join(" ")}
-                    style={{ fontSize: 12, letterSpacing: "0.1em" }}
-                  >
-                    {link.label}
-                    {active && (
-                      <span
-                        className="absolute right-5 top-1/2 size-[6px] -translate-y-1/2 rounded-full bg-[var(--color-gold)]"
-                        aria-hidden
-                      />
-                    )}
-                  </Link>
-                </motion.li>
-              );
-            })}
-          </motion.ul>
-
-          <div className="pt-5">
-            <p
-              className="mb-2 px-5 font-montserrat font-medium text-[var(--text-tertiary)]"
-              style={{ fontSize: 10, letterSpacing: "0.12em" }}
-            >
-              Support
-            </p>
-            <motion.ul
-              className="list-none p-0 m-0"
-              variants={secondaryListVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {SECONDARY_LINKS.map((link) => (
-                <motion.li key={link.href} variants={linkItemVariants}>
-                  <Link
-                    href={link.href}
-                    onClick={onClose}
-                    className="flex h-11 min-h-[44px] items-center justify-between px-5 font-inter text-[13px] text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
-                  >
-                    {link.label}
-                    <ChevronRight
-                      size={13}
-                      strokeWidth={1.5}
-                      className="shrink-0 text-[var(--text-tertiary)]"
-                      aria-hidden
-                    />
-                  </Link>
-                </motion.li>
-              ))}
-            </motion.ul>
-          </div>
-        </div>
-
-        {/* 4. Bottom row */}
-        <div
-          className="flex flex-shrink-0 items-center justify-between border-t border-[var(--border-default)] px-5 py-4"
           style={{
-            paddingBottom: "max(16px, env(safe-area-inset-bottom, 0px))",
+            padding: "12px 16px",
+            borderBottom: "1px solid var(--border-default)",
+            flexShrink: 0,
           }}
         >
-          <div className="flex items-center gap-2">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-default)",
+              padding: "0 12px",
+              height: 42,
+            }}
+          >
+            <Search
+              size={15}
+              style={{ color: "var(--text-tertiary)", flexShrink: 0 }}
+            />
+            <input
+              ref={searchRef}
+              type="search"
+              placeholder="Search products…"
+              style={{
+                flex: 1,
+                background: "none",
+                border: "none",
+                outline: "none",
+                fontFamily: "var(--font-inter, Inter, sans-serif)",
+                fontSize: 14,
+                color: "var(--text-primary)",
+              }}
+            />
+          </div>
+        </div>
+
+        <nav
+          role="navigation"
+          aria-label="Main navigation"
+          style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}
+        >
+          {PRIMARY.map((item, i) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/collections/all" &&
+                pathname?.startsWith(item.href));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "0 20px",
+                  height: 52,
+                  fontFamily:
+                    "var(--font-montserrat, Montserrat, sans-serif)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                  color: isActive
+                    ? "var(--color-navy)"
+                    : "var(--text-secondary)",
+                  borderBottom: "1px solid var(--border-default)",
+                  background: isActive
+                    ? "rgba(15,23,42,0.03)"
+                    : "transparent",
+                  opacity: 0,
+                  animation: open
+                    ? `navIn 0.3s ease forwards ${80 + i * 40}ms`
+                    : "none",
+                }}
+              >
+                {item.label}
+                {isActive && (
+                  <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: "var(--color-gold)",
+                    }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+
+          <div
+            style={{
+              padding: "16px 20px 8px",
+              fontFamily:
+                "var(--font-montserrat, Montserrat, sans-serif)",
+              fontSize: 9,
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--text-tertiary)",
+            }}
+          >
+            Support
+          </div>
+          {SECONDARY.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onClose}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "0 20px",
+                height: 44,
+                fontFamily: "var(--font-inter, Inter, sans-serif)",
+                fontSize: 13,
+                textDecoration: "none",
+                color: "var(--text-tertiary)",
+              }}
+            >
+              {item.label}
+              <ChevronRight
+                size={13}
+                style={{ color: "var(--text-tertiary)" }}
+              />
+            </Link>
+          ))}
+        </nav>
+
+        <div
+          style={{
+            padding: "12px 20px",
+            borderTop: "1px solid var(--border-default)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", gap: 4 }}>
             <Link
               href="/account"
               onClick={onClose}
-              className="icon-btn"
               aria-label="Account"
+              style={{
+                width: 44,
+                height: 44,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--text-secondary)",
+                textDecoration: "none",
+              }}
             >
               <User size={18} strokeWidth={1.5} />
             </Link>
             <Link
               href="/cart"
               onClick={onClose}
-              className="icon-btn relative"
               aria-label={
                 cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"
               }
+              style={{
+                width: 44,
+                height: 44,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--text-secondary)",
+                textDecoration: "none",
+                position: "relative",
+              }}
             >
               <ShoppingBag size={18} strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--color-gold)] px-1 text-[10px] font-semibold leading-none text-[var(--color-navy)]">
-                  {cartCount > 99 ? "99+" : cartCount}
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    background: "var(--color-gold)",
+                    color: "var(--color-navy)",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    lineHeight: 1,
+                  }}
+                >
+                  {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
             </Link>
           </div>
+
           <button
             type="button"
-            className="flex items-center gap-2 text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             onClick={onThemeToggle}
-            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "none",
+              border: "1px solid var(--border-default)",
+              padding: "0 14px",
+              height: 36,
+              cursor: "pointer",
+              fontFamily:
+                "var(--font-montserrat, Montserrat, sans-serif)",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--text-secondary)",
+              borderRadius: 0,
+            }}
           >
             {isDark ? (
-              <Sun size={16} strokeWidth={1.5} />
+              <>
+                <Sun size={13} /> Light
+              </>
             ) : (
-              <Moon size={16} strokeWidth={1.5} />
+              <>
+                <Moon size={13} /> Dark
+              </>
             )}
-            <span
-              className="font-montserrat font-semibold text-[var(--text-secondary)]"
-              style={{ fontSize: 10, letterSpacing: "0.1em" }}
-            >
-              {isDark ? "Light" : "Dark"}
-            </span>
           </button>
         </div>
-      </motion.div>
+      </div>
+
+      <style>{`
+        @keyframes navIn {
+          from { opacity: 0; transform: translateX(12px); }
+          to   { opacity: 1; transform: translateX(0);    }
+        }
+      `}</style>
     </>
   );
+
+  return createPortal(drawer, document.body);
 }
