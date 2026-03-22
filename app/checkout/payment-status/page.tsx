@@ -1,166 +1,156 @@
 "use client";
 
-import * as React from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { CheckCircle, XCircle } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
-import { Container } from "@/components/ui/container";
-import { H1 } from "@/components/ui/typography";
+import { BrandSpinner } from "@/components/ui/PageLoader";
 
-export default function PaymentStatusPage(): JSX.Element {
-  const router = useRouter();
+function PaymentStatusContent() {
   const searchParams = useSearchParams();
-  const referenceId = searchParams.get("ref") ?? searchParams.get("reference");
-  const [status, setStatus] = React.useState<"processing" | "success" | "failed" | "timeout">("processing");
-  const [message, setMessage] = React.useState("Processing payment...");
-  const clearCart = useCartStore((state) => state.clearCart);
+  const router = useRouter();
+  const { clearCart } = useCartStore();
+  const reference =
+    searchParams.get("reference") ??
+    searchParams.get("trxref") ??
+    searchParams.get("ref");
+  const [status, setStatus] = useState<"verifying" | "success" | "failed">(
+    "verifying"
+  );
+  const [orderRef, setOrderRef] = useState("");
 
-  React.useEffect(() => {
-    const ref = referenceId ?? null;
-    if (!ref) {
-      router.push("/checkout");
+  useEffect(() => {
+    if (!reference) {
+      router.replace("/checkout");
       return;
     }
 
-    let attempts = 0;
-    const maxAttempts = 30;
-    const pollInterval = 10000;
+    let cancelled = false;
 
-    const checkStatus = async (): Promise<boolean> => {
+    const verify = async () => {
       try {
-        const paystackRes = await fetch(
-          `/api/payment/paystack/verify?referenceId=${encodeURIComponent(ref)}`
+        const res = await fetch(
+          `/api/payment/paystack/verify?reference=${encodeURIComponent(reference)}`
         );
-        const paystackJson = await paystackRes.json();
-        if (paystackJson.success && paystackJson.data?.verified) {
-          setStatus("success");
-          setMessage("Payment successful! Your order is confirmed.");
+        const data = (await res.json()) as {
+          success?: boolean;
+          status?: string;
+          orderNumber?: string;
+          orderId?: string;
+        };
+
+        if (cancelled) return;
+
+        if (data.success && data.status === "success") {
           clearCart();
-          setTimeout(() => router.push(`/checkout/success?ref=${ref}`), 3000);
-          return true;
-        }
-        if (paystackJson.data?.status === "failed") {
+          sessionStorage.removeItem("pending_order");
+          setOrderRef(data.orderNumber || data.orderId || reference);
+          setStatus("success");
+        } else {
           setStatus("failed");
-          setMessage("Payment failed. Please try again.");
-          return true;
         }
-
-        const momoRes = await fetch(
-          `/api/payment/momo/verify?referenceId=${encodeURIComponent(ref)}`
-        );
-        const momoJson = await momoRes.json();
-        if (momoJson.success && momoJson.data) {
-          if (momoJson.data.verified) {
-            setStatus("success");
-            setMessage("Payment successful! Your order is confirmed.");
-            clearCart();
-            setTimeout(() => router.push(`/checkout/success?ref=${ref}`), 3000);
-            return true;
-          }
-          if (momoJson.data.status === "FAILED") {
-            setStatus("failed");
-            setMessage("Payment failed. Please try again.");
-            return true;
-          }
-        }
-      } catch (err) {
-        console.error("Payment status check error:", err);
-      }
-      return false;
-    };
-
-    const poll = async () => {
-      const done = await checkStatus();
-      if (done) return;
-      attempts++;
-      if (attempts >= maxAttempts) {
-        setStatus("timeout");
-        setMessage(
-          "Payment is taking longer than expected. Please check your phone or contact support."
-        );
+      } catch {
+        if (!cancelled) setStatus("failed");
       }
     };
 
-    poll();
-    const interval = setInterval(poll, pollInterval);
-    return () => clearInterval(interval);
-  }, [referenceId, router, clearCart]);
+    void verify();
+    return () => {
+      cancelled = true;
+    };
+  }, [reference, router, clearCart]);
+
+  if (status === "verifying") {
+    return (
+      <div className="payment-status">
+        <BrandSpinner />
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: 16,
+            fontFamily: "var(--font-montserrat)",
+            fontSize: 12,
+            letterSpacing: "0.1em",
+            color: "var(--text-secondary)",
+          }}
+        >
+          Verifying your payment...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-cream-50 pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
-      <Container size="lg">
-        <div className="max-w-2xl mx-auto text-center">
-          {status === "processing" && (
-            <>
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-navy-900 mx-auto mb-6"></div>
-              <H1 className="text-charcoal-900 mb-4">Processing Payment</H1>
-              <p className="text-charcoal-600 mb-6">
-                Complete your payment in the window that opened, or wait while we verify.
+    <div className="payment-status">
+      <div className="payment-status__card">
+        {status === "success" ? (
+          <>
+            <div className="payment-status__icon payment-status__icon--success">
+              <CheckCircle size={40} strokeWidth={1.5} />
+            </div>
+            <h1 className="payment-status__title">Order Confirmed!</h1>
+            <p className="payment-status__sub">
+              Thank you for your order. We will contact you on WhatsApp to confirm your
+              delivery details.
+            </p>
+            {orderRef && (
+              <p className="payment-status__ref">
+                Order ref: <strong>{orderRef}</strong>
               </p>
-              <p className="text-sm text-charcoal-500">
-                This may take up to 2 minutes...
-              </p>
-            </>
-          )}
-
-          {status === "success" && (
-            <>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <H1 className="text-charcoal-900 mb-4">Payment Successful!</H1>
-              <p className="text-charcoal-600 mb-6">
-                Your order has been confirmed. Redirecting...
-              </p>
-            </>
-          )}
-
-          {status === "failed" && (
-            <>
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <H1 className="text-charcoal-900 mb-4">Payment Failed</H1>
-              <p className="text-charcoal-600 mb-6">{message}</p>
-              <button
-                onClick={() => router.push("/checkout")}
-                className="px-6 py-3 bg-navy-900 text-white rounded-lg hover:bg-navy-800"
+            )}
+            <div className="payment-status__actions">
+              <Link
+                href="/collections/new-arrivals"
+                className="btn-primary"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+              >
+                Continue Shopping
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="payment-status__icon payment-status__icon--failed">
+              <XCircle size={40} strokeWidth={1.5} />
+            </div>
+            <h1 className="payment-status__title">Payment Failed</h1>
+            <p className="payment-status__sub">
+              Your payment was not completed. No charges were made.
+            </p>
+            <div className="payment-status__actions">
+              <Link
+                href="/checkout"
+                className="btn-primary"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
               >
                 Try Again
-              </button>
-            </>
-          )}
-
-          {status === "timeout" && (
-            <>
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <H1 className="text-charcoal-900 mb-4">Payment Status Unknown</H1>
-              <p className="text-charcoal-600 mb-6">{message}</p>
-              <div className="space-y-3">
-                <button
-                  onClick={() => router.push("/checkout")}
-                  className="px-6 py-3 bg-navy-900 text-white rounded-lg hover:bg-navy-800 mr-3"
-                >
-                  Try Again
-                </button>
-                <button
-                  onClick={() => router.push("/contact")}
-                  className="px-6 py-3 bg-cream-200 text-charcoal-900 rounded-lg hover:bg-cream-300"
-                >
-                  Contact Support
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </Container>
+              </Link>
+              <Link
+                href="/cart"
+                className="btn-secondary"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+              >
+                Back to Cart
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
     </div>
+  );
+}
+
+export default function PaymentStatusPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="payment-status">
+          <BrandSpinner />
+        </div>
+      }
+    >
+      <PaymentStatusContent />
+    </Suspense>
   );
 }

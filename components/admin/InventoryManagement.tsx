@@ -383,7 +383,7 @@ export function InventoryManagement(): JSX.Element {
                           <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{product.name}</div>
                           <div className="text-xs sm:text-sm text-gray-500 truncate">{product.category.name}</div>
                           <div className="text-xs text-gray-600 sm:hidden mt-1">SKU: {product.sku || product.id}</div>
-                          <div className="text-xs text-gray-600 md:hidden mt-1">{(product.price / 100).toFixed(0)} GHS</div>
+                          <div className="text-xs text-gray-600 md:hidden mt-1">₵{(product.price / 100).toFixed(2)}</div>
                         </div>
                       </div>
                     </td>
@@ -391,7 +391,7 @@ export function InventoryManagement(): JSX.Element {
                       {product.sku || product.id}
                     </td>
                     <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)] text-sm font-medium text-gray-900 hidden md:table-cell">
-                      {(product.price / 100).toFixed(0)} GHS
+                      ₵{(product.price / 100).toFixed(2)}
                     </td>
                     <td className="px-[var(--admin-space-3)] sm:px-[var(--admin-space-4)] py-[var(--admin-space-4)]">
                       <div className="flex gap-1 sm:gap-2 flex-wrap">

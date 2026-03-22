@@ -20,7 +20,7 @@ function productToCardProps(p: Product): ProductCardProps {
     name: p.name,
     price: priceNum / 100,
     compareAtPrice: originalNum != null ? originalNum / 100 : undefined,
-    currency: 'GHS ₵',
+    currency: '₵',
     imageUrl: p.images?.find((img) => img.isPrimary)?.url ?? p.images?.[0]?.url ?? '/placeholder.jpg',
     imageAlt: p.images?.[0]?.alt ?? p.name,
     badge: p.tags?.includes('new')

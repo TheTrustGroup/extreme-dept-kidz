@@ -9,22 +9,32 @@ import { ChevronDown } from 'lucide-react'
 // ─── Social SVG icons ─────────────────────────────────────────────
 function IconInstagram() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24"
-      fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5"/>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5"
+      strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" strokeWidth="2"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" strokeWidth="2.5"/>
     </svg>
   )
 }
+
 function IconTikTok() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/>
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/>
     </svg>
   )
 }
+
+function IconSnapchat() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.004 2c-1.894 0-5.148.535-5.28 4.759-.032.887 0 1.71 0 1.71s-.41.19-.878.19c-.477 0-.846-.284-.846-.284s-.082.738.738 1.137c0 0-.205.546-.656.967-.41.38-1.025.517-1.025.517s.164.7 1.558.888c0 0 .082.45.246.697 0 0-.533.26-1.107.26-.39 0-.738-.095-.738-.095s.082.82 2.133 1.23c0 0 .492 1.258 2.707 1.258.082 0 .205 0 .328-.013 0 0-1.025 1.066-3.609 1.066h-.205c0 .013.082.902 3.568 1.366 0 0 .41.93 1.107 1.546.451.396.943.6 1.968.6 1.025 0 1.517-.204 1.968-.6.697-.615 1.107-1.546 1.107-1.546 3.486-.464 3.568-1.353 3.568-1.366h-.205c-2.584 0-3.609-1.066-3.609-1.066.123.013.246.013.328.013 2.215 0 2.707-1.258 2.707-1.258 2.05-.41 2.133-1.23 2.133-1.23s-.348.095-.738.095c-.574 0-1.107-.26-1.107-.26.164-.246.246-.697.246-.697 1.394-.19 1.558-.888 1.558-.888s-.615-.137-1.025-.517c-.451-.42-.656-.967-.656-.967.82-.4.738-1.137.738-1.137s-.369.284-.846.284c-.469 0-.878-.19-.878-.19s.032-.823 0-1.71C17.152 2.535 13.898 2 12.004 2z"/>
+    </svg>
+  )
+}
+
 function IconWhatsApp() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -105,17 +115,11 @@ const COLUMNS = [
   },
 ]
 
-/** Set `NEXT_PUBLIC_WHATSAPP_URL` (e.g. https://wa.me/233244123456) before go-live. */
-const WHATSAPP_HREF =
-  typeof process.env.NEXT_PUBLIC_WHATSAPP_URL === 'string' &&
-  process.env.NEXT_PUBLIC_WHATSAPP_URL.length > 0
-    ? process.env.NEXT_PUBLIC_WHATSAPP_URL
-    : 'https://wa.me/233000000000'
-
 const SOCIAL = [
   { label: 'Instagram', href: 'https://instagram.com/extremedeptkidz', Icon: IconInstagram },
   { label: 'TikTok',    href: 'https://tiktok.com/@extremedeptkidz',   Icon: IconTikTok   },
-  { label: 'WhatsApp',  href: WHATSAPP_HREF,                         Icon: IconWhatsApp },
+  { label: 'Snapchat',  href: 'https://snapchat.com/add/extremedeptkidz', Icon: IconSnapchat },
+  { label: 'WhatsApp',  href: 'https://wa.me/233000000000',            Icon: IconWhatsApp },
 ]
 
 // ─── Single accordion column ───────────────────────────────────────

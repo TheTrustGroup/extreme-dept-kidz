@@ -5,6 +5,7 @@
 
 import { NextRequest } from "next/server";
 import { createOrder } from "@/lib/services/order.service";
+import { sendOrderConfirmationEmail } from "@/lib/services/email.service";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createRateLimitMiddleware, RATE_LIMITS } from "@/lib/security/rate-limiter";
 import { validate } from "@/lib/validation/schemas";
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
       return apiValidationError(validation.errors);
     }
 
-    const { orderId, orderNumber } = await createOrder({
+    const { orderId, orderNumber, total } = await createOrder({
       items: validation.data.items,
       shippingAddress: validation.data.shippingAddress,
       billingAddress: validation.data.billingAddress ?? undefined,
@@ -40,8 +41,13 @@ export async function POST(request: NextRequest) {
       idempotencyKey: validation.data.idempotencyKey ?? undefined,
     });
 
+    if (validation.data.paymentMethod === "pay_on_delivery") {
+      const email = validation.data.shippingAddress.email;
+      void sendOrderConfirmationEmail(email, orderNumber, total);
+    }
+
     return apiSuccess(
-      { orderId, orderNumber },
+      { orderId, orderNumber, total },
       "Order created",
       undefined,
       { requestId: request.headers.get("X-Request-ID") ?? undefined }

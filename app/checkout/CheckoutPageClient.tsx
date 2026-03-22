@@ -4,7 +4,7 @@ import * as React from "react";
 import { Container } from "@/components/ui/container";
 import { H1, Body } from "@/components/ui/typography";
 import { CheckoutFormV2 } from "@/components/checkout/CheckoutFormV2";
-import { CheckoutOrderSummary } from "@/components/checkout/CheckoutOrderSummary";
+import { CheckoutOrderSummaryLegacy } from "@/components/checkout/CheckoutOrderSummaryLegacy";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -109,15 +109,23 @@ export function CheckoutPageClient(): JSX.Element | null {
             currency: "GHS",
           }),
         });
-        const result = await response.json();
-        if (!result.success || !result.data?.authorizationUrl) {
+        const result = (await response.json()) as {
+          success?: boolean;
+          data?: { authorizationUrl?: string; reference?: string };
+          authorizationUrl?: string;
+          reference?: string;
+          error?: string;
+        };
+        const authUrl = result.data?.authorizationUrl ?? result.authorizationUrl;
+        const payRef = result.data?.reference ?? result.reference;
+        if (!result.success || !authUrl) {
           alert(result.error || "Payment initiation failed. Please try again.");
           return;
         }
-        sessionStorage.setItem("paymentReferenceId", result.data.reference);
+        sessionStorage.setItem("paymentReferenceId", payRef ?? "");
         sessionStorage.setItem("orderId", orderId);
         sessionStorage.setItem("orderNumber", orderNumber);
-        window.location.href = result.data.authorizationUrl;
+        window.location.href = authUrl;
         return;
       }
 
@@ -195,7 +203,7 @@ export function CheckoutPageClient(): JSX.Element | null {
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1 order-1 lg:order-2">
             <div className="lg:sticky lg:top-20 xl:top-24">
-              <CheckoutOrderSummary shippingMethod={shippingMethod} />
+              <CheckoutOrderSummaryLegacy shippingMethod={shippingMethod} />
             </div>
           </div>
         </div>

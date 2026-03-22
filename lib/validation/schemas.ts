@@ -251,7 +251,7 @@ export const createOrderApiSchema = z.object({
     zipCode: z.string().min(1),
     country: z.string().min(1),
   }).optional().nullable(),
-  paymentMethod: z.enum(['paystack', 'momo', 'card']),
+  paymentMethod: z.enum(['paystack', 'momo', 'card', 'pay_on_delivery']),
   shippingAmount: z.number().int().min(0),
   taxAmount: z.number().int().min(0).optional().default(0),
   idempotencyKey: z.string().max(128).optional().nullable(),

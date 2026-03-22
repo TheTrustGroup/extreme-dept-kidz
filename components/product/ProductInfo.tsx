@@ -38,7 +38,7 @@ interface ProductInfoProps {
 }
 
 // ─── Price formatter ──────────────────────────────────────────────
-function fmt(n: number, cur = "GHS ₵") {
+function fmt(n: number, cur = "₵") {
   return `${cur}${n.toLocaleString("en-GH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -169,7 +169,7 @@ export default function ProductInfo({
   name,
   price,
   compareAtPrice,
-  currency = "GHS ₵",
+  currency = "₵",
   description,
   variants,
   collectionName,
@@ -431,7 +431,7 @@ export default function ProductInfo({
       <div className="pdp-trust-row">
         <span className="pdp-trust-item">
           <Truck size={13} strokeWidth={1.5} />
-          Free shipping over GHS ₵500
+          Free shipping over ₵500
         </span>
         <span className="pdp-trust-sep" aria-hidden="true">
           ·
@@ -461,7 +461,7 @@ export default function ProductInfo({
             <p>
               Free shipping on orders over{" "}
               <strong className="text-[var(--text-primary)] font-medium">
-                GHS ₵500
+                ₵500
               </strong>{" "}
               within Accra.
             </p>

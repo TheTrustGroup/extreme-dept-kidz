@@ -109,7 +109,7 @@ export function ProductPageClient({
             name={product.name}
             price={priceCedis}
             compareAtPrice={compareCedis}
-            currency="GHS ₵"
+            currency="₵"
             description={product.description ?? undefined}
             variants={variants}
             collectionName={category.name}
@@ -143,7 +143,7 @@ export function ProductPageClient({
       <StickyAddToCart
         productName={product.name}
         price={priceCedis}
-        currency="GHS ₵"
+        currency="₵"
         imageUrl={product.images?.[0]?.url}
         selectedSize={currentVariantId ?? undefined}
         isAvailable={product.inStock}

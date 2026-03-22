@@ -13,7 +13,7 @@ interface OrderSummaryProps {
   currency?: string;
 }
 
-function fmt(n: number, cur = "GHS ₵") {
+function fmt(n: number, cur = "₵") {
   return `${cur}${n.toLocaleString("en-GH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -62,7 +62,7 @@ export default function OrderSummary({
   items,
   subtotal,
   shipping = null,
-  currency = "GHS ₵",
+  currency = "₵",
 }: OrderSummaryProps) {
   const [expanded, setExpanded] = useState(false);
   const total =

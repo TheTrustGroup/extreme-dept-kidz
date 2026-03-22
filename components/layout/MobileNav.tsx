@@ -140,13 +140,13 @@ export default function MobileNav({
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 190,
+          zIndex: 9990,
           background: "rgba(15,23,42,0.5)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           pointerEvents: open ? "auto" : "none",
         }}
-        className="lg:hidden"
+        className="mobile-nav-backdrop lg:hidden"
         aria-hidden="true"
       />
 
@@ -164,7 +164,7 @@ export default function MobileNav({
           right: 0,
           bottom: 0,
           width: "min(320px, 88vw)",
-          zIndex: 200,
+          zIndex: 9999,
           backgroundColor: "var(--bg-page)",
           boxShadow: "-8px 0 32px rgba(15,23,42,0.12)",
           display: "flex",

@@ -172,3 +172,29 @@ This is an automated message. Please do not reply to this email.
     text,
   });
 }
+
+/**
+ * Customer order confirmation (Paystack success or pay-on-delivery placed).
+ */
+export async function sendOrderConfirmationEmail(
+  to: string,
+  orderNumber: string,
+  totalPesewas: number
+): Promise<boolean> {
+  const totalLabel = `₵${(totalPesewas / 100).toFixed(2)}`;
+  const subject = `We received your order ${orderNumber}`;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #1e293b;">
+      <p>Thank you for shopping with Extreme Dept Kidz.</p>
+      <p><strong>Order:</strong> ${orderNumber}<br/>
+      <strong>Total:</strong> ${totalLabel}</p>
+      <p>We will contact you on WhatsApp or phone to confirm delivery details.</p>
+    </body>
+    </html>
+  `;
+  const text = `Thank you! Order ${orderNumber} — Total ${totalLabel}. We will contact you to confirm delivery.`;
+  return sendEmail({ to, subject, html, text });
+}

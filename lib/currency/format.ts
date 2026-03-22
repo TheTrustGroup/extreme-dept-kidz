@@ -50,7 +50,7 @@ export function formatCurrencyAmount(
  * @param targetCurrency - ISO code.
  * @param rates - GHS → currency rates.
  * @param configs - Map of currency code → CurrencyConfig (for symbol/locale).
- * @returns Formatted string (e.g. "GHS ₵129.00", "$6.71").
+ * @returns Formatted string (e.g. "₵129.00", "$6.71").
  */
 export function formatPriceInCurrency(
   pesewas: number,

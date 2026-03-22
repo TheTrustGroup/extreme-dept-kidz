@@ -111,6 +111,7 @@ export default function Header() {
         style={{
           top: "var(--topbar-height, 0px)",
           transition: "top 0.3s ease, background-color 0.25s ease",
+          isolation: "isolate",
         }}
       >
         <div className="container-luxury h-full flex items-center justify-between gap-6">

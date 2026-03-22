@@ -70,7 +70,7 @@ const TRUST_ITEMS = [
   {
     icon: <TruckIcon />,
     title: "Free Shipping",
-    desc: "On orders over GHS ₵500",
+    desc: "On orders over ₵500",
     href: "/shipping-info",
   },
   {

@@ -27,7 +27,7 @@ export interface ProductCardProps {
 }
 
 // ─── Price formatter (expects display amount e.g. cedis) ───────────
-function formatPrice(amount: number, currency = "GHS ₵"): string {
+function formatPrice(amount: number, currency = "₵"): string {
   return `${currency}${amount.toLocaleString("en-GH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -68,7 +68,7 @@ export default function ProductCard({
   name,
   price,
   compareAtPrice,
-  currency = "GHS ₵",
+  currency = "₵",
   imageUrl,
   imageAlt,
   badge,

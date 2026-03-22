@@ -21,7 +21,7 @@ function storeItemToDrawerItem(item: StoreCartItem): DrawerCartItem {
     quantity: item.quantity,
     imageUrl: p.images?.[0]?.url ?? "/placeholder.jpg",
     imageAlt: p.images?.[0]?.alt ?? p.name,
-    currency: "GHS ₵",
+    currency: "₵",
   };
 }
 

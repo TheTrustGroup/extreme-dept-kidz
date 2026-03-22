@@ -15,7 +15,7 @@ interface StickyAddToCartProps {
   onAddToCart: () => Promise<void>;
 }
 
-function fmt(n: number, cur = "GHS ₵") {
+function fmt(n: number, cur = "₵") {
   return `${cur}${n.toLocaleString("en-GH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -25,7 +25,7 @@ function fmt(n: number, cur = "GHS ₵") {
 export default function StickyAddToCart({
   productName,
   price,
-  currency = "GHS ₵",
+  currency = "₵",
   imageUrl,
   selectedSize,
   isAvailable = true,

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 const MESSAGES = [
-  "Free shipping on orders over GHS ₵500 · Ghana-wide delivery",
+  "Free shipping on orders over ₵500 · Ghana-wide delivery",
   "New arrivals just dropped — Boys & Girls collections",
   "30-day easy returns · Secure checkout",
 ];

@@ -87,8 +87,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
   };
 
   const formatPrice = (price: number) => {
-    // Convert from pesewas to GHS
-    return (price / 100).toFixed(0);
+    return `₵${(price / 100).toFixed(2)}`;
   };
 
   return (
@@ -123,13 +122,13 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
                     </h2>
                     <div className="flex items-center gap-4 mb-4 flex-wrap">
                       <span className="text-2xl font-bold">
-                        {formatPrice(items[currentSlide].price)} GHS
+                        {formatPrice(items[currentSlide].price)}
                       </span>
                       <span className="text-lg line-through text-white/60">
-                        {formatPrice(items[currentSlide].originalPrice!)} GHS
+                        {formatPrice(items[currentSlide].originalPrice!)}
                       </span>
                       <span className="px-3 py-1 bg-green-500 text-sm font-semibold rounded-full">
-                        Save {formatPrice(items[currentSlide].savings)} GHS
+                        Save {formatPrice(items[currentSlide].savings)}
                       </span>
                     </div>
                     <button
@@ -146,7 +145,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
                     </h3>
                     <div className="flex items-center gap-4 mb-4">
                       <span className="text-2xl font-bold">
-                        {formatPrice(items[currentSlide].price)} GHS
+                        {formatPrice(items[currentSlide].price)}
                       </span>
                     </div>
                     <div className="flex gap-4 flex-wrap">
@@ -248,7 +247,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
               </p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-bold">{formatPrice(calculateSelectedTotal())} GHS</span>
+              <span className="text-2xl font-bold">{formatPrice(calculateSelectedTotal())}</span>
             </div>
           </div>
           <button
@@ -274,7 +273,7 @@ export function CompleteLookSlider({ look }: CompleteLookSliderProps) {
               />
             </div>
             <h4 className="font-semibold mb-2">{item.product.name}</h4>
-            <p className="text-lg font-bold mb-3">{formatPrice(item.product.price)} GHS</p>
+            <p className="text-lg font-bold mb-3">{formatPrice(item.product.price)}</p>
             <button
               onClick={() => {
                 const availableSize = item.product.sizes.find(s => s.inStock)?.size || item.product.sizes[0]?.size || '8';

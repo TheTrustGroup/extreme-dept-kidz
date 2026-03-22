@@ -13,7 +13,7 @@ function mapProductToCardProps(p: Product): ProductCardProps {
     name: p.name,
     price: p.price / 100,
     compareAtPrice: p.originalPrice ? p.originalPrice / 100 : undefined,
-    currency: "GHS ₵",
+    currency: "₵",
     imageUrl: p.images?.[0]?.url ?? "/placeholder.jpg",
     imageAlt: p.images?.[0]?.alt ?? p.name,
     badge: p.tags?.includes("new")

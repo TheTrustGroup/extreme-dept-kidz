@@ -1,71 +1,67 @@
 "use client";
 
-import * as React from "react";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Container } from "@/components/ui/container";
-import { H1, Body } from "@/components/ui/typography";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import { cn } from "@/lib/utils";
+import { CheckCircle, MessageCircle } from "lucide-react";
 
-export default function CheckoutSuccessPage(): JSX.Element {
-  const { theme } = useTheme();
+function OrderSuccessInner() {
+  const p = useSearchParams();
+  const ref = p.get("ref") || "";
+  const name = p.get("name") || "there";
+  const isPod = p.get("method") === "pod";
+
+  const waMsg = encodeURIComponent(
+    `Hi! I just placed an order (${ref}) on Extreme Dept Kidz. Please confirm my delivery.`
+  );
+  const waPhone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "233000000000";
+  const waUrl = `https://wa.me/${waPhone}?text=${waMsg}`;
 
   return (
-    <div
-      className={cn(
-        "min-h-screen pt-16 xs:pt-18 sm:pt-20 md:pt-24 pb-12 sm:pb-16",
-        theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
-      )}
-    >
-      <Container size="lg">
-        <div className="max-w-2xl mx-auto text-center">
-          <div
-            className={cn(
-              "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6",
-              theme === "dark" ? "bg-green-900/30" : "bg-green-100"
-            )}
-          >
-            <svg
-              className="w-8 h-8 text-green-600 dark:text-green-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <H1
-            className={cn(
-              "mb-4",
-              theme === "dark" ? "text-dark-text-primary" : "text-charcoal-900"
-            )}
-          >
-            Order confirmed
-          </H1>
-          <Body
-            className={cn(
-              "mb-8",
-              theme === "dark" ? "text-dark-text-secondary" : "text-charcoal-600"
-            )}
-          >
-            Thank you for your purchase. We&apos;ll send order details to your email.
-          </Body>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button asChild variant="primary" size="lg">
-              <Link href="/">Continue shopping</Link>
-            </Button>
-            <Button asChild variant="ghost" size="lg">
-              <Link href="/orders">View orders</Link>
-            </Button>
-          </div>
+    <div className="payment-status">
+      <div className="payment-status__card">
+        <div className="payment-status__icon payment-status__icon--success">
+          <CheckCircle size={40} strokeWidth={1.5} />
         </div>
-      </Container>
+        <h1 className="payment-status__title">Thank you, {name}!</h1>
+        <p className="payment-status__sub">
+          {isPod
+            ? "Your order has been placed. Our team will call you to confirm delivery and payment."
+            : "Your order has been confirmed. We will contact you to arrange delivery."}
+        </p>
+        {ref && (
+          <p className="payment-status__ref">
+            Order ref: <strong>{ref}</strong>
+          </p>
+        )}
+        <div className="payment-status__actions">
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+          >
+            <MessageCircle size={16} />
+            Message us on WhatsApp
+          </a>
+          <Link
+            href="/"
+            className="btn-secondary"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+          >
+            Back to Home
+          </Link>
+        </div>
+      </div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div className="payment-status min-h-screen" />}>
+      <OrderSuccessInner />
+    </Suspense>
   );
 }

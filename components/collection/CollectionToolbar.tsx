@@ -121,7 +121,7 @@ function ActiveFilterPills({
             className="filter-pill"
             onClick={removePrice}
           >
-            Under GHS ₵{filters.priceMax} <X size={11} strokeWidth={2} />
+            Under ₵{filters.priceMax} <X size={11} strokeWidth={2} />
           </button>
         )}
         {filters.availability && (
@@ -324,7 +324,7 @@ function FilterPanelContent({
             className="text-label text-[var(--color-gold)]"
             style={{ fontSize: "12px" }}
           >
-            GHS ₵{filters.priceMax.toLocaleString()}
+            ₵{filters.priceMax.toLocaleString()}
           </span>
         </div>
         <input
@@ -347,13 +347,13 @@ function FilterPanelContent({
             className="text-label text-[var(--text-tertiary)]"
             style={{ fontSize: "10px" }}
           >
-            GHS ₵0
+            ₵0
           </span>
           <span
             className="text-label text-[var(--text-tertiary)]"
             style={{ fontSize: "10px" }}
           >
-            GHS ₵1,000
+            ₵1,000
           </span>
         </div>
       </div>

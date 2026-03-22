@@ -39,6 +39,7 @@ export interface CreateOrderInput {
 export interface CreateOrderResult {
   orderId: string;
   orderNumber: string;
+  total: number;
 }
 
 function generateOrderNumber(): string {
@@ -58,7 +59,8 @@ export async function createOrder(
     throw new Error("Database not available");
   }
 
-  const { items, shippingAddress, billingAddress, paymentMethod, shippingAmount, taxAmount = 0 } = input;
+  const { items, shippingAddress, billingAddress, paymentMethod, shippingAmount, taxAmount = 0 } =
+    input;
   if (items.length === 0) {
     throw new Error("At least one item is required");
   }
@@ -100,6 +102,13 @@ export async function createOrder(
 
     const total = subtotal + shippingAmount + taxAmount;
 
+    const paymentMethodForDb =
+      paymentMethod === "paystack"
+        ? "card"
+        : paymentMethod === "pay_on_delivery"
+          ? "cash_on_delivery"
+          : paymentMethod;
+
     const order = await tx.order.create({
       data: {
         orderNumber,
@@ -110,7 +119,7 @@ export async function createOrder(
         total,
         shippingAddress: shippingAddress as unknown as object,
         billingAddress: (billingAddress ?? undefined) as object | undefined,
-        paymentMethod: paymentMethod === "paystack" ? "card" : paymentMethod,
+        paymentMethod: paymentMethodForDb,
         paymentStatus: "PENDING",
         items: {
           create: orderItemsWithPrice.map((i) => ({
@@ -124,7 +133,7 @@ export async function createOrder(
       include: { items: true },
     });
 
-    return { orderId: order.id, orderNumber: order.orderNumber };
+    return { orderId: order.id, orderNumber: order.orderNumber, total: order.total };
   });
 
   logger.log("[Order] Created", result.orderNumber, result.orderId);

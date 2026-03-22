@@ -15,7 +15,7 @@ interface CartPageProps {
   onRemove: (lineId: string) => void;
 }
 
-function fmt(n: number, cur = "GHS ₵") {
+function fmt(n: number, cur = "₵") {
   return `${cur}${n.toLocaleString("en-GH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -94,7 +94,7 @@ export default function CartPage({
 }: CartPageProps) {
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
-  const currency = items[0]?.currency ?? "GHS ₵";
+  const currency = items[0]?.currency ?? "₵";
 
   if (items.length === 0) {
     return (

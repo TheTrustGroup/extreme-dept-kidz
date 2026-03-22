@@ -1,65 +1,90 @@
-import { NextRequest } from "next/server";
-import { initializePaystackTransaction } from "@/lib/payment/paystack";
-import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
+import { NextRequest, NextResponse } from "next/server";
 import { createRateLimitMiddleware, RATE_LIMITS } from "@/lib/security/rate-limiter";
-import { z } from "zod";
-
-const initiateSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  amount: z.number().int().positive().max(100_000_00), // in smallest unit (pesewas/kobo)
-  orderId: z.string().min(1, "Order ID is required"),
-  currency: z.enum(["GHS", "NGN", "ZAR", "USD"]).optional(),
-});
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest) {
-  const rateLimitCheck = createRateLimitMiddleware(RATE_LIMITS.PAYMENT);
-  const rateLimitResponse = await rateLimitCheck(request);
+export async function POST(req: NextRequest) {
+  const rateLimitResponse = await createRateLimitMiddleware(RATE_LIMITS.PAYMENT)(req);
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
-    const body = await request.json();
-    const parsed = initiateSchema.safeParse(body);
-    if (!parsed.success) {
-      const errors: Record<string, string> = {};
-      parsed.error.errors.forEach((e) => {
-        const path = e.path.join(".");
-        if (path) errors[path] = e.message;
-      });
-      return apiValidationError(errors);
+    const body = await req.json();
+    const { email, amount, orderId, customerInfo, cartItems } = body;
+
+    if (!email || !amount || !orderId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const { email, amount, orderId, currency } = parsed.data;
-    // Reference: alphanumeric, - . = only (Paystack requirement)
-    const reference = orderId.replace(/[^a-zA-Z0-9\-._=]/g, "_").slice(0, 100);
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    if (!secret) {
+      return NextResponse.json({ error: "Payment not configured" }, { status: 500 });
+    }
 
-    const result = await initializePaystackTransaction({
-      email,
-      amount,
-      reference,
-      currency: currency ?? "GHS",
-      metadata: { orderId },
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "http://localhost:3000";
+    const callbackUrl = `${siteUrl}/checkout/payment-status`;
+
+    const reference = String(orderId)
+      .replace(/[^a-zA-Z0-9\-._=]/g, "_")
+      .slice(0, 100);
+
+    const response = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        amount,
+        reference,
+        callback_url: callbackUrl,
+        metadata: {
+          orderId,
+          customerInfo,
+          cartItems,
+          custom_fields: [
+            {
+              display_name: "Order ID",
+              variable_name: "order_id",
+              value: orderId,
+            },
+            {
+              display_name: "Customer Name",
+              variable_name: "customer_name",
+              value: `${customerInfo?.firstName ?? ""} ${customerInfo?.lastName ?? ""}`.trim(),
+            },
+          ],
+        },
+        currency: "GHS",
+        channels: ["card", "mobile_money", "bank_transfer"],
+      }),
     });
 
-    if ("error" in result) {
-      return apiError("Payment initiation failed", 400, result.error);
+    const data = (await response.json()) as {
+      status?: boolean;
+      message?: string;
+      data?: {
+        authorization_url: string;
+        reference: string;
+        access_code: string;
+      };
+    };
+
+    if (!data.status) {
+      return NextResponse.json(
+        { error: data.message || "Payment initiation failed" },
+        { status: 400 }
+      );
     }
 
-    return apiSuccess(
-      {
-        authorizationUrl: result.authorizationUrl,
-        reference: result.reference,
-        message: "Redirect customer to the authorization URL to complete payment",
-      },
-      "Payment initiated"
-    );
-  } catch (error) {
-    console.error("Paystack initiate error:", error);
-    return apiError(
-      "Payment initiation failed",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    );
+    return NextResponse.json({
+      success: true,
+      authorizationUrl: data.data?.authorization_url,
+      reference: data.data?.reference,
+      accessCode: data.data?.access_code,
+    });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

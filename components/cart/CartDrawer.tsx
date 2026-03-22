@@ -34,7 +34,7 @@ interface CartDrawerProps {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
-function fmt(n: number, cur = "GHS ₵") {
+function fmt(n: number, cur = "₵") {
   return `${cur}${n.toLocaleString("en-GH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -51,7 +51,7 @@ function CartLineItem({
   onUpdateQty: (lineId: string, qty: number) => void;
   onRemove: (lineId: string) => void;
 }) {
-  const cur = item.currency ?? "GHS ₵";
+  const cur = item.currency ?? "₵";
 
   return (
     <motion.div
@@ -179,7 +179,7 @@ export default function CartDrawer({
     if (item) info("Removed from bag", item.name);
   };
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const currency = items[0]?.currency ?? "GHS ₵";
+  const currency = items[0]?.currency ?? "₵";
 
   useEffect(() => {
     if (open) {

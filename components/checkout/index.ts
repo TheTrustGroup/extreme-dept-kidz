@@ -3,6 +3,7 @@
  */
 
 export { CheckoutForm } from "./CheckoutForm";
-export { CheckoutOrderSummary } from "./CheckoutOrderSummary";
+export { CheckoutOrderSummaryLegacy } from "./CheckoutOrderSummaryLegacy";
+export { default as CheckoutOrderSummary } from "./CheckoutOrderSummary";
 
 
