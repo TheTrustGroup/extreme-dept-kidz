@@ -31,8 +31,10 @@ export default function AdminLoginPage(): JSX.Element {
       } else {
         setError("Invalid email or password. Please try again.");
       }
-    } catch {
-      setError("Unable to connect. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to connect. Please try again."
+      );
     } finally {
       setLoading(false);
     }

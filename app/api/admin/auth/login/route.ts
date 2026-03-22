@@ -14,6 +14,18 @@ import { retryPrismaQuery } from '@/lib/utils/retry';
 
 export const dynamic = 'force-dynamic';
 
+/** Fields needed for login + client hydration (admin-auth-store expects token + user). */
+const ADMIN_LOGIN_SELECT = {
+  id: true,
+  email: true,
+  name: true,
+  passwordHash: true,
+  role: true,
+  isActive: true,
+  tokenVersion: true,
+  assignedPos: true,
+} as const;
+
 // Track failed login attempts
 const failedAttempts = new Map<string, number>();
 
@@ -165,14 +177,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       try {
         user = await prisma!.adminUser.findUnique({
           where: { email: trimmedEmail },
-          select: {
-            id: true,
-            email: true,
-            passwordHash: true,
-            role: true,
-            isActive: true,
-            tokenVersion: true,
-          },
+          select: ADMIN_LOGIN_SELECT,
         });
         logger.log(`[Login] 📧 Exact match result: ${user ? 'found' : 'not found'}`, { requestId });
       } catch (directError) {
@@ -181,14 +186,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         user = await retryPrismaQuery(
           () => prisma!.adminUser.findUnique({
             where: { email: trimmedEmail },
-            select: {
-              id: true,
-              email: true,
-              passwordHash: true,
-              role: true,
-              isActive: true,
-              tokenVersion: true,
-            },
+            select: ADMIN_LOGIN_SELECT,
           }),
           { 
             timeoutMs: 10000, // Increased to 10 seconds for cold starts
@@ -207,14 +205,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           // Get all admin users and find case-insensitive match
           const allAdmins = await prisma!.adminUser.findMany({
             where: { isActive: true },
-            select: {
-              id: true,
-              email: true,
-              passwordHash: true,
-              role: true,
-              isActive: true,
-              tokenVersion: true,
-            },
+            select: ADMIN_LOGIN_SELECT,
           });
           user = allAdmins.find(u => u.email.toLowerCase() === normalizedEmail) || null;
           logger.log(`[Login] 📧 Case-insensitive match result: ${user ? 'found' : 'not found'}`, { requestId });
@@ -224,14 +215,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           user = await retryPrismaQuery(
             () => prisma!.adminUser.findMany({
               where: { isActive: true },
-              select: {
-                id: true,
-                email: true,
-                passwordHash: true,
-                role: true,
-                isActive: true,
-                tokenVersion: true,
-              },
+              select: ADMIN_LOGIN_SELECT,
             }).then(admins => admins.find(u => u.email.toLowerCase() === normalizedEmail) || null),
             { 
               timeoutMs: 10000,
@@ -448,7 +432,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Return simple success response
     let response: NextResponse;
     try {
-      response = NextResponse.json({ success: true });
+      const userForClient = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        ...(user.assignedPos != null ? { assignedPos: user.assignedPos } : {}),
+      };
+      response = NextResponse.json({
+        success: true,
+        token,
+        user: userForClient,
+      });
       logger.log('[Login] ✅ Response JSON created successfully');
     } catch (jsonError) {
       logger.error('[Login] ❌ Failed to create JSON response:', jsonError);
