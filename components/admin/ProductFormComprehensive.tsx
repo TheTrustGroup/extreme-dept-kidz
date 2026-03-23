@@ -61,7 +61,9 @@ const productFormSchema = z.object({
   metaTitle: z.string().max(60, "Meta title must be 60 characters or less").optional(),
   metaDescription: z.string().max(160, "Meta description must be 160 characters or less").optional(),
   slug: z.string().min(1, "Slug is required"),
-  images: z.array(z.string()).min(1, "At least one image is required"),
+  images: z
+    .array(z.string().trim().min(1, "Image URL cannot be empty"))
+    .min(1, "At least one image is required"),
   variants: z.array(z.object({
     size: z.string(),
     color: z.string().optional(),
@@ -502,6 +504,18 @@ export function ProductFormComprehensive({
     setSaving(true);
 
     try {
+      const validImages = (data.images || []).map((image) => image.trim()).filter(Boolean);
+      const hasInStockVariant = (data.variants || []).some((variant) => (variant.stock ?? 0) > 0);
+      const storefrontVisible = effectiveVisibleOnStore(data);
+
+      if (storefrontVisible && validImages.length === 0) {
+        throw new Error("Add at least one image before publishing this product to the storefront.");
+      }
+
+      if (storefrontVisible && !hasInStockVariant) {
+        throw new Error("Set stock above 0 for at least one variant before publishing to the storefront.");
+      }
+
       const nameStr = (data?.name ?? "").toString().trim();
       const slugStr = (data?.slug ?? "").toString().trim();
       const descStr = (data?.description ?? "").toString().trim();
@@ -515,7 +529,7 @@ export function ProductFormComprehensive({
         sku: skuStr,
         price: data.price,
         categoryId: data.categoryId,
-        images: data.images || [],
+        images: validImages,
         inStock: data.status === "active",
         visibleOnStore: effectiveVisibleOnStore(data),
         sizes: (data.variants || [])
@@ -649,6 +663,12 @@ export function ProductFormComprehensive({
     setImageOrder(newOrder);
     const reorderedImages = newOrder.map(i => images[i]);
     setValue("images", reorderedImages, { shouldDirty: true });
+  };
+
+  const removeOrderedImage = (imageIndex: number): void => {
+    const nextImages = images.filter((_, i) => i !== imageIndex);
+    setValue("images", nextImages, { shouldDirty: true, shouldValidate: true });
+    setImageOrder(nextImages.map((_, i) => i));
   };
 
   // Scroll to section
@@ -987,6 +1007,16 @@ export function ProductFormComprehensive({
                           Set as Primary
                         </Button>
                       )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => removeOrderedImage(imgIndex)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Remove
+                      </Button>
                     </div>
                   ))}
                 </div>

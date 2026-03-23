@@ -67,7 +67,7 @@ export async function GET(
   }
 }
 
-// PUT - Update product (supports ProductEditForm body: name, description, slug, categoryId, variants, images)
+// PUT - Update product (supports unified ProductFormComprehensive payload)
 export async function PUT(
   request: NextRequest,
   { params }: RouteContext
