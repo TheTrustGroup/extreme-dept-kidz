@@ -9,7 +9,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
-import { getDatabaseStatus } from "@/lib/db";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db/prisma";
 import { getProducts, getProductsByCategory } from "@/lib/data/products";
 import type { Product } from "@/types";
 import { apiSuccess, apiError } from "@/lib/utils/api-response";
@@ -94,62 +95,102 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const search = searchParams.get("search");
     const inStock = searchParams.get("inStock") === "true";
     const sort = searchParams.get("sort") || "newest";
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "20", 10), 1), 100);
+    const offset = Math.max(parseInt(searchParams.get("offset") || "0", 10), 0);
 
-    // Single source: lib/data/products. Storefront: only visible on website; warehouse: all products.
     const storefrontOnly = !isWarehouseRequest(request);
-    let products = category
-      ? await getProductsByCategory(category, { storefrontOnly })
-      : await getProducts({ storefrontOnly });
 
-    // Apply filters (in-memory; category/API already filtered by DB when category param set)
-    if (inStock) {
-      products = products.filter(p => p.inStock);
+    const where: Prisma.ProductWhereInput = {};
+    if (storefrontOnly) {
+      where.visibleOnStore = true;
     }
-
+    if (inStock) where.inStock = true;
+    if (category) where.category = { slug: category };
+    if (collection) where.collections = { some: { collection: { slug: collection } } };
     if (search) {
-      const searchLower = search.toLowerCase();
-      products = products.filter(
-        p =>
-          p.name.toLowerCase().includes(searchLower) ||
-          p.description.toLowerCase().includes(searchLower) ||
-          p.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-      );
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { tags: { some: { name: { contains: search, mode: "insensitive" } } } },
+      ];
     }
 
-    // Apply sorting
+    const orderBy: Prisma.ProductOrderByWithRelationInput[] = [];
     switch (sort) {
       case "price-low":
-        products.sort((a, b) => a.price - b.price);
+        orderBy.push({ price: "asc" });
         break;
       case "price-high":
-        products.sort((a, b) => b.price - a.price);
+        orderBy.push({ price: "desc" });
         break;
       case "name":
-        products.sort((a, b) => a.name.localeCompare(b.name));
+        orderBy.push({ name: "asc" });
         break;
       case "oldest":
-        // Mock data doesn't have createdAt, so we'll use default order
+        orderBy.push({ createdAt: "asc" });
         break;
-      default: // "newest"
-        // Default order (already sorted)
+      default:
+        orderBy.push({ createdAt: "desc" });
         break;
     }
+    orderBy.push({ id: "desc" });
 
-    // Apply pagination
-    const total = products.length;
-    const paginatedProducts = products.slice(offset, offset + limit);
+    let products: Product[] = [];
+    let total = 0;
+
+    if (prisma) {
+      const [rows, count] = await prisma.$transaction([
+        prisma.product.findMany({
+          where,
+          orderBy,
+          skip: offset,
+          take: limit,
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            price: true,
+            originalPrice: true,
+            sku: true,
+            inStock: true,
+            category: {
+              select: { id: true, name: true, slug: true },
+            },
+            images: {
+              select: { url: true, alt: true, isPrimary: true },
+              orderBy: { order: "asc" },
+            },
+            variants: {
+              select: { id: true, size: true, stock: true },
+            },
+            tags: {
+              select: { name: true },
+            },
+          },
+        }),
+        prisma.product.count({ where }),
+      ]);
+      products = rows.map(transformProduct);
+      total = count;
+    } else {
+      // Fallback path (dev/mock): preserve existing behavior
+      const allProducts = category
+        ? await getProductsByCategory(category, { storefrontOnly })
+        : await getProducts({ storefrontOnly });
+      total = allProducts.length;
+      products = allProducts.slice(offset, offset + limit);
+    }
 
     // Warehouse expects a raw array for (response || []).map(...) compatibility
     if (isWarehouseRequest(request)) {
-      const res = withCors(request, NextResponse.json(paginatedProducts));
+      const res = withCors(request, NextResponse.json(products));
       res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
       return res;
     }
 
     const data = {
-      products: paginatedProducts,
+      products,
       pagination: {
         total,
         limit,
