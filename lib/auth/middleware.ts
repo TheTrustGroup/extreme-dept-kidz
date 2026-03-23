@@ -26,18 +26,10 @@ export interface AuthAndRoleResult extends AuthResult {
 export async function authenticateRequest(
   request: NextRequest
 ): Promise<AuthResult> {
-  // Try Authorization header first
-  let token: string | null = null;
   const authHeader = request.headers.get('authorization');
-  token = extractTokenFromHeader(authHeader);
-
-  // Fallback to cookie if no Authorization header
-  if (!token) {
-    const cookieToken = request.cookies.get('admin-token')?.value;
-    if (cookieToken) {
-      token = cookieToken;
-    }
-  }
+  const headerToken = extractTokenFromHeader(authHeader);
+  const cookieToken = request.cookies.get('admin-token')?.value ?? null;
+  let token: string | null = headerToken || cookieToken;
 
   if (!token) {
     return {
@@ -49,7 +41,14 @@ export async function authenticateRequest(
     };
   }
 
-  const payload = verifyToken(token);
+  let payload = verifyToken(token);
+  // If Authorization header token is malformed/expired but cookie is valid,
+  // prefer cookie auth instead of failing immediately.
+  if (!payload && headerToken && cookieToken && headerToken !== cookieToken) {
+    token = cookieToken;
+    payload = verifyToken(token);
+  }
+
   if (!payload) {
     return {
       user: null,

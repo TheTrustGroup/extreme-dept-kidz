@@ -288,21 +288,18 @@ export const useAdminAuth = create<AdminAuthState>()(
 
       refreshAuth: async (): Promise<void> => {
         const { token } = get();
-        
-        if (!token) {
-          set({ user: null, token: null, isAuthenticated: false });
-          return;
-        }
 
         // NOTE: Cookie is httpOnly and managed by server - cannot be set client-side
         // Just verify auth via API - cookie is automatically included
+        const headers: HeadersInit = {};
+        if (token && token !== "cookie") {
+          headers.Authorization = `Bearer ${token}`;
+        }
 
         try {
           const response = await fetch(apiUrl("/api/admin/auth/me"), {
             credentials: 'include', // Cookie automatically included
-            headers: {
-              'Authorization': `Bearer ${token}`, // Fallback if cookie not ready
-            },
+            headers,
             cache: 'no-store',
           });
 
@@ -318,7 +315,7 @@ export const useAdminAuth = create<AdminAuthState>()(
             set({
               user: userData,
               isAuthenticated: true,
-              token: token,
+              token: token && token !== "cookie" ? token : null,
             });
           } else {
             // Auth failed, clear state (middleware will handle redirect)
@@ -344,7 +341,7 @@ export const useAdminAuth = create<AdminAuthState>()(
 
       getAuthHeaders: (): HeadersInit => {
         const { token } = get();
-        return token
+        return token && token !== "cookie"
           ? {
               'Authorization': `Bearer ${token}`,
             }
@@ -430,7 +427,7 @@ export const useAdminAuth = create<AdminAuthState>()(
           set({
             user: userData,
             isAuthenticated: true,
-            token: responseToken || 'cookie', // Use 'cookie' as placeholder if no token in response
+            token: responseToken || null,
           });
           
           // Cookie is httpOnly and managed by server, automatically included in requests
