@@ -82,17 +82,17 @@ const COLUMNS = [
 const SOCIAL = [
   {
     label: 'Instagram',
-    href: 'https://instagram.com/extremedeptkidz',
+    href: 'https://www.instagram.com/extreme_dept_kidz?igsh=bm92Zng4OGRyN3Fl',
     Icon: FaInstagram,
   },
   {
     label: 'TikTok',
-    href: 'https://tiktok.com/@extremedeptkidz',
+    href: 'https://www.tiktok.com/@extreme_dept_kidz?_r=1&_t=ZM-92wJ2AMJUoS',
     Icon: FaTiktok,
   },
   {
     label: 'Snapchat',
-    href: 'https://snapchat.com/add/extremedeptkidz',
+    href: 'https://snapchat.com/t/dE3hKeZX',
     Icon: FaSnapchat,
   },
   {
