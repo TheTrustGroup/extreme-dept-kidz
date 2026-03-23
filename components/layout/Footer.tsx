@@ -10,13 +10,13 @@ import { FaInstagram, FaTiktok, FaSnapchat, FaWhatsapp } from 'react-icons/fa'
 // ─── Payment icons ─────────────────────────────────────────────────
 function IconMoMo() {
   return (
-    <svg width="44" height="26" viewBox="0 0 44 26" aria-label="MTN Mobile Money" role="img">
-      <rect width="44" height="26" rx="4" fill="#FFCC00"/>
-      <text x="22" y="17" textAnchor="middle" fill="#000"
-        style={{ fontSize: '9px', fontWeight: 700, fontFamily: 'Montserrat,sans-serif', letterSpacing: '0.02em' }}>
-        MoMo
-      </text>
-    </svg>
+    <span
+      className="footer-momo-badge"
+      aria-label="MTN Mobile Money"
+      role="img"
+    >
+      MoMo
+    </span>
   )
 }
 function IconVisa() {

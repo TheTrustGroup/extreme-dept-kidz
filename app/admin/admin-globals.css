@@ -500,3 +500,116 @@ body:has([data-admin]) {
 [data-admin] .rounded,
 [data-admin] .rounded-md,
 [data-admin] .rounded-lg { border-radius: var(--adm-radius) !important; }
+
+/* ── Light “paper” surfaces ────────────────────────────────────────────────────
+   Admin remaps gray/charcoal to light text for the dark shell. On cream / frosted
+   white panels, restore real palette. Match Tailwind’s escaped slash in class names. */
+[data-admin] :is(
+  .adm-light-surface,
+  .bg-cream-50,
+  .bg-cream-100,
+  .bg-cream-200,
+  .bg-white\/50,
+  .bg-white\/80,
+  .bg-white\/90,
+  .bg-white\/95
+) {
+  color: var(--color-charcoal-800, #27272a);
+}
+
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-black,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-gray-900,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-gray-800,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-slate-900 {
+  color: var(--color-charcoal-900, #18181b) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-gray-700,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-gray-600,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-slate-600 {
+  color: var(--color-charcoal-700, #3f3f46) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-gray-500,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-gray-400,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-slate-400 {
+  color: var(--color-charcoal-500, #71717a) !important;
+}
+
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-charcoal-900 { color: var(--color-charcoal-900) !important; }
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-charcoal-800 { color: var(--color-charcoal-800) !important; }
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-charcoal-700 { color: var(--color-charcoal-700) !important; }
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-charcoal-600 { color: var(--color-charcoal-600) !important; }
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-charcoal-500 { color: var(--color-charcoal-500) !important; }
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-charcoal-400 { color: var(--color-charcoal-400) !important; }
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .text-charcoal-300 { color: var(--color-charcoal-300) !important; }
+
+/* Same element: surface bg + text utility on one node (beats global gray/charcoal remap) */
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-black,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-gray-900,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-charcoal-900 {
+  color: var(--color-charcoal-900, #18181b) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-gray-800,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-slate-900,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-charcoal-800 {
+  color: var(--color-charcoal-800) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-gray-700,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-charcoal-700 {
+  color: var(--color-charcoal-700) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-gray-600,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-slate-600,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-charcoal-600 {
+  color: var(--color-charcoal-600) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-gray-500,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-gray-400,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-slate-400,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-charcoal-500 {
+  color: var(--color-charcoal-500) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-charcoal-400 {
+  color: var(--color-charcoal-400) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95).text-charcoal-300 {
+  color: var(--color-charcoal-300) !important;
+}
+
+/* Generic `.border` is remapped to dark-theme dividers; use cream on light cards */
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .border {
+  border-color: var(--color-cream-200, #e8ddd2) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .border-transparent {
+  border-color: transparent !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) .border-cream-300 {
+  border-color: var(--color-cream-300, #e8ddd2) !important;
+}
+
+/* Inputs / selects on light cards — undo global dark-field admin styling */
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) select,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) textarea {
+  background-color: #fff !important;
+  border-color: var(--color-cream-300, #e8ddd2) !important;
+  color: var(--color-charcoal-900, #18181b) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) input:not(.placeholder-transparent)::placeholder,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) textarea:not(.placeholder-transparent)::placeholder {
+  color: var(--color-charcoal-400, #a1a1aa) !important;
+}
+
+/* Tables embedded in light surfaces (e.g. variants grid, category table) */
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) table thead th {
+  background-color: var(--color-cream-100, #f3ede6) !important;
+  color: var(--color-charcoal-700) !important;
+  border-color: var(--color-cream-200, #e8ddd2) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) table tbody td {
+  color: var(--color-charcoal-800) !important;
+  border-color: var(--color-cream-200, #e8ddd2) !important;
+}
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) table tbody tr:hover,
+[data-admin] :is(.adm-light-surface, .bg-cream-50, .bg-cream-100, .bg-cream-200, .bg-white\/50, .bg-white\/80, .bg-white\/90, .bg-white\/95) table tbody tr:hover td {
+  background-color: var(--color-cream-50, #faf8f5) !important;
+}

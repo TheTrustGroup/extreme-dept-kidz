@@ -738,7 +738,7 @@ export function ProductFormComprehensive({
   }, [isDirty, productId]);
 
   return (
-    <div className="flex gap-6 min-h-[calc(100vh-8rem)] h-[calc(100vh-8rem)]">
+    <div className="adm-light-surface flex gap-6 min-h-[calc(100vh-8rem)] h-[calc(100vh-8rem)]">
       {/* Sidebar Navigation - Admin design system */}
       <aside className="w-64 flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-4 overflow-y-auto sticky top-0 self-start max-h-[calc(100vh-8rem)]">
         <div className="space-y-1">

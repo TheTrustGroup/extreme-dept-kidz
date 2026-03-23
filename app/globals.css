@@ -6192,6 +6192,23 @@ nav ul, nav ol {
   align-items: center;
   gap: 6px;
 }
+/* MTN MoMo chip: HTML badge so yellow + black text are not overridden by footer/SVG currentColor */
+.footer-momo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 4px;
+  background-color: var(--color-momo, #ffcc00);
+  color: #000;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
 .footer-legal {
   display: flex;
   align-items: center;
