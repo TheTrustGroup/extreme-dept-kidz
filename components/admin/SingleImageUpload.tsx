@@ -162,7 +162,7 @@ export function SingleImageUpload({
               <button
                 type="button"
                 onClick={handleRemove}
-                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full shadow-sm transition-opacity hover:bg-red-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                 aria-label="Remove image"
               >
                 <X className="w-4 h-4" />
@@ -170,16 +170,28 @@ export function SingleImageUpload({
             )}
           </div>
           {!disabled && (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={handleClick}
-              disabled={uploading}
-              className="mt-2 w-full"
-            >
-              {uploading ? "Uploading..." : "Change Image"}
-            </Button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleClick}
+                disabled={uploading}
+                className="w-full"
+              >
+                {uploading ? "Uploading..." : "Change Image"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleRemove}
+                disabled={uploading}
+                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                Remove
+              </Button>
+            </div>
           )}
         </div>
       ) : (

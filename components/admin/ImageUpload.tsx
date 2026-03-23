@@ -522,7 +522,7 @@ export function ImageUpload({
                   Primary
                 </div>
               )}
-              <div className="absolute inset-0 bg-charcoal-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <div className="absolute inset-0 bg-charcoal-900/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 {index > 0 && (
                   <Button
                     type="button"
