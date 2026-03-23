@@ -79,7 +79,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
       "Inventory fetched successfully"
     ));
-    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    response.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");
     return response;
   } catch (error) {
     logger.error("Failed to fetch inventory:", error);

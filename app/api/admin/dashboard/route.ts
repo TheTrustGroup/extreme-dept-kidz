@@ -76,8 +76,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Fetch current period data
     const [
-      currentOrders,
-      prevOrders,
+      currentOrdersCount,
+      prevOrdersCount,
       currentRevenue,
       prevRevenue,
       totalProducts,
@@ -89,15 +89,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       topProductsResult,
       salesData,
     ] = await Promise.all([
-      // Current period orders
-      db.order.findMany({
+      // Current period orders (count only; avoid loading full rows)
+      db.order.count({
         where: { ...orderPosWhere, createdAt: { gte: startDate, lte: endDate } },
-        select: { total: true, createdAt: true },
       }),
-      // Previous period orders
-      db.order.findMany({
+      // Previous period orders (count only)
+      db.order.count({
         where: { ...orderPosWhere, createdAt: { gte: prevStartDate, lte: prevEndDate } },
-        select: { total: true },
       }),
       // Current period revenue
       db.order.aggregate({
@@ -185,45 +183,40 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ? ((totalRevenue - prevTotalRevenue) / prevTotalRevenue) * 100
       : totalRevenue > 0 ? 100 : 0;
 
-    const totalOrders = currentOrders.length;
-    const prevTotalOrders = prevOrders.length;
+    const totalOrders = currentOrdersCount;
+    const prevTotalOrders = prevOrdersCount;
     const ordersChange = prevTotalOrders > 0
       ? ((totalOrders - prevTotalOrders) / prevTotalOrders) * 100
       : totalOrders > 0 ? 100 : 0;
 
     // Get product details for top products
     const topProducts = Array.isArray(topProductsResult) ? topProductsResult : [];
-    const topProductsWithDetails = await Promise.all(
-      topProducts.map(async (item) => {
-        try {
-          const product = await db.product.findUnique({
-            where: { id: item.productId },
-            include: {
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-              },
+    const topProductIds = topProducts.map((item) => item.productId);
+    const topProductsMeta = topProductIds.length
+      ? await db.product.findMany({
+          where: { id: { in: topProductIds } },
+          select: {
+            id: true,
+            name: true,
+            images: {
+              where: { isPrimary: true },
+              take: 1,
+              select: { url: true },
             },
-          });
-          return {
-            id: item.productId,
-            name: product?.name || 'Unknown Product',
-            sold: item._sum?.quantity || 0,
-            revenue: Number(item._sum?.price || 0),
-            image: product?.images[0]?.url,
-          };
-        } catch (error) {
-          logger.error(`Error fetching product ${item.productId}:`, error);
-          return {
-            id: item.productId,
-            name: 'Unknown Product',
-            sold: item._sum?.quantity || 0,
-            revenue: Number(item._sum?.price || 0),
-            image: undefined,
-          };
-        }
-      })
-    );
+          },
+        })
+      : [];
+    const topMetaById = new Map(topProductsMeta.map((product) => [product.id, product]));
+    const topProductsWithDetails = topProducts.map((item) => {
+      const product = topMetaById.get(item.productId);
+      return {
+        id: item.productId,
+        name: product?.name || "Unknown Product",
+        sold: item._sum?.quantity || 0,
+        revenue: Number(item._sum?.price || 0),
+        image: product?.images[0]?.url,
+      };
+    });
 
     // Process sales data for chart (group by date)
     const salesByDate = new Map<string, number>();
@@ -266,7 +259,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       };
     });
 
-    return apiSuccess(
+    const response = apiSuccess(
       {
         metrics: {
           revenue: totalRevenue,
@@ -297,6 +290,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
       "Dashboard data fetched successfully"
     );
+    response.headers.set("Cache-Control", "private, max-age=15, stale-while-revalidate=45");
+    return response;
   } catch (error) {
     logger.error("Failed to fetch dashboard data:", error);
     return apiError(

@@ -37,8 +37,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       allCount,
       publishedCount,
       draftsCount,
-      lowStockProducts,
-      outOfStockProducts,
+      perProductStock,
     ] = await Promise.all([
       // All products count
       retryPrismaQuery(() => prisma!.product.count(), { timeoutMs: 5000 }),
@@ -58,51 +57,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         },
       }), { timeoutMs: 5000 }),
       
-      // Low stock products (need to calculate total stock per product)
-      retryPrismaQuery(() => prisma!.product.findMany({
-        select: {
-          id: true,
-          variants: {
-            select: {
-              stock: true,
-            },
-          },
-        },
-      }), { timeoutMs: 5000 }),
-      
-      // Out of stock products
-      retryPrismaQuery(() => prisma!.product.findMany({
-        where: { inStock: false },
-        select: {
-          id: true,
-          variants: {
-            select: {
-              stock: true,
-            },
-          },
-        },
-      }), { timeoutMs: 5000 }),
+      // Per-product stock totals using DB aggregation (avoid loading all variants for all products)
+      retryPrismaQuery(
+        () =>
+          prisma!.productVariant.groupBy({
+            by: ['productId'],
+            _sum: { stock: true },
+            where: { isActive: true },
+          }),
+        { timeoutMs: 5000 }
+      ),
     ]);
 
-    // Calculate low stock count (total stock > 0 and <= 10)
-    const lowStockCount = lowStockProducts.filter(product => {
-      const totalStock = product.variants.reduce((sum, variant) => sum + (variant.stock || 0), 0);
-      return totalStock > 0 && totalStock <= 10;
-    }).length;
+    // Calculate low/out-of-stock counts from aggregated stock totals
+    const stockTotals = perProductStock.map((row) => Number(row._sum.stock || 0));
+    const lowStockCount = stockTotals.filter((stock) => stock > 0 && stock <= 10).length;
+    const outOfStockCount = stockTotals.filter((stock) => stock <= 0).length;
 
-    // Calculate out of stock count (total stock === 0 or inStock === false)
-    const outOfStockCount = outOfStockProducts.length + lowStockProducts.filter(product => {
-      const totalStock = product.variants.reduce((sum, variant) => sum + (variant.stock || 0), 0);
-      return totalStock === 0;
-    }).length;
-
-    return withCors(request, apiSuccess({
+    const response = withCors(request, apiSuccess({
       all: allCount,
       published: publishedCount,
       drafts: draftsCount,
       lowStock: lowStockCount,
       outOfStock: outOfStockCount,
     }, 'Product stats fetched successfully', undefined, { requestId }));
+    response.headers.set('Cache-Control', 'private, max-age=20, stale-while-revalidate=60');
+    return response;
   } catch (error) {
     logger.error("❌ GET /api/admin/products/stats error:", error);
     return withCors(request, apiError(
