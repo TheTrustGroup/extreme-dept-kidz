@@ -90,13 +90,25 @@ export default function AdminLoginPage(): JSX.Element {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#0a0a0f",
               flexShrink: 0,
             }}
           >
-            E3
+            <svg
+              width={20}
+              height={20}
+              viewBox="0 0 180 180"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
+            >
+              <rect x="28" y="38" width="13" height="104" rx="2" fill="#0a0a0f" />
+              <rect x="28" y="38" width="52" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="28" y="84" width="42" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="28" y="129" width="52" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="139" y="38" width="13" height="104" rx="2" fill="#0a0a0f" />
+              <rect x="100" y="38" width="52" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="110" y="84" width="42" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="100" y="129" width="52" height="13" rx="2" fill="#0a0a0f" />
+            </svg>
           </div>
           <span
             style={{

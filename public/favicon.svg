@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <rect width="180" height="180" rx="36" fill="#0f172a"/>
+  <!-- Left E (facing right) -->
+  <rect x="28" y="38" width="13" height="104" rx="2" fill="#c9a227"/>
+  <rect x="28" y="38" width="52" height="13" rx="2" fill="#c9a227"/>
+  <rect x="28" y="84" width="42" height="13" rx="2" fill="#c9a227"/>
+  <rect x="28" y="129" width="52" height="13" rx="2" fill="#c9a227"/>
+  <!-- Right E (mirrored, facing left) -->
+  <rect x="139" y="38" width="13" height="104" rx="2" fill="#c9a227"/>
+  <rect x="100" y="38" width="52" height="13" rx="2" fill="#c9a227"/>
+  <rect x="110" y="84" width="42" height="13" rx="2" fill="#c9a227"/>
+  <rect x="100" y="129" width="52" height="13" rx="2" fill="#c9a227"/>
+</svg>

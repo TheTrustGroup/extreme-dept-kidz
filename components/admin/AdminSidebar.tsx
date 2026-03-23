@@ -195,16 +195,33 @@ export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps) {
       {/* Brand */}
       <div className="adm-sb-top">
         <Link href="/admin" className="adm-brand">
-          <div className="adm-brand-mark">
-            {/* EDK logo mark — try to load the real logo,
-                fall back to the SVG grid icon */}
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "var(--adm-radius)",
+              background: "var(--adm-gold)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
             <svg
-              viewBox="0 0 24 24" fill="none"
-              stroke="#08080d" strokeWidth="2.5"
-              strokeLinecap="round"
-              style={{ width: 16, height: 16 }}
+              width={18}
+              height={18}
+              viewBox="0 0 180 180"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
             >
-              <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0z"/>
+              <rect x="28" y="38" width="13" height="104" rx="2" fill="#0a0a0f" />
+              <rect x="28" y="38" width="52" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="28" y="84" width="42" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="28" y="129" width="52" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="139" y="38" width="13" height="104" rx="2" fill="#0a0a0f" />
+              <rect x="100" y="38" width="52" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="110" y="84" width="42" height="13" rx="2" fill="#0a0a0f" />
+              <rect x="100" y="129" width="52" height="13" rx="2" fill="#0a0a0f" />
             </svg>
           </div>
           <div className="adm-brand-text">
