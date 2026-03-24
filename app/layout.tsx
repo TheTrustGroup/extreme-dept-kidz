@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
 import { Playfair_Display, Inter, Montserrat } from "next/font/google";
 import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
@@ -43,6 +40,7 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   display: "swap",
   weight: ["400", "500", "600", "700"],
+  preload: false,
   adjustFontFallback: true,
 });
 
@@ -155,6 +153,13 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);document.documentElement.className=t}else{var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var i=d?'dark':'light';document.documentElement.setAttribute('data-theme',i);document.documentElement.className=i}}catch(e){document.documentElement.setAttribute('data-theme','light');document.documentElement.className='light'}})();`,
           }}
+        />
+        <link
+          rel="preload"
+          href="/hero.webp"
+          as="image"
+          type="image/webp"
+          fetchPriority="high"
         />
         {/* CRITICAL: Preconnect to font domains for faster font loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />

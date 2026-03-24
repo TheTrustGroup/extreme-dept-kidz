@@ -7,18 +7,14 @@ import { getCompleteLooksForProduct } from "@/lib/data/complete-looks";
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data";
 import type { Product } from "@/types";
 
-/**
- * PHASE 1 — Bulletproof commerce: product detail is ALWAYS server-rendered.
- * UI → Server Component → DB only. No ISR, no client fetch, no revalidation.
- */
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+/** ISR: product detail revalidates every 60s for storefront freshness vs edge cache. */
+export const revalidate = 60;
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
-/** Generate metadata — direct server fetch, no cache. */
+/** Generate metadata — server fetch; respects route revalidate (60s). */
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
@@ -72,7 +68,7 @@ export async function generateMetadata({
 
 /**
  * Product Detail Page — Server Component only.
- * Product fetched directly here; no ISR, no fallback, no client fetch.
+ * Data fetched on the server; ISR via revalidate (see export above).
  */
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;

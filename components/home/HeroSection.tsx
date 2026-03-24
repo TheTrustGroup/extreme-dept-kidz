@@ -107,7 +107,7 @@ export default function HeroSection() {
         {/* Background image */}
         <div className="absolute inset-0">
           <Image
-            src="/Extreme 1.png"
+            src="/hero.webp"
             alt="Young boy in premium streetwear"
             fill
             priority
@@ -446,7 +446,7 @@ export default function HeroSection() {
           style={{ backgroundColor: "var(--color-navy)" }}
         >
           <Image
-            src="/Extreme 1.png"
+            src="/hero.webp"
             alt="Young boy in premium streetwear — Extreme Dept Kidz"
             fill
             priority

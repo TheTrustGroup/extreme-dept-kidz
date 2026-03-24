@@ -31,13 +31,31 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // NEXT/IMAGE STRICT CONFIG: Optimized image configuration
   images: {
-    domains: ['localhost', 'extremedeptkidz.com'],
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [375, 430, 640, 768, 1024, 1280, 1920],
-    imageSizes: [16, 32, 48, 64, 80, 96, 128, 256],
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [390, 640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 604800, // 7 days
+    unoptimized: false,
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        pathname: "/**",
+        port: "",
+      },
+      {
+        protocol: "https",
+        hostname: "extremedeptkidz.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.extremedeptkidz.com",
+        pathname: "/**",
+      },
       {
         protocol: "https",
         hostname: "images.unsplash.com",
@@ -53,26 +71,13 @@ const nextConfig = {
         hostname: "**.supabase.in",
         pathname: "/storage/v1/object/public/**",
       },
-      {
-        protocol: "https",
-        hostname: "**",
-      },
     ],
-    minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days for product images
-    // NEXT/IMAGE STRICT CONFIG: Disable SVG for security
-    dangerouslyAllowSVG: false,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // NEXT/IMAGE STRICT CONFIG: Standard device breakpoints
-    deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920],
-    // NEXT/IMAGE STRICT CONFIG: Optimized image sizes
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Enable image optimization with CDN caching
-    unoptimized: false,
   },
   
   // CRITICAL FIX: Enhanced Compression & Headers
   compress: true, // Enables gzip compression (Brotli handled by Vercel/CDN automatically)
   poweredByHeader: false,
+  generateEtags: true,
   
   // HTTP/2 Server Push (handled automatically by Vercel/CDN)
   // Next.js and Vercel automatically use HTTP/2 with server push for critical resources
