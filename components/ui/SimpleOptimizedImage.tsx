@@ -37,6 +37,8 @@ export function SimpleOptimizedImage({
   const blurDataURL = BLUR_PLACEHOLDER;
   const w = width ?? 800;
   const h = height ?? 800;
+  const unoptimized =
+    src.startsWith("data:") || src.startsWith("blob:");
 
   if (fill) {
     return (
@@ -44,6 +46,7 @@ export function SimpleOptimizedImage({
         src={src}
         alt={alt}
         fill
+        unoptimized={unoptimized}
         loading={priority ? "eager" : "lazy"}
         priority={priority}
         quality={85}
@@ -62,6 +65,7 @@ export function SimpleOptimizedImage({
       alt={alt}
       width={w}
       height={h}
+      unoptimized={unoptimized}
       loading={priority ? "eager" : "lazy"}
       priority={priority}
       quality={85}

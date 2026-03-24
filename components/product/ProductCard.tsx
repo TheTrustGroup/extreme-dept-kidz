@@ -85,6 +85,8 @@ export default function ProductCard({
 
   const isSoldOut = !isAvailable || badge === "sold-out";
   const isOnSale = compareAtPrice != null && compareAtPrice > price;
+  const imageUnoptimized =
+    imageUrl.startsWith("data:") || imageUrl.startsWith("blob:");
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -165,6 +167,7 @@ export default function ProductCard({
               src={imageUrl}
               alt={imageAlt ?? name}
               fill
+              unoptimized={imageUnoptimized}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className={[
                 "object-cover object-center",

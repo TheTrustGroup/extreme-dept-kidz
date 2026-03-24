@@ -233,6 +233,8 @@ export function OptimizedImage({
   // Images MUST always render - no conditional rendering that causes blank cards
   const [imageError, setImageError] = React.useState(false);
   const [imageLoaded, setImageLoaded] = React.useState(false);
+  const unoptimizedDataUrl =
+    src.startsWith("data:") || src.startsWith("blob:");
 
   // Handle image load errors - fallback to placeholder
   const handleImageError = React.useCallback(() => {
@@ -282,6 +284,7 @@ export function OptimizedImage({
           fill={!props.width || !props.height}
           width={props.width}
           height={props.height}
+          unoptimized={unoptimizedDataUrl}
           sizes={getSizes()}
           loading={isLCP ? 'eager' : 'lazy'}
           priority={isLCP}

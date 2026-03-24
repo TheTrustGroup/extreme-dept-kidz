@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { ProductEditClient } from "@/components/admin/ProductEditClient";
 import type { ProductFormInitialData } from "@/components/admin/ProductEditClient";
+import { formPricesFromDb } from "@/lib/admin/product-price-form";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -44,6 +45,8 @@ export default async function ProductEditPage({ params }: PageProps) {
   const metadata = (product.metadata ?? {}) as Record<string, unknown>;
   const dimensions = (metadata.dimensions ?? {}) as Record<string, unknown>;
 
+  const priceFields = formPricesFromDb(product.price ?? 0, product.originalPrice ?? null);
+
   const initialData: ProductFormInitialData = {
     name: product.name ?? "",
     description: product.description ?? "",
@@ -52,8 +55,8 @@ export default async function ProductEditPage({ params }: PageProps) {
     barcode: (metadata.barcode as string) ?? "",
     status: product.inStock ? "active" : "draft",
     visibleOnStore: Boolean(product.inStock && product.visibleOnStore !== false),
-    price: product.price ? product.price / 100 : 0,
-    salePrice: product.originalPrice ? product.originalPrice / 100 : undefined,
+    price: priceFields.price,
+    salePrice: priceFields.salePrice,
     costPerItem: (metadata.costPerItem as number) ?? undefined,
     trackInventory: (metadata.trackInventory as boolean) !== false,
     stockQuantity:

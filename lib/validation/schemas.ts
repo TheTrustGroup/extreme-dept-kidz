@@ -17,10 +17,17 @@ export const createProductSchema = z.object({
       return num;
     }),
   ]).pipe(z.number().positive('Price must be positive').max(1000000)),
-  originalPrice: z.union([
-    z.number().positive().optional(),
-    z.string().optional().transform((val) => val ? parseFloat(val) : undefined),
-  ]).optional(),
+  originalPrice: z
+    .union([
+      z.number().positive(),
+      z.null(),
+      z.string().transform((val) => {
+        if (!val) return undefined;
+        const n = parseFloat(val);
+        return Number.isNaN(n) ? undefined : n;
+      }),
+    ])
+    .optional(),
   category: z.union([
     z.enum(['tops', 'bottoms', 'outerwear', 'shoes', 'accessories']),
     z.object({

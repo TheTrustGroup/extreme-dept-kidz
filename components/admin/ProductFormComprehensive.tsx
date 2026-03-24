@@ -34,6 +34,7 @@ import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 import { cn } from "@/lib/utils";
 import { DEFAULT_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
 import { apiUrl } from "@/lib/config/api-base";
+import { apiPricesFromForm, formPricesFromDb } from "@/lib/admin/product-price-form";
 import { m } from "framer-motion";
 
 // Form schema
@@ -71,13 +72,23 @@ const productFormSchema = z.object({
     sku: z.string().optional(),
     stock: z.number().min(0),
   })).optional(),
-});
+}).refine(
+  (data) => {
+    if (data.salePrice == null || data.salePrice <= 0) return true;
+    return data.salePrice < data.price;
+  },
+  { message: "Sale price must be less than regular price", path: ["salePrice"] }
+);
 
 type ProductFormData = z.infer<typeof productFormSchema>;
 
 interface ProductFormComprehensiveProps {
   productId?: string;
   initialData?: Partial<ProductFormData>;
+  /** After successful create/update (e.g. close a parent modal). */
+  onSuccess?: () => void;
+  /** When true, do not navigate to /admin/products — parent handles UI. */
+  skipRedirectAfterSave?: boolean;
 }
 
 const FORM_SECTIONS = [
@@ -116,6 +127,8 @@ function effectiveVisibleOnStore(formData: {
 export function ProductFormComprehensive({
   productId,
   initialData,
+  onSuccess,
+  skipRedirectAfterSave = false,
 }: ProductFormComprehensiveProps): JSX.Element {
   const router = useRouter();
   const { showToast } = useToast();
@@ -219,8 +232,12 @@ export function ProductFormComprehensive({
           barcode: (meta.barcode as string) ?? "",
           status: (data.inStock ? "active" : "draft") as "active" | "draft" | "archived",
           visibleOnStore: Boolean(data.inStock && data.visibleOnStore !== false),
-          price: typeof data.price === "number" ? data.price / 100 : 0,
-          salePrice: typeof data.originalPrice === "number" ? data.originalPrice / 100 : undefined,
+          ...formPricesFromDb(
+            typeof data.price === "number" ? data.price : 0,
+            data.originalPrice != null && typeof data.originalPrice === "number"
+              ? data.originalPrice
+              : null
+          ),
           costPerItem: meta.costPerItem as number | undefined,
           trackInventory: (meta.trackInventory as boolean) !== false,
           stockQuantity: sizes.reduce((sum: number, s: { quantity?: number }) => sum + (s.quantity ?? 0), 0),
@@ -324,12 +341,19 @@ export function ProductFormComprehensive({
         }
 
         // Transform to API format
+        const priceFields = apiPricesFromForm(
+          typeof formData?.price === "number" && !Number.isNaN(formData.price)
+            ? formData.price
+            : 0,
+          formData?.salePrice
+        );
         const payload: any = {
           name: nameStr,
           slug: slugStr,
           description: descStr,
           sku: skuStr,
-          price: typeof formData?.price === "number" && !Number.isNaN(formData.price) ? formData.price : undefined,
+          price: priceFields.price,
+          originalPrice: priceFields.originalPrice,
           categoryId: formData?.categoryId ?? "",
           images: formData?.images || [],
           inStock: formData?.status === "active",
@@ -342,10 +366,6 @@ export function ProductFormComprehensive({
             })),
           tags: formData?.tags || [],
         };
-
-        if (formData?.salePrice != null && formData.salePrice > 0 && !Number.isNaN(formData.salePrice)) {
-          payload.originalPrice = formData.salePrice;
-        }
 
         payload.metadata = {
           shortDescription: formData?.shortDescription,
@@ -413,13 +433,20 @@ export function ProductFormComprehensive({
       const descStr = (formData?.description ?? "").toString().trim();
       const skuStr = (formData?.sku ?? "").toString().trim();
 
+      const priceFields = apiPricesFromForm(
+        typeof formData?.price === "number" && !Number.isNaN(formData.price)
+          ? formData.price
+          : 0,
+        formData?.salePrice
+      );
       // Transform to API format
       const payload: any = {
         name: nameStr,
         slug: slugStr,
         description: descStr,
         sku: skuStr,
-        price: typeof formData?.price === "number" && !Number.isNaN(formData.price) ? formData.price : undefined,
+        price: priceFields.price,
+        originalPrice: priceFields.originalPrice,
         categoryId: formData?.categoryId ?? "",
         images: formData?.images || [],
         inStock: formData?.status === "active",
@@ -432,10 +459,6 @@ export function ProductFormComprehensive({
           })),
         tags: formData?.tags || [],
       };
-
-      if (formData?.salePrice != null && formData.salePrice > 0 && !Number.isNaN(formData.salePrice)) {
-        payload.originalPrice = formData.salePrice;
-      }
 
       // Add metadata
       payload.metadata = {
@@ -521,13 +544,15 @@ export function ProductFormComprehensive({
       const descStr = (data?.description ?? "").toString().trim();
       const skuStr = (data?.sku ?? "").toString().trim();
 
-      // Transform to API format (API expects price in dollars; it converts to cents)
+      const priceFields = apiPricesFromForm(data.price, data.salePrice);
+      // Transform to API format (API expects price in major units; it converts to pesewas)
       const payload: any = {
         name: nameStr,
         slug: slugStr,
         description: descStr,
         sku: skuStr,
-        price: data.price,
+        price: priceFields.price,
+        originalPrice: priceFields.originalPrice,
         categoryId: data.categoryId,
         images: validImages,
         inStock: data.status === "active",
@@ -540,10 +565,6 @@ export function ProductFormComprehensive({
           })),
         tags: data.tags || [],
       };
-
-      if (data.salePrice != null && data.salePrice > 0) {
-        payload.originalPrice = data.salePrice;
-      }
 
       // Add metadata
       payload.metadata = {
@@ -589,7 +610,10 @@ export function ProductFormComprehensive({
             window.localStorage.setItem("products_updated", Date.now().toString());
           } catch (_) {}
         }
-        router.push("/admin/products");
+        onSuccess?.();
+        if (!skipRedirectAfterSave) {
+          router.push("/admin/products");
+        }
         router.refresh();
       } else {
         const message = parseApiValidationMessage(response.status, responseData);

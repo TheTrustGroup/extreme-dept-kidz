@@ -37,6 +37,8 @@ export interface ProductFormInitialData {
 interface ProductEditClientProps {
   productId: string | undefined;
   initialData: ProductFormInitialData | null;
+  onSuccess?: () => void;
+  skipRedirectAfterSave?: boolean;
 }
 
 /**
@@ -46,6 +48,8 @@ interface ProductEditClientProps {
 export function ProductEditClient({
   productId,
   initialData,
+  onSuccess,
+  skipRedirectAfterSave,
 }: ProductEditClientProps): JSX.Element {
   const pathname = usePathname();
   const breadcrumb = useAdminBreadcrumb();
@@ -71,6 +75,8 @@ export function ProductEditClient({
       <ProductFormComprehensive
         productId={isNew ? undefined : productId}
         initialData={initialData ?? undefined}
+        onSuccess={onSuccess}
+        skipRedirectAfterSave={skipRedirectAfterSave}
       />
     </div>
   );

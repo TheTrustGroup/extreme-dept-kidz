@@ -96,9 +96,11 @@ export async function PUT(
       slug?: string;
       categoryId?: string;
       visibleOnStore?: boolean;
-      /** Base price in major units (e.g. dollars); stored as cents in DB */
+      /** Base price in major units (e.g. cedis); stored as pesewas in DB */
       price?: number;
       originalPrice?: number | null;
+      /** ProductFormComprehensive sends sizes + quantity (same as POST create) */
+      sizes?: Array<{ size: string; quantity?: number }>;
       variants?: Array<{
         id: string;
         name?: string;
@@ -107,10 +109,11 @@ export async function PUT(
         stock?: number;
         comparePrice?: number | null;
       }>;
-      images?: Array<{ id?: string; url: string; alt?: string; position?: number }>;
+      /** String URLs or { url } objects */
+      images?: Array<string | { id?: string; url: string; alt?: string; position?: number }>;
     };
 
-    const { name, description, slug, categoryId, variants, images, visibleOnStore, price, originalPrice } =
+    const { name, description, slug, categoryId, variants, images, visibleOnStore, price, originalPrice, sizes: sizesPayload } =
       body;
 
     const updateData: Parameters<typeof prisma.product.update>[0]["data"] = {
@@ -142,8 +145,26 @@ export async function PUT(
       data: updateData,
     });
 
-    // Sync variants (schema: size, sku, price in cents, stock; form sends name -> size, price in dollars)
-    if (variants && Array.isArray(variants)) {
+    // Sync variants from ProductFormComprehensive `sizes` (preferred) or legacy `variants`
+    if (sizesPayload && Array.isArray(sizesPayload) && sizesPayload.length > 0) {
+      await prisma.productVariant.deleteMany({ where: { productId: id } });
+      const baseSku = (product.sku ?? `SKU-${id.slice(0, 8)}`).replace(/\s+/g, "-");
+      let i = 0;
+      for (const s of sizesPayload) {
+        const sizeLabel = String(s.size ?? "").trim() || "One Size";
+        const stock = Math.max(0, Math.floor(Number(s.quantity ?? 0)));
+        const sku = `${baseSku}-${sizeLabel.replace(/\s+/g, "-")}-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 10)}`.slice(0, 120);
+        i += 1;
+        await prisma.productVariant.create({
+          data: {
+            productId: id,
+            size: sizeLabel,
+            stock,
+            sku,
+          },
+        });
+      }
+    } else if (variants && Array.isArray(variants)) {
       const existingIds = variants
         .filter((v) => v.id && !String(v.id).startsWith("new-"))
         .map((v) => v.id);
@@ -181,17 +202,31 @@ export async function PUT(
       }
     }
 
-    // Sync images (schema: url, alt, order)
+    // Sync images — form often sends string[] URLs; also accept { url } objects
     if (images && Array.isArray(images)) {
       await prisma.productImage.deleteMany({ where: { productId: id } });
       await prisma.productImage.createMany({
-        data: images.map((img, index) => ({
-          productId: id,
-          url: (img.url ?? "").trim() || "/placeholder.png",
-          alt: (img.alt ?? "").trim() || product.name,
-          isPrimary: index === 0,
-          order: img.position ?? index,
-        })),
+        data: images.map((img, index) => {
+          const url =
+            typeof img === "string"
+              ? img.trim()
+              : String((img as { url?: string }).url ?? "").trim();
+          const altFromObj =
+            typeof img === "object" && img != null && "alt" in img
+              ? String((img as { alt?: string }).alt ?? "").trim()
+              : "";
+          const pos =
+            typeof img === "object" && img != null && "position" in img
+              ? Number((img as { position?: number }).position)
+              : index;
+          return {
+            productId: id,
+            url: url || "/placeholder.png",
+            alt: altFromObj || product.name,
+            isPrimary: index === 0,
+            order: Number.isFinite(pos) ? pos : index,
+          };
+        }),
       });
     }
 
