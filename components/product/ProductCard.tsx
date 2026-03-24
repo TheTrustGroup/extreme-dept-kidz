@@ -53,8 +53,18 @@ function CardBadge({
   };
   return (
     <span
-      className={["absolute top-3 left-3 z-10", "px-2 py-1 text-label", styles[type]].join(" ")}
-      style={{ fontSize: "10px", letterSpacing: "0.1em" }}
+      className={[
+        "product-card__badge",
+        "absolute z-10",
+        "top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 md:top-3 md:left-3",
+        "inline-flex max-w-[min(72px,calc(100%-8px))] sm:max-w-[min(88px,calc(100%-12px))]",
+        "items-center justify-center",
+        "px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1",
+        "text-[7px] leading-tight sm:text-[8px] md:text-[10px]",
+        "tracking-wide md:tracking-widest",
+        "truncate",
+        styles[type],
+      ].join(" ")}
     >
       {labels[type]}
     </span>

@@ -147,23 +147,23 @@ export async function PUT(
 
     // Sync variants from ProductFormComprehensive `sizes` (preferred) or legacy `variants`
     if (sizesPayload && Array.isArray(sizesPayload) && sizesPayload.length > 0) {
-      await prisma.productVariant.deleteMany({ where: { productId: id } });
       const baseSku = (product.sku ?? `SKU-${id.slice(0, 8)}`).replace(/\s+/g, "-");
-      let i = 0;
-      for (const s of sizesPayload) {
+      const ts = Date.now();
+      const rows = sizesPayload.map((s, i) => {
         const sizeLabel = String(s.size ?? "").trim() || "One Size";
         const stock = Math.max(0, Math.floor(Number(s.quantity ?? 0)));
-        const sku = `${baseSku}-${sizeLabel.replace(/\s+/g, "-")}-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 10)}`.slice(0, 120);
-        i += 1;
-        await prisma.productVariant.create({
-          data: {
-            productId: id,
-            size: sizeLabel,
-            stock,
-            sku,
-          },
-        });
-      }
+        const sku = `${baseSku}-${sizeLabel.replace(/\s+/g, "-")}-${ts}-${i}-${Math.random().toString(36).slice(2, 10)}`.slice(0, 120);
+        return {
+          productId: id,
+          size: sizeLabel,
+          stock,
+          sku,
+        };
+      });
+      await prisma.$transaction([
+        prisma.productVariant.deleteMany({ where: { productId: id } }),
+        prisma.productVariant.createMany({ data: rows }),
+      ]);
     } else if (variants && Array.isArray(variants)) {
       const existingIds = variants
         .filter((v) => v.id && !String(v.id).startsWith("new-"))
@@ -239,12 +239,12 @@ export async function PUT(
       },
     });
 
-    await revalidateOnProductMutation({
+    void revalidateOnProductMutation({
       type: "update",
       slug: updated!.slug,
       id: updated!.id,
       categorySlug: updated!.category?.slug,
-    });
+    }).catch((err) => logger.error("[Product PUT] revalidateOnProductMutation:", err));
     triggerProductUpdatedWebhook({
       productId: updated!.id,
       productSlug: updated!.slug,
@@ -297,11 +297,11 @@ export async function DELETE(
       where: { id },
     });
 
-    await revalidateOnProductMutation({
+    void revalidateOnProductMutation({
       type: "delete",
       slug: existing.slug,
       id: existing.id,
-    });
+    }).catch((err) => logger.error("[Product DELETE] revalidateOnProductMutation:", err));
     triggerProductUpdatedWebhook({
       productId: id,
       productSlug: existing.slug,

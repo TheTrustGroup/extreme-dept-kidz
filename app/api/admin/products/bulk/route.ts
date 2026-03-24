@@ -6,7 +6,11 @@ import { apiError, apiSuccess, apiValidationError } from "@/lib/utils/api-respon
 import { parseJsonBody } from "@/lib/utils/parse-body";
 import { bulkProductsSchema, validate } from "@/lib/validation/schemas";
 import { logActivity, ActivityActions } from "@/lib/services/admin/activity.service";
-import { revalidateOnProductMutation, CACHE_TAGS } from "@/lib/utils/cache-revalidation";
+import {
+  CACHE_TAGS,
+  revalidateAllCollectionPages,
+  revalidateProduct,
+} from "@/lib/utils/cache-revalidation";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 /**
@@ -81,14 +85,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           }, request);
         }
 
-        // Single contract: each mutation → revalidate before response (three truths)
         for (const product of products) {
-          await revalidateOnProductMutation({
-            type: "delete",
-            slug: product.slug,
-            id: product.id,
-          });
+          revalidateProduct(product.slug, product.id);
         }
+        revalidateTag(CACHE_TAGS.completeLooks);
+        void revalidateAllCollectionPages().catch((err) => {
+          console.error("[Bulk delete] revalidateAllCollectionPages:", err);
+        });
         break;
 
       case 'activate':

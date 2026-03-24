@@ -196,10 +196,14 @@ export async function revalidateOnProductMutation(params: RevalidateProductMutat
       revalidatePath(`/collections/${categorySlug}`, "page");
     }
 
-    // All collection pages + list paths
-    await revalidateAllCollectionPages();
+    // Admin + API layout: sync so the save response isn’t blocked by full-catalog work
     revalidatePath("/admin/products", "page");
     revalidatePath("/api/products", "layout");
+
+    // Heavy: every category path + tags — defer so product PUT/POST returns quickly
+    void revalidateAllCollectionPages().catch((err) => {
+      logger.error("[Cache] revalidateAllCollectionPages (deferred):", err);
+    });
 
     logger.log(`[Cache] revalidateOnProductMutation(${type}): ${slug}`);
   } catch (error) {

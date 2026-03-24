@@ -132,6 +132,7 @@ export function ProductFormComprehensive({
 }: ProductFormComprehensiveProps): JSX.Element {
   const router = useRouter();
   const { showToast } = useToast();
+  const [, startNavTransition] = React.useTransition();
   const isNew = !productId || productId === "new";
 
   // Form state
@@ -610,11 +611,14 @@ export function ProductFormComprehensive({
             window.localStorage.setItem("products_updated", Date.now().toString());
           } catch (_) {}
         }
-        onSuccess?.();
-        if (!skipRedirectAfterSave) {
-          router.push("/admin/products");
-        }
-        router.refresh();
+        setSaving(false);
+        startNavTransition(() => {
+          onSuccess?.();
+          if (!skipRedirectAfterSave) {
+            router.push("/admin/products");
+          }
+          router.refresh();
+        });
       } else {
         const message = parseApiValidationMessage(response.status, responseData);
         throw new Error(message || "Failed to save product");

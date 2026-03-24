@@ -1733,6 +1733,27 @@ textarea:focus-visible {
   overflow: hidden;
   background-color: var(--bg-surface-2);
   width: 100%;
+  container-type: inline-size;
+  container-name: product-thumb;
+}
+
+/* Sale/New badges: shrink in narrow thumbnails (horizontal list / tiny grids) */
+@container product-thumb (max-width: 140px) {
+  .product-card__badge {
+    top: 4px !important;
+    left: 4px !important;
+    max-width: 52px !important;
+    padding: 2px 4px !important;
+    font-size: 6px !important;
+    letter-spacing: 0.06em !important;
+  }
+}
+@container product-thumb (max-width: 100px) {
+  .product-card__badge {
+    max-width: 42px !important;
+    font-size: 5px !important;
+    padding: 1px 3px !important;
+  }
 }
 
 /* ── Image itself ─────────────────────────────────────────────── */

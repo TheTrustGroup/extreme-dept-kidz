@@ -396,13 +396,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Single contract: mutation → revalidate before response (three truths)
-    await revalidateOnProductMutation({
+    void revalidateOnProductMutation({
       type: "create",
       slug: product.slug,
       id: product.id,
       categorySlug: product.category?.slug ?? undefined,
-    });
+    }).catch((err) => logger.error("[Product POST] revalidateOnProductMutation:", err));
 
     // Notify frontend via webhook so cache revalidation runs (immediate visibility)
     triggerProductUpdatedWebhook({
