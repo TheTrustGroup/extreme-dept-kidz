@@ -25,9 +25,25 @@ function validate(info: CustomerInfo) {
   const e: Partial<Record<keyof CustomerInfo, string>> = {};
   if (!info.firstName.trim()) e.firstName = "Required";
   if (!info.lastName.trim()) e.lastName = "Required";
+  const email = info.email.trim();
+  if (!email) e.email = "Required";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    e.email = "Enter a valid email";
   if (!info.phone.trim() || info.phone.replace(/\D/g, "").length < 9)
     e.phone = "Enter a valid phone number";
+  if (!info.address.trim()) e.address = "Required";
+  if (!info.city.trim()) e.city = "Required";
+  if (!info.region.trim()) e.region = "Select your region";
   return e;
+}
+
+/** E.164-style for Ghana; API requires a sufficiently long phone string. */
+function formatPhoneForOrderApi(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("233") && digits.length >= 12) return `+${digits}`;
+  if (digits.startsWith("0") && digits.length >= 10) return `+233${digits.slice(1)}`;
+  if (digits.length === 9) return `+233${digits}`;
+  return phone.trim();
 }
 
 export default function CheckoutClient() {
@@ -38,6 +54,7 @@ export default function CheckoutClient() {
     Partial<Record<keyof CustomerInfo, string>>
   >({});
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [step, setStep] = useState<"info" | "confirm">("info");
 
   const subtotal = getTotal();
@@ -64,6 +81,7 @@ export default function CheckoutClient() {
   });
 
   const handleContinue = () => {
+    setSubmitError(null);
     const errs = validate(customer);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -77,17 +95,87 @@ export default function CheckoutClient() {
   };
 
   const handlePlaceOrder = async () => {
+    setSubmitError(null);
     setLoading(true);
-    const orderId = `EDK-${Date.now()}`;
 
     try {
+      const cartItemsState = useCartStore.getState().items;
+      if (cartItemsState.length === 0) {
+        setSubmitError("Your cart is empty.");
+        setLoading(false);
+        return;
+      }
+
+      const addressWithNotes =
+        customer.notes.trim().length > 0
+          ? `${customer.address.trim()}\nNotes: ${customer.notes.trim()}`
+          : customer.address.trim();
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cartItemsState.map((item) => ({
+            productId: item.product.id,
+            size: item.selectedSize,
+            quantity: item.quantity,
+          })),
+          shippingAddress: {
+            firstName: customer.firstName.trim(),
+            lastName: customer.lastName.trim(),
+            email: customer.email.trim().toLowerCase(),
+            phone: formatPhoneForOrderApi(customer.phone),
+            address: addressWithNotes,
+            city: customer.city.trim(),
+            state: customer.region.trim(),
+            zipCode: "N/A",
+            country: "Ghana",
+          },
+          billingAddress: null,
+          paymentMethod: "pay_on_delivery",
+          shippingAmount: Math.round(shippingCost),
+          taxAmount: 0,
+        }),
+      });
+
+      const json = (await res.json().catch(() => ({}))) as {
+        success?: boolean;
+        data?: { orderId: string; orderNumber: string; total: number };
+        error?: string;
+        code?: string;
+        details?: string;
+      };
+
+      if (!res.ok || !json.success || !json.data?.orderNumber) {
+        let msg =
+          typeof json.error === "string" && json.error.length > 0
+            ? json.error
+            : "Could not place your order. Please try again.";
+        if (json.code === "VALIDATION_ERROR" && json.details) {
+          try {
+            const fields = JSON.parse(json.details) as Record<string, string>;
+            const first = Object.values(fields)[0];
+            if (typeof first === "string" && first.length > 0) msg = first;
+          } catch {
+            /* keep msg */
+          }
+        }
+        setSubmitError(msg);
+        setLoading(false);
+        return;
+      }
+
+      const { orderId, orderNumber, total: orderTotal } = json.data;
+
       sessionStorage.setItem(
         "edk_last_order",
         JSON.stringify({
-          orderId,
+          orderId: orderNumber,
+          orderNumber,
+          serverOrderId: orderId,
           customer,
           cartItems,
-          total,
+          total: orderTotal,
           method: "cash_on_delivery",
           placedAt: new Date().toISOString(),
         })
@@ -96,11 +184,12 @@ export default function CheckoutClient() {
       clearCart();
 
       router.push(
-        `/checkout/success?ref=${encodeURIComponent(orderId)}` +
+        `/checkout/success?ref=${encodeURIComponent(orderNumber)}` +
           `&name=${encodeURIComponent(customer.firstName)}` +
           `&method=cod`
       );
     } catch {
+      setSubmitError("Something went wrong. Please try again.");
       setLoading(false);
     }
   };
@@ -395,6 +484,23 @@ export default function CheckoutClient() {
                     Order Notes
                   </span>
                   {customer.notes}
+                </div>
+              )}
+
+              {submitError && (
+                <div
+                  role="alert"
+                  style={{
+                    background: "rgba(220,38,38,0.08)",
+                    border: "1px solid rgba(220,38,38,0.35)",
+                    color: "#b91c1c",
+                    padding: "12px 14px",
+                    marginBottom: 16,
+                    fontSize: 13,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {submitError}
                 </div>
               )}
 

@@ -90,7 +90,7 @@ export default function CustomerForm({ value, onChange, errors }: CustomerFormPr
       </div>
 
       <div className="checkout-form__field">
-        <label className="checkout-form__label">Email Address (optional)</label>
+        <label className="checkout-form__label">Email Address *</label>
         <input
           className={[
             "checkout-form__input",
@@ -128,7 +128,7 @@ export default function CustomerForm({ value, onChange, errors }: CustomerFormPr
       </div>
 
       <div className="checkout-form__field">
-        <label className="checkout-form__label">Delivery Address (optional)</label>
+        <label className="checkout-form__label">Delivery Address *</label>
         <input
           className={[
             "checkout-form__input",
@@ -147,7 +147,7 @@ export default function CustomerForm({ value, onChange, errors }: CustomerFormPr
 
       <div className="checkout-form__row">
         <div className="checkout-form__field">
-          <label className="checkout-form__label">City (optional)</label>
+          <label className="checkout-form__label">City *</label>
           <input
             className={[
               "checkout-form__input",
@@ -162,7 +162,7 @@ export default function CustomerForm({ value, onChange, errors }: CustomerFormPr
           {errors.city && <p className="checkout-form__error">{errors.city}</p>}
         </div>
         <div className="checkout-form__field">
-          <label className="checkout-form__label">Region (optional)</label>
+          <label className="checkout-form__label">Region *</label>
           <select
             className={[
               "checkout-form__input checkout-form__select",

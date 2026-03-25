@@ -8,6 +8,7 @@
  * 2. Add to environment: RESEND_API_KEY=re_...
  * 3. Verify your domain in Resend dashboard
  * 4. Set FROM_EMAIL in environment (or it will use default)
+ * 5. Optional: ORDERS_NOTIFY_EMAIL — inbox for new pay-on-delivery order alerts (defaults to FROM_EMAIL / info@)
  */
 
 import { Resend } from 'resend';
@@ -196,5 +197,75 @@ export async function sendOrderConfirmationEmail(
     </html>
   `;
   const text = `Thank you! Order ${orderNumber} — Total ${totalLabel}. We will contact you to confirm delivery.`;
+  return sendEmail({ to, subject, html, text });
+}
+
+const DEFAULT_ORDERS_NOTIFY_EMAIL = DEFAULT_FROM_EMAIL;
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export interface AdminNewOrderEmailParams {
+  orderNumber: string;
+  orderId: string;
+  totalPesewas: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingSummary: string;
+  paymentMethod: string;
+}
+
+/**
+ * Notify business inbox of a new order. Recipient: ORDERS_NOTIFY_EMAIL, else same default as storefront from-address.
+ */
+export async function sendAdminNewOrderEmail(
+  params: AdminNewOrderEmailParams
+): Promise<boolean> {
+  const to =
+    process.env.ORDERS_NOTIFY_EMAIL?.trim() || DEFAULT_ORDERS_NOTIFY_EMAIL;
+  const totalLabel = `₵${(params.totalPesewas / 100).toFixed(2)}`;
+  const subject = `New order ${params.orderNumber} — ${totalLabel}`;
+  const paymentDisplay =
+    params.paymentMethod === "pay_on_delivery"
+      ? "Pay on delivery"
+      : params.paymentMethod;
+  const safeName = escapeHtml(params.customerName);
+  const safeEmail = escapeHtml(params.customerEmail);
+  const safePhone = escapeHtml(params.customerPhone);
+  const safeShip = escapeHtml(params.shippingSummary).replace(/\n/g, "<br/>");
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /></head>
+    <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #1e293b;">
+      <p><strong>New order</strong> on the website.</p>
+      <p>
+        <strong>Order:</strong> ${escapeHtml(params.orderNumber)}<br/>
+        <strong>Order ID:</strong> ${escapeHtml(params.orderId)}<br/>
+        <strong>Total:</strong> ${totalLabel}<br/>
+        <strong>Payment:</strong> ${escapeHtml(paymentDisplay)}
+      </p>
+      <p>
+        <strong>Customer:</strong> ${safeName}<br/>
+        <strong>Email:</strong> ${safeEmail}<br/>
+        <strong>Phone:</strong> ${safePhone}
+      </p>
+      <p><strong>Shipping</strong><br/>${safeShip}</p>
+      <p style="color:#64748b;font-size:14px;">Open the admin dashboard to manage this order.</p>
+    </body>
+    </html>
+  `;
+  const text = [
+    `New order ${params.orderNumber} (${params.orderId})`,
+    `Total: ${totalLabel} — ${paymentDisplay}`,
+    `Customer: ${params.customerName} <${params.customerEmail}> ${params.customerPhone}`,
+    `Shipping:\n${params.shippingSummary}`,
+  ].join("\n");
   return sendEmail({ to, subject, html, text });
 }

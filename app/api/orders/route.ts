@@ -5,7 +5,10 @@
 
 import { NextRequest } from "next/server";
 import { createOrder } from "@/lib/services/order.service";
-import { sendOrderConfirmationEmail } from "@/lib/services/email.service";
+import {
+  sendOrderConfirmationEmail,
+  sendAdminNewOrderEmail,
+} from "@/lib/services/email.service";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
 import { createRateLimitMiddleware, RATE_LIMITS } from "@/lib/security/rate-limiter";
 import { validate } from "@/lib/validation/schemas";
@@ -42,6 +45,27 @@ export async function POST(request: NextRequest) {
     });
 
     if (validation.data.paymentMethod === "pay_on_delivery") {
+      const addr = validation.data.shippingAddress;
+      const shippingSummary = [
+        addr.address,
+        [addr.apartment, addr.city, addr.state, addr.zipCode, addr.country]
+          .filter(Boolean)
+          .join(", "),
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      void sendAdminNewOrderEmail({
+        orderId,
+        orderNumber,
+        totalPesewas: total,
+        customerName: `${addr.firstName} ${addr.lastName}`.trim(),
+        customerEmail: addr.email,
+        customerPhone: addr.phone,
+        shippingSummary,
+        paymentMethod: validation.data.paymentMethod,
+      });
+
       const email = validation.data.shippingAddress.email;
       void sendOrderConfirmationEmail(email, orderNumber, total);
     }
