@@ -7,6 +7,7 @@ import { parseJsonBody } from "@/lib/utils/parse-body";
 import { revalidateOnProductMutation } from "@/lib/utils/cache-revalidation";
 import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
 import { logger } from "@/lib/utils/logger";
+import { normalizeProductSizeLabel } from "@/lib/constants/product-sizes";
 
 export const dynamic = "force-dynamic";
 
@@ -147,23 +148,67 @@ export async function PUT(
 
     // Sync variants from ProductFormComprehensive `sizes` (preferred) or legacy `variants`
     if (sizesPayload && Array.isArray(sizesPayload) && sizesPayload.length > 0) {
-      const baseSku = (product.sku ?? `SKU-${id.slice(0, 8)}`).replace(/\s+/g, "-");
-      const ts = Date.now();
-      const rows = sizesPayload.map((s, i) => {
-        const sizeLabel = String(s.size ?? "").trim() || "One Size";
+      const baseSku = (product.sku ?? `SKU-${id.slice(0, 8)}`).replace(/\s+/g, "-").toUpperCase();
+      const normalizedSizeStock = new Map<string, number>();
+
+      for (const s of sizesPayload) {
+        const incomingSize = String(s.size ?? "").trim();
+        const normalizedSize = incomingSize ? normalizeProductSizeLabel(incomingSize) : null;
+        const sizeLabel = normalizedSize ?? incomingSize;
+        if (!sizeLabel) continue;
         const stock = Math.max(0, Math.floor(Number(s.quantity ?? 0)));
-        const sku = `${baseSku}-${sizeLabel.replace(/\s+/g, "-")}-${ts}-${i}-${Math.random().toString(36).slice(2, 10)}`.slice(0, 120);
-        return {
-          productId: id,
-          size: sizeLabel,
-          stock,
-          sku,
-        };
+        normalizedSizeStock.set(sizeLabel, stock);
+      }
+
+      const targetVariants = [...normalizedSizeStock.entries()].map(([size, stock]) => ({ size, stock }));
+      const existingVariants = await prisma.productVariant.findMany({
+        where: { productId: id, color: null },
+        select: { id: true, size: true, sku: true },
       });
-      await prisma.$transaction([
-        prisma.productVariant.deleteMany({ where: { productId: id } }),
-        prisma.productVariant.createMany({ data: rows }),
-      ]);
+      const existingBySize = new Map(existingVariants.map((variant) => [variant.size, variant]));
+      const keptVariantIds: string[] = [];
+
+      for (const target of targetVariants) {
+        const existing = existingBySize.get(target.size);
+        const sku =
+          existing?.sku ??
+          `${baseSku}-${target.size.replace(/\s+/g, "-").toUpperCase()}`.slice(0, 120);
+
+        if (existing) {
+          const updated = await prisma.productVariant.update({
+            where: { id: existing.id },
+            data: {
+              stock: target.stock,
+              sku,
+              isActive: true,
+            },
+            select: { id: true },
+          });
+          keptVariantIds.push(updated.id);
+          continue;
+        }
+
+        const created = await prisma.productVariant.create({
+          data: {
+            productId: id,
+            size: target.size,
+            color: null,
+            stock: target.stock,
+            sku,
+            isActive: true,
+          },
+          select: { id: true },
+        });
+        keptVariantIds.push(created.id);
+      }
+
+      await prisma.productVariant.deleteMany({
+        where: {
+          productId: id,
+          color: null,
+          ...(keptVariantIds.length > 0 ? { id: { notIn: keptVariantIds } } : {}),
+        },
+      });
     } else if (variants && Array.isArray(variants)) {
       const existingIds = variants
         .filter((v) => v.id && !String(v.id).startsWith("new-"))
@@ -177,7 +222,8 @@ export async function PUT(
       });
 
       for (const v of variants) {
-        const size = (v.name ?? "One Size").trim() || "One Size";
+        const incomingSize = (v.name ?? "One Size").trim() || "One Size";
+        const size = normalizeProductSizeLabel(incomingSize) ?? incomingSize;
         const priceCents =
           v.price != null ? Math.round(Number(v.price) * 100) : null;
         const stock = Math.max(0, Math.floor(Number(v.stock) ?? 0));

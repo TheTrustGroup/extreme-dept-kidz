@@ -75,7 +75,7 @@ function PlaceholderCard(): JSX.Element {
         <p className="font-sans text-lg font-semibold text-charcoal-900 dark:text-dark-text-primary">
           More Styles Coming Soon
         </p>
-        <p className="text-sm text-charcoal-600 dark:text-dark-text-secondary">
+        <p className="text-compact-md leading-compact-normal text-charcoal-600 dark:text-dark-text-secondary">
           Check back for new arrivals
         </p>
       </div>
@@ -166,16 +166,16 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
   return (
     <section 
       className={cn(
-        "section reveal transition-colors duration-300 min-h-[320px] py-10 sm:py-12",
+        "section reveal transition-colors duration-300 min-h-[320px] py-8 sm:py-10",
         theme === "dark" ? "bg-dark-bg-primary" : "bg-cream-50"
       )}
       aria-labelledby="new-arrivals-heading"
     >
       <Container size="lg">
         {/* Design System: Consistent spacing using 8px base scale */}
-        <div className="space-y-[var(--space-8)] lg:space-y-[var(--space-12)]">
+        <div className="space-y-[var(--space-6)] lg:space-y-[var(--space-8)]">
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--space-4)] sm:gap-[var(--space-6)]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--space-3)] sm:gap-[var(--space-4)]">
             <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -200,8 +200,8 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
             >
               <Button
                 variant="secondary"
-                size="sm"
-                className="hidden sm:flex items-center gap-2 min-h-[44px] touch-manipulation"
+                size="compact"
+                className="hidden sm:flex items-center gap-1.5 touch-manipulation"
                 asChild
               >
                 <Link href={getViewAllLink()} aria-label={`View all ${activeFilter === "all" ? "new arrivals" : activeFilter} products`}>
@@ -218,7 +218,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="flex flex-wrap items-center gap-[var(--space-2)] sm:gap-[var(--space-3)]"
+            className="flex flex-wrap items-center gap-[var(--space-2)]"
             role="tablist"
             aria-label="Filter products"
           >
@@ -227,7 +227,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}
                 className={cn(
-                  "px-4 py-2 rounded-lg font-sans text-sm font-semibold uppercase tracking-wider transition-all duration-300",
+                  "px-compact-4 py-compact-2 rounded-lg font-sans text-compact-sm leading-compact-tight font-semibold uppercase tracking-compact-label transition-all duration-300",
                   "focus:outline-none focus:ring-2 focus:ring-offset-2",
                   activeFilter === filter.id
                     ? theme === "dark"
@@ -248,7 +248,7 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
 
           {/* Products Grid - Responsive: Mobile 2 cols, Tablet 3 cols, Desktop 4 cols */}
           <div 
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[var(--space-4)] sm:gap-[var(--space-5)] lg:gap-[var(--space-6)]"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[var(--space-3)] sm:gap-[var(--space-4)] lg:gap-[var(--space-5)]"
             role="list"
             aria-label={`${activeFilter === "all" ? "New arrivals" : activeFilter} products`}
           >
@@ -293,13 +293,13 @@ export function NewArrivalsSection({ products }: NewArrivalsSectionProps): JSX.E
           <div className="lg:hidden text-center pt-[var(--space-4)]">
             <Button 
               variant="secondary" 
-              size="md" 
-              className="min-h-[48px] w-full sm:w-auto touch-manipulation" 
+              size="compact" 
+              className="w-full sm:w-auto touch-manipulation" 
               asChild
             >
               <Link href={getViewAllLink()} aria-label={`View all ${activeFilter === "all" ? "new arrivals" : activeFilter} products`}>
                 View All {activeFilter === "all" ? "New Arrivals" : filters.find(f => f.id === activeFilter)?.label}
-                <ChevronRight className="w-4 h-4 ml-2" aria-hidden="true" />
+                <ChevronRight className="w-4 h-4 ml-1.5" aria-hidden="true" />
               </Link>
             </Button>
           </div>

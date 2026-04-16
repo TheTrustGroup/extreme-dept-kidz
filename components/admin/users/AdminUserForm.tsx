@@ -4,6 +4,7 @@ import * as React from "react";
 import { m } from "framer-motion";
 import { X, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { AdminRole, AssignedPos } from "@/lib/auth/rbac";
 import { ASSIGNED_POS_LABELS } from "@/lib/auth/rbac";
@@ -224,15 +225,16 @@ export function AdminUserForm({
           <form id="admin-user-form" onSubmit={handleSubmit} className="space-y-6 pt-6 pb-6">
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
               Email Address
             </label>
-            <input
+            <Input
               type="email"
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              density="compact"
               className={cn(
-                "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white",
+                "text-gray-900 bg-white focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
                 errors.email ? "border-red-300" : "border-gray-300"
               )}
               placeholder="user@example.com"
@@ -247,15 +249,16 @@ export function AdminUserForm({
 
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
               Full Name
             </label>
-            <input
+            <Input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              density="compact"
               className={cn(
-                "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white",
+                "text-gray-900 bg-white focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
                 errors.name ? "border-red-300" : "border-gray-300"
               )}
               placeholder="John Doe"
@@ -270,16 +273,17 @@ export function AdminUserForm({
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
               {isEditMode ? 'New Password (leave blank to keep current)' : 'Password'}
             </label>
             <div className="relative">
-              <input
+              <Input
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
+                density="compact"
                 className={cn(
-                  "w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white",
+                  "pr-10 text-gray-900 bg-white focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
                   errors.password ? "border-red-300" : "border-gray-300"
                 )}
                 placeholder={isEditMode ? "Enter new password" : "Enter password"}
@@ -331,13 +335,13 @@ export function AdminUserForm({
 
           {/* Role */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
               Role
             </label>
             <select
               value={formData.role}
               onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as AdminRole }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             >
               {ADMIN_ROLES.map(({ value, label }) => (
                 <option key={value} value={value}>{label}</option>
@@ -347,7 +351,7 @@ export function AdminUserForm({
 
           {/* Assigned POS — restricted by user: maintown_cashier = Main Town only, cashier@ = DC/Mainstore only */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
               POS access
             </label>
             {(() => {
@@ -369,7 +373,7 @@ export function AdminUserForm({
                     ...prev,
                     assignedPos: (e.target.value === '' ? null : e.target.value) as AssignedPos | null,
                   }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white"
+                  className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 >
                   {posOptions.map((opt) => (
                     <option key={opt.value || 'none'} value={opt.value}>{opt.label}</option>
@@ -402,6 +406,7 @@ export function AdminUserForm({
             <Button
               type="button"
               variant="ghost"
+              size="compact"
               onClick={onClose}
               className="flex-1"
               disabled={loading}
@@ -411,6 +416,7 @@ export function AdminUserForm({
             <Button
               type="submit"
               form="admin-user-form"
+              size="compact"
               className="flex-1"
               disabled={loading}
             >

@@ -152,8 +152,7 @@ function CartEmpty({ onClose }: { onClose: () => void }) {
       </p>
       <button
         onClick={onClose}
-        className="btn-primary mt-6"
-        style={{ height: "48px", padding: "0 28px", fontSize: "11px" }}
+        className="btn-primary mt-6 h-control-compact px-compact-6 text-compact-sm tracking-compact-label leading-compact-tight"
       >
         Start Shopping
       </button>

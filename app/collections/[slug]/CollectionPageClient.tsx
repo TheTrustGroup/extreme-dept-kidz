@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import ProductGrid from "@/components/product/ProductGrid";
 import type { ProductCardProps } from "@/components/product/ProductCard";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { getProductAgeRange } from "@/lib/utils/filter-products";
+import { normalizeProductSizeLabel } from "@/lib/constants/product-sizes";
 import { SmartImagePrefetch } from "@/components/ui/SmartImagePrefetch";
 import { ComingSoonPage } from "@/components/collections/ComingSoonPage";
 import type { Product } from "@/types";
@@ -45,6 +45,7 @@ function productToCardProps(p: Product): ProductCardProps {
         ? p.originalPrice
         : Number(p.originalPrice)
       : undefined;
+  const primaryImage = p.images?.find((img) => img.isPrimary) ?? p.images?.[0];
   return {
     id: p.id,
     slug: p.slug,
@@ -52,8 +53,8 @@ function productToCardProps(p: Product): ProductCardProps {
     price: priceNum / 100,
     compareAtPrice: originalNum != null ? originalNum / 100 : undefined,
     currency: "₵",
-    imageUrl: p.images?.[0]?.url ?? "/placeholder.jpg",
-    imageAlt: p.images?.[0]?.alt ?? p.name,
+    imageUrl: primaryImage?.url ?? "/placeholder.jpg",
+    imageAlt: primaryImage?.alt ?? p.name,
     badge: p.tags?.includes("new")
       ? "new"
       : !p.inStock
@@ -71,7 +72,6 @@ export function CollectionPageClient({
   collectionInfo,
   skipHero = false,
 }: CollectionPageClientProps): JSX.Element {
-  const router = useRouter();
   const [products, setProducts] = React.useState<Product[]>(serverProducts);
   const [filters, setFilters] = React.useState<FilterState>(DEFAULT_FILTERS);
   const [sortValue, setSortValue] = React.useState("featured");
@@ -117,8 +117,14 @@ export function CollectionPageClient({
   const filteredProducts = React.useMemo(() => {
     return products.filter((product) => {
       if (filters.sizes.length > 0) {
+        const normalizedFilterSizes = filters.sizes
+          .map((size) => normalizeProductSizeLabel(size))
+          .filter((size): size is NonNullable<typeof size> => size != null);
         const hasSize = product.sizes?.some(
-          (s) => filters.sizes.includes(s.size) && s.inStock
+          (s) => {
+            const normalizedSize = normalizeProductSizeLabel(s.size);
+            return normalizedSize != null && normalizedFilterSizes.includes(normalizedSize) && s.inStock;
+          }
         );
         if (!hasSize) return false;
       }

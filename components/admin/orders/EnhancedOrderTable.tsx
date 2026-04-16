@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Package,
   Search,
-  Filter,
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
@@ -14,6 +13,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -198,12 +198,13 @@ export function EnhancedOrderTable({
         {/* Search */}
         <div className="flex-1 relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
+          <Input
             type="text"
             placeholder="Search by order number, customer email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            density="compact"
+            className="pl-10 bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
           />
         </div>
 
@@ -212,7 +213,7 @@ export function EnhancedOrderTable({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
           >
             <option value="all">All Status</option>
             <option value="PENDING">Pending</option>
@@ -227,7 +228,7 @@ export function EnhancedOrderTable({
         {/* Export */}
         <Button
           variant="ghost"
-          size="sm"
+          size="compact"
           onClick={handleExport}
           className="flex items-center gap-2"
         >
@@ -239,55 +240,55 @@ export function EnhancedOrderTable({
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-compact-md leading-compact-normal">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left">
+                <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-gray-700">
                   <button
                     onClick={() => handleSort('orderNumber')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 hover:text-gray-900"
                   >
                     Order
                     {getSortIcon('orderNumber')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-gray-700">
                   <button
                     onClick={() => handleSort('customer')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 hover:text-gray-900"
                   >
                     Customer
                     {getSortIcon('customer')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-gray-700">
                   <button
                     onClick={() => handleSort('total')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 hover:text-gray-900"
                   >
                     Total
                     {getSortIcon('total')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-gray-700">
                   <button
                     onClick={() => handleSort('status')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 hover:text-gray-900"
                   >
                     Status
                     {getSortIcon('status')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left">
+                <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-gray-700">
                   <button
                     onClick={() => handleSort('createdAt')}
-                    className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    className="flex items-center gap-2 hover:text-gray-900"
                   >
                     Date
                     {getSortIcon('createdAt')}
                   </button>
                 </th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                <th className="px-4 py-3 text-right text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-gray-700">
                   Actions
                 </th>
               </tr>
@@ -301,7 +302,7 @@ export function EnhancedOrderTable({
                   transition={{ delay: index * 0.05 }}
                   className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-compact-md leading-compact-normal">
                     <Link
                       href={`/admin/orders/${order.id}`}
                       className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline"
@@ -311,18 +312,18 @@ export function EnhancedOrderTable({
                   </td>
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-compact-md leading-compact-normal text-gray-900">
                         {order.user?.name || 'Guest'}
                       </p>
                       <p className="text-xs text-gray-500">{order.user?.email || ''}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">
+                  <td className="px-4 py-3 text-compact-md leading-compact-normal font-semibold text-gray-900">
                     {formatPrice(order.total)}
                   </td>
                   <td className="px-4 py-3">
                     <span className={cn(
-                      "px-2 py-1 text-xs font-medium rounded-full",
+                      "inline-flex items-center px-2.5 py-0.5 text-compact-sm leading-compact-tight font-medium rounded-full",
                       getStatusColor(order.status)
                     )}>
                       {order.status}
@@ -334,7 +335,7 @@ export function EnhancedOrderTable({
                   <td className="px-4 py-3 text-right">
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="compact"
                       asChild
                       className="flex items-center gap-2"
                     >
@@ -353,7 +354,7 @@ export function EnhancedOrderTable({
         {filteredAndSorted.length === 0 && (
           <div className="p-12 text-center">
             <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No orders found</p>
+            <p className="text-compact-md leading-compact-normal text-gray-600">No orders found</p>
           </div>
         )}
       </div>

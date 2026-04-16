@@ -4,6 +4,7 @@ import * as React from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { X, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/Toast";
 import { SingleImageUpload } from "@/components/admin/SingleImageUpload";
 import { cn } from "@/lib/utils";
@@ -394,17 +395,18 @@ export function CategoryFormModal({
 
               {/* Category Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                   Category Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <Input
                   ref={nameInputRef}
                   id="name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
+                  density="compact"
                   className={cn(
-                    "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-colors",
+                    "bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500 transition-colors",
                     errors.name ? "border-red-300 bg-red-50" : "border-gray-300"
                   )}
                   placeholder="e.g., Activewear"
@@ -418,17 +420,18 @@ export function CategoryFormModal({
 
               {/* Slug */}
               <div>
-                <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="slug" className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                   Slug <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <input
+                  <Input
                     id="slug"
                     type="text"
                     value={formData.slug}
                     onChange={(e) => handleSlugChange(e.target.value)}
+                    density="compact"
                     className={cn(
-                      "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-colors",
+                      "bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500 transition-colors",
                       errors.slug || slugExists
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -495,14 +498,14 @@ export function CategoryFormModal({
               {/* Parent Category */}
               {parentCategories.length > 0 && (
                 <div>
-                  <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="parentId" className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                     Parent Category
                   </label>
                   <select
                     id="parentId"
                     value={formData.parentId}
                     onChange={(e) => setFormData((prev) => ({ ...prev, parentId: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-colors"
+                  className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500 transition-colors"
                     disabled={loading}
                   >
                     <option value="">None (Top-level category)</option>
@@ -545,15 +548,16 @@ export function CategoryFormModal({
 
               {/* SEO Meta Title */}
               <div>
-                <label htmlFor="seoTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="seoTitle" className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                   SEO Meta Title
                 </label>
-                <input
+                <Input
                   id="seoTitle"
                   type="text"
                   value={formData.seoTitle}
                   onChange={(e) => setFormData((prev) => ({ ...prev, seoTitle: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-colors"
+                  density="compact"
+                  className="bg-white border-gray-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500 transition-colors"
                   placeholder="Optional SEO title"
                   disabled={loading}
                 />
@@ -601,6 +605,7 @@ export function CategoryFormModal({
                 <Button
                   type="button"
                   variant="ghost"
+                  size="compact"
                   onClick={onClose}
                   disabled={loading}
                 >
@@ -608,6 +613,7 @@ export function CategoryFormModal({
                 </Button>
                 <Button
                   type="submit"
+                  size="compact"
                   disabled={!isFormValid || loading}
                   loading={loading}
                   loadingText={isEditMode ? "Updating..." : "Creating..."}

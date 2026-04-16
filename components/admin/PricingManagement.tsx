@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Edit, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { apiUrl } from "@/lib/config/api-base";
@@ -115,8 +116,8 @@ export function PricingManagement(): JSX.Element {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-charcoal-900">Pricing Management</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-compact-2xl leading-compact-tight tracking-compact-tight font-bold text-charcoal-900">Pricing Management</h1>
       </div>
 
       <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50">
@@ -124,16 +125,16 @@ export function PricingManagement(): JSX.Element {
           <table className="w-full">
             <thead className="bg-cream-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight">
                   Product
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight">
                   Current Price
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight">
                   Original Price
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-charcoal-700 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight">
                   Actions
                 </th>
               </tr>
@@ -148,19 +149,19 @@ export function PricingManagement(): JSX.Element {
 
                 return (
                   <tr key={product.id} className="hover:bg-cream-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-charcoal-900">
+                    <td className="px-6 py-3 whitespace-nowrap">
+                      <div className="font-medium text-compact-md leading-compact-normal text-charcoal-900">
                         {product.name}
                       </div>
-                      <div className="text-sm text-charcoal-500">
+                      <div className="text-compact-sm leading-compact-normal text-charcoal-500">
                         {product.slug}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-3 whitespace-nowrap">
                       {isEditing ? (
                         <div className="flex items-center space-x-2">
                           <span className="text-charcoal-600">₵</span>
-                          <input
+                          <Input
                             type="number"
                             value={editData.price}
                             onChange={(e) =>
@@ -172,22 +173,23 @@ export function PricingManagement(): JSX.Element {
                                 },
                               })
                             }
-                            className="w-24 px-2 py-1 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                            density="compact"
+                            className="w-24 h-8 min-h-0 px-2 border-cream-300 bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                             step="0.01"
                             min="0"
                           />
                         </div>
                       ) : (
-                        <span className="text-sm font-medium text-charcoal-900">
+                        <span className="text-compact-md leading-compact-normal font-medium text-charcoal-900">
                           {formatPrice(product.price)}
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-3 whitespace-nowrap">
                       {isEditing ? (
                         <div className="flex items-center space-x-2">
                           <span className="text-charcoal-600">₵</span>
-                          <input
+                          <Input
                             type="number"
                             value={editData.originalPrice || ""}
                             onChange={(e) =>
@@ -201,47 +203,51 @@ export function PricingManagement(): JSX.Element {
                                 },
                               })
                             }
-                            className="w-24 px-2 py-1 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                            density="compact"
+                            className="w-24 h-8 min-h-0 px-2 border-cream-300 bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                             step="0.01"
                             min="0"
                             placeholder="Optional"
                           />
                         </div>
                       ) : (
-                        <span className="text-sm text-charcoal-600">
+                        <span className="text-compact-md leading-compact-normal text-charcoal-600">
                           {product.originalPrice
                             ? formatPrice(product.originalPrice)
                             : "—"}
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal font-medium">
                       {isEditing ? (
                         <div className="flex space-x-2">
                           <Button
-                            size="sm"
+                            size="compact"
+                            className="inline-flex items-center gap-1.5"
                             onClick={() => handleUpdatePrice(product.id)}
                           >
-                            <Save className="w-4 h-4 mr-1" />
+                            <Save className="w-4 h-4" />
                             Save
                           </Button>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="compact"
+                            className="inline-flex items-center gap-1.5"
                             onClick={() => {
                               const newEditing = { ...editing };
                               delete newEditing[product.id];
                               setEditing(newEditing);
                             }}
                           >
-                            <X className="w-4 h-4 mr-1" />
+                            <X className="w-4 h-4" />
                             Cancel
                           </Button>
                         </div>
                       ) : (
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="compact"
+                          className="inline-flex items-center gap-1.5"
                           onClick={() =>
                             setEditing({
                               ...editing,
@@ -254,7 +260,7 @@ export function PricingManagement(): JSX.Element {
                             })
                           }
                         >
-                          <Edit className="w-4 h-4 mr-1" />
+                          <Edit className="w-4 h-4" />
                           Edit
                         </Button>
                       )}

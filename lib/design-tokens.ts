@@ -146,3 +146,100 @@ export const designTokens = {
 
 export type DesignTokens = typeof designTokens;
 
+/**
+ * Compact density token profile.
+ * Mirrors the mobile login reference: tight typography, small controls, restrained spacing.
+ */
+export const compactTokens = {
+  color: {
+    bg: {
+      page: "#f6f6f6",
+      surface: "#ffffff",
+      inverse: "#121212",
+      subtle: "#f1f1f1",
+    },
+    text: {
+      primary: "#1e1e1e",
+      secondary: "#5e5e5e",
+      muted: "#9a9a9a",
+      inverse: "#ffffff",
+    },
+    border: {
+      subtle: "#e6e6e6",
+      default: "#dddddd",
+    },
+    action: {
+      primary: "#ef1a14",
+      primaryHover: "#d91611",
+      primaryText: "#ffffff",
+    },
+    focus: {
+      ring: "#111111",
+    },
+  },
+  typography: {
+    fontSize: {
+      xs: "11px",
+      sm: "12px",
+      md: "14px",
+      lg: "16px",
+      xl: "20px",
+      hero: "36px",
+    },
+    fontWeight: {
+      regular: "400",
+      medium: "500",
+      semibold: "600",
+      bold: "700",
+      extrabold: "800",
+    },
+    lineHeight: {
+      tight: "1.2",
+      normal: "1.4",
+      relaxed: "1.5",
+    },
+    letterSpacing: {
+      tight: "-0.01em",
+      normal: "0em",
+      wideLabel: "0.08em",
+    },
+  },
+  spacing: {
+    1: "4px",
+    2: "8px",
+    3: "12px",
+    4: "16px",
+    5: "20px",
+    6: "24px",
+    8: "32px",
+    10: "40px",
+    12: "48px",
+    16: "64px",
+    20: "80px",
+  },
+  radius: {
+    sm: "8px",
+    md: "10px",
+    lg: "12px",
+    xl: "16px",
+    full: "999px",
+  },
+  sizing: {
+    controlHeightCompact: "42px",
+    controlHeightDefault: "44px",
+    inputPaddingX: "14px",
+    mobileContentMax: "320px",
+  },
+  shadow: {
+    button: "0 4px 10px rgba(0, 0, 0, 0.08)",
+    card: "0 2px 8px rgba(0, 0, 0, 0.04)",
+  },
+  motion: {
+    durationFast: "120ms",
+    durationNormal: "180ms",
+    easingStandard: "cubic-bezier(0.2, 0, 0, 1)",
+  },
+} as const;
+
+export type CompactTokens = typeof compactTokens;
+

@@ -366,6 +366,42 @@ model AdminActivityLog {
   @@index([createdAt])
 }
 
+model NotificationEvent {
+  id            String              @id @default(cuid())
+  channel       NotificationChannel
+  eventType     NotificationEventType
+  status        NotificationStatus  @default(PENDING)
+  attempts      Int                 @default(0)
+  maxAttempts   Int                 @default(5)
+  nextAttemptAt DateTime            @default(now())
+  payload       Json
+  metadata      Json?
+  lastError     String?
+  sentAt        DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([channel, status, nextAttemptAt])
+  @@index([createdAt])
+}
+
+enum NotificationChannel {
+  EMAIL
+}
+
+enum NotificationEventType {
+  ORDER_CONFIRMATION
+  ADMIN_NEW_ORDER
+}
+
+enum NotificationStatus {
+  PENDING
+  RETRYING
+  FAILED
+  SENT
+  DEAD
+}
+
 // ============================================
 // COMPLETE LOOKS
 // ============================================

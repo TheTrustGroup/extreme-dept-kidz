@@ -18,6 +18,7 @@ import {
   Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { SimpleOptimizedImage } from "@/components/ui/SimpleOptimizedImage";
 import { cn } from "@/lib/utils";
 import { StockUpdateModal } from "../StockUpdateModal";
@@ -254,12 +255,13 @@ export function AdvancedInventoryTable({
         {/* Search */}
         <div className="flex-1 relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
+          <Input
             type="text"
             placeholder="Search products, SKU, category..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            density="compact"
+            className="pl-10 bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
           />
         </div>
 
@@ -268,7 +270,7 @@ export function AdvancedInventoryTable({
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
           >
             <option value="all">All Categories</option>
             {categories.map(cat => (
@@ -279,7 +281,7 @@ export function AdvancedInventoryTable({
           <select
             value={filterStock}
             onChange={(e) => setFilterStock(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
           >
             <option value="all">All Stock</option>
             <option value="in">In Stock</option>
@@ -293,7 +295,7 @@ export function AdvancedInventoryTable({
           {selectedVariants.size > 0 && (
             <Button
               variant="secondary"
-              size="sm"
+              size="compact"
               onClick={() => setShowBulkModal(true)}
               className="flex items-center gap-2"
             >
@@ -302,7 +304,7 @@ export function AdvancedInventoryTable({
           )}
           <Button
             variant="ghost"
-            size="sm"
+            size="compact"
             onClick={handleExport}
             className="flex items-center gap-2"
           >
@@ -444,11 +446,12 @@ export function AdvancedInventoryTable({
                     <td className="px-4 py-3">
                       {isEditing ? (
                         <div className="flex items-center gap-2">
-                          <input
+                          <Input
                             type="number"
                             value={editStockValue}
                             onChange={(e) => setEditStockValue(parseInt(e.target.value) || 0)}
-                            className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                            density="compact"
+                            className="w-20 h-8 min-h-0 px-2 text-sm bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {

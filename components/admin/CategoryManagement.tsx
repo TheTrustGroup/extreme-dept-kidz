@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Search, MoreVertical, FolderOpen, X, ArrowUpDown, Loader2, CheckSquare, Square, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CategoryFormModal } from "@/components/admin/CategoryFormModal";
@@ -482,11 +483,12 @@ export function CategoryManagement(): JSX.Element {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-charcoal-900">Categories</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-compact-2xl leading-compact-tight tracking-compact-tight font-bold text-charcoal-900">Categories</h1>
         <Button
           onClick={handleAddCategoryClick}
           disabled={buttonLoading}
+          size="compact"
           className="transition-all duration-200 hover:bg-navy-800 active:bg-navy-950 active:scale-[0.98]"
         >
           {buttonLoading ? (
@@ -509,12 +511,13 @@ export function CategoryManagement(): JSX.Element {
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-charcoal-400" />
-            <input
+            <Input
               type="text"
               placeholder="Search categories..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500 transition-all duration-200 bg-white"
+              density="compact"
+              className="pl-10 pr-10 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500 transition-all duration-200"
             />
             {searchTerm && (
               <button
@@ -531,11 +534,11 @@ export function CategoryManagement(): JSX.Element {
           <div className="flex flex-wrap items-center gap-4">
             {/* Status Filter */}
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-charcoal-700">Status:</label>
+              <label className="text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700">Status:</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                className="px-3 py-1.5 text-sm border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500 bg-white"
+                className="h-control-compact px-compact-4 text-compact-md border border-cream-300 rounded-compact focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500 bg-white"
               >
                 <option value="all">All</option>
                 <option value="active">Active</option>
@@ -546,11 +549,11 @@ export function CategoryManagement(): JSX.Element {
             {/* Sort Options */}
             <div className="flex items-center gap-2">
               <ArrowUpDown className="w-4 h-4 text-charcoal-400" />
-              <label className="text-sm font-medium text-charcoal-700">Sort:</label>
+              <label className="text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700">Sort:</label>
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="px-3 py-1.5 text-sm border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500 bg-white"
+                className="h-control-compact px-compact-4 text-compact-md border border-cream-300 rounded-compact focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500 bg-white"
               >
                 <option value="name-asc">Name A-Z</option>
                 <option value="name-desc">Name Z-A</option>
@@ -561,7 +564,7 @@ export function CategoryManagement(): JSX.Element {
 
             {/* Results Count */}
             {debouncedSearchTerm && (
-              <div className="ml-auto text-sm text-charcoal-600">
+              <div className="ml-auto text-compact-md leading-compact-normal text-charcoal-600">
                 Showing <span className="font-semibold">{filteredCategories.length}</span> of{' '}
                 <span className="font-semibold">{categories.length}</span> categories
               </div>
@@ -583,7 +586,7 @@ export function CategoryManagement(): JSX.Element {
                   {selectedCount} categor{selectedCount === 1 ? 'y' : 'ies'} selected
                 </span>
                 {bulkActionProgress && (
-                  <span className="text-sm text-navy-200">
+                  <span className="text-compact-md leading-compact-normal text-navy-200">
                     {bulkActionProgress.action === 'delete' ? 'Deleting' : bulkActionProgress.action === 'activate' ? 'Activating' : 'Deactivating'} {bulkActionProgress.current} of {bulkActionProgress.total}...
                   </span>
                 )}
@@ -591,7 +594,7 @@ export function CategoryManagement(): JSX.Element {
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="compact"
                   onClick={() => handleBulkAction('activate')}
                   disabled={bulkActionLoading}
                   className="bg-white/10 hover:bg-white/20 text-white border-white/20"
@@ -600,7 +603,7 @@ export function CategoryManagement(): JSX.Element {
                 </Button>
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="compact"
                   onClick={() => handleBulkAction('deactivate')}
                   disabled={bulkActionLoading}
                   className="bg-white/10 hover:bg-white/20 text-white border-white/20"
@@ -609,22 +612,22 @@ export function CategoryManagement(): JSX.Element {
                 </Button>
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="compact"
                   onClick={handleExportSelected}
                   disabled={bulkActionLoading}
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+                  className="bg-white/10 hover:bg-white/20 text-white border-white/20 flex items-center gap-1.5"
                 >
-                  <Download className="w-4 h-4 mr-1" />
+                  <Download className="w-4 h-4" />
                   <span className="hidden sm:inline">Export</span>
                 </Button>
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="compact"
                   onClick={() => handleBulkAction('delete')}
                   disabled={bulkActionLoading}
-                  className="bg-red-500/20 hover:bg-red-500/30 text-white border-red-400/30"
+                  className="bg-red-500/20 hover:bg-red-500/30 text-white border-red-400/30 flex items-center gap-1.5"
                 >
-                  <Trash2 className="w-4 h-4 mr-1" />
+                  <Trash2 className="w-4 h-4" />
                   <span className="hidden sm:inline">Delete</span>
                 </Button>
                 <button
@@ -643,7 +646,7 @@ export function CategoryManagement(): JSX.Element {
           <table ref={tableRef} className="w-full">
             <thead className="bg-cream-50 border-b border-cream-200">
               <tr>
-                <th className="px-6 py-4 text-left" style={{ width: '40px' }}>
+                <th className="px-6 py-3 text-left" style={{ width: '40px' }}>
                   <button
                     onClick={() => handleSelectAll(!allSelected)}
                     className="p-1 hover:bg-gray-200 rounded transition-colors"
@@ -658,22 +661,22 @@ export function CategoryManagement(): JSX.Element {
                     )}
                   </button>
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-charcoal-700 uppercase tracking-wider" style={{ width: '20%' }}>
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight" style={{ width: '20%' }}>
                   Name
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-charcoal-700 uppercase tracking-wider" style={{ width: '15%' }}>
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight" style={{ width: '15%' }}>
                   Slug
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-charcoal-700 uppercase tracking-wider" style={{ width: '40%' }}>
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight" style={{ width: '40%' }}>
                   Description
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-charcoal-700 uppercase tracking-wider" style={{ width: '10%' }}>
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight" style={{ width: '10%' }}>
                   Products
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-charcoal-700 uppercase tracking-wider" style={{ width: '10%' }}>
+                <th className="px-6 py-3 text-left text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight" style={{ width: '10%' }}>
                   Status
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-charcoal-700 uppercase tracking-wider" style={{ width: '5%' }}>
+                <th className="px-6 py-3 text-right text-compact-sm font-bold text-charcoal-700 uppercase tracking-compact-label leading-compact-tight" style={{ width: '5%' }}>
                   Actions
                 </th>
               </tr>
@@ -684,10 +687,10 @@ export function CategoryManagement(): JSX.Element {
                   <td colSpan={7} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <FolderOpen className="w-16 h-16 text-charcoal-300 mb-4" />
-                      <h3 className="text-lg font-semibold text-charcoal-900 mb-2">
+                      <h3 className="text-compact-xl leading-compact-tight tracking-compact-tight font-semibold text-charcoal-900 mb-2">
                         {debouncedSearchTerm ? "No categories found" : categories.length === 0 ? "No categories yet" : "No categories match your filters"}
                       </h3>
-                      <p className="text-sm text-charcoal-600 mb-6">
+                      <p className="text-compact-md leading-compact-normal text-charcoal-600 mb-6">
                         {debouncedSearchTerm 
                           ? "Try adjusting your search terms or filters" 
                           : categories.length === 0
@@ -696,6 +699,7 @@ export function CategoryManagement(): JSX.Element {
                       </p>
                       {debouncedSearchTerm ? (
                         <Button
+                            size="compact"
                           onClick={() => {
                             setSearchTerm("");
                             setStatusFilter('all');
@@ -707,13 +711,14 @@ export function CategoryManagement(): JSX.Element {
                         </Button>
                       ) : categories.length === 0 ? (
                         <Link href="/admin/categories/new">
-                          <Button>
-                            <Plus className="w-4 h-4 mr-2" />
+                          <Button size="compact" className="flex items-center gap-1.5">
+                            <Plus className="w-4 h-4" />
                             Create your first category
                           </Button>
                         </Link>
                       ) : (
                         <Button
+                            size="compact"
                           onClick={() => setStatusFilter('all')}
                           variant="secondary"
                         >
@@ -730,11 +735,11 @@ export function CategoryManagement(): JSX.Element {
                     <tr 
                       key={category.id} 
                       className={cn(
-                        "border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 h-14",
+                        "border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 h-12",
                         isSelected && "bg-blue-50 hover:bg-blue-100"
                       )}
                     >
-                      <td className="px-6 py-5 whitespace-nowrap">
+                      <td className="px-6 py-3 whitespace-nowrap">
                         <button
                           onClick={(e) => handleToggleSelect(category.id, index, e)}
                           className="p-1 hover:bg-gray-200 rounded transition-colors"
@@ -747,17 +752,17 @@ export function CategoryManagement(): JSX.Element {
                           )}
                         </button>
                       </td>
-                      <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="font-medium text-charcoal-900 text-sm">
+                      <td className="px-6 py-3 whitespace-nowrap">
+                      <div className="font-medium text-charcoal-900 text-compact-md leading-compact-normal">
                         {debouncedSearchTerm ? highlightText(category.name, debouncedSearchTerm) : category.name}
                       </div>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap text-sm text-charcoal-600">
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                    <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal text-charcoal-600">
+                      <code className="text-compact-sm bg-gray-100 px-2 py-1 rounded font-mono">
                         {debouncedSearchTerm ? highlightText(category.slug, debouncedSearchTerm) : category.slug}
                       </code>
                     </td>
-                    <td className="px-6 py-5 text-sm text-charcoal-600">
+                    <td className="px-6 py-3 text-compact-md leading-compact-normal text-charcoal-600">
                       <div className="line-clamp-2 max-w-md">
                         {category.description ? (
                           debouncedSearchTerm ? highlightText(category.description, debouncedSearchTerm) : category.description
@@ -766,15 +771,15 @@ export function CategoryManagement(): JSX.Element {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap text-sm text-charcoal-600">
+                    <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal text-charcoal-600">
                       <span className="font-medium">
                         {category._count?.products ?? category.products?.length ?? 0}
                       </span>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap">
+                    <td className="px-6 py-3 whitespace-nowrap">
                       <span
                         className={cn(
-                          "inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full",
+                          "inline-flex items-center px-2.5 py-0.5 text-compact-sm leading-compact-tight font-semibold rounded-full",
                           category.isActive
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-red-100 text-red-800 border border-red-200"
@@ -783,7 +788,7 @@ export function CategoryManagement(): JSX.Element {
                         {category.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap text-right">
+                    <td className="px-6 py-3 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-4">
                         <Tooltip text="Edit category">
                           <button
@@ -820,7 +825,7 @@ export function CategoryManagement(): JSX.Element {
                                   setShowActionsMenu(null);
                                   handleEditCategory(category);
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm text-charcoal-700 hover:bg-gray-100 transition-colors"
+                                className="w-full text-left px-4 py-2 text-compact-md leading-compact-normal text-charcoal-700 hover:bg-gray-100 transition-colors"
                               >
                                 <div className="flex items-center gap-2">
                                   <Edit className="w-4 h-4" />
@@ -832,7 +837,7 @@ export function CategoryManagement(): JSX.Element {
                                   setShowActionsMenu(null);
                                   handleDelete(category.id, category.name);
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                className="w-full text-left px-4 py-2 text-compact-md leading-compact-normal text-red-600 hover:bg-red-50 transition-colors"
                               >
                                 <div className="flex items-center gap-2">
                                   <Trash2 className="w-4 h-4" />
@@ -875,14 +880,14 @@ export function CategoryManagement(): JSX.Element {
               Are you sure you want to delete {bulkDeleteConfirm?.length || 0} categor{bulkDeleteConfirm && bulkDeleteConfirm.length === 1 ? 'y' : 'ies'}? This action cannot be undone.
             </p>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-sm font-medium text-yellow-800 mb-1">⚠️ Warning:</p>
-              <p className="text-sm text-yellow-700">
+              <p className="text-compact-md leading-compact-normal font-medium text-yellow-800 mb-1">⚠️ Warning:</p>
+              <p className="text-compact-md leading-compact-normal text-yellow-700">
                 Products in these categories will become uncategorized. Categories with products cannot be deleted.
               </p>
             </div>
             <div className="max-h-32 overflow-y-auto border border-gray-200 rounded p-2 bg-gray-50">
-              <p className="text-xs font-medium text-gray-700 mb-1">Affected categories:</p>
-              <ul className="text-xs text-gray-600 space-y-1">
+              <p className="text-compact-sm leading-compact-normal font-medium text-gray-700 mb-1">Affected categories:</p>
+              <ul className="text-compact-sm leading-compact-normal text-gray-600 space-y-1">
                 {bulkDeleteConfirm?.map(id => {
                   const category = categories.find(c => c.id === id);
                   return category ? (

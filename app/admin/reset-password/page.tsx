@@ -6,6 +6,7 @@ import Image from "next/image";
 import { m } from "framer-motion";
 import { ArrowLeft, Eye, EyeOff, Lock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { H1, Body } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 
@@ -167,6 +168,7 @@ export default function ResetPasswordPage(): JSX.Element {
                 <Button
                   type="button"
                   variant="primary"
+                  size="compact"
                   onClick={() => router.push("/admin/forgot-password")}
                   className="w-full"
                 >
@@ -176,6 +178,7 @@ export default function ResetPasswordPage(): JSX.Element {
                 <Button
                   type="button"
                   variant="secondary"
+                  size="compact"
                   onClick={() => router.push("/admin/login")}
                   className="w-full"
                 >
@@ -252,19 +255,20 @@ export default function ResetPasswordPage(): JSX.Element {
                 <div>
                   <label
                     htmlFor="password"
-                    className="block text-sm font-semibold text-charcoal-900 mb-2"
+                    className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-900 mb-compact-2 leading-compact-tight"
                   >
                     New Password
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={8}
-                      className="w-full px-4 py-3 pr-12 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent transition-all"
+                      density="compact"
+                      className="pr-12 border-cream-300 bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                       placeholder="Enter new password (min. 8 characters)"
                       autoComplete="new-password"
                       disabled={loading}
@@ -291,19 +295,20 @@ export default function ResetPasswordPage(): JSX.Element {
                 <div>
                   <label
                     htmlFor="confirmPassword"
-                    className="block text-sm font-semibold text-charcoal-900 mb-2"
+                    className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-900 mb-compact-2 leading-compact-tight"
                   >
                     Confirm Password
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       minLength={8}
-                      className="w-full px-4 py-3 pr-12 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent transition-all"
+                      density="compact"
+                      className="pr-12 border-cream-300 bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                       placeholder="Confirm new password"
                       autoComplete="new-password"
                       disabled={loading}
@@ -327,7 +332,7 @@ export default function ResetPasswordPage(): JSX.Element {
                 <Button
                   type="submit"
                   variant="primary"
-                  size="lg"
+                  size="compact"
                   className="w-full"
                   disabled={loading || !password.trim() || !confirmPassword.trim()}
                 >

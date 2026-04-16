@@ -7,6 +7,7 @@
 import type { Product } from "@/types";
 import type { FilterState } from "../../components/products/FilterSidebar";
 import type { SortOption } from "../../components/products/ProductToolbar";
+import { normalizeProductSizeLabel } from "@/lib/constants/product-sizes";
 
 /**
  * Filter products based on filter state
@@ -34,9 +35,14 @@ export function filterProducts(
 
     // Size filter
     if (filters.sizes.length > 0) {
+      const normalizedFilterSizes = filters.sizes
+        .map((s) => normalizeProductSizeLabel(s))
+        .filter((s): s is NonNullable<typeof s> => s != null);
       const hasSize = product.sizes.some(
-        (size) =>
-          filters.sizes.includes(size.size) && size.inStock
+        (size) => {
+          const normalized = normalizeProductSizeLabel(size.size);
+          return normalized != null && normalizedFilterSizes.includes(normalized) && size.inStock;
+        }
       );
       if (!hasSize) {
         return false;
@@ -81,25 +87,30 @@ export function getProductAgeRange(product: Product): string | null {
     return product.metadata.ageRange;
   }
 
-  // Infer from sizes (e.g., 2T-4T = 2-4 years, sizes 6-12 = 6-12 years)
-  const sizes = product.sizes.map((s) => s.size);
-  if (sizes.some((s) => s.includes("T"))) {
-    const toddlerSizes = sizes.filter((s) => s.includes("T"));
-    if (toddlerSizes.some((s) => ["2T", "3T"].includes(s))) {
-      return "2-4";
-    }
-    if (toddlerSizes.some((s) => ["4T", "5T"].includes(s))) {
-      return "4-6";
-    }
+  // Infer from canonical age sizes (3M/6M/9M + 1Y...12Y) and legacy aliases.
+  const normalizedSizes = product.sizes
+    .map((s) => normalizeProductSizeLabel(s.size))
+    .filter((s): s is NonNullable<typeof s> => s != null);
+
+  if (normalizedSizes.length === 0) {
+    return null;
   }
-  if (sizes.some((s) => ["6", "8"].includes(s))) {
-    return "6-8";
+
+  const hasInfant = normalizedSizes.some((s) => s.endsWith("M"));
+  if (hasInfant || normalizedSizes.some((s) => ["1Y"].includes(s))) {
+    return "0-1";
   }
-  if (sizes.some((s) => ["10", "12"].includes(s))) {
-    return "8-10";
+  if (normalizedSizes.some((s) => ["2Y", "3Y"].includes(s))) {
+    return "1-3";
   }
-  if (sizes.some((s) => ["12", "14"].includes(s))) {
-    return "10-12";
+  if (normalizedSizes.some((s) => ["4Y", "5Y", "6Y"].includes(s))) {
+    return "3-6";
+  }
+  if (normalizedSizes.some((s) => ["7Y", "8Y", "9Y"].includes(s))) {
+    return "6-9";
+  }
+  if (normalizedSizes.some((s) => ["10Y", "11Y", "12Y"].includes(s))) {
+    return "9-12";
   }
 
   return null;

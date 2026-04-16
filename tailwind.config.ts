@@ -154,6 +154,32 @@ const config: Config = {
           secondary: "var(--accent-secondary, #ffd36b)",
           soft: "var(--accent-soft, rgba(255, 122, 24, 0.15))",
         },
+        compact: {
+          bg: {
+            page: "var(--compact-bg-page, #f6f6f6)",
+            surface: "var(--compact-bg-surface, #ffffff)",
+            inverse: "var(--compact-bg-inverse, #121212)",
+            subtle: "var(--compact-bg-subtle, #f1f1f1)",
+          },
+          text: {
+            primary: "var(--compact-text-primary, #1e1e1e)",
+            secondary: "var(--compact-text-secondary, #5e5e5e)",
+            muted: "var(--compact-text-muted, #9a9a9a)",
+            inverse: "var(--compact-text-inverse, #ffffff)",
+          },
+          border: {
+            subtle: "var(--compact-border-subtle, #e6e6e6)",
+            DEFAULT: "var(--compact-border-default, #dddddd)",
+          },
+          action: {
+            primary: "var(--compact-action-primary, #ef1a14)",
+            hover: "var(--compact-action-primary-hover, #d91611)",
+            text: "var(--compact-action-primary-text, #ffffff)",
+          },
+          focus: {
+            ring: "var(--compact-focus-ring, #111111)",
+          },
+        },
       },
       // Glassmorphism
       backgroundColor: {
@@ -185,6 +211,8 @@ const config: Config = {
         "dark-soft": "var(--shadow-soft)",
         "dark-medium": "var(--shadow-medium)",
         "dark-strong": "var(--shadow-strong)",
+        compact: "var(--compact-shadow-button, 0 4px 10px rgba(0, 0, 0, 0.08))",
+        "compact-card": "var(--compact-shadow-card, 0 2px 8px rgba(0, 0, 0, 0.04))",
       },
       backdropBlur: {
         xs: "6px",
@@ -198,6 +226,7 @@ const config: Config = {
       maxWidth: {
         luxury: "1280px",
         content: "720px",
+        "compact-mobile": "var(--compact-mobile-content-max, 320px)",
       },
       zIndex: {
         header: "100",
@@ -216,6 +245,9 @@ const config: Config = {
         xl: "var(--radius-glass-lg, 24px)",
         glass: "16px",
         "glass-lg": "24px",
+        "compact-sm": "var(--compact-radius-sm, 8px)",
+        compact: "var(--compact-radius-md, 10px)",
+        "compact-lg": "var(--compact-radius-lg, 12px)",
       },
       // Typography scale (design tokens) — display, headings, labels, body, price
       fontSize: {
@@ -253,6 +285,21 @@ const config: Config = {
         "display-md": ["2.25rem", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
         "luxury-hero": ["clamp(2rem, 5vw, 4rem)", { lineHeight: "1.1", letterSpacing: "-0.03em" }],
         "luxury-title": ["clamp(1.5rem, 3vw, 2.5rem)", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
+        "compact-xs": ["var(--compact-font-xs, 11px)", { lineHeight: "var(--compact-lh-tight, 1.2)" }],
+        "compact-sm": ["var(--compact-font-sm, 12px)", { lineHeight: "var(--compact-lh-tight, 1.2)" }],
+        "compact-md": ["var(--compact-font-md, 14px)", { lineHeight: "var(--compact-lh-normal, 1.4)" }],
+        "compact-lg": ["var(--compact-font-lg, 16px)", { lineHeight: "var(--compact-lh-tight, 1.2)" }],
+        "compact-xl": ["var(--compact-font-xl, 20px)", { lineHeight: "var(--compact-lh-tight, 1.2)" }],
+      },
+      lineHeight: {
+        "compact-tight": "var(--compact-lh-tight, 1.2)",
+        "compact-normal": "var(--compact-lh-normal, 1.4)",
+        "compact-relaxed": "var(--compact-lh-relaxed, 1.5)",
+      },
+      letterSpacing: {
+        "compact-tight": "var(--compact-ls-tight, -0.01em)",
+        "compact-normal": "var(--compact-ls-normal, 0em)",
+        "compact-label": "var(--compact-ls-label, 0.08em)",
       },
       fontFamily: {
         playfair: ["Playfair Display", "Georgia", "serif"],
@@ -293,6 +340,17 @@ const config: Config = {
         "section-hero": "var(--space-section-hero, 7rem)",
         "block": "var(--space-block, 1.5rem)",
         "inline": "var(--space-inline, 1rem)",
+        "compact-1": "var(--compact-space-1, 4px)",
+        "compact-2": "var(--compact-space-2, 8px)",
+        "compact-3": "var(--compact-space-3, 12px)",
+        "compact-4": "var(--compact-space-4, 16px)",
+        "compact-5": "var(--compact-space-5, 20px)",
+        "compact-6": "var(--compact-space-6, 24px)",
+        "compact-8": "var(--compact-space-8, 32px)",
+      },
+      height: {
+        "control-compact": "var(--compact-control-height, 42px)",
+        "control-default": "var(--compact-control-height-default, 44px)",
       },
       transitionDuration: {
         "250": "250ms",
@@ -313,6 +371,7 @@ const config: Config = {
         in: "cubic-bezier(0.4, 0, 1, 1)",
         "transition-smooth": "cubic-bezier(0.16, 1, 0.3, 1)",
         "luxury-ease": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        compact: "var(--compact-motion-easing, cubic-bezier(0.2, 0, 0, 1))",
       },
       // Custom animations (luxury + existing)
       animation: {

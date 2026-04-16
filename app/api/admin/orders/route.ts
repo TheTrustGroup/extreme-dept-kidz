@@ -147,6 +147,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     const totalPages = Math.ceil(total / limit);
+    const codPendingThreshold = new Date(Date.now() - 30 * 60 * 1000);
+    const codAttentionWhere: Record<string, unknown> = {
+      paymentMethod: "pay_on_delivery",
+      status: "PENDING",
+      createdAt: { lte: codPendingThreshold },
+    };
+    if (auth.user?.assignedPos) {
+      codAttentionWhere.pos = auth.user.assignedPos;
+    }
+    const pendingCodAttention = await prisma.order.count({
+      where: codAttentionWhere,
+    });
 
     // Warehouse expects a raw array for (response || []).map(...) compatibility
     if (isWarehouseRequest(request)) {
@@ -160,6 +172,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         page,
         totalPages,
         totalRevenue: orders.reduce((sum, order) => sum + Number(order.total), 0),
+        pendingCodAttention,
       },
       "Orders fetched successfully"
     ));

@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Users,
   Search,
@@ -11,9 +10,9 @@ import {
   Edit,
   UserX,
   MoreVertical,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -53,7 +52,6 @@ function getInitials(name: string, email: string): string {
 }
 
 export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element {
-  const router = useRouter();
   const { showToast } = useToast();
   const [customers, setCustomers] = React.useState<CustomerRow[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -160,7 +158,7 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
                 setPage(1);
               }}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                "px-3 py-1.5 rounded-lg text-compact-md leading-compact-normal font-medium transition-colors",
                 quickFilter === tab.key
                   ? "bg-charcoal-900 text-white"
                   : "bg-cream-100 text-charcoal-700 hover:bg-cream-200"
@@ -172,7 +170,7 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal-400" />
-          <input
+          <Input
             type="search"
             placeholder="Search by name, email, phone..."
             value={search}
@@ -180,7 +178,8 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="w-full pl-9 pr-3 py-2 rounded-lg border border-cream-200 bg-cream-50 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            density="compact"
+            className="pl-9 bg-cream-50 border-cream-200 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
           />
         </div>
       </div>
@@ -196,35 +195,35 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
         ) : customers.length === 0 ? (
           <div className="p-12 text-center">
             <Users className="w-12 h-12 text-charcoal-400 mx-auto mb-4" />
-            <p className="text-charcoal-600">No customers found</p>
+            <p className="text-compact-md leading-compact-normal text-charcoal-600">No customers found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-cream-100 border-b border-cream-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-900">
+                  <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900">
                     Customer
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-900">
+                  <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-900 hidden md:table-cell">
+                  <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900 hidden md:table-cell">
                     Phone
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-900">
+                  <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900">
                     Orders
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-900">
+                  <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900">
                     Total Spent
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-900 hidden lg:table-cell">
+                  <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900 hidden lg:table-cell">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-charcoal-900 hidden lg:table-cell">
+                  <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900 hidden lg:table-cell">
                     Date Joined
                   </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-charcoal-900">
+                  <th className="px-4 py-3 text-right text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-900">
                     Actions
                   </th>
                 </tr>
@@ -260,18 +259,18 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
                         </Link>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-charcoal-600">{customer.email}</td>
-                    <td className="px-4 py-3 text-sm text-charcoal-600 hidden md:table-cell">
+                    <td className="px-4 py-3 text-compact-md leading-compact-normal text-charcoal-600">{customer.email}</td>
+                    <td className="px-4 py-3 text-compact-md leading-compact-normal text-charcoal-600 hidden md:table-cell">
                       {customer.phone ?? "—"}
                     </td>
-                    <td className="px-4 py-3 text-sm text-charcoal-900">{customer.totalOrders}</td>
-                    <td className="px-4 py-3 font-semibold text-charcoal-900">
+                    <td className="px-4 py-3 text-compact-md leading-compact-normal text-charcoal-900">{customer.totalOrders}</td>
+                    <td className="px-4 py-3 text-compact-md leading-compact-normal font-semibold text-charcoal-900">
                       {formatPrice(customer.totalSpent)}
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
                       <span
                         className={cn(
-                          "inline-flex px-2 py-0.5 rounded text-xs font-medium",
+                          "inline-flex items-center px-2.5 py-0.5 rounded text-compact-sm leading-compact-tight font-medium",
                           customer.isActive
                             ? "bg-green-100 text-green-800"
                             : "bg-charcoal-100 text-charcoal-600"
@@ -280,20 +279,20 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
                         {customer.accountStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-charcoal-600 hidden lg:table-cell">
+                    <td className="px-4 py-3 text-compact-md leading-compact-normal text-charcoal-600 hidden lg:table-cell">
                       {format(new Date(customer.dateJoined), "MMM d, yyyy")}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" asChild>
+                        <Button variant="ghost" size="compact" asChild>
                           <Link href={`/admin/customers/${customer.id}`}>
-                            <Eye className="w-4 h-4 mr-1" />
+                            <Eye className="w-4 h-4" />
                             View
                           </Link>
                         </Button>
-                        <Button variant="ghost" size="sm" asChild>
+                        <Button variant="ghost" size="compact" asChild>
                           <Link href={`/admin/customers/${customer.id}?edit=1`}>
-                            <Edit className="w-4 h-4 mr-1" />
+                            <Edit className="w-4 h-4" />
                             Edit
                           </Link>
                         </Button>
@@ -301,7 +300,7 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
                           <div className="relative">
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="compact"
                               onClick={() => setMoreActionsOpen(moreActionsOpen === customer.id ? null : customer.id)}
                             >
                               <MoreVertical className="w-4 h-4" />
@@ -341,13 +340,13 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
 
         {!loading && customers.length > 0 && totalPages > 1 && (
           <div className="px-4 py-3 border-t border-cream-200 flex items-center justify-between">
-            <p className="text-sm text-charcoal-600">
+            <p className="text-compact-md leading-compact-normal text-charcoal-600">
               Page {page} of {totalPages} · {total} total
             </p>
             <div className="flex gap-2">
               <Button
                 variant="secondary"
-                size="sm"
+                size="compact"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
@@ -355,7 +354,7 @@ export function CustomersTable({ onRefresh }: CustomersTableProps): JSX.Element 
               </Button>
               <Button
                 variant="secondary"
-                size="sm"
+                size="compact"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >

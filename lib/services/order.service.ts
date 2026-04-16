@@ -109,10 +109,12 @@ export async function createOrder(
           ? "cash_on_delivery"
           : paymentMethod;
 
+    const isCashOnDelivery = paymentMethod === "pay_on_delivery";
+
     const order = await tx.order.create({
       data: {
         orderNumber,
-        status: "PENDING",
+        status: isCashOnDelivery ? "PROCESSING" : "PENDING",
         subtotal,
         shipping: shippingAmount,
         tax: taxAmount,
@@ -120,7 +122,7 @@ export async function createOrder(
         shippingAddress: shippingAddress as unknown as object,
         billingAddress: (billingAddress ?? undefined) as object | undefined,
         paymentMethod: paymentMethodForDb,
-        paymentStatus: "PENDING",
+        paymentStatus: isCashOnDelivery ? "PROCESSING" : "PENDING",
         items: {
           create: orderItemsWithPrice.map((i) => ({
             productId: i.productId,
@@ -132,6 +134,44 @@ export async function createOrder(
       },
       include: { items: true },
     });
+
+    // COD is stock-on-order: deduct immediately so concurrent shoppers cannot oversell.
+    if (isCashOnDelivery) {
+      for (const item of orderItemsWithPrice) {
+        const variant = await tx.productVariant.findUnique({
+          where: { id: item.variantId },
+          select: { id: true, stock: true, productId: true },
+        });
+        if (!variant) continue;
+        const nextStock = Math.max(0, variant.stock - item.quantity);
+        await tx.productVariant.update({
+          where: { id: variant.id },
+          data: { stock: nextStock },
+        });
+        await tx.inventoryLog.create({
+          data: {
+            variantId: variant.id,
+            change: -item.quantity,
+            reason: "sale",
+            orderId: order.id,
+            notes: `COD order ${order.orderNumber}`,
+          },
+        });
+      }
+
+      // Keep product.inStock aligned with active variant stock after deductions.
+      const affectedProductIds = [...new Set(orderItemsWithPrice.map((i) => i.productId))];
+      for (const productId of affectedProductIds) {
+        const remainingStock = await tx.productVariant.aggregate({
+          where: { productId, isActive: true },
+          _sum: { stock: true },
+        });
+        await tx.product.update({
+          where: { id: productId },
+          data: { inStock: (remainingStock._sum.stock ?? 0) > 0 },
+        });
+      }
+    }
 
     return { orderId: order.id, orderNumber: order.orderNumber, total: order.total };
   });

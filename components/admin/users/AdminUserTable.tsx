@@ -6,7 +6,6 @@ import { m } from "framer-motion";
 import {
   Users,
   Mail,
-  Shield,
   Calendar,
   MoreVertical,
   Edit,
@@ -14,13 +13,13 @@ import {
   UserCheck,
   UserX,
   Search,
-  Filter,
   Plus,
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { getRoleDisplayLabel, getAssignedPosDisplayLabel } from "@/lib/auth/rbac";
@@ -225,12 +224,13 @@ export function AdminUserTable({
         {/* Search */}
         <div className="flex-1 relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
+          <Input
             type="text"
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            density="compact"
+            className="pl-10 bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
           />
         </div>
 
@@ -239,7 +239,7 @@ export function AdminUserTable({
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
           >
             <option value="all">All Roles</option>
             <option value="super_admin">Super Admin</option>
@@ -254,7 +254,7 @@ export function AdminUserTable({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -266,6 +266,7 @@ export function AdminUserTable({
         {onCreate && (
           <Button
             onClick={onCreate}
+            size="compact"
             className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -280,55 +281,55 @@ export function AdminUserTable({
           <table className="admin-table w-full">
             <thead className="bg-cream-50 border-b border-cream-200 sticky top-0 z-10">
               <tr>
-                <th className="text-left">
+                <th className="text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-700">
                   <button
                     onClick={() => handleSort('name')}
-                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
+                    className="flex items-center gap-2 hover:text-charcoal-900"
                   >
                     User
                     {getSortIcon('name')}
                   </button>
                 </th>
-                <th className="text-left">
+                <th className="text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-700">
                   <button
                     onClick={() => handleSort('role')}
-                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
+                    className="flex items-center gap-2 hover:text-charcoal-900"
                   >
                     Role
                     {getSortIcon('role')}
                   </button>
                 </th>
-                <th className="text-left font-semibold text-charcoal-700">
+                <th className="text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-700">
                   POS
                 </th>
-                <th className="text-left">
+                <th className="text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-700">
                   <button
                     onClick={() => handleSort('isActive')}
-                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
+                    className="flex items-center gap-2 hover:text-charcoal-900"
                   >
                     Status
                     {getSortIcon('isActive')}
                   </button>
                 </th>
-                <th className="text-left">
+                <th className="text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-700">
                   <button
                     onClick={() => handleSort('lastLoginAt')}
-                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
+                    className="flex items-center gap-2 hover:text-charcoal-900"
                   >
                     Last Login
                     {getSortIcon('lastLoginAt')}
                   </button>
                 </th>
-                <th className="text-left">
+                <th className="text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-700">
                   <button
                     onClick={() => handleSort('createdAt')}
-                    className="flex items-center gap-2 font-semibold text-charcoal-700 hover:text-charcoal-900"
+                    className="flex items-center gap-2 hover:text-charcoal-900"
                   >
                     Created
                     {getSortIcon('createdAt')}
                   </button>
                 </th>
-                <th className="text-right font-semibold text-charcoal-700">
+                <th className="text-right text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-charcoal-700">
                   Actions
                 </th>
               </tr>
@@ -349,34 +350,34 @@ export function AdminUserTable({
                       isInactive && "bg-cream-50 opacity-75"
                     )}
                   >
-                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">
+                    <td className="px-[var(--admin-space-4)] py-3 min-h-[3rem]">
                       <div className="flex items-center gap-[var(--admin-space-3)]">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-medium text-gray-900 truncate">{user.name}</div>
-                          <div className="text-sm text-gray-500 flex items-center gap-1 truncate">
+                          <div className="font-medium text-compact-md leading-compact-normal text-gray-900 truncate">{user.name}</div>
+                          <div className="text-compact-sm leading-compact-normal text-gray-500 flex items-center gap-1 truncate">
                             <Mail className="w-3 h-3 flex-shrink-0" />
                             <span className="truncate">{user.email}</span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">
+                    <td className="px-[var(--admin-space-4)] py-3 min-h-[3rem]">
                       <span className={cn(
-                        "px-2 py-1 text-xs font-medium rounded-full inline-block",
+                        "inline-flex items-center px-2.5 py-0.5 text-compact-sm leading-compact-tight font-medium rounded-full",
                         getRoleColor(user.role)
                       )}>
                         {getRoleLabel(user.role)}
                       </span>
                     </td>
-                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem] text-charcoal-600 text-sm">
+                    <td className="px-[var(--admin-space-4)] py-3 min-h-[3rem] text-charcoal-600 text-compact-md leading-compact-normal">
                       {getAssignedPosDisplayLabel(user.assignedPos)}
                     </td>
-                    <td className="px-[var(--admin-space-4)] py-[var(--admin-space-3)] min-h-[3rem]">
+                    <td className="px-[var(--admin-space-4)] py-3 min-h-[3rem]">
                       <span className={cn(
-                        "px-2 py-1 text-xs font-medium rounded-full",
+                        "inline-flex items-center px-2.5 py-0.5 text-compact-sm leading-compact-tight font-medium rounded-full",
                         user.isActive
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
@@ -384,7 +385,7 @@ export function AdminUserTable({
                         {user.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="text-charcoal-600">
+                    <td className="px-[var(--admin-space-4)] py-3 text-charcoal-600">
                       {user.lastLoginAt ? (
                         <div className="flex items-center gap-1 text-xs">
                           <Calendar className="w-3 h-3" />
@@ -394,10 +395,10 @@ export function AdminUserTable({
                         <span className="text-charcoal-400 text-xs">Never</span>
                       )}
                     </td>
-                    <td className="text-charcoal-600">
+                    <td className="px-[var(--admin-space-4)] py-3 text-charcoal-600 text-compact-md leading-compact-normal">
                       {format(new Date(user.createdAt), 'MMM d, yyyy')}
                     </td>
-                    <td className="text-right overflow-visible">
+                    <td className="px-[var(--admin-space-4)] py-3 text-right overflow-visible">
                       <div className="relative inline-block">
                         <button
                           type="button"
@@ -427,7 +428,7 @@ export function AdminUserTable({
         {filteredAndSorted.length === 0 && (
           <div className="p-12 text-center">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No users found</p>
+            <p className="text-compact-md leading-compact-normal text-gray-600">No users found</p>
           </div>
         )}
       </div>

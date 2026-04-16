@@ -74,7 +74,7 @@ function PromoCode() {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           className={[
-            "mt-2 text-xs",
+            "mt-2 text-compact-sm leading-compact-normal",
             status === "applied"
               ? "text-[var(--color-gold)]"
               : "text-[#c0392b]",
@@ -105,29 +105,18 @@ export default function CartPage({
           className="text-[var(--text-tertiary)] mb-6"
         />
         <h1
-          className="font-playfair text-[var(--text-primary)] mb-3"
-          style={{
-            fontSize: "clamp(28px, 4vw, 36px)",
-            fontWeight: 400,
-          }}
+          className="font-playfair text-[var(--text-primary)] mb-3 text-[clamp(24px,3.6vw,32px)] tracking-compact-tight leading-compact-tight font-normal"
         >
           Your bag is empty
         </h1>
         <p
-          className="text-[var(--text-tertiary)] mb-8"
-          style={{
-            fontSize: "15px",
-            maxWidth: "320px",
-            textAlign: "center",
-            lineHeight: 1.7,
-          }}
+          className="text-[var(--text-tertiary)] text-compact-md leading-7 mb-8 max-w-[320px] text-center"
         >
           Looks like you haven&apos;t added anything yet. Let&apos;s fix that.
         </p>
         <Link
           href="/collections/all"
-          className="btn-primary"
-          style={{ height: "52px", padding: "0 32px", fontSize: "12px" }}
+          className="btn-primary h-control-compact px-compact-6 inline-flex items-center text-compact-sm tracking-compact-label leading-compact-tight"
         >
           Shop All
         </Link>
@@ -144,13 +133,7 @@ export default function CartPage({
         </h1>
         <Link
           href="/collections/all"
-          className="text-label text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-          style={{
-            fontSize: "11px",
-            letterSpacing: "0.1em",
-            textDecoration: "underline",
-            textUnderlineOffset: "3px",
-          }}
+          className="text-label text-compact-sm tracking-compact-label leading-compact-tight text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors underline underline-offset-[3px]"
         >
           Continue Shopping
         </Link>
@@ -288,8 +271,7 @@ export default function CartPage({
 
             <Link
               href="/checkout"
-              className="cart-checkout-btn mt-5"
-              style={{ display: "flex" }}
+              className="cart-checkout-btn mt-5 inline-flex items-center"
             >
               Proceed to Checkout
               <ArrowRight size={15} strokeWidth={1.5} />

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface ActivityLogFiltersProps {
   filters: {
@@ -70,13 +71,13 @@ export function ActivityLogFilters({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             {/* Action Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                 Action
               </label>
               <select
                 value={filters.action}
                 onChange={(e) => handleChange('action', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               >
                 <option value="">All Actions</option>
                 <option value="product.created">Product Created</option>
@@ -93,13 +94,13 @@ export function ActivityLogFilters({
 
             {/* Resource Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                 Resource Type
               </label>
               <select
                 value={filters.resource}
                 onChange={(e) => handleChange('resource', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               >
                 <option value="">All Resources</option>
                 <option value="Product">Product</option>
@@ -113,26 +114,28 @@ export function ActivityLogFilters({
 
             {/* Date Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                 Start Date
               </label>
-              <input
+              <Input
                 type="date"
                 value={filters.startDate}
                 onChange={(e) => handleChange('startDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                density="compact"
+                className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">
                 End Date
               </label>
-              <input
+              <Input
                 type="date"
                 value={filters.endDate}
                 onChange={(e) => handleChange('endDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                density="compact"
+                className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
               />
             </div>
           </div>
@@ -142,6 +145,7 @@ export function ActivityLogFilters({
             <div className="pt-2 border-t border-gray-200">
               <Button
                 variant="secondary"
+                size="compact"
                 onClick={clearFilters}
                 className="flex items-center gap-2"
               >

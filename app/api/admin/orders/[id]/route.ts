@@ -15,6 +15,75 @@ const updateOrderStatusSchema = z.object({
   cancelledReason: z.string().optional(),
 });
 
+const ALLOWED_STATUS_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["PROCESSING", "CANCELLED"],
+  PROCESSING: ["SHIPPED", "CANCELLED", "REFUNDED"],
+  SHIPPED: ["DELIVERED"],
+  DELIVERED: ["REFUNDED"],
+  CANCELLED: [],
+  REFUNDED: [],
+};
+
+function isValidStatusTransition(currentStatus: string, nextStatus: string): boolean {
+  if (currentStatus === nextStatus) return true;
+  return (ALLOWED_STATUS_TRANSITIONS[currentStatus] ?? []).includes(nextStatus);
+}
+
+async function restockOrderItemsForCancellation(
+  tx: NonNullable<typeof prisma>,
+  orderId: string
+): Promise<void> {
+  const order = await tx.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: {
+          variant: {
+            select: {
+              id: true,
+              stock: true,
+              productId: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!order) return;
+
+  const affectedProductIds = new Set<string>();
+  for (const item of order.items) {
+    const variant = item.variant;
+    if (!variant) continue;
+    affectedProductIds.add(variant.productId);
+    await tx.productVariant.update({
+      where: { id: variant.id },
+      data: { stock: variant.stock + item.quantity },
+    });
+    await tx.inventoryLog.create({
+      data: {
+        variantId: variant.id,
+        change: item.quantity,
+        reason: "release",
+        orderId: order.id,
+        notes: `Order ${order.orderNumber} cancelled - stock restored`,
+      },
+    });
+  }
+
+  for (const productId of affectedProductIds) {
+    const stockAggregate = await tx.productVariant.aggregate({
+      where: { productId, isActive: true },
+      _sum: { stock: true },
+    });
+    await tx.product.update({
+      where: { id: productId },
+      data: { inStock: (stockAggregate._sum.stock ?? 0) > 0 },
+    });
+  }
+}
+
 /**
  * GET /api/admin/orders/[id]
  * 
@@ -138,14 +207,34 @@ export async function PUT(
     // Get current order
     const currentOrder = await prisma.order.findUnique({
       where: { id },
+      include: {
+        items: {
+          include: {
+            variant: {
+              select: {
+                id: true,
+                stock: true,
+                productId: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!currentOrder) {
       return apiNotFound("Order");
     }
 
+    if (!isValidStatusTransition(currentOrder.status, status)) {
+      return apiError(
+        `Invalid status transition from ${currentOrder.status} to ${status}`,
+        400
+      );
+    }
+
     // Build update data
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       status,
     };
 
@@ -170,39 +259,45 @@ export async function PUT(
       updateData.carrier = carrier;
     }
 
-    // Update order
-    const order = await prisma.order.update({
-      where: { id },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-          },
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                name: true,
-              },
-            },
-            variant: {
-              select: {
-                size: true,
-              },
+    // Update order and restore stock when cancellation happens after deduction.
+    const order = await prisma.$transaction(async (tx) => {
+      if (status === "CANCELLED" && currentOrder.status !== "CANCELLED") {
+        await restockOrderItemsForCancellation(tx as NonNullable<typeof prisma>, id);
+      }
+
+      return tx.order.update({
+        where: { id },
+        data: updateData,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
             },
           },
+          items: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                },
+              },
+              variant: {
+                select: {
+                  size: true,
+                },
+              },
+            },
+          },
         },
-      },
+      });
     });
 
     // Log activity
     await logActivity({
       adminUserId: auth.user!.id,
-      action: 'order.updated',
+      action: ActivityActions.ORDER_UPDATED,
       resource: 'Order',
       resourceId: id,
       details: {

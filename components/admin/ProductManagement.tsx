@@ -5,6 +5,7 @@ import { apiUrl } from "@/lib/config/api-base";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -116,11 +117,11 @@ export function ProductManagement(): JSX.Element {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-charcoal-900">Products</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-compact-2xl leading-compact-tight tracking-compact-tight font-bold text-charcoal-900">Products</h1>
         <Link href="/admin/products/new">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
+          <Button size="compact" className="flex items-center gap-1.5">
+            <Plus className="w-4 h-4" />
             Add Product
           </Button>
         </Link>
@@ -130,12 +131,13 @@ export function ProductManagement(): JSX.Element {
         <div className="p-4 border-b border-cream-200">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-charcoal-400" />
-            <input
+            <Input
               type="text"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              density="compact"
+              className="pl-10 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
             />
           </div>
         </div>
@@ -167,7 +169,7 @@ export function ProductManagement(): JSX.Element {
             <tbody className="bg-white divide-y divide-cream-200">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-charcoal-600">
+                  <td colSpan={6} className="px-6 py-8 text-center text-compact-md leading-compact-normal text-charcoal-600">
                     {searchTerm ? "No products found" : "No products yet. Add your first product!"}
                   </td>
                 </tr>
@@ -180,26 +182,26 @@ export function ProductManagement(): JSX.Element {
 
                   return (
                     <tr key={product.id} className="hover:bg-cream-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-charcoal-900">
+                      <td className="px-6 py-3 whitespace-nowrap">
+                        <div className="font-medium text-compact-md leading-compact-normal text-charcoal-900">
                           {product.name}
                         </div>
-                        <div className="text-sm text-charcoal-500">
+                        <div className="text-compact-sm leading-compact-normal text-charcoal-500">
                           {product.slug}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-charcoal-600">
+                      <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal text-charcoal-600">
                         {product.category.name}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-charcoal-900">
+                      <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal font-medium text-charcoal-900">
                         {formatPrice(product.price)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-charcoal-600">
+                      <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal text-charcoal-600">
                         {totalStock} units
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-3 whitespace-nowrap">
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          className={`inline-flex items-center px-2.5 py-0.5 text-compact-sm leading-compact-tight font-medium rounded-full ${
                             product.inStock
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
@@ -208,16 +210,16 @@ export function ProductManagement(): JSX.Element {
                           {product.inStock ? "In Stock" : "Out of Stock"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-3 whitespace-nowrap text-right text-compact-md leading-compact-normal font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <Link href={`/admin/products/${product.id}`}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="compact">
                               <Edit className="w-4 h-4" />
                             </Button>
                           </Link>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="compact"
                             onClick={() => handleDelete(product.id, product.name)}
                             className="text-red-600 hover:text-red-700"
                           >

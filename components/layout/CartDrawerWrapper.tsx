@@ -11,6 +11,7 @@ function storeItemToDrawerItem(item: StoreCartItem): DrawerCartItem {
   const p = item.product;
   const priceCedis =
     typeof p.price === "number" ? p.price / 100 : Number(p.price) / 100;
+  const primaryImage = p.images?.find((img) => img.isPrimary) ?? p.images?.[0];
   return {
     id: item.id ?? `cart-${p.id}-${item.selectedSize}`,
     productId: p.id,
@@ -20,8 +21,8 @@ function storeItemToDrawerItem(item: StoreCartItem): DrawerCartItem {
     variantName: `Size: ${item.selectedSize}`,
     price: priceCedis,
     quantity: item.quantity,
-    imageUrl: p.images?.[0]?.url ?? "/placeholder.jpg",
-    imageAlt: p.images?.[0]?.alt ?? p.name,
+    imageUrl: primaryImage?.url ?? "/placeholder.jpg",
+    imageAlt: primaryImage?.alt ?? p.name,
     currency: "₵",
   };
 }

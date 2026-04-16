@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { H1 } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -573,15 +574,15 @@ export default function ProductsPage(): JSX.Element {
             <p className="text-gray-600 text-sm">Manage your product catalog</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" size="sm" onClick={() => handleExport(true)} disabled={processing}>
+            <Button variant="secondary" size="compact" onClick={() => handleExport(true)} disabled={processing}>
               <Download className="w-4 h-4 mr-2" />
               Export All
             </Button>
-            <Button variant="secondary" size="sm" disabled>
+            <Button variant="secondary" size="compact" disabled>
               <Upload className="w-4 h-4 mr-2" />
               Import
             </Button>
-            <Button variant="primary" asChild className="shadow-md hover:shadow-lg">
+            <Button variant="primary" size="compact" asChild className="shadow-md hover:shadow-lg">
               <Link href="/admin/products/new">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
@@ -628,7 +629,7 @@ export default function ProductsPage(): JSX.Element {
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
+            <Input
               type="text"
               placeholder="Search products by name, SKU, or category..."
               value={search}
@@ -636,12 +637,14 @@ export default function ProductsPage(): JSX.Element {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
+              density="compact"
+              className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm hover:shadow-md focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
             />
           </div>
           <div className="flex gap-2">
             <Button
               variant="secondary"
+              size="compact"
               onClick={() => setShowFilters(!showFilters)}
               className={cn(showFilters && "bg-indigo-50 border-indigo-200")}
             >
@@ -696,14 +699,14 @@ export default function ProductsPage(): JSX.Element {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Category</label>
                   <select
                     value={filters.categoryId}
                     onChange={(e) => {
                       setFilters({ ...filters, categoryId: e.target.value });
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   >
                     <option value="">All Categories</option>
                     {categories.map((cat) => (
@@ -714,14 +717,14 @@ export default function ProductsPage(): JSX.Element {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Status</label>
                   <select
                     value={filters.status}
                     onChange={(e) => {
                       setFilters({ ...filters, status: e.target.value });
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   >
                     <option value="">All Statuses</option>
                     <option value="active">Active</option>
@@ -730,14 +733,14 @@ export default function ProductsPage(): JSX.Element {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock Status</label>
+                  <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Stock Status</label>
                   <select
                     value={filters.stockStatus}
                     onChange={(e) => {
                       setFilters({ ...filters, stockStatus: e.target.value });
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   >
                     <option value="">All Stock Levels</option>
                     <option value="inStock">In Stock</option>
@@ -746,14 +749,14 @@ export default function ProductsPage(): JSX.Element {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Sort By</label>
                   <select
                     value={sortBy}
                     onChange={(e) => {
                       setSortBy(e.target.value as SortBy);
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   >
                     <option value="createdAt">Date Added</option>
                     <option value="name">Name</option>
@@ -765,8 +768,8 @@ export default function ProductsPage(): JSX.Element {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Min Price (₵)</label>
-                  <input
+                  <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Min Price (₵)</label>
+                  <Input
                     type="number"
                     value={filters.minPrice}
                     onChange={(e) => {
@@ -774,12 +777,13 @@ export default function ProductsPage(): JSX.Element {
                       setPage(1);
                     }}
                     placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    density="compact"
+                    className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Max Price (₵)</label>
-                  <input
+                  <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Max Price (₵)</label>
+                  <Input
                     type="number"
                     value={filters.maxPrice}
                     onChange={(e) => {
@@ -787,13 +791,14 @@ export default function ProductsPage(): JSX.Element {
                       setPage(1);
                     }}
                     placeholder="1000"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    density="compact"
+                    className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
                   />
                 </div>
               </div>
               {hasActiveFilters && (
                 <div className="flex justify-end pt-2 border-t border-gray-200">
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <Button variant="ghost" size="compact" onClick={clearFilters}>
                     Clear All Filters
                   </Button>
                 </div>
@@ -1176,7 +1181,7 @@ export default function ProductsPage(): JSX.Element {
             <div className="flex gap-2">
               <Button
                 variant="secondary"
-                size="sm"
+                size="compact"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="shadow-sm hover:shadow-md transition-all disabled:opacity-50"
@@ -1185,7 +1190,7 @@ export default function ProductsPage(): JSX.Element {
               </Button>
               <Button
                 variant="secondary"
-                size="sm"
+                size="compact"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="shadow-sm hover:shadow-md transition-all disabled:opacity-50"
@@ -1280,7 +1285,7 @@ export default function ProductsPage(): JSX.Element {
                   handleBulkAssignCategory(e.target.value);
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             >
               <option value="">Select a category</option>
               {categories.map((cat) => (

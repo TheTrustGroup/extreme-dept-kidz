@@ -11,6 +11,8 @@ import { logActivity, ActivityActions } from "@/lib/services/admin/activity.serv
 import { revalidateOnProductMutation } from "@/lib/utils/cache-revalidation";
 import { triggerProductUpdatedWebhook } from "@/lib/utils/trigger-product-webhook";
 import { withCors, isWarehouseRequest } from "@/lib/utils/cors";
+import { normalizeProductSizeLabel } from "@/lib/constants/product-sizes";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +37,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const maxPrice = searchParams.get('maxPrice');
     const sortBy = searchParams.get('sortBy') || 'createdAt'; // 'name', 'price', 'stock', 'createdAt', 'bestSelling'
     const sortOrder = searchParams.get('sortOrder') || 'desc'; // 'asc' or 'desc'
+    const normalizedSortOrder: Prisma.SortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.ProductWhereInput = {};
 
     // Search filter
     if (search) {
@@ -71,34 +74,35 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Price range filter
     if (minPrice || maxPrice) {
-      where.price = {};
+      const priceFilter: Prisma.IntFilter = {};
       if (minPrice) {
-        where.price.gte = parseInt(minPrice, 10) * 100; // Convert to cents
+        priceFilter.gte = parseInt(minPrice, 10) * 100; // Convert to cents
       }
       if (maxPrice) {
-        where.price.lte = parseInt(maxPrice, 10) * 100; // Convert to cents
+        priceFilter.lte = parseInt(maxPrice, 10) * 100; // Convert to cents
       }
+      where.price = priceFilter;
     }
 
     // Build orderBy clause
-    let orderBy: any = {};
+    let orderBy: Prisma.ProductOrderByWithRelationInput = {};
     switch (sortBy) {
       case 'name':
-        orderBy = { name: sortOrder };
+        orderBy = { name: normalizedSortOrder };
         break;
       case 'price':
-        orderBy = { price: sortOrder };
+        orderBy = { price: normalizedSortOrder };
         break;
       case 'createdAt':
-        orderBy = { createdAt: sortOrder };
+        orderBy = { createdAt: normalizedSortOrder };
         break;
       case 'stock':
         // Sort by total stock (requires aggregation, handled in transform)
-        orderBy = { createdAt: sortOrder };
+        orderBy = { createdAt: normalizedSortOrder };
         break;
       case 'bestSelling':
         // Sort by order items count (requires aggregation)
-        orderBy = { createdAt: sortOrder };
+        orderBy = { createdAt: normalizedSortOrder };
         break;
       default:
         orderBy = { createdAt: 'desc' };
@@ -305,11 +309,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             ? size.quantity 
             : parseInt(String(size.quantity), 10);
           const stock = isNaN(quantity) ? 0 : Math.max(0, quantity);
+          const normalizedSize = normalizeProductSizeLabel(size.size) ?? size.size;
           
           return {
-            size: size.size,
+            size: normalizedSize,
             stock,
-            sku: size.sku || (validatedData.sku ? `${validatedData.sku}-${size.size}` : `SKU-${Date.now()}-${size.size}`),
+            sku: size.sku || (validatedData.sku ? `${validatedData.sku}-${normalizedSize}` : `SKU-${Date.now()}-${normalizedSize}`),
           };
         })
       : [];

@@ -27,6 +27,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -476,17 +477,19 @@ export function ComprehensiveOrderTable({
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
+          <Input
             type="text"
             placeholder="Search by order number, customer name, or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
+            density="compact"
+            className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm hover:shadow-md focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
           />
         </div>
         <div className="flex gap-2">
           <Button
             variant="secondary"
+            size="compact"
             onClick={() => setShowFilters(!showFilters)}
             className={cn(showFilters && "bg-indigo-50 border-indigo-200")}
           >
@@ -498,7 +501,7 @@ export function ComprehensiveOrderTable({
               </span>
             )}
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => handleExport(true)}>
+          <Button variant="secondary" size="compact" onClick={() => handleExport(true)}>
             <Download className="w-4 h-4 mr-2" />
             Export All
           </Button>
@@ -525,11 +528,11 @@ export function ComprehensiveOrderTable({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Payment Status</label>
                 <select
                   value={filters.paymentStatus}
                   onChange={(e) => setFilters({ ...filters, paymentStatus: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 >
                   <option value="">All Payment Statuses</option>
                   <option value="PENDING">Pending</option>
@@ -540,11 +543,11 @@ export function ComprehensiveOrderTable({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fulfillment Status</label>
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Fulfillment Status</label>
                 <select
                   value={filters.fulfillmentStatus}
                   onChange={(e) => setFilters({ ...filters, fulfillmentStatus: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 >
                   <option value="">All Fulfillment Statuses</option>
                   <option value="PENDING">Unfulfilled</option>
@@ -555,11 +558,11 @@ export function ComprehensiveOrderTable({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Method</label>
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Shipping Method</label>
                 <select
                   value={filters.shippingMethod}
                   onChange={(e) => setFilters({ ...filters, shippingMethod: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full h-control-compact px-compact-4 border border-gray-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 >
                   <option value="">All Methods</option>
                   <option value="usps">USPS</option>
@@ -569,47 +572,51 @@ export function ComprehensiveOrderTable({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                <input
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Start Date</label>
+                <Input
                   type="date"
                   value={filters.startDate}
                   onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  density="compact"
+                  className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                <input
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">End Date</label>
+                <Input
                   type="date"
                   value={filters.endDate}
                   onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  density="compact"
+                  className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Min Amount (₵)</label>
-                <input
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Min Amount (₵)</label>
+                <Input
                   type="number"
                   value={filters.minAmount}
                   onChange={(e) => setFilters({ ...filters, minAmount: e.target.value })}
                   placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  density="compact"
+                  className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Max Amount (₵)</label>
-                <input
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-gray-700 mb-compact-2 leading-compact-tight">Max Amount (₵)</label>
+                <Input
                   type="number"
                   value={filters.maxAmount}
                   onChange={(e) => setFilters({ ...filters, maxAmount: e.target.value })}
                   placeholder="10000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  density="compact"
+                  className="bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
                 />
               </div>
             </div>
             {hasActiveFilters && (
               <div className="flex justify-end pt-2 border-t border-gray-200">
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <Button variant="ghost" size="compact" onClick={clearFilters}>
                   Clear All Filters
                 </Button>
               </div>

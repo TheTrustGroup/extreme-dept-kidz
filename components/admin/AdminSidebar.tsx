@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Package, ShoppingBag,
   Users, BarChart2, Settings, Boxes,
   Activity, ChevronDown, PanelLeftClose,
-  PanelLeft, Shirt,
+  PanelLeft, Shirt, Bell,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
 import { apiUrl } from "@/lib/config/api-base";
@@ -57,12 +57,13 @@ const NAV: NavItem[] = [
     { label: "Products",      href: "/admin/analytics/products" },
   ]},
   { label: "Activity",   href: "/admin/activity",         icon: Activity },
+  { label: "Notifications", href: "/admin/notifications/retry", icon: Bell },
   { label: "Settings",   href: "/admin/settings",         icon: Settings },
 ];
 
 function NavRow({
   item, collapsed, badge,
-}: { item: NavItem; collapsed: boolean; badge?: number | null }) {
+}: { item: NavItem; collapsed: boolean; badge?: number | null }): JSX.Element {
   const pathname   = usePathname();
   const hasChildren = !!item.children?.length;
   const isActive   = item.href
@@ -118,9 +119,9 @@ function NavRow({
                     key={c.href} href={c.href}
                     style={{
                       display: "flex", alignItems: "center",
-                      height: 30, padding: "0 8px",
+                      height: 28, padding: "0 8px",
                       borderRadius: "var(--adm-radius)",
-                      fontSize: 12, textDecoration: "none",
+                      fontSize: 12, textDecoration: "none", lineHeight: 1.2,
                       color: pathname === c.href ||
                         (c.href !== "/admin" && pathname?.startsWith(c.href))
                         ? "var(--adm-gold)" : "var(--adm-t3)",
@@ -166,7 +167,7 @@ function NavRow({
   );
 }
 
-export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps): JSX.Element {
   const { user } = useAdminAuth();
   const [orderBadge, setOrderBadge] = React.useState<number | null>(null);
 
@@ -273,10 +274,10 @@ export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps) {
           title={collapsed ? "Expand" : "Collapse"}
           style={{
             display: "flex", alignItems: "center", gap: 8,
-            width: "100%", padding: "6px 8px",
+            width: "100%", padding: "5px 8px",
             background: "none", border: "none",
             borderRadius: "var(--adm-radius)",
-            color: "var(--adm-t3)", fontSize: 11,
+            color: "var(--adm-t3)", fontSize: 11, lineHeight: 1.2,
             cursor: "pointer", marginTop: 4,
             transition: "background 100ms, color 100ms",
           }}

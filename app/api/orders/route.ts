@@ -6,11 +6,11 @@
 import { NextRequest } from "next/server";
 import { createOrder } from "@/lib/services/order.service";
 import {
-  sendOrderConfirmationEmail,
-  sendAdminNewOrderEmail,
-} from "@/lib/services/email.service";
+  sendOrQueueAdminNewOrderEmail,
+  sendOrQueueOrderConfirmationEmail,
+} from "@/lib/services/notification-queue.service";
 import { apiSuccess, apiError, apiValidationError } from "@/lib/utils/api-response";
-import { createRateLimitMiddleware, RATE_LIMITS } from "@/lib/security/rate-limiter";
+import { createRateLimitMiddleware } from "@/lib/security/rate-limiter";
 import { validate } from "@/lib/validation/schemas";
 import { createOrderApiSchema } from "@/lib/validation/schemas";
 import { logger } from "@/lib/utils/logger";
@@ -23,7 +23,7 @@ const ORDER_RATE_LIMIT = {
   message: "Too many order attempts. Please try again in a minute.",
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
   const rateLimitResponse = await createRateLimitMiddleware(ORDER_RATE_LIMIT)(request);
   if (rateLimitResponse) return rateLimitResponse;
 
@@ -32,6 +32,14 @@ export async function POST(request: NextRequest) {
     const validation = validate(createOrderApiSchema, body);
     if (!validation.success) {
       return apiValidationError(validation.errors);
+    }
+
+    if (validation.data.paymentMethod !== "pay_on_delivery") {
+      return apiError(
+        "Only cash on delivery is currently enabled",
+        400,
+        "Set paymentMethod to pay_on_delivery"
+      );
     }
 
     const { orderId, orderNumber, total } = await createOrder({
@@ -55,7 +63,7 @@ export async function POST(request: NextRequest) {
         .filter(Boolean)
         .join("\n");
 
-      void sendAdminNewOrderEmail({
+      void sendOrQueueAdminNewOrderEmail({
         orderId,
         orderNumber,
         totalPesewas: total,
@@ -64,10 +72,13 @@ export async function POST(request: NextRequest) {
         customerPhone: addr.phone,
         shippingSummary,
         paymentMethod: validation.data.paymentMethod,
-      });
+      }, { orderId, source: "checkout.cod" });
 
       const email = validation.data.shippingAddress.email;
-      void sendOrderConfirmationEmail(email, orderNumber, total);
+      void sendOrQueueOrderConfirmationEmail(
+        { to: email, orderNumber, totalPesewas: total },
+        { orderId, source: "checkout.cod" }
+      );
     }
 
     return apiSuccess(

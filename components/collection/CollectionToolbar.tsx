@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SlidersHorizontal, ChevronDown, X, Check } from "lucide-react";
 import { slideInBottom, fadeIn } from "@/lib/motion";
+import { ALL_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
 
 // ─── Types ────────────────────────────────────────────────────────
 export interface FilterState {
@@ -36,17 +37,14 @@ const SORT_OPTIONS: SortOption[] = [
   { value: "name-asc", label: "A – Z" },
 ];
 
-const SIZE_OPTIONS = [
-  "XS", "S", "M", "L", "XL", "XXL", "2T", "3T", "4T", "5T", "6", "8", "10", "12",
-];
+const SIZE_OPTIONS = [...ALL_PRODUCT_SIZES];
 
 const AGE_OPTIONS = [
-  { value: "0-2", label: "0–2 yrs" },
-  { value: "2-4", label: "2–4 yrs" },
-  { value: "4-6", label: "4–6 yrs" },
-  { value: "6-8", label: "6–8 yrs" },
-  { value: "8-10", label: "8–10 yrs" },
-  { value: "10-12", label: "10–12 yrs" },
+  { value: "0-1", label: "0–1 yrs" },
+  { value: "1-3", label: "1–3 yrs" },
+  { value: "3-6", label: "3–6 yrs" },
+  { value: "6-9", label: "6–9 yrs" },
+  { value: "9-12", label: "9–12 yrs" },
 ];
 
 const MAX_PRICE = 1000;
@@ -175,8 +173,7 @@ function SortDropdown({
         aria-haspopup="listbox"
       >
         <span
-          className="text-label"
-          style={{ fontSize: "11px", letterSpacing: "0.1em" }}
+          className="text-label text-compact-sm tracking-compact-label leading-compact-tight"
         >
           {current?.label ?? "Sort"}
         </span>
@@ -208,13 +205,12 @@ function SortDropdown({
                 aria-selected={value === opt.value}
                 className={[
                   "w-full flex items-center justify-between px-4 py-3",
-                  "text-body-sm transition-colors duration-150",
+                  "text-body-sm text-compact-md leading-compact-normal transition-colors duration-150",
                   "hover:bg-[var(--bg-surface-2)]",
                   value === opt.value
                     ? "text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)]",
                 ].join(" ")}
-                style={{ fontSize: "13px" }}
                 onClick={() => {
                   onChange(opt.value);
                   setOpen(false);
@@ -321,8 +317,7 @@ function FilterPanelContent({
             Max Price
           </p>
           <span
-            className="text-label text-[var(--color-gold)]"
-            style={{ fontSize: "12px" }}
+            className="text-label text-compact-md leading-compact-normal text-[var(--color-gold)]"
           >
             ₵{filters.priceMax.toLocaleString()}
           </span>
@@ -344,14 +339,12 @@ function FilterPanelContent({
         />
         <div className="flex justify-between mt-1">
           <span
-            className="text-label text-[var(--text-tertiary)]"
-            style={{ fontSize: "10px" }}
+            className="text-label text-compact-sm leading-compact-normal text-[var(--text-tertiary)]"
           >
             ₵0
           </span>
           <span
-            className="text-label text-[var(--text-tertiary)]"
-            style={{ fontSize: "10px" }}
+            className="text-label text-compact-sm leading-compact-normal text-[var(--text-tertiary)]"
           >
             ₵1,000
           </span>
@@ -384,8 +377,7 @@ function FilterPanelContent({
             )}
           </span>
           <span
-            className="text-label-lg"
-            style={{ fontSize: "12px", letterSpacing: "0.08em" }}
+            className="text-label-lg text-compact-md tracking-compact-label leading-compact-tight"
           >
             In Stock Only
           </span>
@@ -466,8 +458,7 @@ function MobileFilterSheet({
 
             <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-default)] flex-shrink-0">
               <span
-                className="text-label-lg"
-                style={{ fontSize: "13px", letterSpacing: "0.1em" }}
+                className="text-label-lg text-compact-md tracking-compact-label leading-compact-tight"
               >
                 Filter & Sort
                 {activeCount > 0 && (
@@ -517,7 +508,6 @@ function MobileFilterSheet({
                 <button
                   type="button"
                   className="btn-secondary h-12 flex-1"
-                  style={{ fontSize: "11px" }}
                   onClick={() => {
                     onClearAll();
                     onClose();
@@ -529,7 +519,6 @@ function MobileFilterSheet({
               <button
                 type="button"
                 className="btn-primary flex-1 h-12"
-                style={{ fontSize: "11px" }}
                 onClick={onClose}
               >
                 Show {totalProducts}{" "}

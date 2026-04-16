@@ -7,6 +7,7 @@ import { X, ChevronDown } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/typography";
+import { ALL_PRODUCT_SIZES } from "@/lib/constants/product-sizes";
 
 /**
  * Filter State Interface
@@ -32,15 +33,14 @@ const DEFAULT_FILTERS: FilterState = {
   inStockOnly: false,
 };
 
-const ALL_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "2T", "3T", "4T", "5T", "6", "8", "10", "12"];
+const ALL_SIZES = [...ALL_PRODUCT_SIZES];
 
 const AGE_RANGES = [
-  { label: "0-2 years", value: "0-2" },
-  { label: "2-4 years", value: "2-4" },
-  { label: "4-6 years", value: "4-6" },
-  { label: "6-8 years", value: "6-8" },
-  { label: "8-10 years", value: "8-10" },
-  { label: "10-12 years", value: "10-12" },
+  { label: "0-1 years", value: "0-1" },
+  { label: "1-3 years", value: "1-3" },
+  { label: "3-6 years", value: "3-6" },
+  { label: "6-9 years", value: "6-9" },
+  { label: "9-12 years", value: "9-12" },
 ];
 
 const COLORS = [
@@ -164,7 +164,7 @@ export function FilterSidebar({
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between pb-6 border-b border-cream-200">
-        <H3 className="text-charcoal-900">Filters</H3>
+        <H3 className="text-charcoal-900 text-compact-xl leading-compact-tight tracking-compact-tight">Filters</H3>
         {isMobile && onClose && (
           <button
             onClick={onClose}
@@ -285,7 +285,7 @@ export function FilterSidebar({
         <div className="pt-6 border-t border-cream-200">
           <Button
             variant="ghost"
-            size="sm"
+            size="compact"
             onClick={handleClearAll}
             className="w-full justify-center text-charcoal-700 hover:text-charcoal-900"
           >
@@ -368,7 +368,7 @@ function FilterSection({
         whileHover={{ x: 2 }}
         transition={{ duration: 0.2 }}
       >
-        <h4 className="font-serif text-sm font-semibold text-charcoal-900 uppercase tracking-wider">
+        <h4 className="font-serif text-compact-sm leading-compact-tight font-semibold text-charcoal-900 uppercase tracking-compact-label">
           {title}
         </h4>
         <m.div
@@ -408,7 +408,7 @@ interface CheckboxProps {
 function Checkbox({ label, checked, onChange }: CheckboxProps): JSX.Element {
   return (
     <m.label
-      className="flex items-center gap-3 min-h-[44px] py-2 cursor-pointer group touch-manipulation"
+      className="flex items-center gap-3 min-h-[42px] py-1.5 cursor-pointer group touch-manipulation"
       whileHover={{ x: 2 }}
       transition={{ duration: 0.2 }}
     >
@@ -418,7 +418,7 @@ function Checkbox({ label, checked, onChange }: CheckboxProps): JSX.Element {
         onChange={onChange}
         className="w-5 h-5 rounded border-cream-300 text-navy-900 focus:ring-navy-500 focus:ring-offset-2 cursor-pointer transition-all duration-200 shrink-0"
       />
-      <span className="font-sans text-sm text-charcoal-700 group-hover:text-charcoal-900 transition-colors duration-200">
+      <span className="font-sans text-compact-md leading-compact-normal text-charcoal-700 group-hover:text-charcoal-900 transition-colors duration-200">
         {label}
       </span>
     </m.label>

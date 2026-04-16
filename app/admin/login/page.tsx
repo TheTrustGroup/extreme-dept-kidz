@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useAdminAuth } from "@/lib/stores/admin-auth-store";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function AdminLoginPage(): JSX.Element {
   const router = useRouter();
@@ -172,40 +174,26 @@ export default function AdminLoginPage(): JSX.Element {
             <label
               style={{
                 display: "block",
-                fontSize: 10,
-                fontWeight: 600,
-                letterSpacing: "0.08em",
+                fontSize: "var(--compact-font-sm)",
+                fontWeight: 700,
+                letterSpacing: "var(--compact-ls-label)",
                 textTransform: "uppercase",
                 color: "var(--adm-t3)",
-                marginBottom: 6,
+                marginBottom: "var(--compact-space-2)",
+                lineHeight: "var(--compact-lh-tight)",
               }}
             >
               Email address
             </label>
-            <input
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@extremedeptkidz.com"
               autoComplete="email"
               required
-              style={{
-                width: "100%",
-                height: 42,
-                background: "var(--adm-s2)",
-                border: "1px solid var(--adm-b2)",
-                borderRadius: "var(--adm-radius)",
-                padding: "0 12px",
-                color: "var(--adm-t1)",
-                fontSize: 13,
-                outline: "none",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--adm-gold)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--adm-b2)";
-              }}
+              density="compact"
+              className="bg-[var(--adm-s2)] border-[var(--adm-b2)] text-[var(--adm-t1)] placeholder:text-[var(--adm-t3)] focus-visible:border-[var(--adm-gold)] focus-visible:ring-[var(--adm-gold)]/20"
             />
           </div>
 
@@ -214,41 +202,27 @@ export default function AdminLoginPage(): JSX.Element {
             <label
               style={{
                 display: "block",
-                fontSize: 10,
-                fontWeight: 600,
-                letterSpacing: "0.08em",
+                fontSize: "var(--compact-font-sm)",
+                fontWeight: 700,
+                letterSpacing: "var(--compact-ls-label)",
                 textTransform: "uppercase",
                 color: "var(--adm-t3)",
-                marginBottom: 6,
+                marginBottom: "var(--compact-space-2)",
+                lineHeight: "var(--compact-lh-tight)",
               }}
             >
               Password
             </label>
             <div style={{ position: "relative" }}>
-              <input
+              <Input
                 type={showPw ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 autoComplete="current-password"
                 required
-                style={{
-                  width: "100%",
-                  height: 42,
-                  background: "var(--adm-s2)",
-                  border: "1px solid var(--adm-b2)",
-                  borderRadius: "var(--adm-radius)",
-                  padding: "0 40px 0 12px",
-                  color: "var(--adm-t1)",
-                  fontSize: 13,
-                  outline: "none",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "var(--adm-gold)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "var(--adm-b2)";
-                }}
+                density="compact"
+                className="pr-10 bg-[var(--adm-s2)] border-[var(--adm-b2)] text-[var(--adm-t1)] placeholder:text-[var(--adm-t3)] focus-visible:border-[var(--adm-gold)] focus-visible:ring-[var(--adm-gold)]/20"
               />
               <button
                 type="button"
@@ -338,28 +312,11 @@ export default function AdminLoginPage(): JSX.Element {
           </div>
 
           {/* Submit */}
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            style={{
-              width: "100%",
-              height: 42,
-              background: loading ? "rgba(201,162,39,0.5)" : "var(--adm-gold)",
-              border: "none",
-              borderRadius: "var(--adm-radius)",
-              color: "#0a0a0f",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              cursor: loading ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              transition: "background 150ms ease",
-              marginBottom: 0,
-            }}
+            size="compact"
+            className="w-full bg-[var(--adm-gold)] text-[#0a0a0f] hover:bg-[#d4aa2a] active:bg-[#d4aa2a] shadow-none"
           >
             {loading ? (
               <>
@@ -377,9 +334,9 @@ export default function AdminLoginPage(): JSX.Element {
                 Signing in...
               </>
             ) : (
-              "Sign In"
+              "Sign in"
             )}
-          </button>
+          </Button>
         </form>
 
         {/* Footer */}

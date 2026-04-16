@@ -5,7 +5,7 @@ import type { ClassValue } from "clsx";
 
 export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "asChild"> {
   variant?: "primary" | "secondary" | "ghost";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "compact";
   loading?: boolean;
   loadingText?: string;
   asChild?: boolean;
@@ -108,6 +108,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       lg: cn(
         "h-14 min-h-[56px] px-10 py-5 text-lg", // 56px height, 18px text, 20px 40px padding
         "xs:text-lg" // Consistent 18px on mobile
+      ),
+      compact: cn(
+        "h-control-compact min-h-[42px] rounded-compact-lg px-compact-4",
+        "text-compact-lg leading-compact-tight tracking-compact-normal normal-case",
+        "shadow-compact"
       ),
     };
 

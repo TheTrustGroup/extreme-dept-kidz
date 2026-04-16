@@ -6,16 +6,21 @@ export const metadata: Metadata = {
 }
 
 const SIZES = [
-  { size: '2–3Y', height: '92–98 cm', chest: '52 cm', waist: '51 cm', weight: '12–14 kg' },
-  { size: '3–4Y', height: '98–104 cm', chest: '53 cm', waist: '52 cm', weight: '14–16 kg' },
-  { size: '4–5Y', height: '104–110 cm', chest: '55 cm', waist: '53 cm', weight: '16–18 kg' },
-  { size: '5–6Y', height: '110–116 cm', chest: '57 cm', waist: '54 cm', weight: '18–21 kg' },
-  { size: '6–7Y', height: '116–122 cm', chest: '60 cm', waist: '55 cm', weight: '21–24 kg' },
-  { size: '7–8Y', height: '122–128 cm', chest: '63 cm', waist: '56 cm', weight: '24–27 kg' },
-  { size: '8–9Y', height: '128–134 cm', chest: '66 cm', waist: '57 cm', weight: '27–30 kg' },
-  { size: '9–10Y', height: '134–140 cm', chest: '69 cm', waist: '58 cm', weight: '30–34 kg' },
-  { size: '10–11Y', height: '140–146 cm', chest: '72 cm', waist: '60 cm', weight: '34–38 kg' },
-  { size: '11–12Y', height: '146–152 cm', chest: '76 cm', waist: '62 cm', weight: '38–42 kg' },
+  { size: '3M', height: '58–64 cm', chest: '43 cm', waist: '43 cm', weight: '5–7 kg' },
+  { size: '6M', height: '64–70 cm', chest: '45 cm', waist: '45 cm', weight: '7–8 kg' },
+  { size: '9M', height: '70–76 cm', chest: '47 cm', waist: '46 cm', weight: '8–10 kg' },
+  { size: '1Y', height: '76–82 cm', chest: '49 cm', waist: '47 cm', weight: '10–11 kg' },
+  { size: '2Y', height: '82–90 cm', chest: '51 cm', waist: '49 cm', weight: '11–13 kg' },
+  { size: '3Y', height: '90–98 cm', chest: '53 cm', waist: '51 cm', weight: '13–15 kg' },
+  { size: '4Y', height: '98–104 cm', chest: '55 cm', waist: '52 cm', weight: '15–17 kg' },
+  { size: '5Y', height: '104–110 cm', chest: '57 cm', waist: '53 cm', weight: '17–19 kg' },
+  { size: '6Y', height: '110–116 cm', chest: '59 cm', waist: '54 cm', weight: '19–22 kg' },
+  { size: '7Y', height: '116–122 cm', chest: '61 cm', waist: '55 cm', weight: '22–25 kg' },
+  { size: '8Y', height: '122–128 cm', chest: '63 cm', waist: '56 cm', weight: '25–28 kg' },
+  { size: '9Y', height: '128–134 cm', chest: '66 cm', waist: '57 cm', weight: '28–31 kg' },
+  { size: '10Y', height: '134–140 cm', chest: '69 cm', waist: '58 cm', weight: '31–35 kg' },
+  { size: '11Y', height: '140–146 cm', chest: '72 cm', waist: '60 cm', weight: '35–39 kg' },
+  { size: '12Y', height: '146–152 cm', chest: '76 cm', waist: '62 cm', weight: '39–43 kg' },
 ]
 
 export default function SizeGuidePage() {

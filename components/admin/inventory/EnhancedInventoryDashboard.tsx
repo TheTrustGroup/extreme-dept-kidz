@@ -120,7 +120,7 @@ export function EnhancedInventoryDashboard({
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            size="sm"
+            size="compact"
             onClick={onRefresh}
             disabled={loading}
             className="flex items-center gap-2"
@@ -130,7 +130,7 @@ export function EnhancedInventoryDashboard({
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="compact"
             onClick={onExport}
             className="flex items-center gap-2"
           >
@@ -139,7 +139,7 @@ export function EnhancedInventoryDashboard({
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="compact"
             className="flex items-center gap-2"
           >
             <Settings className="w-4 h-4" />

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { m } from "framer-motion";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { H1, Body } from "@/components/ui/typography";
 import { Container } from "@/components/ui/container";
 
@@ -149,6 +150,7 @@ export default function ForgotPasswordPage(): JSX.Element {
                 <Button
                   type="button"
                   variant="primary"
+                  size="compact"
                   onClick={() => router.push("/admin/login")}
                   className="w-full"
                 >
@@ -161,17 +163,18 @@ export default function ForgotPasswordPage(): JSX.Element {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-semibold text-charcoal-900 mb-2"
+                    className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-900 mb-compact-2 leading-compact-tight"
                   >
                     Email Address
                   </label>
-                  <input
+                  <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-3 border border-cream-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent transition-all"
+                    density="compact"
+                    className="border-cream-300 bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                     placeholder="info@extremedeptkidz.com"
                     autoComplete="email"
                     disabled={loading}
@@ -182,7 +185,7 @@ export default function ForgotPasswordPage(): JSX.Element {
                 <Button
                   type="submit"
                   variant="primary"
-                  size="lg"
+                  size="compact"
                   className="w-full"
                   disabled={loading || !email.trim()}
                 >

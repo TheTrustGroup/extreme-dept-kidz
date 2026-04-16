@@ -7,6 +7,7 @@ import type { Product } from "@/types";
 import { cn } from "@/lib/utils";
 
 function mapProductToCardProps(p: Product): ProductCardProps {
+  const primaryImage = p.images?.find((img) => img.isPrimary) ?? p.images?.[0];
   return {
     id: p.id,
     slug: p.slug,
@@ -14,8 +15,8 @@ function mapProductToCardProps(p: Product): ProductCardProps {
     price: p.price / 100,
     compareAtPrice: p.originalPrice ? p.originalPrice / 100 : undefined,
     currency: "₵",
-    imageUrl: p.images?.[0]?.url ?? "/placeholder.jpg",
-    imageAlt: p.images?.[0]?.alt ?? p.name,
+    imageUrl: primaryImage?.url ?? "/placeholder.jpg",
+    imageAlt: primaryImage?.alt ?? p.name,
     badge: p.tags?.includes("new")
       ? "new"
       : !p.inStock
@@ -44,7 +45,7 @@ function PlaceholderCard(): JSX.Element {
         <p className="font-serif text-lg font-semibold text-charcoal-900 dark:text-dark-text-primary">
           More Styles Coming Soon
         </p>
-        <p className="text-sm text-charcoal-600 dark:text-dark-text-secondary">
+        <p className="text-compact-md leading-compact-normal text-charcoal-600 dark:text-dark-text-secondary">
           Check back for new arrivals
         </p>
       </div>

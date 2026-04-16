@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Search, Eye } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Order {
   id: string;
@@ -71,20 +72,21 @@ export function OrderManagement(): JSX.Element {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-charcoal-900">Orders</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-compact-2xl leading-compact-tight tracking-compact-tight font-bold text-charcoal-900">Orders</h1>
       </div>
 
       <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 mb-6">
         <div className="p-4 border-b border-cream-200/50">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-charcoal-400" />
-            <input
+            <Input
               type="text"
               placeholder="Search orders by order number..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              density="compact"
+              className="pl-10 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
             />
           </div>
         </div>
@@ -116,30 +118,30 @@ export function OrderManagement(): JSX.Element {
             <tbody className="bg-white divide-y divide-cream-200">
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-charcoal-600">
+                  <td colSpan={6} className="px-6 py-8 text-center text-compact-md leading-compact-normal text-charcoal-600">
                     {searchTerm ? "No orders found" : "No orders yet"}
                   </td>
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-cream-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-charcoal-900">
+                    <td className="px-6 py-3 whitespace-nowrap">
+                      <div className="font-medium text-compact-md leading-compact-normal text-charcoal-900">
                         {order.orderNumber || order.id.slice(0, 8)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-charcoal-600">
+                    <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal text-charcoal-600">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-charcoal-600">
+                    <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal text-charcoal-600">
                       {order.items?.length || 0} item(s)
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-charcoal-900">
+                    <td className="px-6 py-3 whitespace-nowrap text-compact-md leading-compact-normal font-medium text-charcoal-900">
                       {formatPrice(order.total)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-3 whitespace-nowrap">
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        className={`inline-flex items-center px-2.5 py-0.5 text-compact-sm leading-compact-tight font-medium rounded-full ${
                           order.status === "DELIVERED"
                             ? "bg-green-100 text-green-800"
                             : order.status === "SHIPPED"
@@ -154,9 +156,9 @@ export function OrderManagement(): JSX.Element {
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4 mr-1" />
+                    <td className="px-6 py-3 whitespace-nowrap text-right text-compact-md leading-compact-normal font-medium">
+                      <Button variant="ghost" size="compact" className="inline-flex items-center gap-1.5">
+                        <Eye className="w-4 h-4" />
                         View
                       </Button>
                     </td>

@@ -17,11 +17,11 @@ function SkeletonCard() {
       <div className="product-card__info">
         <div
           className="skeleton-line"
-          style={{ width: "70%", height: "12px", marginBottom: "8px" }}
+          style={{ width: "70%", height: "10px", marginBottom: "6px" }}
         />
         <div
           className="skeleton-line"
-          style={{ width: "40%", height: "16px" }}
+          style={{ width: "40%", height: "14px" }}
         />
       </div>
     </div>

@@ -69,8 +69,7 @@ function Accordion({
         <span className="flex items-center gap-2.5 text-[var(--text-primary)]">
           <span className="text-[var(--text-tertiary)]">{icon}</span>
           <span
-            className="text-label-lg"
-            style={{ fontSize: "12px", letterSpacing: "0.1em" }}
+            className="text-label-lg text-compact-md tracking-compact-label leading-compact-tight"
           >
             {title}
           </span>
@@ -120,8 +119,7 @@ function ShareButton({ name }: { name: string }) {
   return (
     <button
       onClick={handleShare}
-      className="flex items-center gap-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-      style={{ fontSize: "12px" }}
+      className="flex items-center gap-1.5 text-compact-md leading-compact-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
       aria-label="Share product"
     >
       <AnimatePresence mode="wait" initial={false}>
@@ -135,8 +133,7 @@ function ShareButton({ name }: { name: string }) {
           >
             <Check size={13} strokeWidth={2} />
             <span
-              className="text-label"
-              style={{ fontSize: "11px", letterSpacing: "0.1em" }}
+              className="text-label text-compact-sm tracking-compact-label leading-compact-tight"
             >
               Copied
             </span>
@@ -151,8 +148,7 @@ function ShareButton({ name }: { name: string }) {
           >
             <Share2 size={13} strokeWidth={1.5} />
             <span
-              className="text-label"
-              style={{ fontSize: "11px", letterSpacing: "0.1em" }}
+              className="text-label text-compact-sm tracking-compact-label leading-compact-tight"
             >
               Share
             </span>
@@ -186,7 +182,6 @@ export default function ProductInfo({
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState(false);
 
-  const selectedVariant = variants.find((v) => v.id === selectedVariantId);
   const isOnSale = compareAtPrice != null && compareAtPrice > price;
   const hasVariants = variants.length > 0;
 
@@ -266,8 +261,7 @@ export default function ProductInfo({
           <span className="pdp-badge pdp-badge--sale">On Sale</span>
         )}
         <span
-          className="text-label text-[var(--text-tertiary)]"
-          style={{ fontSize: "10px", letterSpacing: "0.16em" }}
+          className="text-label text-compact-sm tracking-compact-label leading-compact-tight text-[var(--text-tertiary)]"
         >
           SS25 COLLECTION
         </span>
@@ -301,19 +295,13 @@ export default function ProductInfo({
         <div className="pdp-size-section">
           <div className="flex items-center justify-between mb-3">
             <span
-              className="text-label text-[var(--text-primary)]"
-              style={{ fontSize: "11px", letterSpacing: "0.12em" }}
+              className="text-label text-compact-sm tracking-compact-label leading-compact-tight text-[var(--text-primary)]"
             >
               SELECT SIZE
             </span>
             <Link
               href="/size-guide"
-              className="flex items-center gap-1 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-              style={{
-                fontSize: "11px",
-                textDecoration: "underline",
-                textUnderlineOffset: "3px",
-              }}
+              className="flex items-center gap-1 text-compact-sm tracking-compact-label leading-compact-tight text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors underline underline-offset-[3px]"
             >
               <Ruler size={11} strokeWidth={1.5} />
               Size Guide
@@ -359,8 +347,7 @@ export default function ProductInfo({
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-[#c0392b] mt-2"
-                style={{ fontSize: "12px" }}
+                className="text-[#c0392b] mt-2 text-compact-md leading-compact-normal"
               >
                 Please select a size to continue
               </motion.p>
@@ -455,8 +442,7 @@ export default function ProductInfo({
           defaultOpen={false}
         >
           <div
-            className="space-y-2 text-body-sm text-[var(--text-secondary)]"
-            style={{ fontSize: "13px", lineHeight: "1.7" }}
+            className="space-y-2 text-body-sm text-compact-md leading-7 text-[var(--text-secondary)]"
           >
             <p>
               Free shipping on orders over{" "}
@@ -485,11 +471,10 @@ export default function ProductInfo({
           defaultOpen={false}
         >
           <div
-            className="space-y-3 text-body-sm text-[var(--text-secondary)]"
-            style={{ fontSize: "13px", lineHeight: "1.7" }}
+            className="space-y-3 text-body-sm text-compact-md leading-7 text-[var(--text-secondary)]"
           >
             <p>
-              This style fits true to size. We recommend ordering your child's
+              This style fits true to size. We recommend ordering your child&apos;s
               usual size.
             </p>
             <div className="pdp-size-table">
@@ -501,40 +486,94 @@ export default function ProductInfo({
               </div>
               {[
                 {
-                  size: "XS",
-                  age: "2–3 yrs",
-                  height: "92–98cm",
-                  chest: "52cm",
+                  size: "3M",
+                  age: "3 months",
+                  height: "58–64cm",
+                  chest: "43cm",
                 },
                 {
-                  size: "S",
-                  age: "4–5 yrs",
+                  size: "6M",
+                  age: "6 months",
+                  height: "64–70cm",
+                  chest: "45cm",
+                },
+                {
+                  size: "9M",
+                  age: "9 months",
+                  height: "70–76cm",
+                  chest: "47cm",
+                },
+                {
+                  size: "1Y",
+                  age: "1 year",
+                  height: "76–82cm",
+                  chest: "49cm",
+                },
+                {
+                  size: "2Y",
+                  age: "2 years",
+                  height: "82–90cm",
+                  chest: "51cm",
+                },
+                {
+                  size: "3Y",
+                  age: "3 years",
+                  height: "90–98cm",
+                  chest: "53cm",
+                },
+                {
+                  size: "4Y",
+                  age: "4 years",
+                  height: "98–104cm",
+                  chest: "55cm",
+                },
+                {
+                  size: "5Y",
+                  age: "5 years",
                   height: "104–110cm",
-                  chest: "56cm",
+                  chest: "57cm",
                 },
                 {
-                  size: "M",
-                  age: "6–7 yrs",
+                  size: "6Y",
+                  age: "6 years",
+                  height: "110–116cm",
+                  chest: "59cm",
+                },
+                {
+                  size: "7Y",
+                  age: "7 years",
                   height: "116–122cm",
-                  chest: "60cm",
+                  chest: "61cm",
                 },
                 {
-                  size: "L",
-                  age: "8–9 yrs",
+                  size: "8Y",
+                  age: "8 years",
+                  height: "122–128cm",
+                  chest: "63cm",
+                },
+                {
+                  size: "9Y",
+                  age: "9 years",
                   height: "128–134cm",
-                  chest: "65cm",
+                  chest: "66cm",
                 },
                 {
-                  size: "XL",
-                  age: "10–11 yrs",
+                  size: "10Y",
+                  age: "10 years",
+                  height: "134–140cm",
+                  chest: "69cm",
+                },
+                {
+                  size: "11Y",
+                  age: "11 years",
                   height: "140–146cm",
-                  chest: "70cm",
+                  chest: "72cm",
                 },
                 {
-                  size: "XXL",
-                  age: "12 yrs",
-                  height: "152cm+",
-                  chest: "75cm",
+                  size: "12Y",
+                  age: "12 years",
+                  height: "146–152cm",
+                  chest: "76cm",
                 },
               ].map((row) => (
                 <div key={row.size} className="pdp-size-table__row">
@@ -556,8 +595,7 @@ export default function ProductInfo({
           defaultOpen={false}
         >
           <div
-            className="space-y-2 text-body-sm text-[var(--text-secondary)]"
-            style={{ fontSize: "13px", lineHeight: "1.7" }}
+            className="space-y-2 text-body-sm text-compact-md leading-7 text-[var(--text-secondary)]"
           >
             <p>
               Free returns within{" "}

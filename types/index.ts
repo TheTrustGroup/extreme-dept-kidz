@@ -26,7 +26,7 @@ export interface ProductImage {
  * Represents available sizes for a product
  */
 export interface ProductSize {
-  /** Size identifier (e.g., "XS", "S", "M", "L", "XL", "2T", "3T", "4", "5", "6") */
+  /** Age-first size identifier (e.g., "3M", "6M", "9M", "1Y", ..., "12Y") */
   size: string;
   /** Whether this size is currently in stock */
   inStock: boolean;

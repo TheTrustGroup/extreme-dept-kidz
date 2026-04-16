@@ -26,6 +26,7 @@ import {
   Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { FloatingInput, FloatingTextarea } from "@/components/ui/floating-input";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -910,12 +911,12 @@ export function ProductFormComprehensive({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
                   Status
                 </label>
                 <select
                   {...register("status")}
-                  className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent text-charcoal-900"
+                  className="w-full h-control-compact px-compact-4 border border-cream-300 rounded-compact bg-white text-compact-md leading-compact-normal text-charcoal-900 focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
                 >
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
@@ -943,7 +944,7 @@ export function ProductFormComprehensive({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <Controller
@@ -1029,7 +1030,7 @@ export function ProductFormComprehensive({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="sm"
+                          size="compact"
                           onClick={() => setPrimaryImage(imgIndex)}
                         >
                           Set as Primary
@@ -1038,7 +1039,7 @@ export function ProductFormComprehensive({
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
+                        size="compact"
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => removeOrderedImage(imgIndex)}
                       >
@@ -1230,7 +1231,7 @@ export function ProductFormComprehensive({
               <Button
                 type="button"
                 variant="secondary"
-                size="sm"
+                size="compact"
                 onClick={() => {
                   const newVariants = [...variants, { size: "", stock: 0 }];
                   setValue("variants", newVariants, { shouldDirty: true });
@@ -1259,7 +1260,7 @@ export function ProductFormComprehensive({
                       <td className="px-4 py-3">
                         <select
                           {...register(`variants.${index}.size`)}
-                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          className="w-full h-control-compact px-compact-4 border border-cream-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
                         >
                           <option value="">Select size</option>
                           {DEFAULT_PRODUCT_SIZES.map((size) => (
@@ -1270,43 +1271,47 @@ export function ProductFormComprehensive({
                         </select>
                       </td>
                       <td className="px-4 py-3">
-                        <input
+                        <Input
                           type="text"
                           {...register(`variants.${index}.color`)}
                           placeholder="Optional"
-                          className="w-full px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          density="compact"
+                          className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3 min-w-[7rem]">
-                        <input
+                        <Input
                           type="number"
                           step="0.01"
                           {...register(`variants.${index}.price`, { valueAsNumber: true })}
                           placeholder="Override price"
-                          className="input-number-no-spinner w-full min-w-0 px-3 py-2 pr-3 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          density="compact"
+                          className="input-number-no-spinner w-full min-w-0 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3 min-w-[8rem]">
-                        <input
+                        <Input
                           type="text"
                           {...register(`variants.${index}.sku`)}
                           placeholder="Variant SKU"
-                          className="w-full min-w-0 px-3 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          density="compact"
+                          className="w-full min-w-0 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3 min-w-[6rem]">
-                        <input
+                        <Input
                           type="number"
                           {...register(`variants.${index}.stock`, { valueAsNumber: true })}
                           placeholder="0"
-                          className="input-number-no-spinner w-full min-w-0 px-3 py-2 pr-3 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                          density="compact"
+                          className="input-number-no-spinner w-full min-w-0 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                         />
                       </td>
                       <td className="px-4 py-3 text-right">
                         <Button
                           type="button"
                           variant="ghost"
-                          size="sm"
+                          size="compact"
                           onClick={() => {
                             const newVariants = variants.filter((_, i) => i !== index);
                             setValue("variants", newVariants, { shouldDirty: true });
@@ -1327,12 +1332,12 @@ export function ProductFormComprehensive({
             <h2 className="text-2xl font-bold text-charcoal-900">Categories & Tags</h2>
 
             <div>
-              <label className="block text-sm font-medium text-charcoal-700 mb-2">
+              <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
                 Category <span className="text-red-500">*</span>
               </label>
               <select
                 {...register("categoryId")}
-                className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+                className="w-full h-control-compact px-compact-4 border border-cream-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
               >
                 <option value="">Select a category</option>
                 {categories.map((cat) => (
@@ -1347,11 +1352,12 @@ export function ProductFormComprehensive({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-charcoal-700 mb-2">Tags</label>
-              <input
+              <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">Tags</label>
+              <Input
                 type="text"
                 placeholder="Enter tags separated by commas (e.g., new, sale, bestseller)"
-                className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-transparent"
+                density="compact"
+                className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                 onChange={(e) => {
                   const tags = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
                   setValue("tags", tags, { shouldDirty: true });

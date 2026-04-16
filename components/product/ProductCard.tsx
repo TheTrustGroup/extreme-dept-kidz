@@ -59,9 +59,9 @@ function CardBadge({
         "top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 md:top-3 md:left-3",
         "inline-flex max-w-[min(72px,calc(100%-8px))] sm:max-w-[min(88px,calc(100%-12px))]",
         "items-center justify-center",
-        "px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1",
-        "text-[7px] leading-tight sm:text-[8px] md:text-[10px]",
-        "tracking-wide md:tracking-widest",
+        "px-2 py-0.5 sm:px-2.5 md:px-3",
+        "text-compact-sm leading-compact-tight",
+        "font-semibold uppercase tracking-compact-label",
         "truncate",
         styles[type],
       ].join(" ")}
@@ -153,7 +153,7 @@ export default function ProductCard({
                 transition={{ duration: 0.15, ease: "easeOut" }}
                 className={[
                   "absolute top-3 right-3 z-10",
-                  "w-9 h-9 rounded-full",
+                  "w-8 h-8 rounded-full",
                   "bg-[var(--bg-surface)]/90 backdrop-blur-sm",
                   "border border-[var(--border-default)]",
                   "flex items-center justify-center",
@@ -165,7 +165,7 @@ export default function ProductCard({
                 aria-label={`Quick view ${name}`}
                 tabIndex={-1}
               >
-                <Eye size={15} strokeWidth={1.5} />
+                <Eye size={14} strokeWidth={1.5} />
               </motion.button>
             )}
           </AnimatePresence>

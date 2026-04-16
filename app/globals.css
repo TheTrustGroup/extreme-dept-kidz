@@ -658,6 +658,67 @@ html {
   --ease-soft-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-premium-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Compact token profile (mobile login density) */
+  --compact-bg-page: #f6f6f6;
+  --compact-bg-surface: #ffffff;
+  --compact-bg-inverse: #121212;
+  --compact-bg-subtle: #f1f1f1;
+
+  --compact-text-primary: #1e1e1e;
+  --compact-text-secondary: #5e5e5e;
+  --compact-text-muted: #9a9a9a;
+  --compact-text-inverse: #ffffff;
+
+  --compact-border-subtle: #e6e6e6;
+  --compact-border-default: #dddddd;
+
+  --compact-action-primary: #ef1a14;
+  --compact-action-primary-hover: #d91611;
+  --compact-action-primary-text: #ffffff;
+  --compact-focus-ring: #111111;
+
+  --compact-font-xs: 11px;
+  --compact-font-sm: 12px;
+  --compact-font-md: 14px;
+  --compact-font-lg: 16px;
+  --compact-font-xl: 20px;
+  --compact-font-hero: 36px;
+
+  --compact-lh-tight: 1.2;
+  --compact-lh-normal: 1.4;
+  --compact-lh-relaxed: 1.5;
+  --compact-ls-tight: -0.01em;
+  --compact-ls-normal: 0em;
+  --compact-ls-label: 0.08em;
+
+  --compact-space-1: 4px;
+  --compact-space-2: 8px;
+  --compact-space-3: 12px;
+  --compact-space-4: 16px;
+  --compact-space-5: 20px;
+  --compact-space-6: 24px;
+  --compact-space-8: 32px;
+  --compact-space-10: 40px;
+  --compact-space-12: 48px;
+  --compact-space-16: 64px;
+
+  --compact-radius-sm: 8px;
+  --compact-radius-md: 10px;
+  --compact-radius-lg: 12px;
+  --compact-radius-xl: 16px;
+  --compact-radius-full: 999px;
+
+  --compact-control-height: 42px;
+  --compact-control-height-default: 44px;
+  --compact-input-padding-x: 14px;
+  --compact-mobile-content-max: 320px;
+
+  --compact-shadow-button: 0 4px 10px rgba(0, 0, 0, 0.08);
+  --compact-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --compact-motion-fast: 120ms;
+  --compact-motion-normal: 180ms;
+  --compact-motion-easing: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* EDK DESIGN TOKENS — Dark mode overrides */
@@ -670,6 +731,74 @@ html {
   --text-tertiary: rgba(250, 248, 245, 0.35);
   --border-default: rgba(250, 248, 245, 0.08);
   --border-strong: rgba(250, 248, 245, 0.16);
+}
+
+/* Compact utilities for backend/admin UI density */
+.ui-compact-shell {
+  width: 100%;
+  max-width: var(--compact-mobile-content-max);
+  margin-inline: auto;
+}
+
+.ui-compact-label {
+  display: block;
+  font-size: var(--compact-font-sm);
+  font-weight: 700;
+  line-height: var(--compact-lh-tight);
+  letter-spacing: var(--compact-ls-label);
+  text-transform: uppercase;
+  color: var(--compact-text-secondary);
+  margin-bottom: var(--compact-space-2);
+}
+
+.ui-compact-input {
+  width: 100%;
+  height: var(--compact-control-height);
+  padding-inline: var(--compact-input-padding-x);
+  border: 1px solid var(--compact-border-default);
+  border-radius: var(--compact-radius-md);
+  background: var(--compact-bg-surface);
+  color: var(--compact-text-primary);
+  font-size: var(--compact-font-md);
+  line-height: var(--compact-lh-normal);
+  transition:
+    border-color var(--compact-motion-fast) var(--compact-motion-easing),
+    box-shadow var(--compact-motion-fast) var(--compact-motion-easing);
+}
+
+.ui-compact-input::placeholder {
+  color: var(--compact-text-muted);
+}
+
+.ui-compact-input:focus-visible {
+  outline: none;
+  border-color: var(--compact-focus-ring);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--compact-focus-ring) 12%, transparent);
+}
+
+.ui-compact-button {
+  width: 100%;
+  height: var(--compact-control-height);
+  border: 0;
+  border-radius: var(--compact-radius-lg);
+  background: var(--compact-action-primary);
+  color: var(--compact-action-primary-text);
+  font-size: var(--compact-font-lg);
+  font-weight: 600;
+  line-height: var(--compact-lh-tight);
+  letter-spacing: var(--compact-ls-normal);
+  box-shadow: var(--compact-shadow-button);
+  transition:
+    background-color var(--compact-motion-fast) var(--compact-motion-easing),
+    transform var(--compact-motion-fast) var(--compact-motion-easing);
+}
+
+.ui-compact-button:hover {
+  background: var(--compact-action-primary-hover);
+}
+
+.ui-compact-button:active {
+  transform: translateY(1px);
 }
 
 /* EDK — Base resets (sit alongside @layer base) */
@@ -1655,7 +1784,7 @@ textarea:focus-visible {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--space-2);
 }
 @media (max-width: 639px) {
   .product-grid {
@@ -1664,19 +1793,19 @@ textarea:focus-visible {
 }
 @media (min-width: 640px) {
   .product-grid {
-    gap: 16px;
+    gap: var(--space-3);
   }
 }
 @media (min-width: 768px) {
   .product-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: var(--space-4);
   }
 }
 @media (min-width: 1280px) {
   .product-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    gap: var(--space-5);
   }
 }
 
@@ -1819,20 +1948,21 @@ textarea:focus-visible {
 }
 .product-card__hover-btn {
   width: 100%;
-  height: 44px;
+  height: var(--compact-control-height, 42px);
   background-color: var(--color-cream);
   color: var(--color-navy);
   border: none;
   cursor: pointer;
   font-family: "Montserrat", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: var(--compact-font-sm, 12px);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--compact-ls-label, 0.08em);
   text-transform: uppercase;
+  line-height: var(--compact-lh-tight, 1.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   transition:
     background-color var(--dur-fast) ease,
     color var(--dur-fast) ease;
@@ -1844,25 +1974,25 @@ textarea:focus-visible {
 
 /* ── Info section ─────────────────────────────────────────────── */
 .product-card__info {
-  padding: 12px 12px 14px;
+  padding: 10px 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   background-color: var(--bg-surface);
   position: relative;
 }
 @media (min-width: 768px) {
   .product-card__info {
-    padding: 14px 14px 16px;
+    padding: 12px 12px 14px;
   }
 }
 
 /* Product name */
 .product-card__name {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 13px;
+  font-size: var(--compact-font-md, 14px);
   font-weight: 400;
-  line-height: 1.4;
+  line-height: var(--compact-lh-normal, 1.4);
   color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1872,7 +2002,7 @@ textarea:focus-visible {
 }
 @media (min-width: 768px) {
   .product-card__name {
-    font-size: 14px;
+    font-size: var(--compact-font-lg, 16px);
   }
 }
 
@@ -1880,63 +2010,64 @@ textarea:focus-visible {
 .product-card__price-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-top: 2px;
+  gap: 6px;
+  margin-top: 1px;
 }
 
 .product-card__price {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 15px;
+  font-size: var(--compact-font-lg, 16px);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.01em;
-  line-height: 1;
+  line-height: var(--compact-lh-tight, 1.2);
 }
 @media (min-width: 768px) {
   .product-card__price {
-    font-size: 16px;
+    font-size: var(--compact-font-xl, 18px);
   }
 }
 
 @media (max-width: 639px) {
   .product-card__name {
-    font-size: 12px;
+    font-size: var(--compact-font-sm, 12px);
   }
   .product-card__price {
-    font-size: 14px;
+    font-size: var(--compact-font-md, 14px);
   }
   .product-card__info {
     padding: 10px 10px 12px;
   }
   .product-card__mobile-cta {
-    min-height: 44px;
-    height: 44px;
+    min-height: var(--compact-control-height, 42px);
+    height: var(--compact-control-height, 42px);
   }
 }
 
 .product-card__compare-price {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 13px;
+  font-size: var(--compact-font-sm, 12px);
   font-weight: 400;
   color: var(--text-tertiary);
   text-decoration: line-through;
-  line-height: 1;
+  line-height: var(--compact-lh-tight, 1.2);
 }
 
 /* ── Mobile add button ────────────────────────────────────────── */
 .product-card__mobile-cta {
-  margin-top: 10px;
+  margin-top: 8px;
   width: 100%;
-  height: 40px;
+  height: var(--compact-control-height, 42px);
   background-color: transparent;
   color: var(--text-secondary);
   border: 0.5px solid var(--border-strong);
   cursor: pointer;
   font-family: "Montserrat", system-ui, sans-serif;
-  font-size: 10px;
+  font-size: var(--compact-font-sm, 12px);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--compact-ls-label, 0.08em);
   text-transform: uppercase;
+  line-height: var(--compact-lh-tight, 1.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1958,12 +2089,13 @@ textarea:focus-visible {
 }
 
 .product-card__sold-out-label {
-  margin-top: 10px;
+  margin-top: 8px;
   font-family: "Montserrat", system-ui, sans-serif;
-  font-size: 10px;
+  font-size: var(--compact-font-sm, 12px);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--compact-ls-label, 0.08em);
   text-transform: uppercase;
+  line-height: var(--compact-lh-tight, 1.2);
   color: var(--text-tertiary);
   text-align: center;
 }

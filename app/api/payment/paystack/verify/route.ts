@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { confirmOrderPayment } from "@/lib/services/order.service";
-import { sendOrderConfirmationEmail } from "@/lib/services/email.service";
+import {
+  sendOrQueueAdminNewOrderEmail,
+  sendOrQueueOrderConfirmationEmail,
+} from "@/lib/services/notification-queue.service";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<Response> {
   const { searchParams } = new URL(req.url);
   const reference =
     searchParams.get("reference") ??
@@ -61,8 +64,9 @@ export async function GET(req: NextRequest) {
         ? metadata.orderId
         : reference;
 
+    let paymentState: { alreadyCompleted: boolean } | null = null;
     try {
-      await confirmOrderPayment(orderId);
+      paymentState = await confirmOrderPayment(orderId);
     } catch (e) {
       logger.error("[Paystack verify] confirmOrderPayment failed", e);
     }
@@ -78,6 +82,7 @@ export async function GET(req: NextRequest) {
           orderNumber: true,
           total: true,
           shippingAddress: true,
+          paymentMethod: true,
         },
       });
       if (order) {
@@ -91,7 +96,58 @@ export async function GET(req: NextRequest) {
     }
 
     if (customerEmail && orderTotal > 0) {
-      void sendOrderConfirmationEmail(customerEmail, orderNumber, orderTotal);
+      void sendOrQueueOrderConfirmationEmail(
+        { to: customerEmail, orderNumber, totalPesewas: orderTotal },
+        { orderId, reference, source: "paystack.verify" }
+      );
+    }
+
+    // Notify admin inbox when a new successful payment is confirmed.
+    if (prisma && paymentState?.alreadyCompleted === false) {
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: {
+          id: true,
+          orderNumber: true,
+          total: true,
+          paymentMethod: true,
+          shippingAddress: true,
+        },
+      });
+      if (order && order.shippingAddress && typeof order.shippingAddress === "object") {
+        const addr = order.shippingAddress as {
+          firstName?: string;
+          lastName?: string;
+          email?: string;
+          phone?: string;
+          address?: string;
+          apartment?: string;
+          city?: string;
+          state?: string;
+          zipCode?: string;
+          country?: string;
+        };
+        const customerName = `${addr.firstName ?? ""} ${addr.lastName ?? ""}`.trim() || "Customer";
+        const shippingSummary = [
+          addr.address ?? "",
+          [addr.apartment, addr.city, addr.state, addr.zipCode, addr.country]
+            .filter(Boolean)
+            .join(", "),
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        void sendOrQueueAdminNewOrderEmail({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          totalPesewas: order.total,
+          customerName,
+          customerEmail: addr.email ?? customerEmail ?? "unknown@unknown.local",
+          customerPhone: addr.phone ?? "N/A",
+          shippingSummary,
+          paymentMethod: order.paymentMethod,
+        }, { orderId, reference, source: "paystack.verify" });
+      }
     }
 
     return NextResponse.json({

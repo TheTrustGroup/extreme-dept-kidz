@@ -24,10 +24,17 @@ body:has([data-admin]) {
   --adm-ro2:      rgba(244,63,94,0.13);
   --adm-sky:      #38bdf8;
   --adm-sk2:      rgba(56,189,248,0.13);
-  --adm-radius:   6px;
-  --adm-header-h: 52px;
+  --adm-radius:   var(--compact-radius-md, 10px);
+  --adm-header-h: 48px;
   --adm-sidebar-w: 200px;
   --adm-sidebar-col: 52px;
+  --adm-control-h: var(--compact-control-height, 42px);
+  --adm-label-size: var(--compact-font-sm, 12px);
+  --adm-label-track: var(--compact-ls-label, 0.08em);
+  --adm-text-sm: var(--compact-font-sm, 12px);
+  --adm-text-md: var(--compact-font-md, 14px);
+  --adm-motion-fast: var(--compact-motion-fast, 120ms);
+  --adm-ease: var(--compact-motion-easing, cubic-bezier(0.2, 0, 0, 1));
 
   color-scheme: dark;
   background: var(--adm-bg);
@@ -109,9 +116,9 @@ body:has([data-admin]) {
 
 .adm-ni {
   display: flex; align-items: center; gap: 9px;
-  padding: 0 8px; height: 34px;
+  padding: 0 8px; height: 32px;
   border-radius: var(--adm-radius);
-  color: var(--adm-t2); font-size: 12px;
+  color: var(--adm-t2); font-size: var(--adm-text-sm);
   cursor: pointer; position: relative;
   margin-bottom: 1px; text-decoration: none;
   background: none; border: none; width: 100%;
@@ -127,7 +134,7 @@ body:has([data-admin]) {
   background: var(--adm-gold);
   border-radius: 0 2px 2px 0;
 }
-.adm-ni svg { width: 14px; height: 14px; flex-shrink: 0; stroke-width: 1.5; }
+.adm-ni svg { width: 13px; height: 13px; flex-shrink: 0; stroke-width: 1.5; }
 .adm-ni-lbl { flex: 1; overflow: hidden; transition: opacity 0.15s; }
 .adm-sidebar--col .adm-ni-lbl { opacity: 0; width: 0; }
 .adm-ni-badge {
@@ -183,14 +190,14 @@ body:has([data-admin]) {
   background: var(--adm-s1);
   border-bottom: 1px solid var(--adm-b1);
   display: flex; align-items: center;
-  padding: 0 22px; gap: 12px;
+  padding: 0 16px; gap: 10px;
   z-index: 40;
   transition: left 0.22s cubic-bezier(0.16,1,0.3,1);
 }
 .adm-header--col { left: var(--adm-sidebar-col); }
 .adm-hdr-path {
   flex: 1; display: flex; align-items: center;
-  gap: 6px; font-size: 12px; min-width: 0;
+  gap: 6px; font-size: var(--adm-text-sm); min-width: 0;
 }
 .adm-hdr-seg { color: var(--adm-t3); }
 .adm-hdr-sep { color: var(--adm-b3); font-size: 10px; }
@@ -200,7 +207,7 @@ body:has([data-admin]) {
 }
 .adm-hdr-r { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .adm-ic-btn {
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border-radius: var(--adm-radius);
   background: none; border: none;
   color: var(--adm-t2); cursor: pointer;
@@ -219,10 +226,10 @@ body:has([data-admin]) {
 .adm-hdiv { width: 1px; height: 18px; background: var(--adm-b2); flex-shrink: 0; }
 .adm-new-btn {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 0 12px; height: 30px;
+  padding: 0 12px; height: 32px;
   border-radius: var(--adm-radius);
   background: var(--adm-gold); color: #08080d;
-  font-size: 11px; font-weight: 600;
+  font-size: var(--adm-text-sm); font-weight: 600;
   border: none; cursor: pointer;
   letter-spacing: 0.02em; white-space: nowrap;
   text-decoration: none;
@@ -406,22 +413,22 @@ body:has([data-admin]) {
   color: var(--adm-t3); margin-bottom: 6px;
 }
 .adm-input {
-  width: 100%; height: 38px;
+  width: 100%; height: var(--adm-control-h);
   background: var(--adm-s2);
   border: 1px solid var(--adm-b2);
   border-radius: var(--adm-radius);
   padding: 0 12px; color: var(--adm-t1);
-  font-size: 13px; outline: none;
-  transition: border-color 120ms;
+  font-size: var(--adm-text-md); outline: none;
+  transition: border-color var(--adm-motion-fast) var(--adm-ease);
 }
 .adm-input:focus { border-color: var(--adm-gold); }
 .adm-input::placeholder { color: var(--adm-t3); }
 .adm-submit {
-  width: 100%; height: 38px;
+  width: 100%; height: var(--adm-control-h);
   background: var(--adm-gold); color: #08080d;
   border: none; border-radius: var(--adm-radius);
-  font-size: 12px; font-weight: 600;
-  letter-spacing: 0.06em; cursor: pointer;
+  font-size: var(--adm-text-sm); font-weight: 600;
+  letter-spacing: var(--adm-label-track); cursor: pointer;
   margin-top: 8px;
 }
 .adm-submit:hover { background: #d4aa2a; }

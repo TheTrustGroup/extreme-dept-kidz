@@ -30,6 +30,12 @@ export interface EmailOptions {
   text?: string;
 }
 
+export interface OrderConfirmationEmailParams {
+  to: string;
+  orderNumber: string;
+  totalPesewas: number;
+}
+
 /**
  * Send email using Resend
  * 
@@ -182,6 +188,18 @@ export async function sendOrderConfirmationEmail(
   orderNumber: string,
   totalPesewas: number
 ): Promise<boolean> {
+  const message = buildOrderConfirmationEmail({
+    to,
+    orderNumber,
+    totalPesewas,
+  });
+  return sendEmail(message);
+}
+
+export function buildOrderConfirmationEmail(
+  params: OrderConfirmationEmailParams
+): EmailOptions {
+  const { to, orderNumber, totalPesewas } = params;
   const totalLabel = `₵${(totalPesewas / 100).toFixed(2)}`;
   const subject = `We received your order ${orderNumber}`;
   const html = `
@@ -197,7 +215,7 @@ export async function sendOrderConfirmationEmail(
     </html>
   `;
   const text = `Thank you! Order ${orderNumber} — Total ${totalLabel}. We will contact you to confirm delivery.`;
-  return sendEmail({ to, subject, html, text });
+  return { to, subject, html, text };
 }
 
 const DEFAULT_ORDERS_NOTIFY_EMAIL = DEFAULT_FROM_EMAIL;
@@ -227,6 +245,12 @@ export interface AdminNewOrderEmailParams {
 export async function sendAdminNewOrderEmail(
   params: AdminNewOrderEmailParams
 ): Promise<boolean> {
+  return sendEmail(buildAdminNewOrderEmail(params));
+}
+
+export function buildAdminNewOrderEmail(
+  params: AdminNewOrderEmailParams
+): EmailOptions {
   const to =
     process.env.ORDERS_NOTIFY_EMAIL?.trim() || DEFAULT_ORDERS_NOTIFY_EMAIL;
   const totalLabel = `₵${(params.totalPesewas / 100).toFixed(2)}`;
@@ -267,5 +291,5 @@ export async function sendAdminNewOrderEmail(
     `Customer: ${params.customerName} <${params.customerEmail}> ${params.customerPhone}`,
     `Shipping:\n${params.shippingSummary}`,
   ].join("\n");
-  return sendEmail({ to, subject, html, text });
+  return { to, subject, html, text };
 }

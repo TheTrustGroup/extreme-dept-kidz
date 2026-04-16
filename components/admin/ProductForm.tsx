@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { useToast } from "@/components/ui/Toast";
 import { apiUrl } from "@/lib/config/api-base";
@@ -594,28 +595,30 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
               Product Name *
             </label>
-            <input
+            <Input
               type="text"
               value={formData.name}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              density="compact"
+              className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
               Slug *
             </label>
-            <input
+            <Input
               type="text"
               value={formData.slug}
               onChange={(e) =>
                 setFormData({ ...formData, slug: e.target.value })
               }
-              className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              density="compact"
+              className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
               required
             />
           </div>
@@ -634,10 +637,10 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
               Price (₵) *
             </label>
-            <input
+            <Input
               type="text"
               inputMode="decimal"
               value={formData.price}
@@ -651,15 +654,16 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
                   : value;
                 setFormData({ ...formData, price: formatted });
               }}
-              className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              density="compact"
+              className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
               Original Price (₵) - Optional
             </label>
-            <input
+            <Input
               type="text"
               inputMode="decimal"
               value={formData.originalPrice}
@@ -673,25 +677,27 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
                   : value;
                 setFormData({ ...formData, originalPrice: formatted });
               }}
-              className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              density="compact"
+              className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
               placeholder="For sale items"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
               SKU
             </label>
-            <input
+            <Input
               type="text"
               value={formData.sku}
               onChange={(e) =>
                 setFormData({ ...formData, sku: e.target.value })
               }
-              className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              density="compact"
+              className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-700 mb-2">
+            <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
               Category *
             </label>
             <select
@@ -699,7 +705,7 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
               onChange={(e) =>
                 setFormData({ ...formData, categoryId: e.target.value })
               }
-              className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+              className="w-full h-control-compact px-compact-4 border border-cream-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
               required
             >
               <option value="">Select a category</option>
@@ -744,11 +750,12 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
               return (
                 <div key={image.url || filteredIndex} className="flex items-center gap-2">
                   <span className="text-xs text-charcoal-500 w-20">Image {filteredIndex + 1}:</span>
-                  <input
+                  <Input
                     type="text"
                     value={image.alt}
                     onChange={(e) => updateImage(actualIndex, "alt", e.target.value)}
-                    className="flex-1 px-3 py-2 text-sm border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                    density="compact"
+                    className="flex-1 bg-white border-cream-300 text-sm focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                     placeholder="Describe this image for accessibility"
                   />
                 </div>
@@ -764,7 +771,7 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
           <h2 className="text-xl font-semibold text-charcoal-900">
             Product Variants
           </h2>
-          <Button type="button" variant="secondary" onClick={addVariant}>
+          <Button type="button" variant="secondary" size="compact" onClick={addVariant}>
             <Plus className="w-4 h-4 mr-2" />
             Add Variant
           </Button>
@@ -776,45 +783,48 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
               className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-cream-200 rounded-lg"
             >
               <div>
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
                   Size *
                 </label>
-                <input
+                <Input
                   type="text"
                   value={variant.size}
                   onChange={(e) =>
                     updateVariant(index, "size", e.target.value)
                   }
-                  className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                  density="compact"
+                  className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                   placeholder="e.g., 4T, 5T, 6"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
                   SKU *
                 </label>
-                <input
+                <Input
                   type="text"
                   value={variant.sku}
                   onChange={(e) =>
                     updateVariant(index, "sku", e.target.value)
                   }
-                  className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                  density="compact"
+                  className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-charcoal-700 mb-2">
+                <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
                   Stock *
                 </label>
-                <input
+                <Input
                   type="number"
                   value={variant.stock}
                   onChange={(e) =>
                     updateVariant(index, "stock", parseInt(e.target.value) || 0)
                   }
-                  className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+                  density="compact"
+                  className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
                   min="0"
                   required
                 />
@@ -823,7 +833,7 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
+                  size="compact"
                   onClick={() => removeVariant(index)}
                   className="text-red-600 hover:text-red-700"
                 >
@@ -839,10 +849,11 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6">
         <h2 className="text-xl font-semibold text-charcoal-900 mb-4">Tags</h2>
         <div className="mb-4">
-          <input
+          <Input
             type="text"
             onKeyDown={handleTagInput}
-            className="w-full px-4 py-2 border border-cream-300 rounded-lg focus:ring-2 focus:ring-navy-500"
+            density="compact"
+            className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
             placeholder="Press Enter to add a tag (e.g., new, bestseller, sale)"
           />
         </div>
