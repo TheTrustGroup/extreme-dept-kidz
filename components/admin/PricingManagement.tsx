@@ -117,7 +117,10 @@ export function PricingManagement(): JSX.Element {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-compact-2xl leading-compact-tight tracking-compact-tight font-bold text-charcoal-900">Pricing Management</h1>
+        <div>
+          <h1 className="text-compact-2xl leading-compact-tight tracking-compact-tight font-bold text-charcoal-900">Pricing Management</h1>
+          <p className="adm-help-text mt-1">Edited prices are visually emphasized for fast review before save.</p>
+        </div>
       </div>
 
       <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50">
@@ -139,7 +142,7 @@ export function PricingManagement(): JSX.Element {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-cream-200">
+            <tbody className="bg-white divide-y divide-cream-300/70">
               {products.map((product) => {
                 const isEditing = editing[product.id] !== undefined;
                 const editData = editing[product.id] || {
@@ -148,7 +151,10 @@ export function PricingManagement(): JSX.Element {
                 };
 
                 return (
-                  <tr key={product.id} className="hover:bg-cream-50">
+                  <tr
+                    key={product.id}
+                    className={`hover:bg-cream-50/80 ${Number(product.price) > 0 ? "odd:bg-white even:bg-cream-50/70" : "odd:bg-white even:bg-cream-50/50"}`}
+                  >
                     <td className="px-6 py-3 whitespace-nowrap">
                       <div className="font-medium text-compact-md leading-compact-normal text-charcoal-900">
                         {product.name}
@@ -174,7 +180,7 @@ export function PricingManagement(): JSX.Element {
                               })
                             }
                             density="compact"
-                            className="w-24 h-8 min-h-0 px-2 border-cream-300 bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                            className={`w-24 h-8 min-h-0 px-2 border-cream-300 bg-white text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500 ${editData.price > 0 ? "adm-field-filled" : ""}`}
                             step="0.01"
                             min="0"
                           />
@@ -204,7 +210,7 @@ export function PricingManagement(): JSX.Element {
                               })
                             }
                             density="compact"
-                            className="w-24 h-8 min-h-0 px-2 border-cream-300 bg-white focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                            className={`w-24 h-8 min-h-0 px-2 border-cream-300 bg-white text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500 ${editData.originalPrice != null && editData.originalPrice > 0 ? "adm-field-filled" : ""}`}
                             step="0.01"
                             min="0"
                             placeholder="Optional"

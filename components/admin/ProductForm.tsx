@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { useToast } from "@/components/ui/Toast";
 import { apiUrl } from "@/lib/config/api-base";
+import { cn } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -768,9 +769,10 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
       {/* Variants */}
       <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-cream-200/50 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-charcoal-900">
-            Product Variants
-          </h2>
+          <div>
+            <h2 className="text-xl font-semibold text-charcoal-900">Product Variants</h2>
+            <p className="adm-help-text mt-1">Filled fields are highlighted for quick scanning.</p>
+          </div>
           <Button type="button" variant="secondary" size="compact" onClick={addVariant}>
             <Plus className="w-4 h-4 mr-2" />
             Add Variant
@@ -780,7 +782,10 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
           {formData.variants.map((variant, index) => (
             <div
               key={index}
-              className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-cream-200 rounded-lg"
+              className={cn(
+                "grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-cream-300/70 rounded-lg",
+                index % 2 === 0 ? "bg-white/55" : "bg-cream-50/70"
+              )}
             >
               <div>
                 <label className="block text-compact-sm font-bold uppercase tracking-compact-label text-charcoal-700 mb-compact-2 leading-compact-tight">
@@ -793,7 +798,10 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
                     updateVariant(index, "size", e.target.value)
                   }
                   density="compact"
-                  className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                  className={cn(
+                    "bg-white border-cream-300 text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500",
+                    variant.size ? "adm-field-filled" : ""
+                  )}
                   placeholder="e.g., 4T, 5T, 6"
                   required
                 />
@@ -809,7 +817,10 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
                     updateVariant(index, "sku", e.target.value)
                   }
                   density="compact"
-                  className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                  className={cn(
+                    "bg-white border-cream-300 text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500",
+                    variant.sku ? "adm-field-filled" : ""
+                  )}
                   required
                 />
               </div>
@@ -824,7 +835,10 @@ export function ProductForm({ productId }: ProductFormProps): JSX.Element {
                     updateVariant(index, "stock", parseInt(e.target.value) || 0)
                   }
                   density="compact"
-                  className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                  className={cn(
+                    "bg-white border-cream-300 text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500",
+                    Number(variant.stock) > 0 ? "adm-field-filled" : ""
+                  )}
                   min="0"
                   required
                 />

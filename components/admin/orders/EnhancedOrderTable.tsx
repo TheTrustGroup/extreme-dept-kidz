@@ -206,6 +206,7 @@ export function EnhancedOrderTable({
             density="compact"
             className="pl-10 bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
           />
+          <p className="adm-help-text mt-1">Order rows are striped to improve readability in long lists.</p>
         </div>
 
         {/* Filters */}
@@ -238,10 +239,10 @@ export function EnhancedOrderTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white/90 rounded-xl border border-cream-300/70 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-compact-md leading-compact-normal">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-cream-50 border-b border-cream-300/70">
               <tr>
                 <th className="px-4 py-3 text-left text-compact-sm font-bold uppercase tracking-compact-label leading-compact-tight text-gray-700">
                   <button
@@ -293,14 +294,17 @@ export function EnhancedOrderTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-cream-300/70">
               {filteredAndSorted.map((order, index) => (
                 <m.tr
                   key={order.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="hover:bg-gray-50 transition-colors"
+                  className={cn(
+                    "transition-colors border-b border-cream-300/70 hover:bg-cream-50/90",
+                    index % 2 === 0 ? "bg-white" : "bg-cream-50/70"
+                  )}
                 >
                   <td className="px-4 py-3 text-compact-md leading-compact-normal">
                     <Link

@@ -263,6 +263,7 @@ export function AdvancedInventoryTable({
             density="compact"
             className="pl-10 bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
           />
+          <p className="adm-help-text mt-1">Stock and pricing cells use stronger row/field contrast for faster scanning.</p>
         </div>
 
         {/* Filters */}
@@ -315,10 +316,10 @@ export function AdvancedInventoryTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white/90 rounded-xl border border-cream-300/70 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-cream-50 border-b border-cream-300/70">
               <tr>
                 <th className="px-4 py-3 text-left">
                   <button
@@ -391,7 +392,7 @@ export function AdvancedInventoryTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-cream-300/70">
               {filteredAndSorted.map((variant) => {
                 const isSelected = selectedVariants.has(variant.id);
                 const isEditing = editingVariant === variant.id;
@@ -404,7 +405,8 @@ export function AdvancedInventoryTable({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className={cn(
-                      "hover:bg-gray-50 transition-colors",
+                      "transition-colors border-b border-cream-300/70 hover:bg-cream-50/90",
+                      !isSelected && !isOutOfStock && !isLowStock && "odd:bg-white even:bg-cream-50/70",
                       isSelected && "bg-indigo-50",
                       isOutOfStock && "bg-red-50",
                       isLowStock && !isOutOfStock && "bg-yellow-50"
@@ -451,7 +453,10 @@ export function AdvancedInventoryTable({
                             value={editStockValue}
                             onChange={(e) => setEditStockValue(parseInt(e.target.value) || 0)}
                             density="compact"
-                            className="w-20 h-8 min-h-0 px-2 text-sm bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
+                            className={cn(
+                              "w-20 h-8 min-h-0 px-2 text-sm bg-white border-gray-300 text-charcoal-900 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
+                              editStockValue > 0 && "adm-field-filled"
+                            )}
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {

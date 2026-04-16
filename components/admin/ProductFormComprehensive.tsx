@@ -1254,13 +1254,22 @@ export function ProductFormComprehensive({
                     <th className="px-4 py-3 text-right text-sm font-semibold text-charcoal-700">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-cream-200/50">
+                <tbody className="divide-y divide-cream-300/70">
                   {variants.map((variant, index) => (
-                    <tr key={index}>
+                    <tr
+                      key={index}
+                      className={cn(
+                        "border-b border-cream-300/70",
+                        index % 2 === 0 ? "bg-white/55" : "bg-cream-50/70"
+                      )}
+                    >
                       <td className="px-4 py-3">
                         <select
                           {...register(`variants.${index}.size`)}
-                          className="w-full h-control-compact px-compact-4 border border-cream-300 rounded-compact bg-white text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500"
+                          className={cn(
+                            "w-full h-control-compact px-compact-4 border border-cream-300 rounded-compact bg-white text-charcoal-900 text-compact-md leading-compact-normal focus:outline-none focus:ring-2 focus:ring-navy-500/20 focus:border-navy-500",
+                            variant.size ? "adm-field-filled" : ""
+                          )}
                         >
                           <option value="">Select size</option>
                           {DEFAULT_PRODUCT_SIZES.map((size) => (
@@ -1276,7 +1285,10 @@ export function ProductFormComprehensive({
                           {...register(`variants.${index}.color`)}
                           placeholder="Optional"
                           density="compact"
-                          className="bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                          className={cn(
+                            "bg-white border-cream-300 text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500",
+                            variant.color ? "adm-field-filled" : ""
+                          )}
                         />
                       </td>
                       <td className="px-4 py-3 min-w-[7rem]">
@@ -1286,7 +1298,10 @@ export function ProductFormComprehensive({
                           {...register(`variants.${index}.price`, { valueAsNumber: true })}
                           placeholder="Override price"
                           density="compact"
-                          className="input-number-no-spinner w-full min-w-0 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                          className={cn(
+                            "input-number-no-spinner w-full min-w-0 bg-white border-cream-300 text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500",
+                            variant.price != null && Number(variant.price) > 0 ? "adm-field-filled" : ""
+                          )}
                         />
                       </td>
                       <td className="px-4 py-3 min-w-[8rem]">
@@ -1295,7 +1310,10 @@ export function ProductFormComprehensive({
                           {...register(`variants.${index}.sku`)}
                           placeholder="Variant SKU"
                           density="compact"
-                          className="w-full min-w-0 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                          className={cn(
+                            "w-full min-w-0 bg-white border-cream-300 text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500",
+                            variant.sku ? "adm-field-filled" : ""
+                          )}
                         />
                       </td>
                       <td className="px-4 py-3 min-w-[6rem]">
@@ -1304,7 +1322,10 @@ export function ProductFormComprehensive({
                           {...register(`variants.${index}.stock`, { valueAsNumber: true })}
                           placeholder="0"
                           density="compact"
-                          className="input-number-no-spinner w-full min-w-0 bg-white border-cream-300 focus-visible:ring-navy-500/20 focus-visible:border-navy-500"
+                          className={cn(
+                            "input-number-no-spinner w-full min-w-0 bg-white border-cream-300 text-charcoal-900 focus-visible:ring-navy-500/20 focus-visible:border-navy-500",
+                            Number(variant.stock) > 0 ? "adm-field-filled" : ""
+                          )}
                         />
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -1347,7 +1368,7 @@ export function ProductFormComprehensive({
                 ))}
               </select>
               {errors.categoryId && (
-                <p className="text-red-600 text-sm mt-1">{errors.categoryId.message}</p>
+                <p className="adm-error-text mt-1">{errors.categoryId.message}</p>
               )}
             </div>
 
@@ -1364,7 +1385,7 @@ export function ProductFormComprehensive({
                 }}
                 defaultValue={watch("tags")?.join(", ") || ""}
               />
-              <p className="text-xs text-charcoal-600 mt-1">Separate multiple tags with commas</p>
+              <p className="adm-help-text mt-1">Separate multiple tags with commas</p>
             </div>
           </section>
 

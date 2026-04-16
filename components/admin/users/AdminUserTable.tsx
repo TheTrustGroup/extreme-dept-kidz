@@ -232,6 +232,7 @@ export function AdminUserTable({
             density="compact"
             className="pl-10 bg-white border-gray-300 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500"
           />
+          <p className="adm-help-text mt-1">Rows are striped for scanability, with inactive accounts still visibly muted.</p>
         </div>
 
         {/* Filters */}
@@ -334,7 +335,7 @@ export function AdminUserTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cream-200">
+            <tbody className="divide-y divide-cream-300/70">
               {filteredAndSorted.map((user, index) => {
                 const isCurrentUser = user.id === currentUserId;
                 const isInactive = !user.isActive;
@@ -346,7 +347,8 @@ export function AdminUserTable({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     className={cn(
-                      "hover:bg-cream-50 transition-colors",
+                      "transition-colors border-b border-cream-300/70 hover:bg-cream-50/90",
+                      index % 2 === 0 ? "bg-white" : "bg-cream-50/70",
                       isInactive && "bg-cream-50 opacity-75"
                     )}
                   >
