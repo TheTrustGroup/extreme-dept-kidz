@@ -2,6 +2,9 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 import { FaInstagram, FaTiktok, FaSnapchat, FaWhatsapp } from 'react-icons/fa'
 
 function IconMoMo() {
@@ -43,7 +46,6 @@ const COLUMNS = [
       { label: 'Boys',          href: '/collections/boys' },
       { label: 'Girls',         href: '/collections/girls' },
       { label: 'New Arrivals',  href: '/collections/new-arrivals' },
-      { label: 'Collections',   href: '/collections' },
     ],
   },
   {
@@ -55,7 +57,6 @@ const COLUMNS = [
       { label: 'Returns',       href: '/returns-exchange' },
       { label: 'Size Guide',    href: '/size-guide' },
       { label: 'Track Order',   href: '/track-order' },
-      { label: 'FAQ',           href: '/contact#faq' },
     ],
   },
   {
@@ -63,8 +64,6 @@ const COLUMNS = [
     heading: 'Company',
     links: [
       { label: 'About Us',       href: '/about' },
-      { label: 'Style Guide',    href: '/style-guide' },
-      { label: 'Accessibility',  href: '/accessibility' },
       { label: 'Privacy Policy', href: '/privacy-policy' },
       { label: 'Terms',          href: '/terms-of-service' },
     ],
@@ -111,14 +110,53 @@ function buildSocialLinks(): Array<{
   ]
 }
 
-function FooterColumn({ heading, links }: typeof COLUMNS[number]) {
+function FooterColumn({ id, heading, links }: typeof COLUMNS[number]) {
+  const [open, setOpen] = useState(false)
+
   return (
     <div className="footer-col">
-      <p className="footer-col__heading footer-col__heading--static">
+      <button
+        type="button"
+        className="footer-col__trigger md:hidden"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={`footer-col-${id}`}
+      >
+        <span className="footer-col__heading">{heading}</span>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="footer-col__chevron"
+        >
+          <ChevronDown size={14} strokeWidth={1.5} />
+        </motion.span>
+      </button>
+
+      <p className="footer-col__heading footer-col__heading--desktop hidden md:block">
         {heading}
       </p>
-      <ul className="footer-col__links flex flex-col">
-        {links.map(l => (
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.ul
+            id={`footer-col-${id}`}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="footer-col__links footer-col__links--mobile md:hidden"
+          >
+            {links.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="footer-col__link">{l.label}</Link>
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+
+      <ul className="footer-col__links hidden md:flex md:flex-col">
+        {links.map((l) => (
           <li key={l.href}>
             <Link href={l.href} className="footer-col__link">{l.label}</Link>
           </li>
@@ -137,7 +175,7 @@ export default function Footer() {
       <div className="site-footer__body">
         <div className="container-luxury">
           <div className="footer-grid">
-            <div className="footer-brand" style={{ backgroundColor: 'var(--color-navy)' }}>
+            <div className="footer-brand">
               <Link href="/" aria-label="Extreme Dept Kidz home">
                 <Image
                   src="/IMG_8640.PNG"
@@ -145,11 +183,11 @@ export default function Footer() {
                   width={110}
                   height={33}
                   priority={false}
-                  className="h-8 w-auto object-contain brightness-0 invert"
+                  className="h-7 w-auto object-contain brightness-0 invert md:h-8"
                 />
               </Link>
               <p className="footer-brand__tagline">
-                Premium streetwear for young legends.<br />Accra, Ghana.
+                Premium streetwear for young legends. Accra, Ghana.
               </p>
               <div className="footer-social" aria-label="Follow us">
                 {social.map(({ label, href, Icon }) => (
@@ -161,7 +199,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {COLUMNS.map(col => (
+            {COLUMNS.map((col) => (
               <FooterColumn key={col.id} {...col} />
             ))}
           </div>
@@ -172,7 +210,7 @@ export default function Footer() {
         <div className="container-luxury">
           <div className="footer-bottom">
             <p className="footer-copy">
-              © {year} Extreme Dept Kidz. All rights reserved.
+              © {year} Extreme Dept Kidz
             </p>
             <div className="footer-payments" aria-label="Accepted payment methods">
               <IconMoMo />

@@ -10,21 +10,17 @@ import { heroLineReveal, staggerContainer } from "@/lib/motion";
 function ScrollCue() {
   return (
     <motion.div
-      className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 lg:hidden"
+      className="hero-scroll-cue"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 1.4, duration: 0.6 }}
       aria-hidden="true"
     >
-      <span
-        className="text-label text-white/60"
-        style={{ fontSize: "12px", letterSpacing: "0.2em" }}
-      >
-        DISCOVER
-      </span>
+      <span className="hero-scroll-cue__label">DISCOVER</span>
       <motion.div
         animate={{ y: [0, 6, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="hero-scroll-cue__icon"
       >
         <svg
           width="16"
@@ -261,10 +257,10 @@ export default function HeroSection() {
                 </Link>
               </div>
             </motion.div>
+
+            <ScrollCue />
           </motion.div>
         </div>
-
-        <ScrollCue />
       </div>
 
       {/* ════════════════════════════════════════════════════════════

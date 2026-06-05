@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import HeroSection from '@/components/home/HeroSection'
 import JustDroppedClient from '@/components/home/JustDroppedClient'
-import TrustBar from '@/components/home/TrustBar'
 import ShopByCategory from '@/components/home/ShopByCategory'
 import NewsletterSection from '@/components/home/NewsletterSection'
 import ClientErrorBoundary from '@/components/ui/ClientErrorBoundary'
@@ -31,8 +30,6 @@ export default async function HomePage() {
   return (
     <main id="main-content">
       <HeroSection />
-
-      <TrustBar />
 
       <ClientErrorBoundary message="Unable to load new arrivals.">
         <JustDroppedClient products={products} />
