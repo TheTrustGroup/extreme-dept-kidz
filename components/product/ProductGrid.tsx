@@ -34,7 +34,6 @@ interface ProductGridProps {
   loading?: boolean;
   skeletonCount?: number;
   collectionName?: string;
-  onQuickView?: (id: string) => void;
   onAddToCart?: (id: string) => void;
   columns?: 2 | 3 | 4;
 }
@@ -45,7 +44,6 @@ export default function ProductGrid({
   loading = false,
   skeletonCount = 4,
   collectionName,
-  onQuickView,
   onAddToCart,
   columns,
 }: ProductGridProps) {
@@ -100,7 +98,6 @@ export default function ProductGrid({
           key={product.id}
           {...product}
           index={i}
-          onQuickView={onQuickView}
           onAddToCart={onAddToCart}
           priority={i < 4}
         />

@@ -15,6 +15,11 @@ export default function JustDropped({ products, onAddToCart }: JustDroppedProps)
   const ref    = useRef<HTMLElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px 0px' })
 
+  const displayProducts =
+    products.length > 2 && products.length % 2 !== 0
+      ? products.slice(0, products.length - 1)
+      : products
+
   return (
     <section ref={ref} className="jd-section" aria-labelledby="jd-heading">
       <div className="container-luxury">
@@ -40,14 +45,14 @@ export default function JustDropped({ products, onAddToCart }: JustDroppedProps)
         </motion.div>
 
         {/* Grid — always 2 columns on mobile, 4 on desktop */}
-        {products.length > 0 ? (
+        {displayProducts.length > 0 ? (
           <motion.div
             className="jd-grid"
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            {products.map((p, i) => (
+            {displayProducts.map((p, i) => (
               <ProductCard
                 key={p.id}
                 {...p}
@@ -68,20 +73,6 @@ export default function JustDropped({ products, onAddToCart }: JustDroppedProps)
           </div>
         )}
 
-        {/* Mobile: view all below grid */}
-        {products.length > 0 && (
-          <motion.div
-            className="jd-mobile-cta"
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.4, delay: 0.3 }}
-          >
-            <Link href="/collections/new-arrivals" className="btn-secondary"
-              style={{ height: '44px', padding: '0 32px', fontSize: '11px' }}>
-              View All New Arrivals
-            </Link>
-          </motion.div>
-        )}
       </div>
     </section>
   )

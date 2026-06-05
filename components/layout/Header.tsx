@@ -105,19 +105,18 @@ export default function Header() {
       {/* ── Main header ─────────────────────────────────────────── */}
       <header
         className={[
-          "header-site fixed left-0 right-0 z-[100]",
+          "header-site fixed left-0 right-0 top-0 z-[100]",
           "transition-all duration-250",
           scrolled
-            ? "bg-[var(--bg-page)]/95 backdrop-blur-md border-b border-[var(--border-default)]"
-            : "bg-[var(--bg-page)]",
+            ? "bg-[var(--bg-page)] border-b border-[var(--border-default)]"
+            : "bg-[var(--bg-page)] lg:bg-[var(--bg-page)]",
         ].join(" ")}
         style={{
-          top: "var(--topbar-height, 0px)",
-          transition: "top 0.3s ease, background-color 0.25s ease",
+          transition: "background-color 0.25s ease",
           isolation: "isolate",
         }}
       >
-        <div className="container-luxury h-full flex items-center justify-between gap-6">
+        <div className="container-luxury h-full flex items-center gap-8 lg:gap-12">
           {/* ── Logo ───────────────────────────────────────────── */}
           <Link
             href="/"
@@ -213,7 +212,7 @@ export default function Header() {
           </nav>
 
           {/* ── Right actions ───────────────────────────────────── */}
-          <div className="flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-1">
             {/* Search — expands inline on desktop */}
             <div className="hidden lg:flex items-center relative">
               <AnimatePresence>

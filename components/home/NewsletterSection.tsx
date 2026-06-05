@@ -107,9 +107,14 @@ export default function NewsletterSection() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <div className="newsletter-input-row">
-                    <input
-                      type="email"
+                  <div className="newsletter-form-fields">
+                    <label htmlFor="newsletter-email" className="newsletter-field-label">
+                      Email
+                    </label>
+                    <div className="newsletter-input-row">
+                      <input
+                        id="newsletter-email"
+                        type="email"
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value);
@@ -139,6 +144,7 @@ export default function NewsletterSection() {
                         "Subscribe"
                       )}
                     </button>
+                    </div>
                   </div>
 
                   {errorMsg && (

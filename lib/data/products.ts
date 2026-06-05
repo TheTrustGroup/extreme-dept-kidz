@@ -16,10 +16,13 @@ import type { Product } from "@/types";
 
 const DIAGNOSTIC_LOG = process.env.NEXT_PHASE8_DIAGNOSTIC === "1";
 
-/** Get all products. Use in server components / API only. When storefrontOnly is true, only returns products visible on the website. */
-export async function getProducts(options?: { storefrontOnly?: boolean }): Promise<Product[]> {
+/** Get all products. Use in server components / API only. When storefrontOnly is true, only returns products visible on the website. Pass limit to cap DB rows (e.g. homepage new arrivals). */
+export async function getProducts(options?: { storefrontOnly?: boolean; limit?: number }): Promise<Product[]> {
   const before = Date.now();
-  const products = await getAllProducts({ storefrontOnly: options?.storefrontOnly });
+  const products = await getAllProducts({
+    storefrontOnly: options?.storefrontOnly,
+    limit: options?.limit,
+  });
   if (DIAGNOSTIC_LOG) {
     const elapsed = Date.now() - before;
     const count = products?.length ?? 0;

@@ -18,7 +18,7 @@ function ScrollCue() {
     >
       <span
         className="text-label text-white/60"
-        style={{ fontSize: "10px", letterSpacing: "0.2em" }}
+        style={{ fontSize: "12px", letterSpacing: "0.2em" }}
       >
         DISCOVER
       </span>
@@ -98,9 +98,9 @@ export default function HeroSection() {
       <div
         className="relative lg:hidden"
         style={{
-          height: "100svh",
-          minHeight: "560px",
-          maxHeight: "900px",
+          height: "calc(100svh - 56px)",
+          minHeight: "480px",
+          maxHeight: "820px",
           backgroundColor: "var(--color-navy)",
         }}
       >
@@ -108,7 +108,7 @@ export default function HeroSection() {
         <div className="absolute inset-0">
           <Image
             src="/hero.webp"
-            alt="Young boy in premium streetwear"
+            alt=""
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 55vw"
@@ -129,8 +129,8 @@ export default function HeroSection() {
               "linear-gradient(",
               "  to top,",
               "  rgba(15,23,42,0.92) 0%,",
-              "  rgba(15,23,42,0.60) 35%,",
-              "  rgba(15,23,42,0.15) 60%,",
+              "  rgba(15,23,42,0.75) 40%,",
+              "  rgba(15,23,42,0.20) 65%,",
               "  rgba(15,23,42,0.0) 100%",
               ")",
             ].join(""),
@@ -147,14 +147,14 @@ export default function HeroSection() {
         >
           <span
             className="text-label text-white/50"
-            style={{ fontSize: "10px", letterSpacing: "0.2em" }}
+            style={{ fontSize: "12px", letterSpacing: "0.2em" }}
           >
             ACCRA · GHANA
           </span>
         </motion.div>
 
         {/* Content — bottom anchored */}
-        <div className="absolute bottom-0 left-0 right-0 px-6 pb-24">
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-28 hero-mobile-content">
           <motion.div
             variants={staggerContainer}
             initial="initial"
@@ -166,7 +166,7 @@ export default function HeroSection() {
               className="text-label mb-3"
               style={{
                 color: "var(--color-gold)",
-                fontSize: "11px",
+                fontSize: "12px",
                 letterSpacing: "0.22em",
               }}
             >
@@ -204,7 +204,7 @@ export default function HeroSection() {
             <motion.p
               variants={heroLineReveal}
               transition={lineDelay(3)}
-              className="text-white/60 mb-8"
+              className="text-white/80 mb-8"
               style={{
                 fontSize: "14px",
                 lineHeight: "1.6",
@@ -294,10 +294,9 @@ export default function HeroSection() {
             }}
           >
             <span
-              className="text-label"
+              className="text-label hero-eyebrow-light"
               style={{
-                color: "var(--color-gold)",
-                fontSize: "11px",
+                fontSize: "12px",
                 letterSpacing: "0.22em",
               }}
             >
@@ -333,9 +332,7 @@ export default function HeroSection() {
                 Streetwear
               </em>
               <br />
-              for Young
-              <br />
-              Legends.
+              <span className="whitespace-nowrap">for Young Legends.</span>
             </motion.h1>
 
             <motion.p
@@ -358,7 +355,7 @@ export default function HeroSection() {
             </motion.p>
 
             <motion.div
-              className="mt-10 flex flex-col gap-4"
+              className="mt-10 flex flex-col gap-4 w-full max-w-[320px]"
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
@@ -369,19 +366,18 @@ export default function HeroSection() {
             >
               <Link
                 href="/collections/new-arrivals"
-                className="btn-primary"
-                style={{ width: "fit-content" }}
+                className="btn-primary w-full justify-center"
               >
                 Shop New Arrivals
               </Link>
 
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Link
                   href="/collections/boys"
-                  className="btn-secondary"
+                  className="btn-secondary w-full justify-center"
                   style={{
                     height: "44px",
-                    padding: "0 24px",
+                    padding: "0 16px",
                     fontSize: "11px",
                   }}
                 >
@@ -389,10 +385,10 @@ export default function HeroSection() {
                 </Link>
                 <Link
                   href="/collections/girls"
-                  className="btn-secondary"
+                  className="btn-secondary w-full justify-center"
                   style={{
                     height: "44px",
-                    padding: "0 24px",
+                    padding: "0 16px",
                     fontSize: "11px",
                   }}
                 >
@@ -447,13 +443,13 @@ export default function HeroSection() {
         >
           <Image
             src="/hero.webp"
-            alt="Young boy in premium streetwear — Extreme Dept Kidz"
+            alt=""
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 55vw"
             quality={85}
             className={[
-              "object-cover object-center transition-opacity duration-700 hero-image-reveal",
+              "object-cover object-[center_40%] transition-opacity duration-700 hero-image-reveal",
               desktopHeroLoaded ? "opacity-100" : "opacity-0",
             ].join(" ")}
             onLoad={() => setDesktopHeroLoaded(true)}

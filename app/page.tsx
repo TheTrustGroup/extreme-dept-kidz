@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import HeroSection from '@/components/home/HeroSection'
 import JustDroppedClient from '@/components/home/JustDroppedClient'
+import TrustBar from '@/components/home/TrustBar'
 import ShopByCategory from '@/components/home/ShopByCategory'
 import NewsletterSection from '@/components/home/NewsletterSection'
 import ClientErrorBoundary from '@/components/ui/ClientErrorBoundary'
@@ -17,13 +18,8 @@ export const metadata: Metadata = {
 
 async function getNewArrivals(): Promise<Product[]> {
   try {
-    const all = await getProducts({ storefrontOnly: true })
-    const sorted = [...all].sort((a, b) => {
-      const aAt = a.createdAt ? new Date(a.createdAt).getTime() : 0
-      const bAt = b.createdAt ? new Date(b.createdAt).getTime() : 0
-      return bAt - aAt
-    })
-    return sorted.slice(0, 8)
+    // DB orders by createdAt desc; take 8 only — avoid loading entire catalog (timeouts / blank page).
+    return await getProducts({ storefrontOnly: true, limit: 4 })
   } catch {
     return []
   }
@@ -35,6 +31,8 @@ export default async function HomePage() {
   return (
     <main id="main-content">
       <HeroSection />
+
+      <TrustBar />
 
       <ClientErrorBoundary message="Unable to load new arrivals.">
         <JustDroppedClient products={products} />

@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 
 function mapProductToCardProps(p: Product): ProductCardProps {
   const primaryImage = p.images?.find((img) => img.isPrimary) ?? p.images?.[0];
+  const firstSize =
+    p.sizes?.find((s) => s.inStock)?.size ?? p.sizes?.[0]?.size;
   return {
     id: p.id,
     slug: p.slug,
@@ -17,6 +19,7 @@ function mapProductToCardProps(p: Product): ProductCardProps {
     currency: "₵",
     imageUrl: primaryImage?.url ?? "/placeholder.jpg",
     imageAlt: primaryImage?.alt ?? p.name,
+    defaultSize: firstSize,
     badge: p.tags?.includes("new")
       ? "new"
       : !p.inStock
@@ -79,10 +82,6 @@ export function JustDroppedGrid({
     [products, addToCart]
   );
 
-  const handleQuickView = React.useCallback((_productId: string) => {
-    // Quick view modal — build in a later step
-  }, []);
-
   return (
     <div
       className="product-grid"
@@ -96,7 +95,6 @@ export function JustDroppedGrid({
           index={index}
           priority={index < 4}
           onAddToCart={handleAddToCart}
-          onQuickView={handleQuickView}
         />
       ))}
       {Array.from({ length: placeholdersNeeded }, (_, i) => (

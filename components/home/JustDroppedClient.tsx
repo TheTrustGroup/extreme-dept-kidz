@@ -14,6 +14,8 @@ function productToCardProps(p: Product): ProductCardProps {
         ? p.originalPrice
         : Number(p.originalPrice)
       : undefined
+  const firstSize =
+    p.sizes?.find((s) => s.inStock)?.size ?? p.sizes?.[0]?.size
   return {
     id: p.id,
     slug: p.slug,
@@ -23,6 +25,7 @@ function productToCardProps(p: Product): ProductCardProps {
     currency: '₵',
     imageUrl: p.images?.find((img) => img.isPrimary)?.url ?? p.images?.[0]?.url ?? '/placeholder.jpg',
     imageAlt: p.images?.[0]?.alt ?? p.name,
+    defaultSize: firstSize,
     badge: p.tags?.includes('new')
       ? 'new'
       : !p.inStock

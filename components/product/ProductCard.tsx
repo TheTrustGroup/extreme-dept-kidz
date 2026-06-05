@@ -3,11 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Eye } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { ShoppingBag } from "lucide-react";
 import { useToast } from "@/lib/stores/toast-store";
 
-// ─── Types ────────────────────────────────────────────────────────
 export interface ProductCardProps {
   id: string;
   slug: string;
@@ -19,14 +18,13 @@ export interface ProductCardProps {
   imageAlt?: string;
   badge?: "new" | "sale" | "sold-out" | null;
   isAvailable?: boolean;
+  defaultSize?: string;
   collectionSlug?: string;
   priority?: boolean;
-  onQuickView?: (id: string) => void;
   onAddToCart?: (id: string) => void;
   index?: number;
 }
 
-// ─── Price formatter (expects display amount e.g. cedis) ───────────
 function formatPrice(amount: number, currency = "₵"): string {
   return `${currency}${amount.toLocaleString("en-GH", {
     minimumFractionDigits: 2,
@@ -34,7 +32,6 @@ function formatPrice(amount: number, currency = "₵"): string {
   })}`;
 }
 
-// ─── Badge component ──────────────────────────────────────────────
 function CardBadge({
   type,
 }: {
@@ -71,7 +68,6 @@ function CardBadge({
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────
 export default function ProductCard({
   id,
   slug,
@@ -83,12 +79,13 @@ export default function ProductCard({
   imageAlt,
   badge,
   isAvailable = true,
+  defaultSize,
   priority = false,
-  onQuickView,
   onAddToCart,
   index = 0,
 }: ProductCardProps) {
   const { success, error } = useToast();
+  const shouldReduceMotion = useReducedMotion();
   const [hovered, setHovered] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -97,6 +94,7 @@ export default function ProductCard({
   const isOnSale = compareAtPrice != null && compareAtPrice > price;
   const imageUnoptimized =
     imageUrl.startsWith("data:") || imageUrl.startsWith("blob:");
+  const addLabel = defaultSize ? `Add · ${defaultSize}` : "Add";
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -113,144 +111,107 @@ export default function ProductCard({
     }
   };
 
-  const handleQuickView = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onQuickView?.(id);
-  };
+  const motionProps = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 20 } as const,
+        animate: { opacity: 1, y: 0 } as const,
+        transition: {
+          duration: 0.45,
+          delay: index * 0.07,
+          ease: [0.16, 1, 0.3, 1] as const,
+        },
+      };
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.45,
-        delay: index * 0.07,
-        ease: [0.16, 1, 0.3, 1],
-      }}
+      {...motionProps}
       className="product-card group"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <Link
-        href={`/products/${slug}`}
-        className="block"
-        aria-label={`View ${name} — ${formatPrice(price, currency)}`}
-      >
-        <div className="product-card__image-wrap">
-          {badge && badge !== "sold-out" && isAvailable && (
-            <CardBadge type={badge} />
-          )}
-          {isSoldOut && <CardBadge type="sold-out" />}
-
-          <AnimatePresence>
-            {hovered && !isSoldOut && onQuickView && (
-              <motion.button
-                key="qv"
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className={[
-                  "absolute top-3 right-3 z-10",
-                  "w-8 h-8 rounded-full",
-                  "bg-[var(--bg-surface)]/90 backdrop-blur-sm",
-                  "border border-[var(--border-default)]",
-                  "flex items-center justify-center",
-                  "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-                  "transition-colors duration-150",
-                  "hidden md:flex",
-                ].join(" ")}
-                onClick={handleQuickView}
-                aria-label={`Quick view ${name}`}
-                tabIndex={-1}
-              >
-                <Eye size={14} strokeWidth={1.5} />
-              </motion.button>
+      <div className="product-card__media">
+        <Link
+          href={`/products/${slug}`}
+          className="block"
+          aria-label={`View ${name} — ${formatPrice(price, currency)}`}
+        >
+          <div className="product-card__image-wrap">
+            {badge && badge !== "sold-out" && isAvailable && (
+              <CardBadge type={badge} />
             )}
-          </AnimatePresence>
+            {isSoldOut && <CardBadge type="sold-out" />}
 
-          <div
-            className={["product-card__image", isSoldOut ? "opacity-60" : ""].join(" ")}
-          >
-            <Image
-              src={imageUrl}
-              alt={imageAlt ?? name}
-              fill
-              unoptimized={imageUnoptimized}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            <div
               className={[
-                "object-cover object-center",
-                "transition-all duration-500 ease-out",
-                hovered && !isSoldOut ? "scale-[1.03]" : "scale-100",
-                imgLoaded ? "opacity-100" : "opacity-0",
+                "product-card__image",
+                isSoldOut ? "opacity-60" : "",
               ].join(" ")}
-              onLoad={() => setImgLoaded(true)}
-              priority={priority}
-            />
-            {!imgLoaded && (
-              <div
-                className="absolute inset-0 product-card__skeleton"
-                aria-hidden="true"
+            >
+              <Image
+                src={imageUrl}
+                alt={imageAlt ?? name}
+                fill
+                unoptimized={imageUnoptimized}
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className={[
+                  "product-card__photo",
+                  "transition-all duration-500 ease-out",
+                  hovered && !isSoldOut ? "scale-[1.03]" : "scale-100",
+                  imgLoaded ? "opacity-100" : "opacity-0",
+                ].join(" ")}
+                onLoad={() => setImgLoaded(true)}
+                priority={priority}
               />
-            )}
+              {!imgLoaded && (
+                <div
+                  className="absolute inset-0 product-card__skeleton"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
           </div>
+        </Link>
 
-          <AnimatePresence>
-            {hovered && !isSoldOut && (
-              <motion.div
-                key="cta-overlay"
-                initial={{ y: "100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: "100%", opacity: 0 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="product-card__hover-cta"
-                aria-hidden="true"
+        <AnimatePresence>
+          {hovered && !isSoldOut && (
+            <motion.div
+              key="cta-overlay"
+              initial={shouldReduceMotion ? false : { y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={shouldReduceMotion ? undefined : { y: "100%", opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="product-card__hover-cta"
+            >
+              <button
+                type="button"
+                className="product-card__hover-btn"
+                onClick={handleAddToCart}
+                aria-label={`Add ${name}${defaultSize ? `, size ${defaultSize}` : ""} to bag`}
               >
-                <button
-                  className="product-card__hover-btn"
-                  onClick={handleAddToCart}
-                  tabIndex={-1}
-                >
-                  <AnimatePresence mode="wait" initial={false}>
-                    {adding ? (
-                      <motion.span
-                        key="added"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.15 }}
-                        className="flex items-center gap-2"
-                      >
-                        <span
-                          className="product-card__added-dot"
-                          aria-hidden="true"
-                        />
-                        Added
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key="add"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.15 }}
-                        className="flex items-center gap-2"
-                      >
-                        <ShoppingBag size={14} strokeWidth={1.5} />
-                        Add to Bag
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                {adding ? (
+                  <span className="flex items-center gap-2">
+                    <span className="product-card__added-dot" aria-hidden="true" />
+                    Added
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <ShoppingBag size={14} strokeWidth={1.5} />
+                    {defaultSize ? `Add · ${defaultSize}` : "Add to Bag"}
+                  </span>
+                )}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-        <div className="product-card__info">
+      <div className="product-card__info">
+        <Link
+          href={`/products/${slug}`}
+          className="product-card__info-link block"
+        >
           <p className="product-card__name">{name}</p>
-
           <div className="product-card__price-row">
             <span
               className={[
@@ -266,45 +227,32 @@ export default function ProductCard({
               </span>
             )}
           </div>
+        </Link>
 
-          {!isSoldOut && (
-            <button
-              className="product-card__mobile-cta"
-              onClick={handleAddToCart}
-              aria-label={`Add ${name} to bag`}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {adding ? (
-                  <motion.span
-                    key="m-added"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center justify-center gap-1.5"
-                  >
-                    <span className="product-card__added-dot" />
-                    Added
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="m-add"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center justify-center gap-1.5"
-                  >
-                    <ShoppingBag size={13} strokeWidth={1.5} />
-                    Add
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          )}
-          {isSoldOut && (
-            <p className="product-card__sold-out-label md:hidden">Sold out</p>
-          )}
-        </div>
-      </Link>
+        {!isSoldOut && (
+          <button
+            type="button"
+            className="product-card__mobile-cta"
+            onClick={handleAddToCart}
+            aria-label={`Add ${name}${defaultSize ? `, size ${defaultSize}` : ""} to bag`}
+          >
+            {adding ? (
+              <span className="flex items-center justify-center gap-1.5">
+                <span className="product-card__added-dot" />
+                Added
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-1.5">
+                <ShoppingBag size={13} strokeWidth={1.5} />
+                {addLabel}
+              </span>
+            )}
+          </button>
+        )}
+        {isSoldOut && (
+          <p className="product-card__sold-out-label md:hidden">Sold out</p>
+        )}
+      </div>
     </motion.article>
   );
 }

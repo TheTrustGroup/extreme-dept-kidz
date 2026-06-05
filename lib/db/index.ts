@@ -314,8 +314,8 @@ async function executeQuery<T>(
  */
 
 // Products
-export async function getAllProducts(options?: { storefrontOnly?: boolean }): Promise<Product[]> {
-  return executeQuery(
+export async function getAllProducts(options?: { storefrontOnly?: boolean; limit?: number }): Promise<Product[]> {
+  const products = await executeQuery(
     async () => {
       const { prisma } = await import('./prisma');
       if (!prisma) {
@@ -325,6 +325,7 @@ export async function getAllProducts(options?: { storefrontOnly?: boolean }): Pr
       const where = options?.storefrontOnly ? { visibleOnStore: true } : undefined;
       const prismaProducts = await prisma.product.findMany({
         where,
+        take: options?.limit,
         select: {
           id: true,
           name: true,
@@ -412,6 +413,21 @@ export async function getAllProducts(options?: { storefrontOnly?: boolean }): Pr
     mockProducts,
     'getAllProducts'
   );
+
+  // Dev mock / build fallback returns full catalog; apply same cap + ordering as Prisma (take + orderBy createdAt desc).
+  if (options?.limit != null && products.length > options.limit) {
+    let list = options.storefrontOnly
+      ? products.filter((p) => p.visibleOnStore !== false)
+      : [...products];
+    list = [...list].sort((a, b) => {
+      const aAt = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bAt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bAt - aAt;
+    });
+    return list.slice(0, options.limit);
+  }
+
+  return products;
 }
 
 export async function getProductById(id: string): Promise<Product | null> {

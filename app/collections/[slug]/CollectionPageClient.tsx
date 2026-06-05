@@ -46,6 +46,8 @@ function productToCardProps(p: Product): ProductCardProps {
         : Number(p.originalPrice)
       : undefined;
   const primaryImage = p.images?.find((img) => img.isPrimary) ?? p.images?.[0];
+  const firstSize =
+    p.sizes?.find((s) => s.inStock)?.size ?? p.sizes?.[0]?.size;
   return {
     id: p.id,
     slug: p.slug,
@@ -55,6 +57,7 @@ function productToCardProps(p: Product): ProductCardProps {
     currency: "₵",
     imageUrl: primaryImage?.url ?? "/placeholder.jpg",
     imageAlt: primaryImage?.alt ?? p.name,
+    defaultSize: firstSize,
     badge: p.tags?.includes("new")
       ? "new"
       : !p.inStock
@@ -185,10 +188,6 @@ export function CollectionPageClient({
     [sortedProducts, addToCart]
   );
 
-  const handleQuickView = React.useCallback((_productId: string) => {
-    // Quick view modal — build in a later step
-  }, []);
-
   const clearAll = () => setFilters(DEFAULT_FILTERS);
 
   const isGirlsCollection = params.slug === "girls";
@@ -296,7 +295,6 @@ export function CollectionPageClient({
                 products={cardProducts}
                 collectionName={collection.name}
                 onAddToCart={handleAddToCart}
-                onQuickView={handleQuickView}
                 columns={4}
               />
             </div>

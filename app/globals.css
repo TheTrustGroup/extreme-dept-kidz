@@ -927,11 +927,11 @@ body {
   }
 }
 .header-spacer {
-  height: calc(var(--topbar-height, 0px) + 56px);
+  height: 56px;
 }
 @media (min-width: 1024px) {
   .header-spacer {
-    height: calc(var(--topbar-height, 0px) + 64px);
+    height: 64px;
   }
 }
 
@@ -2030,7 +2030,9 @@ textarea:focus-visible {
 
 @media (max-width: 639px) {
   .product-card__name {
-    font-size: var(--compact-font-sm, 12px);
+    font-size: 13px;
+    -webkit-line-clamp: 3;
+    min-height: 3.9em;
   }
   .product-card__price {
     font-size: var(--compact-font-md, 14px);
@@ -2836,6 +2838,12 @@ aside {
 }
 .icon-btn:active {
   transform: scale(0.94);
+}
+.icon-btn:focus-visible,
+.footer-col__trigger:focus-visible,
+.footer-social__btn:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
 }
 
 /* ── Hero image transitions ──────────────────────────────────────── */
@@ -3758,11 +3766,13 @@ aside {
   margin-bottom: 0;
   padding-top: 80px;
   padding-bottom: 80px;
+  scroll-margin-top: calc(56px + 16px);
 }
 @media (min-width: 1024px) {
   .newsletter-section {
     padding-top: 96px;
     padding-bottom: 96px;
+    scroll-margin-top: calc(64px + 16px);
   }
 }
 
@@ -5770,7 +5780,12 @@ aside {
 /* ── 1. Smooth scroll + scroll padding ───────────────────────── */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 80px;
+  scroll-padding-top: calc(56px + 8px);
+}
+@media (min-width: 1024px) {
+  html {
+    scroll-padding-top: calc(64px + 8px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -6221,7 +6236,7 @@ nav ul, nav ol {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.7;
-  color: rgba(250,248,245,0.38);
+  color: rgba(250,248,245,0.62);
   margin-top: 16px;
   margin-bottom: 20px;
   max-width: 220px;
@@ -6230,7 +6245,7 @@ nav ul, nav ol {
 /* Social */
 .footer-social { display: flex; gap: 4px; }
 .footer-social__btn {
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 6px;
   color: rgba(250,248,245,0.4);
@@ -6338,7 +6353,7 @@ nav ul, nav ol {
 .footer-copy {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 12px;
-  color: rgba(250,248,245,0.28);
+  color: rgba(250,248,245,0.55);
 }
 .footer-payments {
   display: flex;
@@ -6370,13 +6385,17 @@ nav ul, nav ol {
 }
 .footer-legal__link {
   font-family: 'Montserrat', system-ui, sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(250,248,245,0.28);
+  color: rgba(250,248,245,0.55);
   text-decoration: none;
   transition: color 150ms ease;
+  padding: 10px 4px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 .footer-legal__link:hover { color: rgba(250,248,245,0.6); }
 
@@ -6990,4 +7009,119 @@ nav ul, nav ol {
   flex-direction: column;
   gap: 10px;
   align-items: center;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AUDIT FIXES — homepage UX polish
+   ══════════════════════════════════════════════════════════════════ */
+
+.hero-eyebrow-light {
+  color: #8a6914;
+}
+
+.hero-mobile-content {
+  padding-bottom: max(7rem, calc(env(safe-area-inset-bottom) + 5.5rem));
+}
+
+.whatsapp-fab {
+  position: fixed;
+  bottom: max(96px, calc(env(safe-area-inset-bottom) + 80px));
+  right: max(16px, env(safe-area-inset-right, 16px));
+  z-index: 150;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-navy);
+  color: var(--color-cream);
+  border: 1.5px solid var(--color-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.25);
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+.whatsapp-fab:hover {
+  transform: scale(1.05);
+  background-color: rgba(15, 23, 42, 0.92);
+}
+@media (min-width: 1024px) {
+  .whatsapp-fab {
+    bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  }
+}
+
+.product-card__media {
+  position: relative;
+}
+
+.product-card__photo {
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.footer-col__heading--static {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(250,248,245,0.9);
+  margin: 0;
+  padding: 16px 0 12px;
+}
+@media (min-width: 768px) {
+  .footer-col__heading--static {
+    padding: 0 0 16px;
+  }
+}
+
+.footer-payment-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(250, 248, 245, 0.9);
+}
+.footer-momo-badge.footer-payment-chip {
+  background-color: var(--color-momo, #ffcc00);
+  color: #000;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.newsletter-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.newsletter-field-label {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 245, 0.65);
+}
+
+@media (max-width: 639px) {
+  .home-section-eyebrow,
+  .jd-viewall {
+    font-size: 12px;
+  }
+  .jd-viewall {
+    min-height: 44px;
+    align-items: center;
+    padding-bottom: 0;
+    border-bottom: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }
